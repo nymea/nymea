@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -72,31 +72,33 @@
 */
 
 #include "nymeasettings.h"
-#include "unistd.h"
+#include "loggingcategories.h"
 
-#include <QSettings>
-#include <QCoreApplication>
+#include <unistd.h>
+
 #include <QDir>
 #include <QDebug>
+#include <QFileInfo>
+#include <QSettings>
+#include <QCoreApplication>
+
 
 /*! Constructs a \l{NymeaSettings} instance with the given \a role and \a parent. */
 NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
 {
-    QString settingsPrefix = QCoreApplication::instance()->organizationName() + "/";
+    /*
+        Since 1.12.0 we consider the /etc/nymea folder as read only from a deamon perspective.
+        The /etc/nymea/ directory should be used for default settings the system is using in order to
+        generate the first configuration in /var/lib/nymea/
 
-    QString basePath;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        basePath = QString(qgetenv("SNAP_DATA")) + "/";
-        settingsPrefix.clear(); // We don't want that in the snappy case...
-    } else if (settingsPrefix == "nymea-test/") {
-        basePath = "/tmp/";
-    } else if (isRoot()) {
-        basePath = "/etc/";
-    } else {
-        basePath = QDir::homePath() + "/.config/";
-    }
+        It is up to the platform maintainer to provide specific default configurations or just use the defaults.
+
+        1. Check env, if that is specified, we use that as settings storage, yet check if there are any defaults to load
+        2. Check if we have the setting file in /var/lib/nymea, if so use that RW
+        3. If there no config file in RW, load read only from /etc/nymea/ and save to /var/lib/nymea
+    */
 
     QString fileName;
     switch (role) {
@@ -133,7 +135,38 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         fileName = "zwave.conf";
         break;
     }
-    m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
+
+    QString filePath = NymeaSettings::settingsPath() + QDir::separator() + fileName;
+
+    QFileInfo settingsFileInfo(filePath);
+    if (!settingsFileInfo.exists()) {
+        // Settings file does not exist yet, check if we have a default version of the file
+        QFileInfo defaultSettingsFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + fileName);
+        if (defaultSettingsFileInfo.exists()) {
+            qCDebug(dcSystem()) << "No configuration file found in" << settingsFileInfo.absolutePath() << "using"
+                                << defaultSettingsFileInfo.absoluteFilePath() << "as default settings.";
+
+            QString destinationPath = settingsFileInfo.absolutePath();
+            if (!(QDir(destinationPath).exists())) {
+                if (!QDir().mkdir(destinationPath)) {
+                    qCWarning(dcSystem()) << "Unable to create directory for storing configuration" << destinationPath;
+                } else {
+                    qCDebug(dcSystem()) << "Created successfully directory for storing configuration" << destinationPath;
+                }
+            }
+
+            QFile defaultSettingsFile(defaultSettingsFileInfo.absoluteFilePath());
+            if (!defaultSettingsFile.copy(settingsFileInfo.absoluteFilePath())) {
+                qCWarning(dcSystem()) << "Failed to copy configuration" << defaultSettingsFileInfo.absoluteFilePath() << "to"
+                                      << settingsFileInfo.absoluteFilePath() << defaultSettingsFile.errorString();
+            } else {
+                qCDebug(dcSystem()) << "Copied successfully configuration" << defaultSettingsFileInfo.absoluteFilePath() << "to"
+                                    << settingsFileInfo.absoluteFilePath();
+            }
+        }
+    }
+
+    m_settings = new QSettings(filePath, QSettings::IniFormat, this);
 }
 
 /*! Destructor of the NymeaSettings.*/
@@ -158,22 +191,44 @@ bool NymeaSettings::isRoot()
     return true;
 }
 
-/*! Returns the path to the folder where the NymeaSettings will be saved i.e. \tt{/etc/nymea}. */
+/*! Returns the path to the folder where the NymeaSettings will be saved i.e. \tt{/var/lib/nymea}. */
 QString NymeaSettings::settingsPath()
 {
-    QString path;
-    QString organisationName = QCoreApplication::instance()->organizationName();
+    QString settingsPrefix = QCoreApplication::instance()->organizationName();
 
+    QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
         path = QString(qgetenv("SNAP_DATA"));
+    } else if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+        path = QString(qgetenv("NYMEA_CONFIG_PATH"));
+    } else if (settingsPrefix.contains("nymea-test")) {
+        path = "/tmp/" + settingsPrefix;
+    } else if (isRoot()) {
+        path = "/var/lib/" + settingsPrefix;
+    } else {
+        path = QDir::homePath() + "/.config/" + settingsPrefix;
+    }
+
+    return QDir(path).absolutePath();
+}
+
+/*! Returns the path to the folder where the default NymeaSettings can be loaded i.e. \tt{/etc/nymea}. This location should be considered read only. */
+QString NymeaSettings::defaultSettingsPath()
+{
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    QString path;
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
+        path = QString(qgetenv("SNAP") + "/etc/" + organisationName);
+    } else if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
+        path = QString(qgetenv("NYMEA_DEFAULT_CONFIG_PATH"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
-    } else if (NymeaSettings::isRoot()) {
-        path = "/etc/nymea";
     } else {
-        path = QDir::homePath() + "/.config/" + organisationName;
+        path = "/etc/" + organisationName;
     }
-    return path;
+
+    return QDir(path).absolutePath();
 }
 
 /*! Returns the default system translation path \tt{/usr/share/nymea/translations}. */
@@ -181,46 +236,41 @@ QString NymeaSettings::translationsPath()
 {
     QString organisationName = QCoreApplication::instance()->organizationName();
 
+    QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        return QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
+        path =  QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
     } else if (organisationName == "nymea-test") {
-        return "/tmp/" + organisationName;
+        path =  "/tmp/" + organisationName;
     } else {
-        return QString("/usr/share/nymea/translations");
+        path = QString("/usr/share/nymea/translations");
     }
+
+    return QDir(path).absolutePath();
 }
 
 /*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */
 QString NymeaSettings::storagePath()
 {
-    QString path;
-    QString organisationName = QCoreApplication::instance()->organizationName();
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString(qgetenv("SNAP_DATA"));
-    } else if (organisationName == "nymea-test") {
-        path = "/tmp/" + organisationName;
-    } else if (NymeaSettings::isRoot()) {
-        path = "/var/lib/" + organisationName;
-    } else {
-        path = QDir::homePath() + "/.local/share/" + organisationName;
-    }
-    return path;
+    // For backwards compatibility
+    return NymeaSettings::settingsPath();
 }
 
 QString NymeaSettings::cachePath()
 {
-    QString path;
     QString organisationName = QCoreApplication::instance()->organizationName();
+
+    QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
         path = QString(qgetenv("SNAP_DATA"));
     } else if (organisationName == "nymea-test") {
-        path = "/tmp/" + organisationName;
+        path = "/tmp/" + organisationName + "/cache";
     } else if (NymeaSettings::isRoot()) {
         path = "/var/cache/" + organisationName;
     } else {
         path = QDir::homePath() + "/.cache/" + organisationName;
     }
-    return path;
+
+    return QDir(path).absolutePath();
 }
 
 /*! Return a list of all settings keys.*/
@@ -326,4 +376,3 @@ QVariant NymeaSettings::value(const QString &key, const QVariant &defaultValue) 
 {
     return m_settings->value(key, defaultValue);
 }
-

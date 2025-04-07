@@ -48,7 +48,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
         if (map.value(key).toString().startsWith("$ref:")) {
             QString refName = map.value(key).toString().remove("$ref:");
             if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
-                qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
+                qCWarning(dcJsonRpc()) << "Invalid reference to" << refName << "in" << key << map;
                 return false;
             }
         }
@@ -63,7 +63,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
                 if (entry.toString().startsWith("$ref:")) {
                     QString refName = entry.toString().remove("$ref:");
                     if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
-                        qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
+                        qCWarning(dcJsonRpc()) << "Invalid reference to" << refName<< "in" << key << map;
                         return false;
                     }
                 }

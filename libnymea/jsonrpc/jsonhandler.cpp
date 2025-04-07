@@ -38,7 +38,6 @@
 JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
 {
     qRegisterMetaType<QMetaType::Type>();
-    registerEnum<BasicType>();
 }
 
 QHash<QString, QString> JsonHandler::cacheHashes() const
@@ -217,7 +216,10 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
                 typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
             }
         } else if (metaProperty.isEnumType()) {
-            typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
+            QString typeNameRaw = QString(metaProperty.typeName());
+            // Note: since Qt6 flags are also enums, and the type name contains
+            // QFlags<Class:Enum>, therefore we need to remove additionally all < >
+            typeName = QString("$ref:%1").arg(typeNameRaw.split("::").last().remove('<').remove('>'));
         } else if (metaProperty.isFlagType()) {
             typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
         } else if (metaProperty.typeId()== QMetaType::QVariantList) {
@@ -283,9 +285,18 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 continue;
             }
 
+            // Pack enums
+            if (metaProperty.isEnumType()) {
+                QString enumName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
+                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
+                QMetaEnum metaEnum = m_metaEnums.value(enumName);
+                ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
+                continue;
+            }
+
             // Pack flags
             if (metaProperty.isFlagType()) {
-                QString flagName = QString(metaProperty.typeName()).split("::").last();
+                QString flagName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
                 Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
                 QMetaEnum metaFlag = m_metaFlags.value(flagName);
                 int flagValue = propertyValue.toInt();
@@ -297,15 +308,6 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                     }
                 }
                 ret.insert(metaProperty.name(), flags);
-                continue;
-            }
-
-            // Pack enums
-            if (metaProperty.isEnumType()) {
-                QString enumName = QString(metaProperty.typeName()).split("::").last();
-                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
-                QMetaEnum metaEnum = m_metaEnums.value(enumName);
-                ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
                 continue;
             }
 

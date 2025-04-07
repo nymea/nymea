@@ -861,12 +861,18 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     // Sanity checks on API:
     // * Make sure all $ref: entries are valid.
     // * A handler must not register a type name that is already registered by a previously loaded handler with different content.
+
+    qCDebug(dcJsonRpc()).nospace() << "Registering JSON RPC handler: " << handler->name() << ". Performing sanity check";
+
+    QVariantMap enums = m_api.value("enums").toMap();
+    QVariantMap flags = m_api.value("flags").toMap();
+    QVariantMap types = m_api.value("types").toMap();
     QVariantMap methods = m_api.value("methods").toMap();
     QVariantMap notifications = m_api.value("notifications").toMap();
+
     QVariantMap apiIncludingThis = m_api;
 
     // Verify enums name clash
-    QVariantMap enums = m_api.value("enums").toMap();
     foreach (const QString &enumName, handler->jsonEnums().keys()) {
         QVariantList list = handler->jsonEnums().value(enumName).toList();
         if (enums.contains(enumName) && enums.value(enumName) != list) {
@@ -877,7 +883,6 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     }
     apiIncludingThis["enums"] = enums;
 
-    QVariantMap flags = m_api.value("flags").toMap();
     foreach (const QString &flagName, handler->jsonFlags().keys()) {
         QVariant flagDescription = handler->jsonFlags().value(flagName);
         if (enums.contains(flagName)) {
@@ -893,12 +898,12 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     apiIncludingThis["flags"] = flags;
 
     // Verify objects
-    QVariantMap existingTypes = m_api.value("types").toMap();
-    QVariantMap typesIncludingThis = existingTypes;
-
+    QVariantMap typesIncludingThis = types;
     foreach (const QString &objectName, handler->jsonObjects().keys()) {
-        if (existingTypes.contains(objectName)) {
-            qCWarning(dcJsonRpc()) << "Object type" << objectName << "is already registered. Not registering handler" << handler->name();
+        if (types.contains(objectName) && types.value(objectName) != handler->jsonObjects().value(objectName)) {
+            qCWarning(dcJsonRpc()) << "Object type" << objectName << "is already registered and not the same. Not registering handler" << handler->name();
+            qCWarning(dcJsonRpc()) << types.value(objectName);
+            qCWarning(dcJsonRpc()) << handler->jsonObjects().value(objectName);
             return false;
         } else {
             typesIncludingThis.insert(objectName, handler->jsonObjects().value(objectName));

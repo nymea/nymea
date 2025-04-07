@@ -37,6 +37,8 @@
 #include <QUuid>
 #include <QUrl>
 
+#include "nymeasettings.h"
+
 namespace nymeaserver {
 
 class ServerConfiguration {
@@ -200,6 +202,8 @@ public:
     QString logDBPassword() const;
 
 private:
+    NymeaSettings *m_settings = nullptr;
+    NymeaSettings *m_mqttPoliciesSettings = nullptr;
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;

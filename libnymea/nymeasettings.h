@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -63,12 +63,14 @@ public:
     SettingsRole settingsRole() const;
 
     static bool isRoot();
+
     static QString settingsPath();
+    static QString defaultSettingsPath();
     static QString translationsPath();
     static QString storagePath();
     static QString cachePath();
 
-    // forwarded QSettings methods
+    // Forwarded QSettings methods
     QStringList	allKeys() const;
     void beginWriteArray(const QString &prefix);
     void setArrayIndex(int i);
@@ -89,8 +91,8 @@ public:
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
 
 private:
-    QSettings *m_settings;
-    SettingsRole m_role;
+    QSettings *m_settings = nullptr;
+    SettingsRole m_role = SettingsRoleNone;
 
 };
 

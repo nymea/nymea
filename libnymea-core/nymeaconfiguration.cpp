@@ -24,7 +24,6 @@
 
 #include "loggingcategories.h"
 #include "nymeaconfiguration.h"
-#include "nymeasettings.h"
 
 #include <QTimeZone>
 #include <QCoreApplication>
@@ -36,7 +35,9 @@ NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
 namespace nymeaserver {
 
 NymeaConfiguration::NymeaConfiguration(QObject *parent) :
-    QObject(parent)
+    QObject{parent},
+    m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)},
+    m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
 {
     // Init server uuid if we don't have one.
     QUuid id = serverUuid();
@@ -65,23 +66,21 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     setSslCertificate(sslCertificate(), sslCertificateKey());
     setDebugServerEnabled(debugServerEnabled());
 
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-
     // TcpServer
-    bool createDefaults = !settings.childGroups().contains("TcpServer");
-    if (settings.childGroups().contains("TcpServer")) {
-        settings.beginGroup("TcpServer");
-        if (settings.value("disabled").toBool()) {
+    bool createDefaults = !m_settings->childGroups().contains("TcpServer");
+    if (m_settings->childGroups().contains("TcpServer")) {
+        m_settings->beginGroup("TcpServer");
+        if (m_settings->value("disabled").toBool()) {
             qCDebug(dcConfiguration) << "TCP server disabled by configuration";
-        } else if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &key, settings.childGroups()) {
+        } else if (!m_settings->childGroups().isEmpty()) {
+            foreach (const QString &key, m_settings->childGroups()) {
                 ServerConfiguration config = readServerConfig("TcpServer", key);
                 m_tcpServerConfigs[config.id] = config;
             }
         } else {
             createDefaults = true;
         }
-        settings.endGroup();
+        m_settings->endGroup();
     }
     if (createDefaults) {
         qCWarning(dcConfiguration) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
@@ -96,20 +95,20 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     }
 
     // Webserver
-    createDefaults = !settings.childGroups().contains("WebServer");
-    if (settings.childGroups().contains("WebServer")) {
-        settings.beginGroup("WebServer");
-        if (settings.value("disabled").toBool()) {
+    createDefaults = !m_settings->childGroups().contains("WebServer");
+    if (m_settings->childGroups().contains("WebServer")) {
+        m_settings->beginGroup("WebServer");
+        if (m_settings->value("disabled").toBool()) {
             qCDebug(dcConfiguration) << "Web server disabled by configuration";
-        } else if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &key, settings.childGroups()) {
+        } else if (!m_settings->childGroups().isEmpty()) {
+            foreach (const QString &key, m_settings->childGroups()) {
                 WebServerConfiguration config = readWebServerConfig(key);
                 m_webServerConfigs[config.id] = config;
             }
         } else {
             createDefaults = true;
         }
-        settings.endGroup();
+        m_settings->endGroup();
     }
     if (createDefaults) {
         qCWarning(dcConfiguration) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
@@ -137,20 +136,20 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     }
 
     // WebSocket Server
-    createDefaults = !settings.childGroups().contains("WebSocketServer");
-    if (settings.childGroups().contains("WebSocketServer")) {
-        settings.beginGroup("WebSocketServer");
-        if (settings.value("disabled").toBool()) {
+    createDefaults = !m_settings->childGroups().contains("WebSocketServer");
+    if (m_settings->childGroups().contains("WebSocketServer")) {
+        m_settings->beginGroup("WebSocketServer");
+        if (m_settings->value("disabled").toBool()) {
             qCDebug(dcConfiguration) << "WebSocket server disabled by configuration.";
-        } else if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &key, settings.childGroups()) {
+        } else if (!m_settings->childGroups().isEmpty()) {
+            foreach (const QString &key, m_settings->childGroups()) {
                 ServerConfiguration config = readServerConfig("WebSocketServer", key);
                 m_webSocketServerConfigs[config.id] = config;
             }
         } else {
             createDefaults = true;
         }
-        settings.endGroup();
+        m_settings->endGroup();
     }
     if (createDefaults) {
         qCWarning(dcConfiguration) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
@@ -165,20 +164,20 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     }
 
     // MQTT Server
-    createDefaults = !settings.childGroups().contains("MqttServer");
-    if (settings.childGroups().contains("MqttServer")) {
-        settings.beginGroup("MqttServer");
-        if (settings.value("disabled").toBool()) {
+    createDefaults = !m_settings->childGroups().contains("MqttServer");
+    if (m_settings->childGroups().contains("MqttServer")) {
+        m_settings->beginGroup("MqttServer");
+        if (m_settings->value("disabled").toBool()) {
             qCDebug(dcConfiguration) << "MQTT server disabled by configuration.";
-        } else if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &key, settings.childGroups()) {
+        } else if (!m_settings->childGroups().isEmpty()) {
+            foreach (const QString &key, m_settings->childGroups()) {
                 ServerConfiguration config = readServerConfig("MqttServer", key);
                 m_mqttServerConfigs[config.id] = config;
             }
         } else {
             createDefaults = true;
         }
-        settings.endGroup();
+        m_settings->endGroup();
     }
     if (createDefaults) {
         qCWarning(dcConfiguration) << "No MQTT server configuration found. Generating default of 0.0.0.0:1883";
@@ -206,115 +205,123 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     }
 
     // Tunnel Proxy Server
-    if (settings.childGroups().contains("TunnelProxyServer")) {
-        settings.beginGroup("TunnelProxyServer");
-        foreach (const QString &key, settings.childGroups()) {
+    if (m_settings->childGroups().contains("TunnelProxyServer")) {
+        m_settings->beginGroup("TunnelProxyServer");
+        foreach (const QString &key, m_settings->childGroups()) {
             TunnelProxyServerConfiguration config = readTunnelProxyServerConfig(key);
             m_tunnelProxyServerConfigs[config.id] = config;
         }
-        settings.endGroup();
+        m_settings->endGroup();
     }
 
     // Write defaults for log settings
-    settings.beginGroup("Logs");
-    settings.setValue("logDBName", logDBName());
-    settings.setValue("logDBHost", logDBHost());
-    settings.setValue("logDBUser", logDBUser());
-    settings.setValue("logDBPassword", logDBPassword());
-    settings.endGroup();
+    m_settings->beginGroup("Logs");
+    m_settings->setValue("logDBName", logDBName());
+    m_settings->setValue("logDBHost", logDBHost());
+    m_settings->setValue("logDBUser", logDBUser());
+    m_settings->setValue("logDBPassword", logDBPassword());
+    m_settings->endGroup();
 }
 
 QUuid NymeaConfiguration::serverUuid() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("uuid", QUuid()).toUuid();
+    m_settings->beginGroup("nymead");
+    QUuid value = m_settings->value("uuid", QUuid()).toUuid();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::serverName() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("name", "nymea").toString();
+    m_settings->beginGroup("nymead");
+    QString value = m_settings->value("name", "nymea").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setServerName(const QString &serverName)
 {
-    qCDebug(dcConfiguration()) << "Configuration: Server name:" << serverName;
+    qCDebug(dcConfiguration()) << "Server name:" << serverName;
 
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    if (settings.value("name").toString() == serverName) {
-        qCDebug(dcConfiguration()) << "Configuration: Server name unchanged.";
-        settings.endGroup();
+    m_settings->beginGroup("nymead");
+    if (m_settings->value("name").toString() == serverName) {
+        qCDebug(dcConfiguration()) << "Server name unchanged.";
+        m_settings->endGroup();
     } else {
-        settings.setValue("name", serverName);
-        settings.endGroup();
+        m_settings->setValue("name", serverName);
+        m_settings->endGroup();
         emit serverNameChanged(serverName);
     }
 }
 
 QByteArray NymeaConfiguration::timeZone() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
+    m_settings->beginGroup("nymead");
+    QByteArray value = m_settings->value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setTimeZone(const QByteArray &timeZone)
 {
-    qCDebug(dcConfiguration()) << "Configuration: Time zone:" << QString::fromUtf8(timeZone);
+    qCDebug(dcConfiguration()) << "Time zone:" << QString::fromUtf8(timeZone);
 
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    if (settings.value("timeZone").toByteArray() == timeZone) {
-        qCDebug(dcConfiguration()) << "Configuration: Time zone unchanged.";
-        settings.endGroup();
+    m_settings->beginGroup("nymead");
+    if (m_settings->value("timeZone").toByteArray() == timeZone) {
+        qCDebug(dcConfiguration()) << "Time zone unchanged.";
+        m_settings->endGroup();
     } else {
-        settings.setValue("timeZone", timeZone);
-        settings.endGroup();
+        m_settings->setValue("timeZone", timeZone);
+        m_settings->endGroup();
         emit timeZoneChanged();
     }
 }
 
 double NymeaConfiguration::locationLatitude() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("locationLatitude").toDouble();
+    m_settings->beginGroup("nymead");
+    double value = m_settings->value("locationLatitude").toDouble();
+    m_settings->endGroup();
+    return value;
 }
 
 double NymeaConfiguration::locationLongitude() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("locationLongitude").toDouble();
+    m_settings->beginGroup("nymead");
+    double value = m_settings->value("locationLongitude").toDouble();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::locationName() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("locationName").toString();
+    m_settings->beginGroup("nymead");
+    QString value = m_settings->value("locationName").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setLocation(double latitude, double longitude, const QString &name)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    if (settings.value("locationLatitude").toDouble() != latitude || settings.value("locationLongitude").toDouble() != longitude || settings.value("locationName").toString() != name) {
-        settings.setValue("locationLatitude", latitude);
-        settings.setValue("locationLongitude", longitude);
-        settings.setValue("locationName", name);
+    m_settings->beginGroup("nymead");
+    if (m_settings->value("locationLatitude").toDouble() != latitude ||
+        m_settings->value("locationLongitude").toDouble() != longitude ||
+        m_settings->value("locationName").toString() != name) {
+
+        m_settings->setValue("locationLatitude", latitude);
+        m_settings->setValue("locationLongitude", longitude);
+        m_settings->setValue("locationName", name);
         emit locationChanged();
     }
+    m_settings->endGroup();
 }
 
 QLocale NymeaConfiguration::locale() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return QLocale(settings.value("language", "en_US").toString());
+    m_settings->beginGroup("nymead");
+    QString value = m_settings->value("language", "en_US").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setLocale(const QLocale &locale)
@@ -325,14 +332,14 @@ void NymeaConfiguration::setLocale(const QLocale &locale)
     qCDebug(dcConfiguration()) << "Configuration: Set system locale:" << locale.name() << locale.nativeTerritoryName() << locale.nativeLanguageName();
 
 #endif
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    if (settings.value("language").toString() == locale.name()) {
-        qCDebug(dcConfiguration()) << "Configuration: Language unchanged.";
-        settings.endGroup();
+
+    m_settings->beginGroup("nymead");
+    if (m_settings->value("language").toString() == locale.name()) {
+        qCDebug(dcConfiguration()) << "Language unchanged.";
+        m_settings->endGroup();
     } else {
-        settings.setValue("language", locale.name());
-        settings.endGroup();
+        m_settings->setValue("language", locale.name());
+        m_settings->endGroup();
         emit localeChanged();
     }
 }
@@ -368,13 +375,12 @@ void NymeaConfiguration::setWebServerConfiguration(const WebServerConfiguration 
     storeServerConfig("WebServer", config);
 
     // This is a bit odd that we need to open the config once more just for the publicFolder...
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("WebServer");
-    settings.beginGroup(config.id);
-    settings.setValue("publicFolder", config.publicFolder);
-    settings.setValue("restServerEnabled", config.restServerEnabled);
-    settings.endGroup();
-    settings.endGroup();
+    m_settings->beginGroup("WebServer");
+    m_settings->beginGroup(config.id);
+    m_settings->setValue("publicFolder", config.publicFolder);
+    m_settings->setValue("restServerEnabled", config.restServerEnabled);
+    m_settings->endGroup();
+    m_settings->endGroup();
 
     emit webServerConfigurationChanged(config.id);
 }
@@ -468,95 +474,104 @@ bool NymeaConfiguration::removeMqttPolicy(const QString &clientId)
 
 bool NymeaConfiguration::bluetoothServerEnabled() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("BluetoothServer");
-    return settings.value("enabled", false).toBool();
+    m_settings->beginGroup("BluetoothServer");
+    bool value = m_settings->value("enabled", false).toBool();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setBluetoothServerEnabled(bool enabled)
 {
-    qCDebug(dcConfiguration()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
+    qCDebug(dcConfiguration()) << "Bluetooth server" << (enabled ? "enabled" : "disabled");
 
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("BluetoothServer");
-    settings.setValue("enabled", enabled);
-    settings.endGroup();
+    m_settings->beginGroup("BluetoothServer");
+    m_settings->setValue("enabled", enabled);
+    m_settings->endGroup();
+
     emit bluetoothServerEnabledChanged();
 }
 
 QString NymeaConfiguration::logDBHost() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
-    return settings.value("logDBHost", "127.0.0.1").toString();
+    m_settings->beginGroup("Logs");
+    QString value = m_settings->value("logDBHost", "127.0.0.1").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::logDBName() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
+    m_settings->beginGroup("Logs");
+
     // Migration from < 1.8. Switching the driver is not supported any more.
     // As sqlite used an absolute filename which won't work as DB name in other databases
     // we'll reset the config if the user has explicitly set it.
-    if (settings.value("logDBDriver").toString() == "QSQLITE") {
-        settings.remove("logDBName");
-        settings.remove("logDBDriver");
+    if (m_settings->value("logDBDriver").toString() == "QSQLITE") {
+        m_settings->remove("logDBName");
+        m_settings->remove("logDBDriver");
     }
-    return settings.value("logDBName", "nymea").toString();
+
+    QString value = m_settings->value("logDBName", "nymea").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::logDBUser() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
-    return settings.value("logDBUser").toString();
+    m_settings->beginGroup("Logs");
+    QString value = m_settings->value("logDBUser").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::logDBPassword() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
-    return settings.value("logDBPassword").toString();
+    m_settings->beginGroup("Logs");
+    QString value = m_settings->value("logDBPassword").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::sslCertificate() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("SSL");
-    return settings.value("certificate").toString();
+    m_settings->beginGroup("SSL");
+    QString value = m_settings->value("certificate").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 QString NymeaConfiguration::sslCertificateKey() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("SSL");
-    return settings.value("certificate-key").toString();
+    m_settings->beginGroup("SSL");
+    QString value = m_settings->value("certificate-key").toString();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("SSL");
-    settings.setValue("certificate", sslCertificate);
-    settings.setValue("certificate-key", sslCertificateKey);
-    settings.endGroup();
+    m_settings->beginGroup("SSL");
+    m_settings->setValue("certificate", sslCertificate);
+    m_settings->setValue("certificate-key", sslCertificateKey);
+    m_settings->endGroup();
 }
 
 bool NymeaConfiguration::debugServerEnabled() const
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    return settings.value("debugServerEnabled", false).toBool();
+    m_settings->beginGroup("nymead");
+    bool value = m_settings->value("debugServerEnabled", false).toBool();
+    m_settings->endGroup();
+    return value;
 }
 
 void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 {
-    qCDebug(dcConfiguration()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
+    qCDebug(dcConfiguration()) << "Set debug server" << (enabled ? "enabled" : "disabled");
     bool currentValue = debugServerEnabled();
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    settings.setValue("debugServerEnabled", enabled);
-    settings.endGroup();
+
+    m_settings->beginGroup("nymead");
+    m_settings->setValue("debugServerEnabled", enabled);
+    m_settings->endGroup();
 
     if (currentValue != enabled) {
         emit debugServerEnabledChanged(enabled);
@@ -565,12 +580,11 @@ void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 
 void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 {
-    qCDebug(dcConfiguration()) << "Configuration: Server uuid:" << uuid.toString();
+    qCDebug(dcConfiguration()) << "Server uuid:" << uuid.toString();
 
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("nymead");
-    settings.setValue("uuid", uuid.toString());
-    settings.endGroup();
+    m_settings->beginGroup("nymead");
+    m_settings->setValue("uuid", uuid.toString());
+    m_settings->endGroup();
 }
 
 QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
@@ -582,123 +596,117 @@ QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
     } else {
         publicFolderPath = "/usr/share/nymea-webinterface/public/";
     }
+
     return publicFolderPath;
 }
 
 void NymeaConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup(group);
-    settings.remove("disabled");
-    settings.beginGroup(config.id);
-    settings.setValue("address", config.address);
-    settings.setValue("port", config.port);
-    settings.setValue("sslEnabled", config.sslEnabled);
-    settings.setValue("authenticationEnabled", config.authenticationEnabled);
-    settings.endGroup();
-    settings.endGroup();
+    m_settings->beginGroup(group);
+    m_settings->remove("disabled");
+    m_settings->beginGroup(config.id);
+    m_settings->setValue("address", config.address);
+    m_settings->setValue("port", config.port);
+    m_settings->setValue("sslEnabled", config.sslEnabled);
+    m_settings->setValue("authenticationEnabled", config.authenticationEnabled);
+    m_settings->endGroup();
+    m_settings->endGroup();
 }
 
 ServerConfiguration NymeaConfiguration::readServerConfig(const QString &group, const QString &id)
 {
     ServerConfiguration config;
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup(group);
-    settings.beginGroup(id);
+    m_settings->beginGroup(group);
+    m_settings->beginGroup(id);
     config.id = id;
-    config.address = settings.value("address").toString();
-    config.port = settings.value("port").toUInt();
-    config.sslEnabled = settings.value("sslEnabled", true).toBool();
-    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
-    settings.endGroup();
-    settings.endGroup();
+    config.address = m_settings->value("address").toString();
+    config.port = m_settings->value("port").toUInt();
+    config.sslEnabled = m_settings->value("sslEnabled", true).toBool();
+    config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
+    m_settings->endGroup();
+    m_settings->endGroup();
     return config;
 }
 
 void NymeaConfiguration::deleteServerConfig(const QString &group, const QString &id)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup(group);
-    settings.remove(id);
-    if (settings.childGroups().isEmpty()) {
-        settings.setValue("disabled", true);
+    m_settings->beginGroup(group);
+    m_settings->remove(id);
+    if (m_settings->childGroups().isEmpty()) {
+        m_settings->setValue("disabled", true);
     }
-    settings.endGroup();
+    m_settings->endGroup();
 }
 
 void NymeaConfiguration::storeWebServerConfig(const WebServerConfiguration &config)
 {
     storeServerConfig("WebServer", config);
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("WebServer");
-    settings.beginGroup(config.id);
-    settings.setValue("publicFolder", config.publicFolder);
-    settings.setValue("restServerEnabled", config.restServerEnabled);
-    settings.endGroup();
-    settings.endGroup();
+
+    m_settings->beginGroup("WebServer");
+    m_settings->beginGroup(config.id);
+    m_settings->setValue("publicFolder", config.publicFolder);
+    m_settings->setValue("restServerEnabled", config.restServerEnabled);
+    m_settings->endGroup();
+    m_settings->endGroup();
 }
 
 WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id)
 {
-    WebServerConfiguration config;
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("WebServer");
-    settings.beginGroup(id);
+    WebServerConfiguration config;    
+    m_settings->beginGroup("WebServer");
+    m_settings->beginGroup(id);
     config.id = id;
-    config.address = settings.value("address").toString();
-    config.port = settings.value("port").toUInt();
-    config.sslEnabled = settings.value("sslEnabled", true).toBool();
-    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
-    config.publicFolder = settings.value("publicFolder").toString();
-    config.restServerEnabled = settings.value("restServerEnabled", false).toBool();
-    settings.endGroup();
-    settings.endGroup();
+    config.address = m_settings->value("address").toString();
+    config.port = m_settings->value("port").toUInt();
+    config.sslEnabled = m_settings->value("sslEnabled", true).toBool();
+    config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
+    config.publicFolder = m_settings->value("publicFolder").toString();
+    config.restServerEnabled = m_settings->value("restServerEnabled", false).toBool();
+    m_settings->endGroup();
+    m_settings->endGroup();
     return config;
 }
 
 void NymeaConfiguration::storeTunnelProxyServerConfig(const TunnelProxyServerConfiguration &config)
 {
     storeServerConfig("TunnelProxyServer", config);
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("TunnelProxyServer");
-    settings.beginGroup(config.id);
-    settings.setValue("ignoreSslErrors", config.ignoreSslErrors);
-    settings.endGroup();
-    settings.endGroup();
+
+    m_settings->beginGroup("TunnelProxyServer");
+    m_settings->beginGroup(config.id);
+    m_settings->setValue("ignoreSslErrors", config.ignoreSslErrors);
+    m_settings->endGroup();
+    m_settings->endGroup();
 }
 
 TunnelProxyServerConfiguration NymeaConfiguration::readTunnelProxyServerConfig(const QString &id)
 {
     TunnelProxyServerConfiguration config;
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("TunnelProxyServer");
-    settings.beginGroup(id);
+    m_settings->beginGroup("TunnelProxyServer");
+    m_settings->beginGroup(id);
     config.id = id;
-    config.address = settings.value("address").toString();
-    config.port = settings.value("port").toUInt();
-    config.sslEnabled = settings.value("sslEnabled", true).toBool();
-    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
-    config.ignoreSslErrors = settings.value("ignoreSslErrors").toBool();
-    settings.endGroup();
-    settings.endGroup();
+    config.address = m_settings->value("address").toString();
+    config.port = m_settings->value("port").toUInt();
+    config.sslEnabled = m_settings->value("sslEnabled", true).toBool();
+    config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
+    config.ignoreSslErrors = m_settings->value("ignoreSslErrors").toBool();
+    m_settings->endGroup();
+    m_settings->endGroup();
     return config;
 }
 
 void NymeaConfiguration::storeMqttPolicy(const MqttPolicy &policy)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleMqttPolicies);
-    settings.beginGroup(policy.clientId);
-    settings.setValue("username", policy.username);
-    settings.setValue("password", policy.password);
-    settings.setValue("allowedPublishTopicFilters", policy.allowedPublishTopicFilters);
-    settings.setValue("allowedSubscribeTopicFilters", policy.allowedSubscribeTopicFilters);
-    settings.endGroup();
+    m_mqttPoliciesSettings->beginGroup(policy.clientId);
+    m_mqttPoliciesSettings->setValue("username", policy.username);
+    m_mqttPoliciesSettings->setValue("password", policy.password);
+    m_mqttPoliciesSettings->setValue("allowedPublishTopicFilters", policy.allowedPublishTopicFilters);
+    m_mqttPoliciesSettings->setValue("allowedSubscribeTopicFilters", policy.allowedSubscribeTopicFilters);
+    m_mqttPoliciesSettings->endGroup();
 }
 
 void NymeaConfiguration::deleteMqttPolicy(const QString &clientId)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleMqttPolicies);
-    settings.remove(clientId);
+    m_mqttPoliciesSettings->remove(clientId);
 }
 
 QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)

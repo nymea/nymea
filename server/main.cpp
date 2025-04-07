@@ -92,26 +92,26 @@ int main(int argc, char *argv[])
 
     parser.setApplicationDescription(applicationDescription);
 
-    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("nymea", "Run nymead in the foreground, not as daemon."));
+    QCommandLineOption foregroundOption({"n", "no-daemon"}, QCoreApplication::translate("nymea", "Run nymead in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QCommandLineOption quietOption(QStringList() << "q" << "quiet", QCoreApplication::translate("nymea", "Disables logging all debug, info and warning categories."));
+    QCommandLineOption quietOption({"q", "quiet"}, QCoreApplication::translate("nymea", "Disables logging all debug, info and warning categories."));
     parser.addOption(quietOption);
 
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all info and debug categories except *Traffic and *Debug categories."));
+    QCommandLineOption allOption({"p", "print-all"}, QCoreApplication::translate("nymea", "Enables all info and debug categories except *Traffic and *Debug categories."));
     parser.addOption(allOption);
 
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile");
     parser.addOption(logOption);
 
-    QCommandLineOption noColorOption({"c", "no-colors"}, QCoreApplication::translate("nymea", "Log output is colorized by default. Use this option to disable colors."));
+    QCommandLineOption noColorOption("no-colors", QCoreApplication::translate("nymea", "Log output is colorized by default. Use this option to disable colors."));
     parser.addOption(noColorOption);
 
-    QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
+    QCommandLineOption dbusOption("session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
 
     QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Suffix with \"Info\" or \"Warnings\" to address info and warning messages. Enabling a debug category will implicitly enable the according info category.\nExamples:\n-d ThingManager\n-d NoApplicationInfo\n\n");
-    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warning|Info]]");
+    QCommandLineOption debugOption({"d", "debug-category"}, debugDescription, "[No]DebugCategory[Warning|Info]]");
     parser.addOption(debugOption);
 
     QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777). Note that such interfaces will not require any authentication as they are intended to be used for automated testing only."), "interfaceString");
@@ -119,6 +119,9 @@ int main(int argc, char *argv[])
 
     QCommandLineOption noLogDbOption({"m", "no-logengine"}, QCoreApplication::translate("nymea", "Disable the influx DB log engine."));
     parser.addOption(noLogDbOption);
+
+    QCommandLineOption configurationOption({"c", "config"}, QCoreApplication::translate("nymea", "Uses the given <path> for storing configurations. Using this option will override the NYMEA_CONFIG_PATH environment variable.", "path"));
+    parser.addOption(configurationOption);
 
     parser.process(application);
 
@@ -237,6 +240,19 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "Snap app data   :" << qgetenv("SNAP_DATA");
             qCInfo(dcApplication()) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
             qCInfo(dcApplication()) << "Snap app common :" << qgetenv("SNAP_COMMON");
+        }
+
+        if (parser.isSet(configurationOption)) {
+            QString configPath = parser.value(configurationOption);
+            qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
+            if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+                QString configPathEnv = qgetenv("NYMEA_CONFIG_PATH");
+                if (configPathEnv != configPathEnv) {
+                    qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
+                }
+            }
+
+            qputenv("NYMEA_CONFIG_PATH", configPath.toUtf8());
         }
 
         // create core instance

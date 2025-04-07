@@ -152,7 +152,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Enable or disable the debug server.";
-    params.insert("enabled",  enumValueName(String));
+    params.insert("enabled", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetDebugServerEnabled", description, params, returns);
 

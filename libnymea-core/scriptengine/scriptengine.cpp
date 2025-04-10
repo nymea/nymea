@@ -367,7 +367,7 @@ void ScriptEngine::loadScripts()
         }
 
         Script *script = new Script();
-        script->setId(jsonFileInfo.baseName());
+        script->setId(QUuid(jsonFileInfo.baseName()));
         script->setName(jsonDoc.toVariant().toMap().value("name").toString());
 
         bool loaded = loadScript(script);
@@ -449,14 +449,14 @@ void ScriptEngine::unloadScript(Script *script)
 QString ScriptEngine::baseName(const QUuid &id)
 {
     QString path = NymeaSettings::storagePath() + "/scripts/";
-    QString basename = id.toString().remove(QRegExp("[{}]"));
+    QString basename = id.toString().remove(QRegularExpression("[{}]"));
     return path + basename;
 }
 
 void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     QFileInfo fi(context.file);
-    QUuid scriptId = fi.baseName();
+    QUuid scriptId(fi.baseName());
     if (!m_scripts.contains(scriptId)) {
         return;
     }

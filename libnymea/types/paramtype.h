@@ -43,7 +43,7 @@ class LIBNYMEA_EXPORT ParamType
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
-    Q_PROPERTY(QVariant::Type type READ type WRITE setType)
+    Q_PROPERTY(QMetaType::Type type READ type WRITE setType)
     Q_PROPERTY(int index READ index WRITE setIndex)
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue USER true)
     Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
@@ -55,7 +55,7 @@ class LIBNYMEA_EXPORT ParamType
 
 public:
     ParamType() = default;
-    ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
+    ParamType(const ParamTypeId &id, const QString &name, const QMetaType::Type type, const QVariant &defaultValue = QVariant());
 
     ParamTypeId id() const;
 
@@ -68,8 +68,8 @@ public:
     int index() const;
     void setIndex(const int &index);
 
-    QVariant::Type type() const;
-    void setType(QVariant::Type type);
+    QMetaType::Type type() const;
+    void setType(QMetaType::Type type);
 
     QVariant defaultValue() const;
     void setDefaultValue(const QVariant &defaultValue);
@@ -105,7 +105,7 @@ private:
     QString m_name;
     QString m_displayName;
     int m_index;
-    QVariant::Type m_type;
+    QMetaType::Type m_type;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;

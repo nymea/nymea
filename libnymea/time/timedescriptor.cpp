@@ -119,7 +119,7 @@ bool TimeDescriptor::evaluate(const QDateTime &lastEvaluationTime, const QDateTi
 QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "TimeDescriptor (TimeEventItems:" << timeDescriptor.timeEventItems().count() << ", CalendarItems:" << timeDescriptor.calendarItems().count() << ")" << endl;
+    dbg.nospace() << "TimeDescriptor (TimeEventItems:" << timeDescriptor.timeEventItems().count() << ", CalendarItems:" << timeDescriptor.calendarItems().count() << ")" << Qt::endl;
     for (int i = 0; i < timeDescriptor.timeEventItems().count(); i++) {
         dbg.nospace() << "  " << i << ": " << timeDescriptor.timeEventItems().at(i);
     }

@@ -272,9 +272,11 @@ void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
     case Zigbee::ZigbeeBackendTypeNxp:
         settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeNxp));
         break;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     case Zigbee::ZigbeeBackendTypeTi:
         settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeTi));
         break;
+#endif
     }
     settings.setValue("panId", network->panId());
     settings.setValue("channel", network->channel());
@@ -452,9 +454,11 @@ ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeA
     case ZigbeeAdapter::ZigbeeBackendTypeNxp:
         network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeNxp, this);
         break;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     case ZigbeeAdapter::ZigbeeBackendTypeTi:
         network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeTi, this);
         break;
+#endif
     }
     if (network) {
         network->setSettingsDirectory(QDir(NymeaSettings::settingsPath()));
@@ -638,9 +642,11 @@ ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter
     case Zigbee::ZigbeeBackendTypeNxp:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeNxp);
         break;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     case Zigbee::ZigbeeBackendTypeTi:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeTi);
         break;
+#endif
     }
     return adapter;
 }

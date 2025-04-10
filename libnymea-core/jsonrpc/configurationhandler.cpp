@@ -753,7 +753,7 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", NymeaCore::instance()->configuration()->serverName());
     basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toTime_t());
+    basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toSecsSinceEpoch());
     basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
     basicConfiguration.insert("location", QVariantMap{

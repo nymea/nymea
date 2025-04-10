@@ -336,8 +336,8 @@ void IntegrationPluginMock::startMonitoringAutoThings()
     ThingDescriptor mockDescriptor(autoMockThingClassId, "Mocked Thing (Auto created)");
 
     ParamList params;
-    qsrand(QDateTime::currentMSecsSinceEpoch());
-    int port = 4242 + (qrand() % 1000);
+    std::srand(QDateTime::currentMSecsSinceEpoch());
+    int port = 4242 + (std::rand() % 1000);
     Param param(autoMockThingHttpportParamTypeId, port);
     params.append(param);
     mockDescriptor.setParams(params);

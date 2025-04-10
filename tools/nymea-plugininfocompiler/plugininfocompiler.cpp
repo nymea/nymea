@@ -74,8 +74,8 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
             spacer += ' ';
         }
         QDebug dbg = qWarning().nospace().noquote();
-        dbg << inputFile << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << endl;
-        dbg << data << endl;
+        dbg << inputFile << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << Qt::endl;
+        dbg << data << Qt::endl;
         dbg << spacer << "^";
         return 1;
     }
@@ -132,7 +132,7 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
             qDebug() << "Created translations dir";
         }
 
-        QFile f(translationsPath + '/' + metadata.pluginId().toString().remove(QRegExp("[{}]")) + "-en_US.ts");
+        QFile f(translationsPath + '/' + metadata.pluginId().toString().remove(QRegularExpression("[{}]")) + "-en_US.ts");
         QByteArray translationsStub = "<?xml version=\"1.0\" encoding=\"utf-8\"?><!DOCTYPE TS><TS version=\"2.1\"></TS>";
         if (!f.exists()) {
             if (!f.open(QFile::WriteOnly | QFile::Text)) {

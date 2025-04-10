@@ -98,14 +98,14 @@ void StateType::setIndex(const int &index)
     m_index = index;
 }
 
-/*! Returns the Type of the StateType (e.g. QVariant::Real). */
-QVariant::Type StateType::type() const
+/*! Returns the Type of the StateType (e.g. QMetaType::Real). */
+QMetaType::Type StateType::type() const
 {
     return m_type;
 }
 
-/*! Set the type fo the StateType to \a type (e.g. QVariant::Real). */
-void StateType::setType(const QVariant::Type &type)
+/*! Set the type fo the StateType to \a type (e.g. QMetaType::Real). */
+void StateType::setType(const QMetaType::Type &type)
 {
     m_type = type;
 }
@@ -241,7 +241,7 @@ void StateType::setFilter(Types::StateValueFilter filter)
 /*! Returns true if this state type has an ID, a type and a name set. */
 bool StateType::isValid() const
 {
-    return !m_id.isNull() && m_type != QVariant::Invalid && !m_name.isEmpty();
+    return !m_id.isNull() && m_type != QMetaType::UnknownType && !m_name.isEmpty();
 }
 
 StateTypes::StateTypes(const QList<StateType> &other)

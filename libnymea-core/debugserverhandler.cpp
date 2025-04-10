@@ -673,7 +673,7 @@ void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatu
 {
     qCDebug(dcDebugServer()) << "Ping process finished" << exitCode << exitStatus;
     QByteArray processOutput = m_pingProcess->readAll();
-    qCDebug(dcDebugServer()) << "Ping output:" << endl << qUtf8Printable(processOutput);
+    qCDebug(dcDebugServer()) << "Ping output:" << Qt::endl << qUtf8Printable(processOutput);
 
     if (m_pingReply) {
         m_pingReply->setPayload(processOutput);
@@ -690,7 +690,7 @@ void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus
 {
     qCDebug(dcDebugServer()) << "Dig process finished" << exitCode << exitStatus;
     QByteArray processOutput = m_digProcess->readAll();
-    qCDebug(dcDebugServer()) << "Dig output:" << endl << qUtf8Printable(processOutput);
+    qCDebug(dcDebugServer()) << "Dig output:" << Qt::endl << qUtf8Printable(processOutput);
 
     if (m_digReply) {
         m_digReply->setPayload(processOutput);
@@ -707,7 +707,7 @@ void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::Exit
 {
     qCDebug(dcDebugServer()) << "Tracepath process finished" << exitCode << exitStatus;
     QByteArray processOutput = m_tracePathProcess->readAll();
-    qCDebug(dcDebugServer()) << "Tracepath output:" << endl << qUtf8Printable(processOutput);
+    qCDebug(dcDebugServer()) << "Tracepath output:" << Qt::endl << qUtf8Printable(processOutput);
 
     if (m_tracePathReply) {
         m_tracePathReply->setPayload(processOutput);

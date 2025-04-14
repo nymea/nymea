@@ -274,32 +274,37 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(Thing *thing)
         connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
     }
 
-    // Find and set the network device info
-    for (int i = 0; i < m_networkInfoCache.count(); i++) {
-        const NetworkDeviceInfo networkDeviceInfo = m_networkInfoCache.at(i);
+    if (address == QHostAddress::LocalHost || hostName == "localhost") {
+        // Special case, we create for localhost a networkdevice info, since we are not discovering localhost
+        internalMonitor->setNetworkDeviceInfo(NetworkDeviceInfo(QHostAddress("127.0.0.1")));
+    } else {
+        // Find and set the network device info
+        for (int i = 0; i < m_networkInfoCache.count(); i++) {
+            const NetworkDeviceInfo networkDeviceInfo = m_networkInfoCache.at(i);
 
-        switch (internalMonitor->monitorMode()) {
-        case NetworkDeviceInfo::MonitorModeMac:
-            // Search the unique mac address
-            if (networkDeviceInfo.macAddressInfos().hasMacAddress(internalMonitor->macAddress())) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "MAC monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+            switch (internalMonitor->monitorMode()) {
+            case NetworkDeviceInfo::MonitorModeMac:
+                // Search the unique mac address
+                if (networkDeviceInfo.macAddressInfos().hasMacAddress(internalMonitor->macAddress())) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MAC monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
+            case NetworkDeviceInfo::MonitorModeHostName:
+                // Search the hostname in the cache
+                if (networkDeviceInfo.hostName() == internalMonitor->hostName()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "Host name monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
+            case NetworkDeviceInfo::MonitorModeIp:
+                // Search the IP in the cache
+                if (networkDeviceInfo.address() == internalMonitor->address()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "IP monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
             }
-            break;
-        case NetworkDeviceInfo::MonitorModeHostName:
-            // Search the hostname in the cache
-            if (networkDeviceInfo.hostName() == internalMonitor->hostName()) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "Host name monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
-            }
-            break;
-        case NetworkDeviceInfo::MonitorModeIp:
-            // Search the IP in the cache
-            if (networkDeviceInfo.address() == internalMonitor->address()) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "IP monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
-            }
-            break;
         }
     }
 
@@ -609,6 +614,11 @@ void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
 
     qCInfo(dcNetworkDeviceDiscovery()) << "Loaded" << m_networkInfoCache.count() << "network device infos from cache.";
 
+    // Add the localhost
+    NetworkDeviceInfo localhostInfo(QHostAddress::LocalHost);
+    localhostInfo.setHostName("localhost");
+    m_networkInfoCache.append(localhostInfo);
+
     // We just did some housekeeping while loading from the cache
     m_lastCacheHousekeeping = QDateTime::currentDateTime();
 }
@@ -630,7 +640,7 @@ void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const QHostAddress
 
 void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo)
 {
-    if (!deviceInfo.isValid() || !deviceInfo.isComplete())
+    if (!deviceInfo.isValid() || !deviceInfo.isComplete() || deviceInfo.address() == QHostAddress::LocalHost)
         return;
 
     m_cacheSettings->beginGroup("NetworkDeviceInfos");

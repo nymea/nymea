@@ -162,7 +162,9 @@ void Ping::sendNextReply()
         return;
 
     m_currentReply = m_replyQueue.dequeue();
-    qCDebug(dcPing()).nospace().noquote() << "Send next reply " << m_currentReply->targetHostAddress().toString() << " ID: " << QString("0x%1").arg(m_currentReply->requestId(), 4, 16, QChar('0')) << ", " << m_replyQueue.count() << "left in queue";
+    qCDebug(dcPing()).nospace().noquote() << "Send next reply " << m_currentReply->targetHostAddress().toString()
+                                          << " ID: " << QString("0x%1").arg(m_currentReply->requestId(), 4, 16, QChar('0'))
+                                          << ", " << m_replyQueue.count() << " left in queue";
     m_queueTimer->start();
     QTimer::singleShot(0, this, [=]() {
         if (!m_currentReply)
@@ -194,8 +196,6 @@ void Ping::performPing(PingReply *reply)
     pingAddress.sin_family = hostname->h_addrtype;
     pingAddress.sin_port = 0;
     pingAddress.sin_addr.s_addr = *(long*)hostname->h_addr;
-
-    QHostAddress targetHostAddress = QHostAddress(qFromBigEndian(pingAddress.sin_addr.s_addr));
 
     // Build the ICMP echo request packet
     struct icmpPacket requestPacket;
@@ -593,9 +593,23 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
                 qCWarning(dcPing()) << "Looked up address finished succesfully but there are no addresses available for" << info.hostName();
                 pingError = PingReply::ErrorHostNameNotFound;
             } else {
-                reply->m_targetHostAddress = info.addresses().first();
-                reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(reply->targetHostAddress());
-                pingError = PingReply::ErrorNoError;
+                QHostAddress targetHostAddress;
+                foreach (const QHostAddress &lookedUpAddress, info.addresses()) {
+                    // Select the first valid IPv4 address, skip IPv6
+                    if (!lookedUpAddress.isNull() && lookedUpAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+                        targetHostAddress = lookedUpAddress;
+                        break;
+                    }
+                }
+
+                if (targetHostAddress.isNull()) {
+                    qCDebug(dcPing()) << "No IPv4 address found in looked up addresses:" << reply->hostName() << info.addresses();
+                    pingError = PingReply::ErrorHostNameNotFound;
+                } else {
+                    reply->m_targetHostAddress = targetHostAddress;
+                    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(reply->targetHostAddress());
+                    pingError = PingReply::ErrorNoError;
+                }
             }
             break;
         case QHostInfo::HostNotFound:

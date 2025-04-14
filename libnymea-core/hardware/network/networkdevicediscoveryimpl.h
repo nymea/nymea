@@ -139,8 +139,6 @@ private:
 
     void processArpTraffic(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
 
-    void testPingMonitor(NetworkDeviceMonitorImpl *monitor);
-
     // Time helpers
     bool longerAgoThan(const QDateTime &dateTime, uint minutes);
     QDateTime convertMinuteBased(const QDateTime &dateTime = QDateTime());

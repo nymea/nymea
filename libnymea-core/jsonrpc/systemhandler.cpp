@@ -270,7 +270,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->systemController(), &PlatformSystemController::timeConfigurationChanged, this, [this](){
         QVariantMap params;
-        params.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
+        params.insert("time", QDateTime::currentMSecsSinceEpoch() / 1000);
         params.insert("timeZone", QTimeZone::systemTimeZoneId());
         params.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
         params.insert("automaticTime", m_platform->systemController()->automaticTime());
@@ -401,7 +401,7 @@ JsonReply *SystemHandler::GetTime(const QVariantMap &params) const
     QVariantMap returns;
     returns.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
     returns.insert("automaticTime", m_platform->systemController()->automaticTime());
-    returns.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
+    returns.insert("time", QDateTime::currentMSecsSinceEpoch() / 1000);
     returns.insert("timeZone", QTimeZone::systemTimeZoneId());
     return createReply(returns);
 }

@@ -263,7 +263,7 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(Thing *thing)
     } else {
         // Create a new monitor for the internal use
         internalMonitor = new NetworkDeviceMonitorImpl(macAddress, hostName, address, this);
-        m_monitors.insert(internalMonitor, QVector<NetworkDeviceMonitorImpl*>());
+        m_monitors.insert(internalMonitor, QVector<NetworkDeviceMonitorImpl *>());
     }
 
     internalMonitor->setMonitorMode(mode);
@@ -274,32 +274,37 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(Thing *thing)
         connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
     }
 
-    // Find and set the network device info
-    for (int i = 0; i < m_networkInfoCache.count(); i++) {
-        const NetworkDeviceInfo networkDeviceInfo = m_networkInfoCache.at(i);
+    if (address == QHostAddress::LocalHost || hostName == "localhost") {
+        // Special case, we create for localhost a networkdevice info, since we are not discovering localhost
+        internalMonitor->setNetworkDeviceInfo(NetworkDeviceInfo(QHostAddress("127.0.0.1")));
+    } else {
+        // Find and set the network device info
+        for (int i = 0; i < m_networkInfoCache.count(); i++) {
+            const NetworkDeviceInfo networkDeviceInfo = m_networkInfoCache.at(i);
 
-        switch (internalMonitor->monitorMode()) {
-        case NetworkDeviceInfo::MonitorModeMac:
-            // Search the unique mac address
-            if (networkDeviceInfo.macAddressInfos().hasMacAddress(internalMonitor->macAddress())) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "MAC monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+            switch (internalMonitor->monitorMode()) {
+            case NetworkDeviceInfo::MonitorModeMac:
+                // Search the unique mac address
+                if (networkDeviceInfo.macAddressInfos().hasMacAddress(internalMonitor->macAddress())) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MAC monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
+            case NetworkDeviceInfo::MonitorModeHostName:
+                // Search the hostname in the cache
+                if (networkDeviceInfo.hostName() == internalMonitor->hostName()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "Host name monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
+            case NetworkDeviceInfo::MonitorModeIp:
+                // Search the IP in the cache
+                if (networkDeviceInfo.address() == internalMonitor->address()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "IP monitor:" << networkDeviceInfo;
+                    internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
+                }
+                break;
             }
-            break;
-        case NetworkDeviceInfo::MonitorModeHostName:
-            // Search the unique mac address
-            if (networkDeviceInfo.hostName() == internalMonitor->hostName()) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "Host name monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
-            }
-            break;
-        case NetworkDeviceInfo::MonitorModeIp:
-            // Search the unique mac address
-            if (networkDeviceInfo.address() == internalMonitor->address()) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "IP monitor:" << networkDeviceInfo;
-                internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
-            }
-            break;
         }
     }
 
@@ -609,6 +614,11 @@ void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
 
     qCInfo(dcNetworkDeviceDiscovery()) << "Loaded" << m_networkInfoCache.count() << "network device infos from cache.";
 
+    // Add the localhost
+    NetworkDeviceInfo localhostInfo(QHostAddress::LocalHost);
+    localhostInfo.setHostName("localhost");
+    m_networkInfoCache.append(localhostInfo);
+
     // We just did some housekeeping while loading from the cache
     m_lastCacheHousekeeping = QDateTime::currentDateTime();
 }
@@ -630,7 +640,7 @@ void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const QHostAddress
 
 void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo)
 {
-    if (!deviceInfo.isValid() || !deviceInfo.isComplete())
+    if (!deviceInfo.isValid() || !deviceInfo.isComplete() || deviceInfo.address() == QHostAddress::LocalHost)
         return;
 
     m_cacheSettings->beginGroup("NetworkDeviceInfos");
@@ -857,7 +867,7 @@ void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &inte
 
 bool NetworkDeviceDiscoveryImpl::longerAgoThan(const QDateTime &dateTime, uint seconds)
 {
-    uint duration = (QDateTime::currentDateTime().toMSecsSinceEpoch() - dateTime.toMSecsSinceEpoch()) / 1000.0;
+    uint duration = (QDateTime::currentMSecsSinceEpoch() - dateTime.toMSecsSinceEpoch()) / 1000.0;
     return duration >= seconds;
 }
 
@@ -905,9 +915,7 @@ NetworkDeviceMonitorImpl *NetworkDeviceDiscoveryImpl::createPluginMonitor(Networ
     });
 
     // In case the plugin user is deleting the monitor object, we need to clean up here and check if we can remove the internal monitor
-    connect(pluginMonitor, &NetworkDeviceDiscoveryImpl::destroyed, this, [this, pluginMonitor](QObject *) {
-        cleanupPluginMonitor(pluginMonitor);
-    });
+    connect(pluginMonitor, &NetworkDeviceMonitorImpl::destroyed, this, &NetworkDeviceDiscoveryImpl::onPluginMonitorDeleted);
 
     return pluginMonitor;
 }
@@ -918,6 +926,7 @@ void NetworkDeviceDiscoveryImpl::cleanupPluginMonitor(NetworkDeviceMonitorImpl *
     foreach (NetworkDeviceMonitorImpl *internalMonitor, m_monitors.keys()) {
         if (m_monitors.value(internalMonitor).contains(pluginMonitor)) {
             m_monitors[internalMonitor].removeAll(pluginMonitor);
+            disconnect(pluginMonitor, &NetworkDeviceMonitorImpl::destroyed, this, &NetworkDeviceDiscoveryImpl::onPluginMonitorDeleted);
             pluginMonitor->deleteLater();
 
             if (m_monitors.value(internalMonitor).isEmpty()) {
@@ -1004,6 +1013,11 @@ void NetworkDeviceDiscoveryImpl::finishDiscovery()
     if (m_currentDiscoveryReply) {
         m_currentDiscoveryReply->processDiscoveryFinished();
     }
+}
+
+void NetworkDeviceDiscoveryImpl::onPluginMonitorDeleted(QObject *)
+{
+    cleanupPluginMonitor(qobject_cast<NetworkDeviceMonitorImpl *>(sender()));
 }
 
 }

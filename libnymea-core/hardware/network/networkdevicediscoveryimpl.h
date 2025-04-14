@@ -154,6 +154,8 @@ private slots:
     void evaluateMonitors();
     void finishDiscovery();
 
+    void onPluginMonitorDeleted(QObject *);
+
 };
 
 }

@@ -1,3 +1,11 @@
+nymea (1.13.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * NetworkDiscovery: Add localhost functionality, hostlookup and
+    cleanup
+
+ -- jenkins <developer@nymea.io>  Tue, 15 Apr 2025 15:25:13 +0200
+
 nymea (1.11.0) jammy; urgency=medium
 
   [ Simon Stürz ]

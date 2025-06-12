@@ -212,7 +212,7 @@ private:
     QString defaultWebserverPublicFolderPath() const;
 
     void storeServerConfig(const QString &group, const ServerConfiguration &config);
-    ServerConfiguration readServerConfig(const QString &group, const QString &id);
+    ServerConfiguration readServerConfig(const QString &id);
     void deleteServerConfig(const QString &group, const QString &id);
     void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);

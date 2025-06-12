@@ -71,10 +71,10 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     if (m_settings->childGroups().contains("TcpServer")) {
         m_settings->beginGroup("TcpServer");
         if (m_settings->value("disabled").toBool()) {
-            qCDebug(dcConfiguration) << "TCP server disabled by configuration";
+            qCDebug(dcConfiguration()) << "TCP server disabled by configuration";
         } else if (!m_settings->childGroups().isEmpty()) {
             foreach (const QString &key, m_settings->childGroups()) {
-                ServerConfiguration config = readServerConfig("TcpServer", key);
+                ServerConfiguration config = readServerConfig(key);
                 m_tcpServerConfigs[config.id] = config;
             }
         } else {
@@ -83,7 +83,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         m_settings->endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcConfiguration) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
+        qCWarning(dcConfiguration()) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0").toString();
@@ -143,7 +143,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
             qCDebug(dcConfiguration) << "WebSocket server disabled by configuration.";
         } else if (!m_settings->childGroups().isEmpty()) {
             foreach (const QString &key, m_settings->childGroups()) {
-                ServerConfiguration config = readServerConfig("WebSocketServer", key);
+                ServerConfiguration config = readServerConfig(key);
                 m_webSocketServerConfigs[config.id] = config;
             }
         } else {
@@ -171,7 +171,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
             qCDebug(dcConfiguration) << "MQTT server disabled by configuration.";
         } else if (!m_settings->childGroups().isEmpty()) {
             foreach (const QString &key, m_settings->childGroups()) {
-                ServerConfiguration config = readServerConfig("MqttServer", key);
+                ServerConfiguration config = readServerConfig(key);
                 m_mqttServerConfigs[config.id] = config;
             }
         } else {
@@ -613,17 +613,15 @@ void NymeaConfiguration::storeServerConfig(const QString &group, const ServerCon
     m_settings->endGroup();
 }
 
-ServerConfiguration NymeaConfiguration::readServerConfig(const QString &group, const QString &id)
+ServerConfiguration NymeaConfiguration::readServerConfig(const QString &id)
 {
     ServerConfiguration config;
-    m_settings->beginGroup(group);
     m_settings->beginGroup(id);
     config.id = id;
     config.address = m_settings->value("address").toString();
     config.port = m_settings->value("port").toUInt();
     config.sslEnabled = m_settings->value("sslEnabled", true).toBool();
     config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
-    m_settings->endGroup();
     m_settings->endGroup();
     return config;
 }

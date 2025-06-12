@@ -159,6 +159,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
+            qCDebug(dcServerManager()) << "Started TCP server" << tcpServer->serverUrl().toString();
             registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
         }
     }
@@ -173,6 +174,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
+            qCDebug(dcServerManager()) << "Started WebSocket server" << webSocketServer->serverUrl().toString();
             registerZeroConfService(config, "ws", "_ws._tcp");
         }
     }

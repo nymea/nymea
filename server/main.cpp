@@ -52,7 +52,6 @@
 #include "nymeadbusservice.h"
 #include "nymeaapplication.h"
 #include "loggingcategories.h"
-#include "logging/logengine.h"
 #include "version.h"
 
 NYMEA_LOGGING_CATEGORY(dcApplication, "Application")
@@ -125,7 +124,7 @@ int main(int argc, char *argv[])
     QCommandLineOption noLogDbOption({"m", "no-logengine"}, QCoreApplication::translate("nymea", "Disable the influx DB log engine."));
     parser.addOption(noLogDbOption);
 
-    QCommandLineOption configurationOption({"c", "config"}, QCoreApplication::translate("nymea", "Uses the given <path> for storing configurations. Using this option will override the NYMEA_CONFIG_PATH environment variable.", "path"));
+    QCommandLineOption configurationOption({"c", "configuration"}, QCoreApplication::translate("nymea", "Uses the given <path> for storing configurations. Using this option will override the NYMEA_CONFIG_PATH environment variable."), "path");
     parser.addOption(configurationOption);
 
     parser.process(application);
@@ -233,7 +232,7 @@ int main(int argc, char *argv[])
         qCInfo(dcApplication()) << "Parameters:" << arguments.join(' ');
 
         // If running in a snappy environment, print out some details about it.
-        if (!qgetenv("SNAP").isEmpty()) {
+        if (!qEnvironmentVariableIsEmpty("SNAP")) {
             // Note: https://snapcraft.io/docs/environment-variables
             qCInfo(dcApplication()) << "Snap name       :" << qgetenv("SNAP_NAME");
             qCInfo(dcApplication()) << "Snap version    :" << qgetenv("SNAP_VERSION");

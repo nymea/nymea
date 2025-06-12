@@ -153,6 +153,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
+            qCDebug(dcServerManager()) << "Started TCP server" << tcpServer->serverUrl().toString();
             registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
         }
     }
@@ -162,6 +163,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
+            qCDebug(dcServerManager()) << "Started WebSocket server" << webSocketServer->serverUrl().toString();
             registerZeroConfService(config, "ws", "_ws._tcp");
         }
     }
@@ -170,6 +172,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     m_bluetoothServer = new BluetoothServer(this);
     m_jsonServer->registerTransportInterface(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {
+        qCDebug(dcServerManager()) << "Started Bluetooth server";
         m_bluetoothServer->startServer();
     }
 

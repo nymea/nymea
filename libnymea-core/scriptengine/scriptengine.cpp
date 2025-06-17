@@ -112,8 +112,8 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QOb
 
 
     QDir dir;
-    if (!dir.exists(NymeaSettings::storagePath() + "/scripts/")) {
-        dir.mkpath(NymeaSettings::storagePath() + "/scripts/");
+    if (!dir.exists(NymeaSettings::scriptsPath())) {
+        dir.mkpath(NymeaSettings::scriptsPath());
     }
 
     loadScripts();
@@ -335,10 +335,10 @@ ScriptEngine::ScriptError ScriptEngine::removeScript(const QUuid &id)
 
 void ScriptEngine::loadScripts()
 {
-    QDir dir(NymeaSettings::storagePath() + "/scripts/");
+    QDir dir(NymeaSettings::scriptsPath());
     foreach (const QString &entry, dir.entryList({"*.json"})) {
         qCDebug(dcScriptEngine()) << "Have script:" << entry;
-        QFileInfo jsonFileInfo(NymeaSettings::storagePath() + "/scripts/" + entry);
+        QFileInfo jsonFileInfo(NymeaSettings::scriptsPath() + entry);
         QString jsonFileName = jsonFileInfo.absoluteFilePath();
         QString scriptFileName = jsonFileInfo.absolutePath() + "/" + jsonFileInfo.baseName() +  ".qml";
         if (!QFile::exists(scriptFileName)) {

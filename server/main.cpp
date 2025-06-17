@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     // check if there are local translations
     if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
         if (!translator.load(QLocale::system(), application.applicationName(), "-", NymeaSettings::translationsPath(), ".qm"))
-            qCWarning(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << '\n' << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << '\n' << NymeaSettings::translationsPath();
+            qDebug(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << NymeaSettings::translationsPath();
 
 
 

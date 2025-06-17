@@ -94,7 +94,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     qCDebug(dcPlatform()) << "Loading platform abstraction";
     m_platform = new Platform(this);
 
-    qCDebug(dcCore()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
+    qCDebug(dcCore()) << "Loading nymea configurations from" << QFileInfo(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName()).absoluteFilePath();
     m_configuration = new NymeaConfiguration(this);
 
     qCDebug(dcCore()) << "Creating Time Manager";
@@ -108,7 +108,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_timeManager = new TimeManager(this);
 
     qCDebug(dcCore()) << "Creating User Manager";
-    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+    m_userManager = new UserManager(NymeaSettings::privodeFromDefaultFilePath("user-db.sqlite"), this);
 
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);

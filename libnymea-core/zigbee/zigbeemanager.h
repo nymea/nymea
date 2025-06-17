@@ -112,6 +112,8 @@ private:
     void saveNetwork(ZigbeeNetwork *network);
     void loadZigbeeNetworks();
     void checkPlatformConfiguration();
+    void loadPlatformConfiguration();
+    bool loadedPlatformConfiguration(const QFileInfo &configurationFileInfo);
     bool networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter);
     ZigbeeNetwork *createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
 

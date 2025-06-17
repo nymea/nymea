@@ -62,11 +62,15 @@ public:
 
     SettingsRole settingsRole() const;
 
+    // Creates the file from defaults if it does not exist yet
+    static QString privodeFromDefaultFilePath(const QString &fileName);
+
     static bool isRoot();
 
     static QString settingsPath();
     static QString defaultSettingsPath();
     static QString translationsPath();
+    static QString scriptsPath();
     static QString storagePath();
     static QString cachePath();
 

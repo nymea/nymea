@@ -136,12 +136,22 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         break;
     }
 
-    QString filePath = NymeaSettings::settingsPath() + QDir::separator() + fileName;
+    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(fileName), QSettings::IniFormat, this);
+}
 
+/*! Destructor of the NymeaSettings.*/
+NymeaSettings::~NymeaSettings()
+{
+    m_settings->sync();
+    delete m_settings;
+}
+
+QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)
+{
     QFileInfo settingsFileInfo(filePath);
     if (!settingsFileInfo.exists()) {
         // Settings file does not exist yet, check if we have a default version of the file
-        QFileInfo defaultSettingsFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + fileName);
+        QFileInfo defaultSettingsFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + settingsFileInfo.fileName());
         if (defaultSettingsFileInfo.exists()) {
             qCDebug(dcSystem()) << "No configuration file found in" << settingsFileInfo.absolutePath() << "using"
                                 << defaultSettingsFileInfo.absoluteFilePath() << "as default settings.";
@@ -166,14 +176,7 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         }
     }
 
-    m_settings = new QSettings(filePath, QSettings::IniFormat, this);
-}
-
-/*! Destructor of the NymeaSettings.*/
-NymeaSettings::~NymeaSettings()
-{
-    m_settings->sync();
-    delete m_settings;
+    return settingsFileInfo.absoluteFilePath();
 }
 
 /*! Returns the \l{SettingsRole} of this \l{NymeaSettings}.*/
@@ -246,6 +249,11 @@ QString NymeaSettings::translationsPath()
     }
 
     return QDir(path).absolutePath();
+}
+
+QString NymeaSettings::scriptsPath()
+{
+    return NymeaSettings::storagePath() + "/scripts/";
 }
 
 /*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */

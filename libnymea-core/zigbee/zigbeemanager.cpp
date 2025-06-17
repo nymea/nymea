@@ -410,6 +410,67 @@ void ZigbeeManager::checkPlatformConfiguration()
     }
 }
 
+void ZigbeeManager::loadPlatformConfiguration()
+{
+    if (loadedPlatformConfiguration(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf"))
+        return;
+
+    if (loadedPlatformConfiguration(NymeaSettings::defaultSettingsPath() + QDir::separator() + "zigbee-platform.conf"))
+        return;
+
+    qCDebug(dcZigbee()) << "No platform configuration applied";
+}
+
+bool ZigbeeManager::loadedPlatformConfiguration(const QFileInfo &configurationFileInfo)
+{
+    bool success = false;
+    if (!configurationFileInfo.exists()) {
+        qCDebug(dcZigbee()) << "There is no platform configuration file " << configurationFileInfo.absoluteFilePath();
+        return success;
+    }
+
+    qCDebug(dcZigbee()) << "Found zigbee platform configuration" << configurationFileInfo.absoluteFilePath();
+    QSettings platformSettings(configurationFileInfo.absoluteFilePath(), QSettings::IniFormat);
+    QString serialPort = platformSettings.value("serialPort").toString();
+    qint32 baudRate = platformSettings.value("baudRate").toUInt();
+    QString backendString = platformSettings.value("backend").toString();
+    m_autoSetupAdapters = platformSettings.value("autoSetup").toBool();
+    Zigbee::ZigbeeBackendType backenType = Zigbee::ZigbeeBackendTypeNxp;
+    if (backendString.toLower().contains("deconz")) {
+        backenType = Zigbee::ZigbeeBackendTypeDeconz;
+    }
+
+    if (serialPort.isEmpty()) {
+        qCWarning(dcZigbee()) << "The serial port is not specified correctly in the platform configuration file" << configurationFileInfo.absoluteFilePath() << "The platform based network will not be created.";
+        return success;
+    }
+
+    success = true;
+
+    if (!m_adapterMonitor->hasAdapter(serialPort)) {
+        qCWarning(dcZigbee()) << "Could not find platform specific serial port" << serialPort << "on this system. Please check the wiring or the port configuration. The platform based network will not be created.";
+        return success;
+    }
+
+    bool alreadyCreated = false;
+    foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
+        if (network->serialPortName() == serialPort && network->serialBaudrate() == baudRate && network->backendType() == backenType) {
+            qCDebug(dcZigbee()) << "Network based on platform configuration already created" << network;
+            alreadyCreated = true;
+            break;
+        }
+    }
+
+    if (!alreadyCreated) {
+        qCDebug(dcZigbee()) << "Network based on platform configuration has not been created yet.";
+        ZigbeeNetwork *network = createPlatformNetwork(serialPort, baudRate, backenType);
+        addNetwork(network);
+        // Note: it will be saved once the network has started successfully
+    }
+
+    return success;
+}
+
 bool ZigbeeManager::networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter)
 {
     bool networkCreated = false;

@@ -137,6 +137,8 @@ public:
 
     explicit NymeaConfiguration(QObject *parent = nullptr);
 
+    QString filePath() const;
+
     // Global settings
     QUuid serverUuid() const;
 

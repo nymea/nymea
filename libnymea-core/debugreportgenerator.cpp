@@ -174,7 +174,8 @@ void DebugReportGenerator::saveSystemInformation()
     stream << "Timezone: " << QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()) << endl;
     stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << endl;
     stream << "Settings path: " << NymeaSettings::settingsPath() << endl;
-    stream << "Translations path: " << NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath() << endl;
+    stream << "Defaults path: " << NymeaSettings::defaultSettingsPath() << endl;
+    stream << "Translations path: " << NymeaSettings::translationsPath() << endl;
     stream << "User: " << qgetenv("USER") << endl;
     stream << "Command: " << QCoreApplication::arguments().join(' ') << endl;
     stream << "Qt runtime version: " << qVersion() << endl;
@@ -205,11 +206,10 @@ void DebugReportGenerator::saveLogFiles()
 void DebugReportGenerator::saveConfigs()
 {
     // Start copy files setting files
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName(), "config");
+    QDir settingsDir(NymeaSettings::settingsPath());
+    foreach (const QString &fileName, settingsDir.entryList(QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot | QDir::Readable)) {
+        copyFileToReportDirectory(settingsDir.absolutePath() + QDir::separator() + fileName, "config");
+    }
 }
 
 void DebugReportGenerator::saveEnv()

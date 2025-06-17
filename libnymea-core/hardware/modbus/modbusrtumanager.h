@@ -35,6 +35,7 @@
 #include <QUuid>
 #include <QObject>
 #include <QTimer>
+#include <QFileInfo>
 
 #include "hardware/modbus/modbusrtumaster.h"
 #include "hardware/serialport/serialportmonitor.h"
@@ -103,6 +104,7 @@ private:
     QHash<QString, SerialPort> m_serialPorts;
 
     void loadPlatformConfiguration();
+    bool loadedPlatformConfiguration(const QFileInfo &configurationFileInfo);
 
     void loadRtuMasters();
     void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);

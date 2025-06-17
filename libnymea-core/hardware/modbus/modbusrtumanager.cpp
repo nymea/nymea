@@ -31,7 +31,6 @@
 #include "qglobal.h"
 
 #include <QFile>
-#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonParseError>
 
@@ -264,53 +263,65 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const Q
 
 void ModbusRtuManager::loadPlatformConfiguration()
 {
-    QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "modbus-rtu-platform.conf");
+    // First check if there are manually set user platfom settings in the config path
+    if (loadedPlatformConfiguration(QFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "modbus-rtu-platform.conf")))
+        return;
 
-    if (platformConfigurationFileInfo.exists()) {
-        qCDebug(dcModbusRtu()) << "Loading modbus RTU platform configuration from" << platformConfigurationFileInfo.absoluteFilePath();
-        QFile platformConfigurationFile(platformConfigurationFileInfo.absoluteFilePath());
-        if (!platformConfigurationFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file"
-                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
-                                     << platformConfigurationFile.errorString();
-            return;
+    // Check if there are any defaults to load from
+    if(loadedPlatformConfiguration(QFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + "modbus-rtu-platform.conf")))
+        return;
+
+    qCDebug(dcModbusRtu()) << "No platform configuration applied";
+}
+
+bool ModbusRtuManager::loadedPlatformConfiguration(const QFileInfo &configurationFileInfo)
+{
+    qCDebug(dcModbusRtu()) << "Loading modbus RTU platform configuration from" << configurationFileInfo.absoluteFilePath();
+    QFile platformConfigurationFile(configurationFileInfo.absoluteFilePath());
+    if (!platformConfigurationFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file"
+                                 << configurationFileInfo.absoluteFilePath() << ":"
+                                 << platformConfigurationFile.errorString();
+        return false;
+    }
+
+    QByteArray data = platformConfigurationFile.readAll();
+    platformConfigurationFile.close();
+
+    QJsonParseError jsonError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &jsonError);
+    if (jsonError.error != QJsonParseError::NoError) {
+        qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file"
+                                 << configurationFileInfo.absoluteFilePath() << ":"
+                                 << jsonError.errorString();
+        return false;
+    }
+
+    // Make sure we have a clean start
+    m_platformConfigurations.clear();
+
+    QVariantMap platformConfigMap = jsonDoc.toVariant().toMap();
+    foreach (const QVariant &configVariant, platformConfigMap.value("interfaces").toList()) {
+        QVariantMap configMap = configVariant.toMap();
+        ModbusRtuPlatformConfiguration config;
+        config.name = configMap.value("name").toString();
+        config.description = configMap.value("description").toString();
+        config.serialPort = configMap.value("serialPort").toString();
+        config.usable = configMap.value("usable").toBool();
+        m_platformConfigurations.append(config);
+    }
+
+    if (m_platformConfigurations.isEmpty()) {
+        qCDebug(dcModbusRtu()) << "No platform configurations available in" << configurationFileInfo.absoluteFilePath();
+        return false;
+    } else {
+        qCDebug(dcModbusRtu()) << "Loaded successfully" << m_platformConfigurations.count() << "platform configurations";
+        foreach(const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
+            qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") "
+                                             << "Serial port: " << config.serialPort << " usable: " << config.usable;
         }
 
-        QByteArray data = platformConfigurationFile.readAll();
-        platformConfigurationFile.close();
-
-        QJsonParseError jsonError;
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &jsonError);
-        if (jsonError.error != QJsonParseError::NoError) {
-            qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file"
-                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
-                                     << jsonError.errorString();
-            return;
-        }
-
-        // Make sure we have a clean start
-        m_platformConfigurations.clear();
-
-        QVariantMap platformConfigMap = jsonDoc.toVariant().toMap();
-        foreach (const QVariant &configVariant, platformConfigMap.value("interfaces").toList()) {
-            QVariantMap configMap = configVariant.toMap();
-            ModbusRtuPlatformConfiguration config;
-            config.name = configMap.value("name").toString();
-            config.description = configMap.value("description").toString();
-            config.serialPort = configMap.value("serialPort").toString();
-            config.usable = configMap.value("usable").toBool();
-            m_platformConfigurations.append(config);
-        }
-
-        if (m_platformConfigurations.isEmpty()) {
-            qCDebug(dcModbusRtu()) << "No platform configurations available";
-        } else {
-            qCDebug(dcModbusRtu()) << "Loaded successfully" << m_platformConfigurations.count() << "platform configurations";
-            foreach(const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
-                qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") "
-                                                 << "Serial port: " << config.serialPort << " usable: " << config.usable;
-            }
-        }
+        return true;
     }
 }
 

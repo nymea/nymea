@@ -191,17 +191,16 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         storeServerConfig("MqttServer", config);
     }
 
-    NymeaSettings mqttPolicies(NymeaSettings::SettingsRoleMqttPolicies);
-    foreach (const QString &clientId, mqttPolicies.childGroups()) {
-        mqttPolicies.beginGroup(clientId);
+    foreach (const QString &clientId, m_mqttPoliciesSettings->childGroups()) {
+        m_mqttPoliciesSettings->beginGroup(clientId);
         MqttPolicy policy;
         policy.clientId = clientId;
-        policy.username = mqttPolicies.value("username").toString();
-        policy.password = mqttPolicies.value("password").toString();
-        policy.allowedPublishTopicFilters = mqttPolicies.value("allowedPublishTopicFilters").toStringList();
-        policy.allowedSubscribeTopicFilters = mqttPolicies.value("allowedSubscribeTopicFilters").toStringList();
+        policy.username = m_mqttPoliciesSettings->value("username").toString();
+        policy.password = m_mqttPoliciesSettings->value("password").toString();
+        policy.allowedPublishTopicFilters = m_mqttPoliciesSettings->value("allowedPublishTopicFilters").toStringList();
+        policy.allowedSubscribeTopicFilters = m_mqttPoliciesSettings->value("allowedSubscribeTopicFilters").toStringList();
         m_mqttPolicies.insert(clientId, policy);
-        mqttPolicies.endGroup();
+        m_mqttPoliciesSettings->endGroup();
     }
 
     // Tunnel Proxy Server
@@ -221,6 +220,11 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     m_settings->setValue("logDBUser", logDBUser());
     m_settings->setValue("logDBPassword", logDBPassword());
     m_settings->endGroup();
+}
+
+QString NymeaConfiguration::filePath() const
+{
+    return QFileInfo(m_settings->fileName()).filePath();
 }
 
 QUuid NymeaConfiguration::serverUuid() const
@@ -651,7 +655,6 @@ void NymeaConfiguration::storeWebServerConfig(const WebServerConfiguration &conf
 WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id)
 {
     WebServerConfiguration config;    
-    m_settings->beginGroup("WebServer");
     m_settings->beginGroup(id);
     config.id = id;
     config.address = m_settings->value("address").toString();
@@ -660,7 +663,6 @@ WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id
     config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
     config.publicFolder = m_settings->value("publicFolder").toString();
     config.restServerEnabled = m_settings->value("restServerEnabled", false).toBool();
-    m_settings->endGroup();
     m_settings->endGroup();
     return config;
 }
@@ -678,8 +680,7 @@ void NymeaConfiguration::storeTunnelProxyServerConfig(const TunnelProxyServerCon
 
 TunnelProxyServerConfiguration NymeaConfiguration::readTunnelProxyServerConfig(const QString &id)
 {
-    TunnelProxyServerConfiguration config;
-    m_settings->beginGroup("TunnelProxyServer");
+    TunnelProxyServerConfiguration config;    
     m_settings->beginGroup(id);
     config.id = id;
     config.address = m_settings->value("address").toString();
@@ -687,7 +688,6 @@ TunnelProxyServerConfiguration NymeaConfiguration::readTunnelProxyServerConfig(c
     config.sslEnabled = m_settings->value("sslEnabled", true).toBool();
     config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
     config.ignoreSslErrors = m_settings->value("ignoreSslErrors").toBool();
-    m_settings->endGroup();
     m_settings->endGroup();
     return config;
 }

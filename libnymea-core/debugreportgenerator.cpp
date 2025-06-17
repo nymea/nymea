@@ -215,11 +215,10 @@ void DebugReportGenerator::saveLogFiles()
 void DebugReportGenerator::saveConfigs()
 {
     // Start copy files setting files
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName(), "config");
+    QDir settingsDir(NymeaSettings::settingsPath());
+    foreach (const QString &fileName, settingsDir.entryList(QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot | QDir::Readable)) {
+        copyFileToReportDirectory(settingsDir.absolutePath() + QDir::separator() + fileName, "config");
+    }
 }
 
 void DebugReportGenerator::saveEnv()

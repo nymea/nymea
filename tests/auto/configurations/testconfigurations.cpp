@@ -175,7 +175,7 @@ void TestConfigurations::testLanguages()
     response = injectAndWait("Configuration.GetAvailableLanguages");
     QVERIFY2(response.toMap().value("params").toMap().contains("languages"), "Did not get list of languages");
     QVariantMap responseMap = response.toMap().value("params").toMap();
-    QVERIFY2(responseMap.value("languages").toList().count() >= 2, "Available languages list to short: " +  responseMap.value("languages").toList().count());
+    QVERIFY2(responseMap.value("languages").toList().count() >= 2, "Available languages list to short: " + QString::number(responseMap.value("languages").toList().count()).toLocal8Bit());
 
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {

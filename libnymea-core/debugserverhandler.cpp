@@ -1033,7 +1033,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("td", qVersion());
     writer.writeEndElement(); // tr
 
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         // Note: http://snapcraft.io/docs/reference/env
 
         writer.writeStartElement("tr");

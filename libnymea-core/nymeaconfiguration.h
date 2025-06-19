@@ -37,6 +37,8 @@
 #include <QUuid>
 #include <QUrl>
 
+#include "nymeasettings.h"
+
 namespace nymeaserver {
 
 class ServerConfiguration {
@@ -135,6 +137,8 @@ public:
 
     explicit NymeaConfiguration(QObject *parent = nullptr);
 
+    QString filePath() const;
+
     // Global settings
     QUuid serverUuid() const;
 
@@ -200,6 +204,8 @@ public:
     QString logDBPassword() const;
 
 private:
+    NymeaSettings *m_settings = nullptr;
+    NymeaSettings *m_mqttPoliciesSettings = nullptr;
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
@@ -213,7 +219,7 @@ private:
     QString defaultWebserverPublicFolderPath() const;
 
     void storeServerConfig(const QString &group, const ServerConfiguration &config);
-    ServerConfiguration readServerConfig(const QString &group, const QString &id);
+    ServerConfiguration readServerConfig(const QString &id);
     void deleteServerConfig(const QString &group, const QString &id);
     void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);

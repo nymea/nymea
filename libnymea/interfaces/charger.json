@@ -1,0 +1,11 @@
+{
+    "description": "An interface for chargers such as AC / DC electrical vehicle chargers. Extends the power interface for charging/not charging an electric vehicle.",
+    "extends": ["power"],
+    "states": [
+        {
+            "name": "pluggedIn",
+            "type": "bool",
+            "optional": true
+        }
+    ]
+}

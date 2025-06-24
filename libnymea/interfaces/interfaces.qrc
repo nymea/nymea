@@ -102,5 +102,8 @@
         <file>childlock.json</file>
         <file>networkdevice.json</file>
         <file>valve.json</file>
+        <file>extendedenergystorage.json</file>
+        <file>charger.json</file>
+        <file>evchargerdc.json</file>
     </qresource>
 </RCC>

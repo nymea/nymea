@@ -1,0 +1,4 @@
+{
+    "description": "A DC electrical vehicle charger. .",
+    "extends": ["charger", "extendedenergystorage"]
+}

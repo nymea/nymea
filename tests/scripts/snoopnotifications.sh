@@ -6,7 +6,7 @@ if [ -z $1 ]; then
 fi
 
 
-cat <<EOD | nc $1 2222
+cat <<EOD | nc $1 2223
 {"id":0, "method":"JSONRPC.Hello"}
 {"id":1, "method":"JSONRPC.SetNotificationStatus", "params":{"enabled":"true"}}
 EOD

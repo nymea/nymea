@@ -5,7 +5,7 @@ if [ -z $1 ]; then
   exit 1
 fi
 
-cat << EOD | nc $1 2222
+cat << EOD | nc $1 2223
 {"id":0, "method": "JSONRPC.Hello"}
-{"id":1, "method": "Devices.GetPlugins"}
+{"id":1, "method": "Integrations.GetPlugins"}
 EOD

@@ -274,9 +274,14 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
         return;
     }
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readClient()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
+    connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
+#else
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+#endif
 
     emit clientConnected(clientId);
 }
@@ -508,10 +513,14 @@ void WebServer::onEncrypted()
 {
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
     qCDebug(dcWebServer()).noquote() << QString("Encrypted connection %1:%2 successfully established.").arg(socket->peerAddress().toString()).arg(socket->peerPort());
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readClient()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+    connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
+    connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
+#else
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+#endif
     emit clientConnected(m_clientList.key(socket));
 }
 

@@ -8,7 +8,13 @@ INCLUDEPATH += ../libnymea ../libnymea-core $$top_builddir
 target.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += target
 
-QT += sql xml websockets bluetooth dbus network
+QT += sql websockets bluetooth dbus network
+
+greaterThan(QT_MAJOR_VERSION, 5) {
+    QT *= core5compat
+} else {
+    QT *= xml
+}
 
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-zigbee nymea-mqtt

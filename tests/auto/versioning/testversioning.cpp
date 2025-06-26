@@ -38,9 +38,18 @@ class TestVersioning: public NymeaTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void version();
     void apiChangeBumpsVersion();
 };
+
+void TestVersioning::initTestCase()
+{
+    NymeaTestBase::initTestCase("*.debug=false\nJsonRpcTraffic.debug=false\nJsonRpc.debug=true\nTests.debug=true");
+    qCDebug(dcTests()) << "TestVersioning starting";
+}
+
 
 void TestVersioning::version()
 {
@@ -72,7 +81,6 @@ void TestVersioning::apiChangeBumpsVersion()
 
     QFile oldApiFile(oldFilePath);
     QVERIFY(oldApiFile.exists() && oldApiFile.open(QIODevice::ReadOnly));
-
     QByteArray oldVersion = oldApiFile.readLine().trimmed();
     QByteArray oldApi = oldApiFile.readAll();
 

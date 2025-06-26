@@ -698,7 +698,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace + '.' +  method << "from client" << clientId;
 
-    JsonReply *reply;
+    JsonReply *reply = nullptr;
     if (handler->metaObject()->indexOfMethod(method.toUtf8() + "(QVariantMap,JsonContext)") >= 0) {
         QMetaObject::invokeMethod(handler, method.toUtf8().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params), Q_ARG(JsonContext, callContext));
     } else {

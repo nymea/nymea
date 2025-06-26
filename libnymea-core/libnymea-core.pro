@@ -54,7 +54,6 @@ greaterThan(QT_MAJOR_VERSION, 5) {
 
     # Separate module in Qt6
     QT *= concurrent
-
 } else {
     packagesExist(Qt5SerialBus) {
         message("Building with QtSerialBus support.")

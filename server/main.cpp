@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
         }
     }
 
+
     // Finally set the rules for the logging
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 

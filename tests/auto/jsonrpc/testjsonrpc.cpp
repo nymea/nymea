@@ -652,18 +652,18 @@ void TestJSONRPC::testBasicCall()
 void TestJSONRPC::introspect()
 {
     QVariant response = injectAndWait("JSONRPC.Introspect");
-    QVariantMap methods = response.toMap().value("params").toMap().value("methods").toMap();
-    QVariantMap notifications = response.toMap().value("params").toMap().value("notifications").toMap();
-    QVariantMap enums = response.toMap().value("params").toMap().value("enums").toMap();
-    QVariantMap flags = response.toMap().value("params").toMap().value("flags").toMap();
-    QVariantMap types = response.toMap().value("params").toMap().value("types").toMap();
+    QMultiMap methods = QMultiMap(response.toMap().value("params").toMap().value("methods").toMap());
+    QMultiMap notifications = QMultiMap(response.toMap().value("params").toMap().value("notifications").toMap());
+    QMultiMap enums = QMultiMap(response.toMap().value("params").toMap().value("enums").toMap());
+    QMultiMap flags = QMultiMap(response.toMap().value("params").toMap().value("flags").toMap());
+    QMultiMap types = QMultiMap(response.toMap().value("params").toMap().value("types").toMap());
 
     QVERIFY2(methods.count() > 0, "No methods in Introspect response!");
     QVERIFY2(notifications.count() > 0, "No notifications in Introspect response!");
     QVERIFY2(types.count() > 0, "No types in Introspect response!");
 
     // Make sure all $ref: pointers have their according type defined
-    QVariantMap allItems = methods.unite(notifications).unite(types);
+    QMultiMap allItems = methods.unite(notifications).unite(types);
     foreach (const QVariant &item, allItems) {
         foreach (const QString &ref, extractRefs(item)) {
             QString typeId = ref;

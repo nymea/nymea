@@ -31,8 +31,8 @@
 #ifndef TYPEUTILS_H
 #define TYPEUTILS_H
 
-#include <QMetaType>
 #include <QUuid>
+#include <QMetaType>
 
 #include "libnymea.h"
 

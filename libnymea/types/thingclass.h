@@ -73,6 +73,7 @@ public:
         CreateMethodDiscovery = 0x04
     };
     Q_ENUM(CreateMethod) // Note: required even if Q_DECLARE_FLAGS should do it
+
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
     Q_FLAG(CreateMethods)
 
@@ -174,6 +175,8 @@ private:
     QStringList m_interfaces;
     QStringList m_providedInterfaces;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ThingClass::CreateMethods)
 
 QDebug operator<<(QDebug dbg, const ThingClass &thingClass);
 

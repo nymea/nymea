@@ -199,7 +199,7 @@ Interface ThingUtils::loadInterface(const QString &name)
 
         InterfaceParamType paramType;
         paramType.setName(paramMap.value("name").toString());
-        paramType.setType(QVariant::nameToType(paramMap.value("type").toByteArray()));
+        paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(paramMap.value("type").toByteArray())));
         paramType.setMinValue(paramMap.value("minValue"));
         paramType.setMaxValue(paramMap.value("maxValue"));
         paramType.setDefaultValue(paramMap.value("defaultValue"));

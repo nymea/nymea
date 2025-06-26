@@ -8,12 +8,25 @@ QT += testlib dbus network sql websockets
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-zigbee
 
-# Qt serial bus module is officially available since Qt 5.8
-# but not all platforms host the qt serialbus package.
-# Let's check if the package exists, not the qt version
-packagesExist(Qt5SerialBus) {
-    Qt += serialbus
-    DEFINES += WITH_QTSERIALBUS
+greaterThan(QT_MAJOR_VERSION, 5) {
+    qtHaveModule(serialbus) {
+        message("Building with QtSerialBus support.")
+        QT *= serialbus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("QtSerialBus package not found. Building without QtSerialBus support.")
+    }
+
+    # Separate module in Qt6
+    QT *= concurrent
+} else {
+    packagesExist(Qt5SerialBus) {
+        message("Building with QtSerialBus support.")
+        PKGCONFIG += Qt5SerialBus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    }
 }
 
 INCLUDEPATH += $$top_srcdir/libnymea \

@@ -20,8 +20,8 @@
             the description of an actual \l{Param}. Params will be set when a device is configured initially and can only be changed by
             a complete reconfiguration of the given device.
         \li \l{ParamType}{SettingsTypes} \unicode{0x2192} A \l{Device} can have settings. They are like params, with the exception that the
-            user (and also the plugin developer) can change them at runtime. Settings should be used to change the behabior of a device at runtime.
-            An example would the the refresh interval when polling a web server.
+            user (and also the plugin developer) can change them at runtime. Settings should be used to change the behavior of a device at runtime.
+            An example would be the refresh interval when polling a web server.
         \li \l{StateType}{StateTypes} \unicode{0x2192} A \l{Device} can have \l{State}{States}, which basically represent a value of a \l{Device}
             like \e {current temperature} or \e ON/OFF. The \l{StateType} represents the description of an actual \l{State}.
         \li \l{EventType}{EventTypes} \unicode{0x2192} A \l{Device} can emit \l{Event}{Events}, which basically represent a signal.

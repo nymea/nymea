@@ -80,7 +80,7 @@ public:
     QString incompleteProperties() const;
 
     // Helper methods for the networkdevice interface
-    // The fill in automaticlally the correct paramters for the
+    // They fill in automatically the correct parameters for the
     // right monitor
     QString thingParamValueMacAddress() const;
     QString thingParamValueHostName() const;

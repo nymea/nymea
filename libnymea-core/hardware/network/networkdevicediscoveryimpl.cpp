@@ -331,7 +331,7 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(NetworkDeviceMonitor *network
 PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, uint retries)
 {
     PingReply *reply = m_ping->ping(address, retries);
-    // Note: we use any ping used trough this method also for the monitor evaluation
+    // Note: we use any ping used through this method also for the monitor evaluation
     watchPingReply(reply);
     return reply;
 }
@@ -339,7 +339,7 @@ PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, uint re
 PingReply *NetworkDeviceDiscoveryImpl::ping(const QString &hostName, uint retries)
 {
     PingReply *reply = m_ping->ping(hostName, retries);
-    // Note: we use any ping used trough this method also for the monitor evaluation
+    // Note: we use any ping used through this method also for the monitor evaluation
     watchPingReply(reply);
     return reply;
 }
@@ -347,7 +347,7 @@ PingReply *NetworkDeviceDiscoveryImpl::ping(const QString &hostName, uint retrie
 PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, bool lookupHost, uint retries)
 {
     PingReply *reply = m_ping->ping(address, lookupHost, retries);
-    // Note: we use any ping used trough this method also for the monitor evaluation
+    // Note: we use any ping used through this method also for the monitor evaluation
     watchPingReply(reply);
     return reply;
 }

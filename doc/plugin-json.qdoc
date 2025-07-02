@@ -487,7 +487,7 @@ A \l{StateType} has following parameters:
             \li \b O
             \li bool
             \li Indicates if a state value should be cached over reboot of the server. The value will be initialized with the last known value.
-                By default all states get chached. If you want to disable that behaviour you can set this property to \tt{false}. In that case the
+                By default all states get cached. If you want to disable that behaviour you can set this property to \tt{false}. In that case the
                 value will be initialized with the default value of the State.
         \row
             \li \tt unit

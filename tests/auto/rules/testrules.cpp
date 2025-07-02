@@ -2884,7 +2884,7 @@ void TestRules::testThingBasedAndThingValueStateDescriptor()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    // set power to false intially
+    // set power to false initially
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
     reply = nam.get(request);

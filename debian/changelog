@@ -145,7 +145,7 @@ nymea (1.8.0) jammy; urgency=medium
   * Add location setting
   * Add desiredPhaseCount state to evcharger interface
   * Add windowOpen and windowOpenDetected states to the thermostat
-  * Fix multiple ragisterTransport calls on reconfiguring interfaces
+  * Fix multiple registerTransport calls on reconfiguring interfaces
   * Enforce unit on closable interface
   * Rework the log engine to use influxdb instead of sql
 

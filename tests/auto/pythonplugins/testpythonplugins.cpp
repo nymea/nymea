@@ -50,15 +50,18 @@ private:
 
 private slots:
 
+#ifdef WITH_PYTHON
     void initTestCase();
 
     void testRestartServer();
 
     void setupAndRemoveThing();
     void testDiscoverPairAndRemoveThing();
-
+#endif
 
 };
+
+#ifdef WITH_PYTHON
 
 void TestPythonPlugins::testRestartServer()
 {
@@ -142,6 +145,7 @@ void TestPythonPlugins::testDiscoverPairAndRemoveThing()
     response = injectAndWait("Integrations.RemoveThing", params);
     verifyThingError(response, Thing::ThingErrorNoError);
 }
+#endif
 
 #include "testpythonplugins.moc"
 QTEST_MAIN(TestPythonPlugins)

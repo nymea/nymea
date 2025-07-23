@@ -242,7 +242,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
 
             QString typeName(value.typeName());
-            qCCritical(dcJsonRpc()) << value << value.userType() << value.typeId() << value.typeName() << value.toString() << value.toUuid() << value.canConvert(QMetaType::QUuid);
+            //qCCritical(dcJsonRpc()) << value << value.userType() << value.typeId() << value.typeName() << value.toString() << value.toUuid() << value.canConvert(QMetaType::QUuid);
 
             // Verify if this is one of our own uuid types
             if (typeName == "ThingId" || typeName == "EventTypeId" || typeName == "StateTypeId" || typeName == "ActionTypeId") {

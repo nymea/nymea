@@ -8,6 +8,9 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     CONFIG *= c++17
     QMAKE_LFLAGS *= -std=c++17
     QMAKE_CXXFLAGS *= -std=c++17
+    # Python init is crashing in Qt6,
+    # disable by default until fixed
+    CONFIG += withoutpython
 } else {
     message("Building using Qt5 support")
     CONFIG *= c++11

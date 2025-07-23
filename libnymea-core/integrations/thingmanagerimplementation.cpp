@@ -2332,8 +2332,17 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
                 value = settings->value(stateType.id().toString());
             }
             value.convert(stateType.type());
-            minValue.convert(stateType.type());
-            maxValue.convert(stateType.type());
+
+            // Note: the convert method has changed in Qt6. I will return a valid
+            // QVariant and therefore set min max values for the state even tough they
+            // are still invalid on purpose
+
+            if (minValue.isValid())
+                minValue.convert(stateType.type());
+
+            if (maxValue.isValid())
+                maxValue.convert(stateType.type());
+
             QVariantList convertedPossibleValues;
             foreach (QVariant possibleValue, possibleValues) {
                 possibleValue.convert(stateType.type());

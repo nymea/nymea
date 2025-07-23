@@ -131,6 +131,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
 void NymeaTestBase::cleanupTestCase()
 {
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonTerm);
+
 }
 
 void NymeaTestBase::cleanup()
@@ -156,7 +157,7 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
 
     int loop = 0;
 
-    while (loop < 5) {
+    while (loop < 10) {
 
         if (spy.count() == 0 || loop > 0) {
             spy.wait();

@@ -666,7 +666,7 @@ void TestRules::addRemoveRules()
     }
 
     QVariantList replyActions = rule.value("actions").toList();
-    QVERIFY2(actions == replyActions,
+    QVERIFY2(QJsonDocument::fromVariant(actions) == QJsonDocument::fromVariant(replyActions),
              QString("Actions don't match.\nExpected: %1\nGot: %2")
              .arg(QString(QJsonDocument::fromVariant(actions).toJson()))
              .arg(QString(QJsonDocument::fromVariant(replyActions).toJson()))

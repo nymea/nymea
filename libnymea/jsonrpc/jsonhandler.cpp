@@ -192,8 +192,8 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
     for (int i = 0; i < metaObject.propertyCount(); i++) {
         QMetaProperty metaProperty = metaObject.property(i);
         QString name = metaProperty.name();
-        if (className == "Thing")
-            qCDebug(dcJsonRpc()) << "Thing!" << metaProperty.isUser() << metaProperty.isWritable() << metaProperty.revision();
+        // if (className == "Thing")
+        //     qCDebug(dcJsonRpc()) << "Thing!" << metaProperty.isUser() << metaProperty.isWritable() << metaProperty.revision();
 
         if (name == "objectName") {
             continue; // Skip QObject's objectName property
@@ -323,7 +323,38 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             }
 
             QVariant propertyValue = metaProperty.readOnGadget(value);
+            qCDebug(dcJsonRpc()) << metaProperty.name() << "optional:" << metaProperty.isUser() << "value:" << propertyValue << "valid:" << propertyValue.isValid() << "null:" << propertyValue.isNull();
+
             // If it's optional and empty, we may skip it
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            if (metaProperty.isUser()) {
+
+                bool isEmpty = false;
+
+                switch (propertyValue.typeId()) {
+                case QMetaType::QString:
+                    isEmpty = propertyValue.toString().isEmpty();
+                    break;
+                case QMetaType::QUuid:
+                    isEmpty = propertyValue.toUuid().isNull();
+                    break;
+                default:
+                    isEmpty = (!propertyValue.isValid() || propertyValue.isNull());
+                    break;
+                }
+
+                if (isEmpty) {
+                    // Optional and empty...skip this property
+                    continue;
+                }
+            }
+#else
+            if (metaProperty.isUser() && (!propertyValue.isValid() || propertyValue.isNull())) {
+                continue;
+            }
+#endif
+
+
             if (metaProperty.isUser() && (!propertyValue.isValid() || propertyValue.isNull())) {
                 continue;
             }
@@ -358,7 +389,11 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             // Basic type/Variant type
             if (metaProperty.typeName() == QStringLiteral("QMetaType::Type")) {
                 QMetaEnum metaEnum = QMetaEnum::fromType<BasicType>();
-                ret.insert(metaProperty.name(), metaEnum.key(variantTypeToBasicType(propertyValue.template value<QMetaType::Type>())));
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                ret.insert(metaProperty.name(), metaEnum.valueToKey(propertyValue.template value<QMetaType::Type>()));
+#else
+                ret.insert(metaProperty.name(), metaEnum.key(variantTypeToBasicType(propertyValue.template value<QVariant::Type>())));
+#endif
                 continue;
             }
 
@@ -449,7 +484,6 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 continue;
             }
 
-
             // Standard properties, QString, int etc...
             // Special treatment for QDateTime (converting to time_t)
             if (metaProperty.typeId() == QMetaType::QDateTime) {
@@ -460,8 +494,10 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 propertyValue = propertyValue.toDateTime().toSecsSinceEpoch();
             } else if (metaProperty.typeId() == QMetaType::QTime) {
                 propertyValue = propertyValue.toTime().toString("hh:mm");
+                if (metaProperty.isUser() && propertyValue.toString().isEmpty()) {
+                    continue;
+                }
             }
-
 
             ret.insert(metaProperty.name(), propertyValue);
         }
@@ -480,7 +516,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
         if (static_cast<QMetaType::Type>(value.type()) != QMetaType::QVariantList) {
-            //            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
+            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
             return QVariant();
         }
 
@@ -503,7 +539,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
         return ret;
     }
 
-    // if it's an object, loop over all properties
+    // If it's an object, loop over all properties
     if (m_metaObjects.contains(typeName)) {
         QVariantMap map = value.toMap();
         int typeId = QMetaType::type(metaObject.className());

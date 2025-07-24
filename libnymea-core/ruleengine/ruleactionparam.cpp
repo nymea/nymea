@@ -235,9 +235,9 @@ RuleActionParams RuleActionParams::operator<<(const RuleActionParam &ruleActionP
 QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "RuleActionParamList (count:" << ruleActionParams.count() << ")" << Qt::endl;
+    dbg.nospace() << "RuleActionParamList (count:" << ruleActionParams.count() << ")" << '\n';
     for (int i = 0; i < ruleActionParams.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << ruleActionParams.at(i) << Qt::endl;
+        dbg.nospace() << "     " << i << ": " << ruleActionParams.at(i) << '\n';
     }
 
     return dbg;

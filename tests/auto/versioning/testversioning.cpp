@@ -110,7 +110,7 @@ void TestVersioning::apiChangeBumpsVersion()
     p.waitForFinished();
     QByteArray apiDiff = p.readAll();
 
-    qCDebug(dcTests()) << "API Differences:" << Qt::endl << qUtf8Printable(apiDiff);
+    qCDebug(dcTests()) << "API Differences:" << '\n' << qUtf8Printable(apiDiff);
 
     if (oldVersion == newVersionStripped && oldApi != newApi) {
         QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");

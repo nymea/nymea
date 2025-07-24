@@ -74,8 +74,8 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
             spacer += ' ';
         }
         QDebug dbg = qWarning().nospace().noquote();
-        dbg << inputFile << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << Qt::endl;
-        dbg << data << Qt::endl;
+        dbg << inputFile << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << '\n';
+        dbg << data << '\n';
         dbg << spacer << "^";
         return 1;
     }

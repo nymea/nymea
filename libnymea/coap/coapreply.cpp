@@ -352,13 +352,13 @@ QDebug operator<<(QDebug debug, CoapReply *reply)
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
     QMetaEnum contentTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ContentType"));
-    debug.nospace() << "CoapReply(" << messageTypeEnum.valueToKey(reply->messageType()) << ")" << Qt::endl;
-    debug.nospace() << "  Status code: " << CoapPdu::getReqRspCodeString(reply->reqRspCode()) << Qt::endl;
-    debug.nospace() << "  Content type: " << contentTypeEnum.valueToKey(reply->contentType()) << Qt::endl;
-    debug.nospace() << "  Payload size: " << reply->payload().size() << Qt::endl;
+    debug.nospace() << "CoapReply(" << messageTypeEnum.valueToKey(reply->messageType()) << ")" << '\n';
+    debug.nospace() << "  Status code: " << CoapPdu::getReqRspCodeString(reply->reqRspCode()) << '\n';
+    debug.nospace() << "  Content type: " << contentTypeEnum.valueToKey(reply->contentType()) << '\n';
+    debug.nospace() << "  Payload size: " << reply->payload().size() << '\n';
 
     if (!reply->payload().isEmpty())
-        debug.nospace() << Qt::endl << reply->payload() << Qt::endl;
+        debug.nospace() << '\n' << reply->payload() << '\n';
 
     return debug;
 }

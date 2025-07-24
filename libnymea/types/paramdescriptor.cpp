@@ -91,7 +91,7 @@ void ParamDescriptor::setOperatorType(Types::ValueOperator operatorType)
 QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << Qt::endl;
+    dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << '\n';
     return dbg;
 }
 

@@ -259,9 +259,9 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
 QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << Qt::endl;
+    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << '\n';
     for (int i = 0; i < paramTypes.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << Qt::endl;
+        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << '\n';
     }
 
     return dbg;

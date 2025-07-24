@@ -146,22 +146,22 @@ QDebug operator<<(QDebug debug, const CoreLink &link)
     QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum contentTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ContentType"));
-    debug.nospace() << "CoapLink(" << link.path() << ")" << Qt::endl;
+    debug.nospace() << "CoapLink(" << link.path() << ")" << '\n';
 
     if (!link.title().isEmpty())
-        debug.nospace() << "  Title: " << link.title() << Qt::endl;
+        debug.nospace() << "  Title: " << link.title() << '\n';
 
-    debug.nospace() << "  Resource type: " << link.resourceType() << Qt::endl;
-    debug.nospace() << "  Content type: " << contentTypeEnum.valueToKey(link.contentType()) << Qt::endl;
+    debug.nospace() << "  Resource type: " << link.resourceType() << '\n';
+    debug.nospace() << "  Content type: " << contentTypeEnum.valueToKey(link.contentType()) << '\n';
 
     if (link.observable())
-        debug.nospace() << "  Observable: " << link.observable() << Qt::endl;
+        debug.nospace() << "  Observable: " << link.observable() << '\n';
 
     if (!link.interfaceDescription().isEmpty())
-        debug.nospace() << "  Interface description: " << link.interfaceDescription() << Qt::endl;
+        debug.nospace() << "  Interface description: " << link.interfaceDescription() << '\n';
 
     if (link.maximumSize() >= 0)
-        debug.nospace() << "  Maximum size: " << link.maximumSize() << Qt::endl;
+        debug.nospace() << "  Maximum size: " << link.maximumSize() << '\n';
 
     return debug;
 }

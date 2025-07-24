@@ -179,7 +179,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 QVariant refDefinition = enums.value(refName);
 
                 QVariantList enumList = refDefinition.toList();
-                #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 if (value.metaType().id() == QMetaType::QStringList) {
                     foreach (const QString &valueString, value.toStringList()) {
                         if (!enumList.contains(valueString)) {
@@ -191,11 +191,11 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                         return Result(false, "Expected enum value for " + refName + " but got " + value.toString());
                     }
                 }
-                #else
+#else
                 if (!enumList.contains(value.toString())) {
                     return Result(false, "Expected enum value for " + refName + " but got " + value.toString());
                 }
-                #endif
+#endif
                 return Result(true);
             }
 
@@ -223,21 +223,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
 
         JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
 
-        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
-        QVariant::Type expectedVariantType = JsonHandler::basicTypeToVariantType(expectedBasicType);
-
-        // Verify basic compatiblity
-        if (expectedBasicType != JsonHandler::Variant && !value.canConvert(expectedVariantType)) {
-            return Result(false, "Invalid value. Expected: " + definition.toString() + ", Got: " + value.toString());
-        }
-
-        // Any string converts fine to Uuid, but the resulting uuid might be null
-        if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
-            return Result(false, "Invalid Uuid: " + value.toString());
-        }
-        #else
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Any string converts fine to Uuid, but the resulting uuid might be null
         if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
 
@@ -251,8 +237,19 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 return Result(false, "Invalid Uuid: " + value.toString());
             }*/
         }
+#else
+        QMetaType::Type expectedVariantType = JsonHandler::basicTypeToMetaType(expectedBasicType);
 
-        #endif
+        // Verify basic compatiblity
+        if (expectedBasicType != JsonHandler::Variant && !value.canConvert(expectedVariantType)) {
+            return Result(false, "Invalid value. Expected: " + definition.toString() + ", Got: " + value.toString());
+        }
+
+        // Any string converts fine to Uuid, but the resulting uuid might be null
+        if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
+            return Result(false, "Invalid Uuid: " + value.toString());
+        }
+#endif
 
         // Make sure ints are valid
         if (expectedBasicType == JsonHandler::Int) {

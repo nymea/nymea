@@ -319,6 +319,7 @@ void UpnpDiscoveryImplementation::replyFinished()
             if (xml.isStartElement()) {
                 if (xml.name().toString() == "device") {
                     while (!xml.atEnd()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                         if (xml.name() == QLatin1StringView("deviceType") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setDeviceType(xml.readElementText());
                         }
@@ -355,6 +356,44 @@ void UpnpDiscoveryImplementation::replyFinished()
                         if (xml.name() == QLatin1StringView("UPC") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUpc(xml.readElementText());
                         }
+#else
+                        if (xml.name() == QLatin1String("deviceType") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setDeviceType(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("friendlyName") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setFriendlyName(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("manufacturer") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setManufacturer(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("manufacturerURL") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setManufacturerURL(QUrl(xml.readElementText()));
+                        }
+                        if (xml.name() == QLatin1String("modelDescription") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelDescription(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelName") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelName(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelNumber") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelNumber(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelURL") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelURL(QUrl(xml.readElementText()));
+                        }
+                        if (xml.name() == QLatin1String("serialNumber") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setSerialNumber(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("UDN") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUuid(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("uuid") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUuid(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("UPC") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUpc(xml.readElementText());
+                        }
+#endif
                         xml.readNext();
                     }
                     xml.readNext();

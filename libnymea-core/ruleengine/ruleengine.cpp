@@ -1131,7 +1131,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         v = QVariant::fromMetaType(QMetaType(eventParamType));
 #else
-        v = QVariant(eventParamType);
+        v = QVariant(static_cast<QVariant::Type>(eventParamType));
 #endif
         if (eventParamType != paramType.type() && !v.canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
@@ -1152,7 +1152,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         v = QVariant::fromMetaType(QMetaType(stateType.type()));
 #else
-        v = QVariant(stateType.type());
+        v = QVariant(static_cast<QVariant::Type>(stateType.type()));
 #endif
         if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";

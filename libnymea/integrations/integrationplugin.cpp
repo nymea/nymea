@@ -96,6 +96,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QStandardPaths>
+#include <QRegularExpression>
 
 /*! IntegrationPlugin constructor. IntegrationPlugins will be instantiated by the system.
     This should never be called manually by a plugin implementation.

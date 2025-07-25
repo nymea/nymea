@@ -41,6 +41,8 @@
 
 #include <QMessageLogger>
 #include <QLoggingCategory>
+#include <QRegularExpression>
+
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 
 namespace nymeaserver {

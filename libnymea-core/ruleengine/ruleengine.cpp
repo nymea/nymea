@@ -129,6 +129,7 @@
 #include <QCoreApplication>
 #include <QMetaEnum>
 #include <QVariant>
+#include <QRegularExpression>
 
 NYMEA_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 NYMEA_LOGGING_CATEGORY(dcRuleEngineDebug, "RuleEngineDebug")

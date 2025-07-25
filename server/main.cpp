@@ -31,6 +31,7 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QRegularExpression>
 #include <QLoggingCategory>
 #include <QMessageLogger>
 #include <QTranslator>

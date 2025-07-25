@@ -89,10 +89,11 @@
 #include "debugserverhandler.h"
 #include "version.h"
 
-#include <QJsonDocument>
+#include <QRegularExpression>
 #include <QNetworkInterface>
 #include <QXmlStreamWriter>
 #include <QCoreApplication>
+#include <QJsonDocument>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSslSocket>

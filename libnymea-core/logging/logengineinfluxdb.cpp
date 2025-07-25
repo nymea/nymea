@@ -34,7 +34,7 @@
 #include <QUrlQuery>
 #include <QJsonDocument>
 #include <QCoreApplication>
-
+#include <QRegularExpression>
 
 LogEngineInfluxDB::LogEngineInfluxDB(const QString &host, const QString &dbName, const QString &username, const QString &password, QObject *parent)
     : LogEngine{parent},

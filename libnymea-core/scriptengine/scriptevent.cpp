@@ -33,6 +33,7 @@
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QJsonDocument>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 namespace scriptengine {

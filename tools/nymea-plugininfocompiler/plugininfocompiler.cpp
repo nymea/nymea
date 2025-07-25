@@ -37,6 +37,7 @@
 #include <QDataStream>
 #include <QDebug>
 #include <QDir>
+#include <QRegularExpression>
 
 PluginInfoCompiler::PluginInfoCompiler()
 {

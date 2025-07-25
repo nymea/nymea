@@ -45,15 +45,15 @@
 #include "nymeasettings.h"
 #include "logging/logengine.h"
 
+#include <QDir>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QJsonParseError>
 #include <QJsonDocument>
+#include <QRegularExpression>
 
 #include "loggingcategories.h"
-
-#include <QDir>
 
 NYMEA_LOGGING_CATEGORY(dcScriptEngine, "ScriptEngine")
 

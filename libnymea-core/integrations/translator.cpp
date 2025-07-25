@@ -29,13 +29,15 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "translator.h"
-#include "nymeasettings.h"
 #include "thingmanagerimplementation.h"
 
-#include "loggingcategories.h"
-#include "integrations/integrationplugin.h"
-#include <QCoreApplication>
+#include <nymeasettings.h>
+#include <loggingcategories.h>
+#include <integrations/integrationplugin.h>
+
 #include <QDir>
+#include <QCoreApplication>
+#include <QRegularExpression>
 
 Translator::Translator(ThingManagerImplementation *thingManager):
     m_thingManager(thingManager)

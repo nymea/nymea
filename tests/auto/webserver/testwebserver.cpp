@@ -32,6 +32,7 @@
 #include "nymeacore.h"
 
 #include <QXmlReader>
+#include <QRegularExpression>
 
 using namespace nymeaserver;
 

@@ -31,6 +31,8 @@
 #include "nymeatestbase.h"
 #include "version.h"
 
+#include <QRegularExpression>
+
 using namespace nymeaserver;
 
 class TestVersioning: public NymeaTestBase

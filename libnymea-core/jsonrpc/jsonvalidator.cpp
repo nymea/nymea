@@ -36,6 +36,7 @@
 #include <QJsonDocument>
 #include <QColor>
 #include <QDateTime>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 

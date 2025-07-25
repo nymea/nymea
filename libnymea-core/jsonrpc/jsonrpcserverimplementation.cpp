@@ -76,6 +76,7 @@
 #include <QJsonDocument>
 #include <QStringList>
 #include <QSslConfiguration>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 

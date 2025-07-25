@@ -40,6 +40,7 @@
 #include <QDir>
 #include <QPluginLoader>
 #include <QStringList>
+#include <QRegularExpression>
 
 namespace nymeaserver
 {

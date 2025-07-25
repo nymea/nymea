@@ -71,6 +71,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QMetaEnum>
+#include <QRegularExpression>
 
 ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
     ThingManager(parent),

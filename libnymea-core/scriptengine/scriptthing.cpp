@@ -34,6 +34,7 @@
 #include <QQmlEngine>
 #include <QJsonDocument>
 #include <QQmlContext>
+#include <QRegularExpression>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)

@@ -411,9 +411,9 @@ void TestRules::initTestCase()
                                 "Tests.debug=true\n"
                                 "RuleEngine.debug=true\n"
                                 "RuleEngineDebug.debug=true\n"
-                                "JsonRpc.debug=true\n"
+                                "JsonRpc.debug=false\n"
                                 "Mock.*=true\n"
-                                "LogEngine.debug=true\n"
+                                "LogEngine.debug=false\n"
                                 );
 }
 
@@ -673,7 +673,11 @@ void TestRules::addRemoveRules()
              .toUtf8());
 
     QVariantList replyExitActions = rule.value("exitActions").toList();
-    QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
+    QVERIFY2(QJsonDocument::fromVariant(exitActions) == QJsonDocument::fromVariant(replyExitActions),
+             QString("Actions don't match.\nExpected: %1\nGot: %2")
+                 .arg(QString(QJsonDocument::fromVariant(exitActions).toJson()))
+                 .arg(QString(QJsonDocument::fromVariant(replyExitActions).toJson()))
+                 .toUtf8());
 
     params.clear();
     params.insert("ruleId", newRuleId);
@@ -995,14 +999,14 @@ void TestRules::editRules()
         }
 
         QVariantList replyActions = rule.value("actions").toList();
-        QVERIFY2(actions == replyActions,
+        QVERIFY2(QJsonDocument::fromVariant(actions) == QJsonDocument::fromVariant(replyActions),
                  QString("Actions don't match.\nExpected: %1\nGot: %2")
                  .arg(QString(QJsonDocument::fromVariant(actions).toJson()))
                  .arg(QString(QJsonDocument::fromVariant(replyActions).toJson()))
                  .toUtf8());
 
         QVariantList replyExitActions = rule.value("exitActions").toList();
-        QVERIFY2(exitActions == replyExitActions,
+        QVERIFY2(QJsonDocument::fromVariant(exitActions) == QJsonDocument::fromVariant(replyExitActions),
                  QString("Actions don't match.\nExpected: %1\nGot: %2")
                  .arg(QString(QJsonDocument::fromVariant(exitActions).toJson()))
                  .arg(QString(QJsonDocument::fromVariant(replyExitActions).toJson()))
@@ -1330,13 +1334,14 @@ void TestRules::loadStoreConfig()
     qCDebug(dcTests()) << "Getting rules";
     response = injectAndWait("Rules.GetRules");
     QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
-    qDebug() << "GetRules before server shutdown:" <<  response;
+    qCDebug(dcTests()) << "GetRules before server shutdown:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
 
     qCDebug(dcTests()) << "Restarting server";
     restartServer();
 
     response = injectAndWait("Rules.GetRules");
     rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
+    qCDebug(dcTests()) << "GetRules after server shutdown:" << qUtf8Printable(QJsonDocument::fromVariant(rules).toJson(QJsonDocument::Indented));
 
     QVERIFY2(rules.count() == 4, "There should be exactly four rule.");
 
@@ -1358,13 +1363,15 @@ void TestRules::loadStoreConfig()
 
     QVariantMap rule1 = response.toMap().value("params").toMap().value("rule").toMap();
 
+    qCDebug(dcTests()) << "Rule 1 details:" << qUtf8Printable(QJsonDocument::fromVariant(rule1).toJson(QJsonDocument::Indented));
+
     QVariantList eventDescriptors = rule1.value("eventDescriptors").toList();
     QVERIFY2(eventDescriptors.count() == 2, "There should be exactly 2 eventDescriptors");
     foreach (const QVariant &expectedEventDescriptorVariant, eventDescriptorList) {
         bool found = false;
         foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
-            if (expectedEventDescriptorVariant.toMap().value("eventTypeId") == replyEventDescriptorVariant.toMap().value("eventTypeId") &&
-                    expectedEventDescriptorVariant.toMap().value("thingId") == replyEventDescriptorVariant.toMap().value("thingId")) {
+            if (expectedEventDescriptorVariant.toMap().value("eventTypeId").toUuid() == replyEventDescriptorVariant.toMap().value("eventTypeId").toUuid() &&
+                    expectedEventDescriptorVariant.toMap().value("thingId").toUuid() == replyEventDescriptorVariant.toMap().value("thingId").toUuid()) {
                 found = true;
                 QVariantMap stringifiedExpectedEventDescriptorVariant = QJsonDocument::fromVariant(expectedEventDescriptorVariant).toVariant().toMap();
                 QVERIFY2(replyEventDescriptorVariant == stringifiedExpectedEventDescriptorVariant,
@@ -1401,8 +1408,8 @@ void TestRules::loadStoreConfig()
     foreach (const QVariant &actionVariant, actions) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions) {
-            if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
-                    actionVariant.toMap().value("thingId") == replyActionVariant.toMap().value("thingId")) {
+            if (actionVariant.toMap().value("actionTypeId").toUuid() == replyActionVariant.toMap().value("actionTypeId").toUuid() &&
+                    actionVariant.toMap().value("thingId").toUuid() == replyActionVariant.toMap().value("thingId").toUuid()) {
                 found = true;
                 // Check rule action params
                 QVariantList actionParams = actionVariant.toMap().value("ruleActionParams").toList();
@@ -1453,8 +1460,8 @@ void TestRules::loadStoreConfig()
     foreach (const QVariant &actionVariant, actions2) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions2) {
-            if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
-                    actionVariant.toMap().value("thingId") == replyActionVariant.toMap().value("thingId")) {
+            if (actionVariant.toMap().value("actionTypeId").toUuid() == replyActionVariant.toMap().value("actionTypeId").toUuid() &&
+                    actionVariant.toMap().value("thingId").toUuid() == replyActionVariant.toMap().value("thingId").toUuid()) {
                 found = true;
                 // Check rule action params
                 QVariantList actionParams = actionVariant.toMap().value("ruleActionParams").toList();
@@ -1473,8 +1480,8 @@ void TestRules::loadStoreConfig()
     foreach (const QVariant &exitActionVariant, replyExitActions2) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyExitActions2) {
-            if (exitActionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
-                    exitActionVariant.toMap().value("thingId") == replyActionVariant.toMap().value("thingId")) {
+            if (exitActionVariant.toMap().value("actionTypeId").toUuid() == replyActionVariant.toMap().value("actionTypeId").toUuid() &&
+                    exitActionVariant.toMap().value("thingId").toUuid() == replyActionVariant.toMap().value("thingId").toUuid()) {
                 found = true;
                 // Check rule action params
                 QVariantList actionParams = exitActionVariant.toMap().value("ruleActionParams").toList();
@@ -1512,8 +1519,8 @@ void TestRules::loadStoreConfig()
     foreach (const QVariant &actionVariant, actions3) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions3) {
-            if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
-                    actionVariant.toMap().value("thingId") == replyActionVariant.toMap().value("thingId")) {
+            if (actionVariant.toMap().value("actionTypeId").toUuid() == replyActionVariant.toMap().value("actionTypeId").toUuid() &&
+                    actionVariant.toMap().value("thingId").toUuid() == replyActionVariant.toMap().value("thingId").toUuid()) {
                 found = true;
                 // Check rule action params
                 QVariantList actionParams = actionVariant.toMap().value("ruleActionParams").toList();
@@ -2015,7 +2022,7 @@ void TestRules::testChildEvaluator()
     setWritableStateValue(thingId, StateTypeId(displayPinMockAllowedValuesStateTypeId.toString()), QVariant("String value 1"));
     setWritableStateValue(thingId, StateTypeId(displayPinMockColorStateTypeId.toString()), QVariant("#000000"));
 
-    qCDebug(dcTests()) << "Adding rule";
+    qCDebug(dcTests()) << "Adding rule" << qUtf8Printable(QJsonDocument::fromVariant(ruleMap).toJson(QJsonDocument::Indented));
 
     // Add rule
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
@@ -2736,7 +2743,7 @@ void TestRules::testInterfaceBasedEventRule()
     addRuleParams.insert("actions", QVariantList() << powerAction);
     addRuleParams.insert("eventDescriptors", QVariantList() << lowBatteryEvent);
 
-    qDebug(dcTests) << "Inserting rule";
+    qCDebug(dcTests()) << "Inserting rule";
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     QCOMPARE(response.toMap().value("status").toString(), QString("success"));
@@ -2745,7 +2752,7 @@ void TestRules::testInterfaceBasedEventRule()
     QVariantMap getRuleParams;
     getRuleParams.insert("ruleId", response.toMap().value("params").toMap().value("ruleId"));
 
-    qDebug(dcTests) << "Getting rule details";
+    qCDebug(dcTests()) << "Getting rule details";
 
     response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
 
@@ -2759,39 +2766,47 @@ void TestRules::testInterfaceBasedEventRule()
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("paramName").toString(), QString("power"));
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("value").toString(), QString("true"));
 
-    qDebug(dcTests) << "Clearing action history";
+    qCDebug(dcTests()) << "Clearing action history";
 
     // Change the state to true, action should trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
 
-    qDebug(dcTests) << "Changing battery state -> true";
+    qCDebug(dcTests()) << "Changing battery state -> true";
 
     spy.wait(); spy.clear();
+    QVERIFY2(reply->isFinished(), "Reply is not finished");
+    reply->deleteLater();
+
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
+    QVERIFY2(reply->isFinished(), "Reply is not finished");
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
     verifyRuleExecuted(mockPowerActionTypeId);
 
-    qDebug(dcTests) << "Clearing action history";
+    qCDebug(dcTests()) << "Clearing action history";
 
     // Change the state to false, action should not trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
 
-    qDebug(dcTests) << "Changing battery state -> false";
+    qCDebug(dcTests()) << "Changing battery state -> false";
 
     spy.wait(); spy.clear();
+    QVERIFY2(reply->isFinished(), "Reply is not finished");
+    reply->deleteLater();
+
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
-    QCOMPARE(spy.count(), 1);
     reply->deleteLater();
+    QCOMPARE(spy.count(), 1);
+
     verifyRuleNotExecuted();
 }
 

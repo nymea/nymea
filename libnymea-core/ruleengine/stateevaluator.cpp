@@ -35,6 +35,8 @@
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 
+#include <QColor>
+
 namespace nymeaserver {
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
@@ -320,11 +322,11 @@ bool StateEvaluator::isValid() const
         } else { // TypeInterface
             Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(m_stateDescriptor.interface());
             if (!iface.isValid()) {
-                qWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
+                qCWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
                 return false;
             }
             if (iface.stateTypes().findByName(m_stateDescriptor.interfaceState()).name().isEmpty()) {
-                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such state:" << m_stateDescriptor.interfaceState();
+                qCWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such state:" << m_stateDescriptor.interfaceState();
                 return false;
             }
         }
@@ -369,30 +371,64 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
         }
 
         if (!descriptor.stateValue().isNull()) {
-            QVariant convertedValue = descriptor.stateValue();
+            QVariant stateValue = state.value();
+            QVariant descriptorValue = descriptor.stateValue();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            bool res = descriptorValue.convert(state.value().metaType());
+            if (!res) {
+                return false;
+            }
+
+            // FIXME: not sure if this is a bug in Qt, but compairing two equivalient QVariant containing QColor
+            // with QPartialOrdering::equivalent results in false. Until this has been fixed or the error has been found,
+            // we convert colors to strings and compare them
+
+            // Comparing QVariant(QColor, QColor(ARGB 1, 0, 0, 0)) to QVariant(QColor, QColor(ARGB 1, 0, 1, 0)) with operator Types::ValueOperatorEquals --> false
+
+            if (state.value().typeId() == QMetaType::QColor) {
+                QColor stateColor = stateValue.value<QColor>();
+                QColor desciptorColor = descriptorValue.value<QColor>();
+
+                QString sateColorName = stateColor.name();
+                QString desciptorColorName = desciptorColor.name();
+
+                stateValue = QVariant(sateColorName);
+                descriptorValue = QVariant(desciptorColorName);
+            }
+
+            QPartialOrdering ordering = QVariant::compare(stateValue, descriptorValue);
+            bool result = false;
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                result = (ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorGreater:
+                result = (ordering == QPartialOrdering::greater);
+                break;
+            case Types::ValueOperatorGreaterOrEqual:
+                result = (ordering == QPartialOrdering::greater || ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorLess:
+                result = (ordering == QPartialOrdering::less);
+                break;
+            case Types::ValueOperatorLessOrEqual:
+                result = (ordering == QPartialOrdering::less || ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorNotEquals:
+                result = (ordering != QPartialOrdering::equivalent);
+                break;
+            }
+
+            qCDebug(dcRuleEngineDebug()) << "Comparing" << stateValue << "to" << descriptorValue << "with operator" << descriptor.operatorType() << "-->" << result;
+
+            return result;
+#else
             bool res = convertedValue.convert(state.value().type());
             if (!res) {
                 return false;
             }
 
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            QPartialOrdering ordering = QVariant::compare(state.value(), convertedValue);
-            switch (descriptor.operatorType()) {
-            case Types::ValueOperatorEquals:
-                return ordering == QPartialOrdering::Equivalent;
-            case Types::ValueOperatorGreater:
-                return ordering == QPartialOrdering::Greater;
-            case Types::ValueOperatorGreaterOrEqual:
-                return ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent;
-            case Types::ValueOperatorLess:
-                return ordering == QPartialOrdering::Less;
-            case Types::ValueOperatorLessOrEqual:
-                return ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent;
-            case Types::ValueOperatorNotEquals:
-                return ordering != QPartialOrdering::Equivalent;
-            }
-#else
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 return state.value() == convertedValue;

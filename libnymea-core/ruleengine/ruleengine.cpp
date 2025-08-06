@@ -187,12 +187,20 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     }
     ThingClass thingClass = thing->thingClass();
     EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
+    StateType stateType = thingClass.stateTypes().findById(event.eventTypeId());
 
-
-    if (event.params().count() == 0) {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
-    } else {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << '\n' << "     " << event.params();
+    if (eventType.isValid()) {
+        if (event.params().count() == 0) {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
+        } else {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << '\n' << "     " << event.params();
+        }
+    } else if (stateType.isValid()) {
+        if (event.params().count() == 0) {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event (state changed): " << thing->name() << " - " << stateType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << stateType.id().toString() << ")";
+        } else {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event (state changed): " << thing->name() << " - " << stateType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << stateType.id().toString() << ")" << '\n' << "     " << event.params();
+        }
     }
 
     QList<Rule> rules;
@@ -344,7 +352,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     // Check IDs in each EventDescriptor
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         if (!eventDescriptor.isValid()) {
-            qWarning(dcRuleEngine()) << "EventDescriptor is incomplete. It must have either eventTypeId and thingId, or interface and interfaceEvent";
+            qCWarning(dcRuleEngine()) << "EventDescriptor is incomplete. It must have either eventTypeId and thingId, or interface and interfaceEvent";
             return RuleErrorEventTypeNotFound;
         }
         if (eventDescriptor.type() == EventDescriptor::TypeThing) {
@@ -377,11 +385,11 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             // Interface based event
             Interface iface = m_thingManager->supportedInterfaces().findByName(eventDescriptor.interface());
             if (!iface.isValid()) {
-                qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
+                qCWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
             }
             if (iface.eventTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty() && iface.stateTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty()) {
-                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
+                qCWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
                 return RuleErrorEventTypeNotFound;
             }
         }
@@ -894,7 +902,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 paramValue = event.param(paramDescriptor.paramTypeId()).value();
             } else {
                 if (paramDescriptor.paramName().isEmpty()) {
-                    qWarning(dcRuleEngine()) << "ParamDescriptor invalid. Either paramTypeId or paramName are required";
+                    qCWarning(dcRuleEngine()) << "ParamDescriptor invalid. Either paramTypeId or paramName are required";
                     allOK = false;
                     continue;
                 }
@@ -911,44 +919,42 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 
-            QPartialOrdering ordering = QVariant::compare(event.param(paramDescriptor.paramTypeId()).value(),
-                                                          paramDescriptor.value());
-
-            if (ordering == QPartialOrdering::Unordered) {
-                qCWarning(dcRuleEngine()) << "Cannot compair the params:" << event.param(paramDescriptor.paramTypeId()).value() << paramDescriptor.value();
+            QVariant descriptorValue = paramDescriptor.value();
+            bool res = descriptorValue.convert(paramValue.metaType());
+            if (!res) {
+                qCWarning(dcRuleEngine()) << "Cannot convert the params:" << paramValue << paramDescriptor.value()  ;
                 allOK = false;
             } else {
-                switch (paramDescriptor.operatorType()) {
-                case Types::ValueOperatorEquals:
-                    if (paramValue != paramDescriptor.value()) {
-                        allOK = false;
+                // Converted successfully to the same type, now compare the values according to the param descriptor
+                QPartialOrdering ordering = QVariant::compare(paramValue, descriptorValue);
+                if (ordering == QPartialOrdering::Unordered) {
+                    qCWarning(dcRuleEngine()) << "Cannot compair the params:" << paramValue <<  paramDescriptor.value();
+                    allOK = false;
+                } else {
+                    bool result = false;
+                    switch (paramDescriptor.operatorType()) {
+                    case Types::ValueOperatorEquals:
+                        result = (ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorGreater:
+                        result = (ordering == QPartialOrdering::greater);
+                        break;
+                    case Types::ValueOperatorGreaterOrEqual:
+                        result = (ordering == QPartialOrdering::greater || ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorLess:
+                        result = (ordering == QPartialOrdering::less);
+                        break;
+                    case Types::ValueOperatorLessOrEqual:
+                        result = (ordering == QPartialOrdering::less || ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorNotEquals:
+                        result = (ordering != QPartialOrdering::equivalent);
+                        break;
                     }
-                    break;
-                case Types::ValueOperatorNotEquals:
-                    if (paramValue == paramDescriptor.value()) {
-                        allOK = false;
-                    }
-                    break;
-                case Types::ValueOperatorGreater:
-                    if (ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent) {
-                        allOK = false;
-                    }
-                    break;
-                case Types::ValueOperatorGreaterOrEqual:
-                    if (ordering == QPartialOrdering::Less) {
-                        allOK = false;
-                    }
-                    break;
-                case Types::ValueOperatorLess:
-                    if (ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent) {
-                        allOK = false;
-                    }
-                    break;
-                case Types::ValueOperatorLessOrEqual:
-                    if (ordering == QPartialOrdering::Greater) {
-                        allOK = false;
-                    }
-                    break;
+
+                    qCDebug(dcRuleEngineDebug()) << "Comparing param value" << paramValue << "to descriptor value" << descriptorValue << "with operator" << paramDescriptor.operatorType() << "-->" << result;
+                    allOK = result;
                 }
             }
 #else
@@ -1027,7 +1033,7 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
 RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, const Rule &rule)
 {
     if (!ruleAction.isValid()) {
-        qWarning(dcRuleEngine()) << "Action is incomplete. It must have either thingId and actionTypeId/browserItemId, or interface and interfaceAction:" << ruleAction;
+        qCWarning(dcRuleEngine()) << "Action is incomplete. It must have either thingId and actionTypeId/browserItemId, or interface and interfaceAction:" << ruleAction;
         return RuleErrorActionTypeNotFound;
     }
 

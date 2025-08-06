@@ -23,6 +23,11 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     }
 }
 
+CONFIG(python) {
+    message("Building tests with Python plugin support")
+    DEFINES += WITH_PYTHON
+}
+
 PKGCONFIG += nymea-zigbee nymea-networkmanager nymea-mqtt
 
 INCLUDEPATH += $$top_srcdir/libnymea \

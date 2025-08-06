@@ -92,3 +92,28 @@ asan: {
     QMAKE_LFLAGS *= -fsanitize=address
 }
 
+
+CONFIG(withoutpython) {
+    message("Building without python support.")
+    CONFIG -= python
+} else:packagesExist(python3-embed) {
+    # As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
+    # For everything below python 3.8 we need to manually select one
+    PKGCONFIG += python3-embed
+    CONFIG += python
+} else:packagesExist(python-3.5) {
+    # xenial, stretch
+    PKGCONFIG += python-3.5
+    CONFIG += python
+} else:packagesExist(python-3.6) {
+    # bionic
+    PKGCONFIG += python-3.6
+    CONFIG += python
+} else:packagesExist(python-3.7) {
+    # buster, eoan
+    PKGCONFIG += python-3.7
+    CONFIG += python
+} else {
+    message("Python development package not found. Building without python support.")
+    CONFIG -= python
+}

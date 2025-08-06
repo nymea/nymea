@@ -1,0 +1,1345 @@
+nymea (1.11.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Rework network discovery
+  * Update copyright to 2025
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Thu, 20 Mar 2025 14:15:10 +0100
+
+nymea (1.10.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Add systemd notify support
+  * Debug JSONRPC API handler
+  * Use default cache location for the plugin info caches
+  * Influxdb: Disable debug print if database is disabled or not
+    initialized
+  * NetworkManager: add wireless device capabilities
+  * core: Fix shutdown crash and improve application logging
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Fri, 20 Dec 2024 13:39:09 +0100
+
+nymea (1.9.5) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * CoAP: Silence warning regarding multicast join error
+
+ -- jenkins <developer@nymea.io>  Tue, 29 Oct 2024 07:16:46 +0100
+
+nymea (1.9.4) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Remove unused signal
+  * modbus RTU: add platform configuration
+
+  [ Tobi ]
+  * Log proper RPC method name for the initial setup
+
+  [ Simon Stürz ]
+  * Update mac address database
+  * Update debian copyright
+  * Update README
+  * Network device discovery reachable to early
+
+ -- jenkins <developer@nymea.io>  Tue, 01 Oct 2024 16:53:59 +0200
+
+nymea (1.9.3) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Update debian packaging and compat level
+
+ -- jenkins <developer@nymea.io>  Fri, 19 Jul 2024 21:05:43 +0200
+
+nymea (1.9.2) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Stop nymea time manager before shutdown the daemon
+  * Update mac address database
+  * Update dependency for Ubuntu noble
+
+ -- jenkins <developer@nymea.io>  Wed, 15 May 2024 08:18:12 +0200
+
+nymea (1.9.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Enable logging for signal strength by default
+  * Add more debug prints to script console when ThingState fails
+  * Update optional prgress state to update interface
+  * Fix mantic build
+
+  [ Simon Stürz ]
+  * Update mac address database
+  * Update copyright to 2024
+  * Allow to build nymead using custom version independent from dpkg
+  * Update install directory for tests
+
+ -- jenkins <developer@nymea.io>  Mon, 29 Jan 2024 12:22:29 +0100
+
+nymea (1.9.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for connections to actionExecuted in scripts
+  * Enable more info on double ThingActionInfo::finish() calls
+  * Make possibleValues for states dynamic and translatable
+
+  [ Simon Stürz ]
+  * LogEngine: provide possibility to disable the log engine
+
+  [ Michael Zanetti ]
+  * Make script runtime errors appear in the script console
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: Update warning regarding multiple IPs for
+    one MAC address.
+
+  [ Michael Zanetti ]
+  * Fix building with newer gcc
+  * Add support for Bluetooth pairing during thing setup
+
+ -- jenkins <developer@nymea.io>  Wed, 29 Nov 2023 14:13:40 +0100
+
+nymea (1.8.4) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Fri, 18 Aug 2023 17:11:58 +0200
+
+nymea (1.8.3) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Thu, 17 Aug 2023 14:10:39 +0200
+
+nymea (1.8.2) jammy; urgency=medium
+
+  [ alpha-rd ]
+  * Update Dutch translations
+
+  [ Michael Zanetti ]
+  * Tell systemd that we're using influxdb
+  * Fix influx systemd env override not working with older systemd
+
+  [ Simon Stürz ]
+  * arp: Fix discovery resolving multiple/wrong mac addresses for ip
+
+ -- jenkins <developer@nymea.io>  Thu, 29 Jun 2023 11:37:28 +0200
+
+nymea (1.8.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add location setting
+
+ -- jenkins <developer@nymea.io>  Wed, 07 Jun 2023 15:51:18 +0200
+
+nymea (1.8.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add location setting
+  * Add desiredPhaseCount state to evcharger interface
+  * Add windowOpen and windowOpenDetected states to the thermostat
+  * Fix multiple ragisterTransport calls on reconfiguring interfaces
+  * Enforce unit on closable interface
+  * Rework the log engine to use influxdb instead of sql
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: perform reachability verification ping
+  * Update mac address database
+
+ -- jenkins <developer@nymea.io>  Tue, 23 May 2023 11:49:15 +0200
+
+nymea (1.7.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Bind a client connection to the token given in the hello call.
+  * Improve debug logging filter arguments
+  * Add information for initialSetup and reconfigure to ThingSetupInfo
+  * Enable logging for thermostat states
+  * Properly clean up the TCP server on shutdown
+  * Enqueue priority jobs instead of prepending
+  * Require min/max values for co2sensors
+
+  [ Simon Stürz ]
+  * network device monitor: Clean up pending ping replies properly
+
+  [ Michael Zanetti ]
+  * Require min/max values for pressuresensors
+  * Use dynamic min/max values for io connections
+  * Refactor NymeaCore class
+
+  [ Simon Stürz ]
+  * Update copyright to 2023
+
+  [ Michael Zanetti ]
+  * Manually check for Bluetooth before instantiating QtBluetooth
+
+  [ Simon Stürz ]
+  * NetworkDeviceMonitor: Fix initial reachable state using internal
+    caches
+
+  [ Michael Zanetti ]
+  * Create indices on entries table of log db
+  * Stabilize logging tests
+
+  [ Simon Stürz ]
+  * Fix method to convert phases from string
+
+  [ Michael Zanetti ]
+  * Allow users with ControlThings permission to read things logs
+  * Drop cloud settings which aren't used any more
+
+  [ Simon Stürz ]
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Tue, 21 Feb 2023 17:43:48 +0100
+
+nymea (1.6.3) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Wed, 01 Feb 2023 12:17:51 +0100
+
+nymea (1.6.2) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Mon, 16 Jan 2023 14:35:34 +0100
+
+nymea (1.6.1) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Fri, 23 Dec 2022 11:32:14 +0100
+
+nymea (1.6.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Update systemd service dependecies to dbus.socket
+
+  [ Michael Zanetti ]
+  * Add a childlock interface
+  * Fix suggestLogging property not working for eventTypes
+  * Allow registering list types without their contained objects on
+    JSONRPC
+  * Fix permissions for rules, tags and appdata api
+  * Make init call for python plugins blocking
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: wait for pending MAC address manufacturer
+    lookups before finishing a discovery
+
+  [ Michael Zanetti ]
+  * Allow registering lists of ThingId on json rpc
+  * Fix a crash when the same plugin file is loaded twice
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: Skip duplicated discovery if there are
+    multiple network interfaces connected to the same network
+
+  [ Michael Zanetti ]
+  * Drop old nymea:cloud support
+  * Add vibrationsensor interface
+
+  [ Simon Stürz ]
+  * Update mac address vendor database
+
+ -- jenkins <developer@nymea.io>  Tue, 13 Dec 2022 21:05:09 +0100
+
+nymea (1.5.1) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Mon, 07 Nov 2022 12:48:00 +0100
+
+nymea (1.5.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix a potential info->aborted() call after the plugin called info-
+    >finish()
+  * Expose Zigbee neighbor tables to jsonrpc
+  * Align gassensor interface wording
+  * Fix PyStdOutHandler class name in python engine
+  * Add API to interact with ZigBee bindings
+  * Add Thing and Things types to script engine
+
+  [ Simon Stürz ]
+  * Network device discovery: create reply for each discovery request
+
+  [ Michael Zanetti ]
+  * Fix editing user scopes
+
+  [ Simon Stürz ]
+  * Network device discovery: fix potential crash on unregister non
+    existing monitor
+  * Provide mock plugin with the test library, not with the tests.
+  * Remove extern plugin info from testlib header
+  * Improve warning information in thing manager
+
+  [ Michael Zanetti ]
+  * Add API to configure the wired network
+  * Rework air quliaty interfaces
+
+  [ Simon Stürz ]
+  * Allow to override default paths using new env variable
+  * Update mac address database
+
+ -- jenkins <developer@nymea.io>  Tue, 25 Oct 2022 02:37:19 +0200
+
+nymea (1.4.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix creating rules without giving action params that have a default
+    value
+  * Fix warning messages in debug report page
+
+ -- jenkins <developer@nymea.io>  Fri, 23 Sep 2022 16:33:50 +0200
+
+nymea (1.4.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Make ThingClassId optional in AddThing() when there's already a
+    ThingDescriptor
+
+  [ Simon Stürz ]
+  * Add debian package for libnymea-core
+  * Provide experience manager access in core instance
+  * Fix NetworkDiscovery::hostAddressDiscovered not always being emitted
+  * NetworkDiscovery: Lookup the mac address vendor also if the cache
+    has stored an empty mac vendor
+  * Adjust timeout duration for actions, thing discovery and JSON-RPC
+    replies
+  * Add connected property to MqttChannel
+  * Update nymea-tests and provide nymea-testlib as development package
+  * Update nymead server installation path prefix mechanism
+
+  [ Michael Zanetti ]
+  * Allow apps to cache the GetPlugins call on JsonRpc
+  * Add support for Z-Wave
+  * Fix logging level indicator character for debug prints
+  * Fix build failure in rpath setting with certain toolchains
+  * Check Info objects for finished after aborting them
+  * Fix a python plugin crash when trying to login with empty
+    credentials
+  * Remove displayNameEvent property from stateTypes
+  * Add lock/unlock actions to smartlock interface
+  * Add optional boost state to thermostats
+
+  [ Simon Stürz ]
+  * Update mac address database
+
+  [ Michael Zanetti ]
+  * Readme downloads update
+
+  [ Jenkins ]
+  * Update readme.md to show nymea:app for ubuntu touch
+
+  [ Simon Stürz ]
+  * Add electricity helper class to libnymea
+
+ -- jenkins <developer@nymea.io>  Fri, 26 Aug 2022 12:58:14 +0200
+
+nymea (1.3.1) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Mon, 11 Jul 2022 15:35:08 +0200
+
+nymea (1.3.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Migrate pluginid in thing settings when a thing class moves
+
+  [ Simon Stürz ]
+  * Add ping retry feature and provide it to the monitor
+
+  [ Michael Zanetti ]
+  * Some fixes in Coap
+  * Add support for CoIoT
+  * Fix additional interface command line parameter
+  * Add phaseCount state to electricvehicle interface
+
+ -- jenkins <developer@nymea.io>  Thu, 30 Jun 2022 15:04:40 +0200
+
+nymea (1.2.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix filters generating wrong data types
+  * Allow configuring warning/info/debug logging levels
+  * Fix allowedValues for battery interface
+  * Explicitly destroy experiences
+  * Add alarm and firesensor interfaces
+
+  [ Simon Stürz ]
+  * Fix Things filter by param method
+
+  [ Michael Zanetti ]
+  * Print a better warning when setStateValue() is called with a wrong
+    name
+  * Properly use pkgconfig to find nymea-mqtt
+
+  [ Simon Stürz ]
+  * Provide access to the network device discovery cache
+
+ -- jenkins <developer@nymea.io>  Thu, 16 Jun 2022 00:20:53 +0200
+
+nymea (1.1.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for datetime objects to pluginStorage in python plugins
+  * Add support for listing and removing entries to PyPluginStorage
+  * Store the serveruuid as string
+
+  [ Simon Stürz ]
+  * Network device monitor
+
+  [ Michael Zanetti ]
+  * Remove smartmeterconsumer from evcharger
+  * Add a timeout to ModbusRtuReplies
+  * Fix modbus RTU warning prints
+  * Allow modbus RTU plugins to request a connection reset
+  * Add rpath to nymead binary
+  * Fix webserver tests
+  * Increase timeout for tests
+  * Fixes in permit joining timer handling
+
+ -- jenkins <developer@nymea.io>  Tue, 03 May 2022 23:27:19 +0200
+
+nymea (1.0.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support fur user permissions
+
+  [ Simon Stürz ]
+  * Add tunnel proxy server for new remote connection mechanism
+
+  [ Michael Zanetti ]
+  * Fix a crash when removing a currently connected transport
+  * Make SSL certificate loading and generating more robust
+  * Fix encoding of ZigbeeHandler (Windows CRLF -> Unix LF)
+  * Add support for TI z-Stack based Zigbee adapters
+  * Fix some interface definitions (minimum/maximum vs min/max)
+  * Split thing cache into individual files
+  * Fix cleaning up things when a setup fails in python plugins
+  * Don't generate events for state changes any more
+  * Remove deprecated Devices, Action, Events, States namespaces from
+    JSONRPC
+  * Add discoveryType thing class property
+
+  [ doctorseus ]
+  * Fix for ThingState which reports minValue instead of maxValue
+
+  [ Michael Zanetti ]
+  * Add debug prints to rule engine
+  * Increase timeout for auto tests
+  * Remove apt.conf.d/99nymea also without purge option
+
+  [ Simon Stürz ]
+  * Update copyright to 2022
+  * Update mac address database and switch source information provider
+  * Fix crash for long taking mac address lookup
+  * DebugInterface: Fix process finished crash if the http reply timed
+    out in the mean time
+
+  [ Jenkins ]
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 27 Mar 2022 19:49:49 +0200
+
+nymea (0.30.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * 0.30
+  * Add energystorage interface
+  * Add support for dynamic min/max state values
+
+  [ Simon Stürz ]
+  * Add heat pump interfaces
+
+  [ Michael Zanetti ]
+  * Add water level sensor interface
+  * Add charging state to evcharger interface
+  * Add api to set the zigbee channel during network setup
+
+  [ Simon Stürz ]
+  * Add min charging current to the electricvehicle interface
+  * Add phase count and session energy state to the evcharger interface
+
+  [ Michael Zanetti ]
+  * Change upgrade restart logic to also work on plugins and libs
+  * Add unit ohm
+  * Close log db if initialisation fails and discard entries.
+
+  [ Simon Stürz ]
+  * Add flag handling methods for the JSON RPC handler.
+
+  [ Michael Zanetti ]
+  * Add more "by name" thing methods and c++11 list_initializers for
+    lists
+  * Add a providedInterfaces property to thingClass
+  * Remove cloud push notifications
+  * Fix dependency to libnymea-dev for nymea-sdk
+  * Fix a double-free when shutting down the python engine.
+
+ -- Jenkins <jenkins@nymea.io>  Sat, 11 Dec 2021 00:31:22 +0100
+
+nymea (0.29.2) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix a wrong error message from the plugininfocompiler
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 02 Nov 2021 17:18:10 +0100
+
+nymea (0.29.1) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * 
+  * Make use of gpio classes from libnymea-gpio
+
+  [ Michael Zanetti ]
+  * Use pkgconfig to find zigbee also for tests
+
+  [ Simon Stürz ]
+  * Fix action copy operator
+  * Bump nymea version to 0.29.1
+  * Update mac address database
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 04 Oct 2021 12:10:50 +0200
+
+nymea (0.29.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Bump version to 0.29.0
+  * Add O2, PH, ORP, CO and flammable gas sensor interfaces
+  * Update energymeter interface
+  * Add more methods to get to states by name instead of id
+
+  [ Simon Stürz ]
+  * Fix TCP server internal signal connection
+
+  [ Michael Zanetti ]
+  * Force unit on humidity sensor interface
+  * Silence some spamming debug messages from project files
+  * Add PluginTimer API to python plugins
+  * Add a solar inverter interface
+  * Add a plugged in state to evcharger interface
+  * Add an electricvehicle interface
+
+  [ Simon Stürz ]
+  * Prevent unspecific warnings during certificate loading
+
+  [ Michael Zanetti ]
+  * Fix myThings() not being updated before thingRemoved in python
+    plugins
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 06 Sep 2021 09:05:11 +0200
+
+nymea (0.28.1) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * Bump to 0.28.1
+  * Update mac address database
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 16 Jul 2021 21:29:09 +0200
+
+nymea (0.28.0) xenial; urgency=medium
+
+
+  [ Simon Stürz ]
+  * Zigbee node JSON RPC API
+  * Modbus RTU hardware resource
+
+  [ Michael Zanetti ]
+  * 0.28
+  * Add more param getter functions to the python api
+
+  [ Simon Stürz ]
+  * Add air quality interfaces
+
+  [ Michael Zanetti ]
+  * Add more flexible createChannel API to the MQTT provider resource
+  * Fix action finishing in input types mock
+  * Fix time based rules not being initialized directly after creation
+  * Allow creating rules with exit actions and calendar items
+  * Add missing changed notification for appdata
+
+  [ Simon Stürz ]
+  * Network device discovery
+
+  [ Michael Zanetti ]
+  * Add flow rate control support to the ventilation interface
+  * Allow [u]ints to be used with analog IO connections
+  * Add support for QList<QDateTime> -> [time_t] conversion to JSON
+  * Add some convenience methods to access states/stateTypes by name
+  * Add thingClassId to thingDescriptors json
+  * Add a getter method for thing classes to plugin api
+  * Rework smartmeter interfaces
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 06 Jul 2021 17:18:37 +0200
+
+nymea (0.27.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Better cloud reconnect
+  * Disable deprecation errors to allow building with gcc 10/Qt 5.15
+  * Fix some includes to be more flexible on finding headers
+  * Fix a threading related crash in python plugin param handling
+  * Enable building on Ubuntu 21.04
+  * Fix erraneous state changes during thing setup
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 21 May 2021 15:13:54 +0200
+
+nymea (0.27.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Don't call thingRemoved() when a thing didn't complete the setup
+  * 0.27
+  * Enable logging of barcode scanner events
+  * Improve adaptive logging filter
+  * Add support for the plugin and api key storage to python plugins
+  * Rework battery interface
+  * Add a cleaning robot interface
+  * Clean up PyStdoutHandler on shutdown
+  * Add support CONFIG+=asan for building with address sanitizer
+  * Add browsing support to python plugin API
+  * Rename forgotten deviceParams in ThingDescriptor
+  * Add device serial number to system api
+  * Add support for storing application data on the core
+  * Add parentId member to pyThingDescriptor
+  * Drop lastSeenTime from presence sensor
+  * Use PKGCONFIG for the mqtt include
+  * Use pkgconfig for libnymea-remoteproxyclient
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 19 Apr 2021 11:38:38 +0200
+
+nymea (0.26.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Support for configuring logging and filtering states/events
+  * Add unit to batterylevel interface
+
+  [ Bernhard Trinnes ]
+  * Username optional on account interface
+
+  [ Michael Zanetti ]
+  * Rework heating/cooling/thermostat interfaces
+  * 0.26
+  * Add a watersensor interface
+  * Don't crash when a python plugin fails to load
+  * Silence plugin dir debug print
+  * Restructure nymea-sdk meta package
+
+  [ Bernhard Trinnes ]
+  * Updated evcharger interface
+
+  [ Michael Zanetti ]
+  * Weather interface units
+
+  [ Bernhard Trinnes ]
+  * Plugininfocompiler: Add debug output for unknown units
+
+  [ Michael Zanetti ]
+  * Rename libnymea dev
+  * Allow calling ScriptAction::execute() without parameters
+
+  [ Simon Stürz ]
+  * Update copyright to 2021
+
+  [ Bernhard Trinnes ]
+  * Allow disabling python via CONFIG+=withoutpython
+
+  [ Michael Zanetti ]
+  * Fix loading of JS plugins
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 25 Feb 2021 11:27:18 +0100
+
+nymea (0.25.1) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * Fix TCP server warning and pointer initialization
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 29 Jan 2021 15:42:59 +0100
+
+nymea (0.25.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add a command line argument for additional server interfaces
+
+  [ Simon Stürz ]
+  * Add ZigBee hardware resource and network management
+
+  [ Michael Zanetti ]
+  * Add state based value comparison in rules
+  * 0.25 version bump
+  * Drop the manually created -dbg package
+  * Add a note for including extern-plugininfo.h for plugin developers
+  * Improve parameter validation for interface actions and events
+  * Add paramValue() methods to Action and Event
+  * Simplify and extend media interfaces
+  * Fix state change signal
+  * Increase the maximum allowed message size in JSONRPC
+  * Make python plugins optional during the build process
+  * Allow building the plugininfocompiler standalone
+  * Add a rudimentary mechanism for plugins to provide service data
+  * Allow filtering GetThingClasses for thingClassIds
+  * Silence the webserver even more
+  * Add a UnitMilliSeconds
+  * Prevent multiple finish calls on API objects
+
+  [ Simon Stürz ]
+  * Remove SIGSEGV handling and backtrace printing for proper coredump
+    cr…
+  * Limit shutdown timeout of systemd service to 30 seconds
+
+  [ Michael Zanetti ]
+  * Fix memory off-by-one overflow
+  * Cleanup scripts on shutdown
+  * Reorder shutdown
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 21 Dec 2020 18:01:11 +0100
+
+nymea (0.24.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Allow second level domains in email addresses
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 11 Nov 2020 10:55:29 +0100
+
+nymea (0.24.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Retry setup if it fails at startup (e.g. network isn't up yet)
+  * Don't call thingRemoved() on the plugin in case of reconfiguring
+  * Add support for Python plugins
+  * 0.24
+  * Introduce nymea-sdk meta package
+  * Make the signalStrength state in wirelessconnectable interface
+    optional
+  * Add update interface
+  * Allow states, events and actions in interfaces to be optional
+  * Fix a potential crash in logging handlers
+  * Add caching information to client API
+  * Fix the webserver for serving static files
+  * Add support for interface based script events and actions
+  * Add an API keys provider plugin mechanism
+  * Force full linking of plugins at build time
+  * Suppress recurring warning about missing user agents in http
+    requests
+  * Don't use deprecated QString::sprintf and qVariantFromValue
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 28 Oct 2020 19:07:45 +0100
+
+nymea (0.23.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Make it build with Qt 5.14 and -Wno-deprecated
+
+  [ Radek Dostál ]
+  * README.md: fix license version
+
+  [ Michael Zanetti ]
+  * Silence the warning about not being able to translate plugins
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 08 Sep 2020 13:53:53 +0200
+
+nymea (0.23.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Loggingcategories
+  * Fix conversion of values
+  * Use bindValue for composing query strings for the log DB
+  * 0.23
+
+  [ Simon Stürz ]
+  * Fix missing name method override for json handlers
+
+  [ Michael Zanetti ]
+  * Rework garage door interfaces
+
+  [ Simon Stürz ]
+  * Fix update busy flag in GetUpdateStatus API call
+
+  [ Michael Zanetti ]
+  * Fix cleanig up tags that are not needed any more
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 14 Aug 2020 13:09:38 +0200
+
+nymea (0.22.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Store state changes immediately when they change
+  * 0.22
+  * Allow emitting events from things directly
+  * Vaguely inform the plugin about the origin of actions.
+  * Fix time filter
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 14 Jul 2020 11:26:15 +0200
+
+nymea (0.21.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add venetianblind interface
+  * Convert recurring UPnP message to a debug print
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 26 Jun 2020 10:23:16 +0200
+
+nymea (0.21.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Improve error messages when a plugin fails to load
+  * Add support for generic IO connections
+  * Reject duplicate ids in plugin json
+  * Add an irrigation interface
+  * Log DB schema 4
+  * Drop internal networkmanager and use libnymea-networkmanager instead
+  * Improve networking API
+  * Add an I2C hardware resource
+  * Add support for restarting nymea in the system api
+  * Fix thing class translations
+  * Check for cloud certificate file before trying to connect
+  * Add a helper function to more easily access ZeroConf txt records
+  * Cleanup license headers/files
+  * Don't directly link to libssl, we're using the Qt wrappers
+  * Fix UPnP discovery if wifi comes up late
+  * Add ventilation interface
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 07 Jun 2020 19:16:28 +0200
+
+nymea (0.20.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Rename devices to Integrations/Things
+  * Add Radio Paradise icon support in the browser
+  * Fix param values getting lost in ScriptEvents
+  * Add better error reporting when a client fails to establish the
+    encryption channel
+  * Allow removal of discovered child things
+  * Add a displayMessage for errors to browsing operations
+  * Fix initialization of ScriptState values on startup
+  * Fix remving of things without plugin
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 05 Apr 2020 14:43:25 +0200
+
+nymea (0.19.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Delete devices before plugin destruction
+  * Cleanup Rule definition in introspection
+  * Add more detailed setup status to API
+  * Improve heating interfaces
+  * Add Users API
+  * Fix some issues reported by valgrind
+  * Fix ScriptAction qqmlparserstatus
+  * Keep devices without plugins in the system
+  * Update copyright in --help text
+  * Bump version for 0.19
+
+  [ Simon Stürz ]
+  * Add units: newton, newtonmeter and rpm
+
+  [ Michael Zanetti ]
+  * Stabilize logging tests
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 23 Feb 2020 23:38:31 +0100
+
+nymea (0.18.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Scriptengine
+  * Add System Time API
+  * Add discovery mode to userandpassword mock device
+  * Update company name
+  * Improve log DB housekeeping performance
+  * Support units in interfaces
+  * Update device names when changed by the plugin
+  * Subscribe to the entire device namespace in nymea:cloud MQTT
+  * Use a more unique nonce for the remote connection
+
+  [ Simon Stürz ]
+  * Update year and copyright
+
+  [ Michael Zanetti ]
+  * Generate a version.h file
+  * Disconnect all slots of nymea:core on shutdown
+  * Add Bluetooth media icon
+  * Qt versions
+  * Fix crash when removing a connected transport interface
+  * Update copyright
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 29 Jan 2020 21:44:40 +0100
+
+nymea (0.18.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Scriptengine
+  * Add System Time API
+  * Add discovery mode to userandpassword mock device
+  * Update company name
+  * Improve log DB housekeeping performance
+  * Support units in interfaces
+  * Update device names when changed by the plugin
+  * Subscribe to the entire device namespace in nymea:cloud MQTT
+  * Use a more unique nonce for the remote connection
+
+  [ Simon Stürz ]
+  * Update year and copyright
+
+  [ Michael Zanetti ]
+  * Generate a version.h file
+  * Disconnect all slots of nymea:core on shutdown
+  * Add Bluetooth media icon
+  * Qt versions
+  * Fix crash when removing a connected transport interface
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 22 Jan 2020 23:47:19 +0100
+
+nymea (0.17.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Allow more fine grained notification options
+  * More complete setup
+  * Drop old REST server
+  * Experience plugins
+  * Add a barcodescanner interface
+  * Don't load devices if the plugin dropped support for it
+  * Don't emit EventEmitted for invalid devices
+  * Threaded log database
+  * Weaken password requirements a bit
+  * Add some more plugin search paths to work better on non-debian
+    systems
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 01 Dec 2019 00:05:04 +0100
+
+nymea (0.16.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Add account interface
+  * Rework devicemanager and plugin api
+  * Fix wrong wording of Hertz
+  * Improve json parse errors
+  * MQTT hardware resource api updates
+  * Always initialize device settings params
+  * Automatically enable nymead service in dpkg
+
+  [ Simon Stürz ]
+  * Improve debug report and report download mechanism
+  * Improve live logs in debug interface and rework logging rules
+
+  [ Michael Zanetti ]
+  * Add support for more media service icons
+  * Fix Browser icon definition in introspect
+  * Fix generating translation stubs
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 18 Oct 2019 14:57:25 +0200
+
+nymea (0.15.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add a powerswitch interface
+  * Add a doorbell interface
+  * Add an alert interface
+  * Fix a debug print to avoid spamming the log
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 13 Sep 2019 14:11:48 +0200
+
+nymea (0.15.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for browsing things
+  * Fix parenting mechanism for discovered devices
+  * Allow building the plugininfocompiler alone
+  * Export QT_LOGGING_CONF to /etc/nymea/logging.conf by default...
+  * Update navigationpad interface
+  * Write plugins doc update
+  * Autogenerate the ts file
+  * Prevent plugins from being loaded twice
+  * Verify events coming from plugins
+  * Rework button interface inheritance
+  * Require native qmake
+  * Remove build artefacts from gitignore.
+  * Fix dependencies
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 02 Sep 2019 18:01:54 +0200
+
+nymea (0.14.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Bump minimum required TLS version to 1.2
+  * Add support for device settings
+  * Move devicemanager's implementation out of libnymea into libnymea-
+    core
+  * Add nymea-plugininfocompiler to replace nymea-generateplugininfo
+  * Update ZeroConf names when the server is renamed
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 22 Jul 2019 12:17:00 +0200
+
+nymea (0.13.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix some typos
+  * Improve UPnP debug output for easier debugging
+  * Update link to image
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 28 Jun 2019 12:45:38 +0200
+
+nymea (0.13.0) xenial; urgency=medium
+
+
+  [ Simon Stürz ]
+  * Add navigation pad interfaces
+
+  [ Michael Zanetti ]
+  * Fix make lupdate
+  * Don't rely on NetworkManager to determine the online status
+  * Fix include installs
+  * Don't use namespaces in headers in an inheritative way.
+  * System manager
+
+  [ Bernhard Trinnes ]
+  * Update readme
+
+  [ Simon Stürz ]
+  * Fix loading/saving of params using typeId
+  * Add new interface closablesensor
+
+  [ Michael Zanetti ]
+  * Rename vendor
+  * Move nymeatestbase into a nymea-testlib to speed up building
+  * Abstract ZeroConf into a platform plugin
+  * Add filterByDeviceClass to Devices
+  * Rename the target in the plugin.pri so plugin devs don't have to do
+    it
+  * Flush client buffers before terminating a connection
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 19 Jun 2019 23:52:23 +0200
+
+nymea (0.12.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix docs for UnitBpm
+  * Fix documentation after API changes
+  * Don't set debian/ubuntu specific paths in project file
+  * Drop logic to retrieve dynamic turn credentials
+  * Improve translator debug
+  * Fix JsonRpc server breaking transports upon guard timer timeouts
+  * Do a more controlled teardown on shutdown
+  * Enable encryption and authentication for default configurations
+  * Add a warning message in JsonRpcServer when a call times out
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 02 May 2019 11:56:07 +0200
+
+nymea (0.12.0) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * New interface: wirelessconnectable
+  * Change copyright year to 2019
+  * Unify API uuid to string convertion
+
+  [ Michael Zanetti ]
+  * Properly close the DB even on failures.
+  * Rework translation mechanism
+
+  [ Simon Stürz ]
+  * New interface: windspeedsensor
+
+  [ Michael Zanetti ]
+  * Drop deprecated api
+  * Fix the notification for deleting a web server configuration
+  * Fix TimeDescriptors getting lost when updating a rule
+  * Fix package to build with Qt 5.12
+  * Make the JsonRPC handshake mandatory for all new connections
+  * Add a method to filter Devices
+
+  [ Simon Stürz ]
+  * Add auto device reconfigure mechanism
+
+  [ Michael Zanetti ]
+  * Add support for state based rule action parameters
+  * Workaround zeroconf breaking because of broken multicast hardware
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 12 Apr 2019 13:42:35 +0200
+
+nymea (0.11.1) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * Remove power from heating interface
+  * Fix pushbutton auth notification API declaration
+
+  [ Michael Zanetti ]
+  * Update the extended evcharger interface
+  * Support providing a custom remote proxy url
+  * Fix merging params for discovered devices with user overrides
+  * Fix Scenes getting activated by state changes
+  * Mock Plugin: Extend inputTypes mock device with states for all types
+  * Add unit to pressure sensor interface
+  * Make percentage unit mandatory for extendedheating
+  * Add units to conductivity and light sensor interfaces
+  * Remove redundant "close" action from garagegate interface
+  * Add a thermostat interface
+  * Add a deviceId to DeviceDescriptors to allow reconfiguring them
+  * Make color and colorTemperature in lights interfaces writable
+  * Handle binding loops in rules properly
+  * Drop Janus and WebRTC support
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 06 Mar 2019 21:13:34 +0100
+
+nymea (0.11.0) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * Update webserver and debug server behaviour
+
+  [ Michael Zanetti ]
+  * Make loading and tearing down of the core more predictable
+  * Small fixes in AWS connection
+  * Split the smartlock and simpleclosable interfaces
+  * Discovery params override
+  * Add power socket interface
+  * add a daylight sensor interface
+  * Add a presencesensor interface
+  * Fix an issue where Rules might not be initialized properly at
+    startup
+
+  [ Simon Stürz ]
+  * Improve interfaces online documentation
+
+  [ Michael Zanetti ]
+  * rework media interfaces
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 17 Jan 2019 15:37:11 +0100
+
+nymea (0.10.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * emit a signal when a device name is changed so plugins can act on it
+  * Add an MQTT broker
+  * Add noisesensor and co2sensor interfaces
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 12 Dec 2018 14:44:45 +0100
+
+nymea (0.9.39) xenial; urgency=medium
+
+  [ Jenkins ]
+  * Prepare for release
+
+  [ Simon Stürz ]
+  * Improve debuginterface and add more functionality
+
+  [ Michael Zanetti ]
+  * split color light interface into color temperature light
+  * add heating/evcharger interfaces
+  * Push 1.1
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 20 Nov 2018 14:32:29 +0100
+
+nymea (0.9.38) xenial; urgency=medium
+
+  [ Jenkins ]
+  * Prepare for release
+
+  [ Michael Zanetti ]
+  * Smart meter interfaces
+  * The gateway interface now inherits connectable, add a system
+    interface
+  * add limits and offset to GetLogEntries
+  * Refactor packet fragmentation
+
+  [ Simon Stürz ]
+  * Call plugin init method after plugin configuration loading
+
+  [ Michael Zanetti ]
+  * initial take on a fingerprint reader interface
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 29 Oct 2018 14:19:41 +0100
+
+nymea (0.9.37) xenial; urgency=medium
+
+  [ Jenkins ]
+  * Prepare for release
+
+  [ Simon Stürz ]
+  * Add notifications to introspect desciption. Fix #76
+
+  [ Michael Zanetti ]
+  * store the state type along with the value in the state cache
+  * fix introspect for TagError and UserError
+  * Enable usage of Qt logging filters
+  * remove rules which are left without any action after a device
+    removal
+  * don't emit connected() when we've already been connected
+  * more precise param namings and translation context strings
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 10 Oct 2018 04:38:07 +0200
+
+nymea (0.9.36) bionic; urgency=medium
+
+  * Bump changelog to be in line with snap package
+
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Wed, 10 Oct 2018 03:58:10 +0200
+
+nymea (0.9.0) xenial; urgency=medium
+
+  * Rename to nymea
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 09 Oct 2018 22:54:50 +0200
+
+guh (0.8.3) xenial; urgency=medium
+
+  * Add debug server
+  * Add interfaces
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Thu, 08 Feb 2018 23:10:42 +0100
+
+guh (0.8.2) xenial; urgency=medium
+
+  * New hardware manager api
+  * Introduce push button authentication
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Fri, 01 Dec 2017 07:56:26 +0100
+
+guh (0.8.1) xenial; urgency=medium
+
+  * Avahi interfaces and collision handling
+  * JSON RPC traffic standardized
+  * Settings fixed
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Mon, 02 Oct 2017 12:52:44 +0200
+
+guh (0.8.0) xenial; urgency=medium
+
+  * Add support for SSL on all connection interfaces
+  * Add support for authentication on TCP and WebSocket Servers
+  * Allow fine grained configuration of server interfaces through config file
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 06 Sep 2017 14:34:56 +0200
+
+guh (0.7.10) xenial; urgency=medium
+
+  * Make it cross compilable
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 12 Jul 2017 15:14:56 +0100
+
+guh (0.7.9) xenial; urgency=medium
+
+  * Fixing some bugs
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Thu, 16 Feb 2017 15:12:56 +0100
+
+guh (0.7.8) xenial; urgency=medium
+
+  * Add networkmanager
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Thu, 6 Oct 2016 14:31:48 +0200
+
+guh (0.7.6) xenial; urgency=medium
+
+  * Add translations
+  * Add bluetooth server
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 14 Sep 2016 15:43:22 +0200
+
+guh (0.7.5) xenial; urgency=medium
+
+  * Configuration API and server settings
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 11 Jul 2016 23:15:13 +0200
+
+guh (0.7.4) xenial; urgency=medium
+
+  * Add cloud connection
+  * Add guhd configuration 
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 17 Jun 2016 18:35:02 +0200
+
+guh (0.7.3) xenial; urgency=medium
+
+  * Add plugin property recommendations for client applications
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 16 May 2016 11:24:06 +0200
+
+guh (0.7.2) xenial; urgency=medium
+
+  * Add Avahi support
+  * Add guh-plugins-maker package
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 28 Apr 2016 14:56:17 +0200
+
+guh (0.7.1) wily; urgency=medium
+
+  * Add Timemanager
+  * Add Time based rules
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 18 Apr 2016 13:43:01 +0200
+
+guh (0.7.0) wily; urgency=medium
+
+  * Add CoAP
+  * Add OAuth2
+  * Parent/child device relation
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 30 Nov 2015 11:29:03 +0100
+
+guh (0.6.0) vivid; urgency=medium
+
+  * Add websocket server
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 04 Aug 2015 16:13:43 +0200
+
+guh (0.5.0) vivid; urgency=medium
+
+  * Add webserver and REST API
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 01 Aug 2015 14:52:12 +0200
+
+guh (0.4.0) vivid; urgency=medium
+
+  * add EditDevice and notifications
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 06 May 2015 10:13:58 +0200
+
+guh (0.3.0) utopic; urgency=medium
+
+  * update rule engine and many other small changes
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 16 Mar 2015 09:52:40 +0100
+
+guh (0.2.0) UNRELEASED; urgency=medium
+
+  * split plugins into dynamic libs and packages
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sat, 11 Oct 2014 05:09:41 +0200
+
+guh (0.1.8) utopic; urgency=medium
+
+  * allow calling AddRule with a single eventDescriptor but also with a list
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 15 Jun 2014 00:33:36 +0200
+
+guh (0.1.7) utopic; urgency=medium
+
+  * implement StateEvaluators
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 23:27:31 +0200
+
+guh (0.1.6) utopic; urgency=medium
+
+  * state changes auto generate events now
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 20:28:17 +0200
+
+guh (0.1.5) utopic; urgency=medium
+
+  * align params/paramTypes with the rest of the type system
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 20:24:25 +0200
+
+guh (0.1.4) trusty; urgency=medium
+
+  * Add discoveryParams to DeviceClass
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:30:49 +0200
+
+guh (0.1.3) trusty; urgency=medium
+
+  * Added Actions.GetActionType(actionTypeId) to JSONRPC
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:30:38 +0200
+
+guh (0.1.2) trusty; urgency=medium
+
+  * Added Plugin configs
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:26:46 +0200
+
+guh (0.1.1) trusty; urgency=low
+
+  * Initial release.
+
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sat, 27 Apr 2014 22:00:53 +0100

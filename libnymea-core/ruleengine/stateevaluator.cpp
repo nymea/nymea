@@ -424,7 +424,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
 
             return result;
 #else
-            bool res = convertedValue.convert(state.value().type());
+            bool res = descriptorValue.convert(state.value().type());
             if (!res) {
                 return false;
             }

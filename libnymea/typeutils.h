@@ -48,9 +48,6 @@ public: \
     type##Id(): QUuid() {} \
     type##Id(const QString &uuidString): QUuid(QAnyStringView(uuidString)) {} \
     static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
-    bool operator==(const type##Id &other) const { \
-        return toString() == other.toString(); \
-    } \
 }; \
 Q_DECLARE_METATYPE(type##Id);
 #else
@@ -64,7 +61,7 @@ Q_DECLARE_METATYPE(type##Id);
         return toString() == other.toString(); \
     } \
 }; \
-    Q_DECLARE_METATYPE(type##Id);
+Q_DECLARE_METATYPE(type##Id);
 #endif
 
 DECLARE_TYPE_ID(Vendor)

@@ -431,17 +431,17 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
 
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
-                return state.value() == convertedValue;
+                return state.value() == descriptorValue;
             case Types::ValueOperatorGreater:
-                return state.value() > convertedValue;
+                return state.value() > descriptorValue;
             case Types::ValueOperatorGreaterOrEqual:
-                return state.value() >= convertedValue;
+                return state.value() >= descriptorValue;
             case Types::ValueOperatorLess:
-                return state.value() < convertedValue;
+                return state.value() < descriptorValue;
             case Types::ValueOperatorLessOrEqual:
-                return state.value() <= convertedValue;
+                return state.value() <= descriptorValue;
             case Types::ValueOperatorNotEquals:
-                return state.value() != convertedValue;
+                return state.value() != descriptorValue;
             }
 #endif
         } else if (!descriptor.valueThingId().isNull() && !descriptor.valueStateTypeId().isNull()) {

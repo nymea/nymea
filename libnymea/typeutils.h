@@ -41,6 +41,9 @@
 
 #include <QAnyStringView>
 
+// Note: do not overload the == operator, we just want a QUuid comparison with QUuid
+//       ISO C++ says that these are ambiguous, even though the worst conversion for
+//       the first is better than the worst conversion for the second
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \

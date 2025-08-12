@@ -97,7 +97,7 @@ void TestWebSocketServer::testHandshake()
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     connectedSpy.wait();
 
-    QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+    QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
     socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
 
     spy.wait();
@@ -118,12 +118,12 @@ void TestWebSocketServer::pingTest()
 {
     QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
-    QSignalSpy spyConnection(socket, SIGNAL(connected()));
+    QSignalSpy spyConnection(socket, &QWebSocket::connected);
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     QVERIFY2(spyConnection.count() > 0, "not connected");
 
-    QSignalSpy spyPong(socket, SIGNAL(pong(quint64,QByteArray)));
+    QSignalSpy spyPong(socket, &QWebSocket::pong);
     socket->ping("hallo");
     spyPong.wait();
     QVERIFY2(spyPong.count() > 0, "no pong");
@@ -182,14 +182,14 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
 
     QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
-    QSignalSpy spyConnection(socket, SIGNAL(connected()));
+    QSignalSpy spyConnection(socket, &QWebSocket::connected);
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     if (spyConnection.count() == 0) {
         return QVariant();
     }
 
-    QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+    QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
     socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
     spy.wait();
 
@@ -227,14 +227,14 @@ QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
 {
     QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
-    QSignalSpy spyConnection(socket, SIGNAL(connected()));
+    QSignalSpy spyConnection(socket, &QWebSocket::connected);
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     if (spyConnection.count() == 0) {
         return QVariant();
     }
 
-    QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+    QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
 
     socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
     spy.wait();

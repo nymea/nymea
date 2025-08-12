@@ -203,7 +203,7 @@ void TestJSONRPC::testHandshake()
 void TestJSONRPC::testHandshakeLocale()
 {
     // first test if the handshake message is auto-sent upon connecting
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Test withouth locale data
     QVariantMap handShake = injectAndWait("JSONRPC.Hello").toMap();
@@ -246,7 +246,7 @@ void TestJSONRPC::testInitialSetup()
     QVERIFY(NymeaCore::instance()->userManager()->initRequired());
     QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
     QVERIFY(spy.isValid());
     QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
 
@@ -620,7 +620,7 @@ void TestJSONRPC::testBasicCall()
     QFETCH(bool, idValid);
     QFETCH(bool, valid);
 
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
     QVERIFY(spy.isValid());
 
     m_mockTcpServer->injectData(m_clientId, call);
@@ -720,7 +720,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     enableNotifications({"Rules"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Add rule and wait for notification
     // StateDescriptor
@@ -838,7 +838,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     params.insert("stateEvaluator", stateEvaluator);
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     response = injectAndWait("Rules.AddRule", params);
     if (clientSpy.count() == 0) clientSpy.wait();
@@ -857,13 +857,13 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
     // set the rule active
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state state to 20
     qCDebug(dcTests) << "setting mock int state to 20";
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(20)));
     QNetworkReply *reply = nam.get(request);
-    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
     qCDebug(dcTests()) << "Waiting for RuleActiveChanged";
     if (spy.count() == 0) spy.wait();
@@ -879,7 +879,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     qCDebug(dcTests) << "setting mock int state to 42";
     QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply2 = nam.get(request2);
-    connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
+    connect(reply2, &QNetworkReply::finished, reply2, &QNetworkReply::deleteLater);
 
     // Waiting for notifications:
     // Rules.RuleActiveChanged
@@ -915,15 +915,15 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // trigger state change in mock device
     int newVal = 38;
     QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(stateTypeId.toString()).arg(QString::number(newVal))));
     QNetworkReply *reply = nam.get(request);
-    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
-    QSignalSpy replySpy(reply, SIGNAL(finished()));
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+    QSignalSpy replySpy(reply, &QNetworkReply::finished);
     if (replySpy.count() == 0) replySpy.wait();
 
     // Make sure the notification contains all the stuff we expect
@@ -948,7 +948,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     newVal = 42;
     request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(stateTypeId.toString()).arg(newVal)));
     reply = nam.get(request);
-    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
     // Lets wait a max of 500ms for notifications
     clientSpy.wait(500);
@@ -966,7 +966,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
 void TestJSONRPC::pluginConfigChangeEmitsNotification()
 {
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QVariantMap params;
     params.insert("enabled", true);
@@ -1037,7 +1037,7 @@ void TestJSONRPC::testPushButtonAuthInterrupt()
     if (responseSpy.count() == 0) responseSpy.wait();
 
     // Snoop in on everything the TCP server sends to its clients.
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;
@@ -1313,7 +1313,7 @@ void TestJSONRPC::testDataFragmentation_data()
 void TestJSONRPC::testDataFragmentation()
 {
     QJsonDocument jsonDoc;
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QFETCH(QList<QByteArray>, packets);
 

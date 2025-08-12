@@ -2038,7 +2038,7 @@ void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)
 {
     // Verify rule got executed
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -2052,7 +2052,7 @@ void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)
 void TestTimeManager::verifyRuleNotExecuted()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -2065,7 +2065,7 @@ void TestTimeManager::verifyRuleNotExecuted()
 
 void TestTimeManager::cleanupMockHistory() {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -2100,8 +2100,8 @@ void TestTimeManager::setIntState(const int &value)
     bool shouldGetNotification = currentStateValue != value;
 
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
+    QSignalSpy stateSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     spy.clear();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(value)));
@@ -2141,8 +2141,8 @@ void TestTimeManager::setBoolState(const bool &value)
     bool shouldGetNotification = currentStateValue != value;
 
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
+    QSignalSpy stateSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg(value)));
     QNetworkReply *reply = nam.get(request);
@@ -2171,9 +2171,9 @@ void TestTimeManager::triggerMockEvent1()
     qDebug() << "Trigger mock event 1";
 
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
-    QSignalSpy eventSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy eventSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);

@@ -662,7 +662,7 @@ void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 
 void ConfigurationHandler::onTcpServerConfigurationRemoved(const QString &id)
 {
-    qCDebug(dcJsonRpc) << "Notification: TCP server configuration removed";
+    qCDebug(dcJsonRpc()) << "Notification: TCP server configuration removed";
     QVariantMap params;
     params.insert("id", id);
     emit TcpServerConfigurationRemoved(params);

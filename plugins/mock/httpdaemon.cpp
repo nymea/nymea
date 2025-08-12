@@ -66,9 +66,9 @@ void HttpDaemon::incomingConnection(qintptr socket)
     // communication with the client is done over this QTcpSocket. QTcpSocket
     // works asynchronously, this means that all the communication is done
     // in the two slots readClient() and discardClient().
-    QTcpSocket* s = new QTcpSocket(this);
-    connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
-    connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
+    QTcpSocket *s = new QTcpSocket(this);
+    connect(s, &QTcpSocket::readyRead, this, &HttpDaemon::readClient);
+    connect(s, &QTcpSocket::disconnected, this, &HttpDaemon::discardClient);
     s->setSocketDescriptor(socket);
 
 }

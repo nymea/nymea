@@ -269,7 +269,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     if (m_configuration.sslEnabled) {
         // configure client connection
         socket->setSslConfiguration(m_sslConfiguration);
-        connect(socket, SIGNAL(encrypted()), this, SLOT(onEncrypted()));
+        connect(socket, &QSslSocket::encrypted, this, &WebServer::onEncrypted);
         socket->startServerEncryption();
         // wait for encrypted connection before continue with this client
         return;
@@ -425,7 +425,7 @@ void WebServer::readClient()
         // Check if the webinterface dir does exist, otherwise a filerequest is not relevant
         // FIXME: return a default webpage containing server information
         if (!QDir(m_configuration.publicFolder).exists()) {
-            qDebug(dcWebServer()) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
+            qCDebug(dcWebServer()) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);

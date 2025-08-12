@@ -76,7 +76,7 @@ bool BluetoothServer::hardwareAvailable()
     // ourselves if bluez is registered on D-Bus.
     QDBusReply<QStringList> reply = QDBusConnection::systemBus().interface()->registeredServiceNames();
     if (!reply.isValid()) {
-        qWarning(dcBluetoothServer()) << "Unable to query D-Bus for bluez:" << reply.error().message();
+        qCWarning(dcBluetoothServer()) << "Unable to query D-Bus for bluez:" << reply.error().message();
         return false;
     }
     const QStringList services = reply.value();
@@ -138,10 +138,14 @@ void BluetoothServer::onClientConnected()
     QUuid clientId = QUuid::createUuid();
     m_clientList.insert(clientId, client);
 
-    connect(client, SIGNAL(readyRead()), this, SLOT(readData()));
-    connect(client, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
-    connect(client, SIGNAL(stateChanged(QBluetoothSocket::SocketState)), this, SLOT(onClientStateChanged(QBluetoothSocket::SocketState)));
+    connect(client, &QBluetoothSocket::readyRead, this, &BluetoothServer::readData);
+    connect(client, &QBluetoothSocket::disconnected, this, &BluetoothServer::onClientDisconnected);
+    connect(client, &QBluetoothSocket::stateChanged, this, &BluetoothServer::onClientStateChanged);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(client, &QBluetoothSocket::errorOccurred, this, &BluetoothServer::onClientError);
+#else
     connect(client, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(onClientError(QBluetoothSocket::SocketError)));
+#endif
 
     emit clientConnected(clientId);
 }
@@ -198,7 +202,7 @@ bool BluetoothServer::startServer()
 
     // Init bluetooth server
     m_server = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
-    connect(m_server, SIGNAL(newConnection()), this, SLOT(onClientConnected()));
+    connect(m_server, &QBluetoothServer::newConnection, this, &BluetoothServer::onClientConnected);
     if (!m_server->listen(m_localDevice->address())) {
         qCWarning(dcBluetoothServer()) << "Could not listen on local device." << m_localDevice->name();
         delete m_localDevice;

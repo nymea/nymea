@@ -48,7 +48,7 @@ BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation
     // ourselves if bluez is registered on D-Bus.
     QDBusReply<QStringList> reply = QDBusConnection::systemBus().interface()->registeredServiceNames();
     if (!reply.isValid()) {
-        qWarning(dcBluetooth()) << "Unable to query D-Bus for bluez:" << reply.error().message();
+        qCWarning(dcBluetooth()) << "Unable to query D-Bus for bluez:" << reply.error().message();
         return;
     }
     const QStringList services = reply.value();
@@ -112,7 +112,6 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevice
             qCDebug(dcBluetooth()) << "Discovery finished";
             reply->setFinished();
         });
-//        connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onDiscoveryError(QBluetoothDeviceDiscoveryAgent::Error)));
 
         discoveryAgent->start();
     }

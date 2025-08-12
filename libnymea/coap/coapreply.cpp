@@ -43,7 +43,7 @@
 
     \code
         Coap *coap = new Coap(this);
-        connect(coap, SIGNAL(replyFinished(CoapReply*)), this, SLOT(onReplyFinished(CoapReply*)));
+        connect(coap, &Coap::replyFinished, this, &MyClass::onReplyFinished);
 
         CoapRequest request(QUrl("coap://example.com/"));
 

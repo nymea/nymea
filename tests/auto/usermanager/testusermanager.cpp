@@ -226,7 +226,7 @@ void TestUsermanager::authenticatePushButton()
     int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     pushButtonAgent.sendButtonPressed();
 
@@ -264,7 +264,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     if (responseSpy.count() == 0) responseSpy.wait();
 
     // Snoop in on everything the TCP server sends to its clients.
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;

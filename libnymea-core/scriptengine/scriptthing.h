@@ -42,8 +42,10 @@ namespace scriptengine {
 class ScriptThing : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+
 public:
     Q_ENUM(Thing::ThingError)
 

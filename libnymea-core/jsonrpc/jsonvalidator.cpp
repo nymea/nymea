@@ -159,7 +159,6 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
             result.setErrorString(result.errorString());
             return result;
         }
-
     }
 
     return Result(true);

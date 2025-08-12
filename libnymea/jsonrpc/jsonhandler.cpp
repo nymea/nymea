@@ -231,7 +231,7 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
                     typeName = QString("$ref:%1").arg(QString(typeNameRaw).split("::").last().remove('<').remove('>'));
                 }
 
-                qCDebug(dcJsonRpc()) << typeNameRaw << propertyNameRaw << metaTypeNameRaw << typeName;
+                // qCDebug(dcJsonRpc()) << typeNameRaw << propertyNameRaw << metaTypeNameRaw << typeName;
             }
         } else if (metaProperty.isEnumType()) {
             QString typeNameRaw = QString(metaProperty.typeName());

@@ -272,7 +272,9 @@ void I2CManagerImplementation::nextCycle()
     });
 
     m_watcher.setFuture(future);
-    connect(&m_watcher, SIGNAL(finished()), &m_pollTimer, SLOT(start()));
+    connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this](){
+        m_pollTimer.start();
+    });
 }
 
 }

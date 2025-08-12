@@ -90,7 +90,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
     NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
 
     // Wait unitl the server is initialized
-    QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
+    QSignalSpy coreInitializedSpy(NymeaCore::instance(), &NymeaCore::initialized);
     QVERIFY(coreInitializedSpy.wait());
     qApp->processEvents();
     qCDebug(dcTests()) << "Nymea core instance initialized. Creating dummy user.";
@@ -151,7 +151,7 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
     call.insert("token", tokenOverride == "default" ? m_apiToken : tokenOverride);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     m_mockTcpServer->injectData(clientId.isNull() ? m_clientId : clientId, jsonDoc.toJson(QJsonDocument::Compact) + "\n");
 
@@ -237,7 +237,7 @@ QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &ex
     connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkReply *reply = nam.get(request);
 
@@ -275,7 +275,7 @@ QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int 
     connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkReply *reply = nam.deleteResource(request);
 
@@ -310,7 +310,7 @@ QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVaria
     connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
 
@@ -350,7 +350,7 @@ QVariant NymeaTestBase::putAndWait(const QNetworkRequest &request, const QVarian
     connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
 
@@ -437,7 +437,7 @@ void NymeaTestBase::restartServer()
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonRestart);
     qCDebug(dcTests()) << "Restarting server instance";
     NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
-    QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
+    QSignalSpy coreSpy(NymeaCore::instance(), &NymeaCore::initialized);
     coreSpy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);

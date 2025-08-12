@@ -19,7 +19,6 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x050F00
 }
 
-
 QMAKE_CXXFLAGS *= -Werror -g -Wno-deprecated-declarations
 
 top_srcdir=$$PWD
@@ -91,7 +90,6 @@ asan: {
     QMAKE_CXXFLAGS *= -fsanitize=address
     QMAKE_LFLAGS *= -fsanitize=address
 }
-
 
 CONFIG(withoutpython) {
     message("Building without python support.")

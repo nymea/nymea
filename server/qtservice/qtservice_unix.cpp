@@ -308,8 +308,8 @@ void QtServiceSysPrivate::incomingConnection(qintptr socketDescriptor)
 {
     QTcpSocket *s = new QTcpSocket(this);
     s->setSocketDescriptor(socketDescriptor);
-    connect(s, SIGNAL(readyRead()), this, SLOT(slotReady()));
-    connect(s, SIGNAL(disconnected()), this, SLOT(slotClosed()));
+    connect(s, &QTcpSocket::readyRead, this, &QtServiceSysPrivate::slotReady);
+    connect(s, &QTcpSocket::disconnected, this, &QtServiceSysPrivate::slotClosed);
 }
 
 void QtServiceSysPrivate::slotReady()

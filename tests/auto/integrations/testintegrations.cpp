@@ -439,7 +439,7 @@ void TestIntegrations::thingAddedRemovedNotifications()
     enableNotifications({"Integrations"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // add thing and wait for notification
     QVariantList thingParams;
@@ -485,7 +485,7 @@ void TestIntegrations::thingChangedNotifications()
     enableNotifications({"Integrations"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // ADD
     // add thing and wait for notification
@@ -666,7 +666,7 @@ void TestIntegrations::stateCache()
     Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
     int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
 
     // First set the state values to something that is *not* the default
@@ -1570,7 +1570,7 @@ void TestIntegrations::reconfigureByDiscovery()
 
     // check if the daemons are running
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // check if old daemon is still running (should not)
     QNetworkRequest request(QUrl(QString("http://localhost:%1").arg(55555)));
@@ -1762,7 +1762,7 @@ void TestIntegrations::removeAutoThing()
 {
     // Setup connection to mock client
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy spy(nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(nam, &QNetworkAccessManager::finished);
 
     // First try to make a manually created device disappear. It must not go away
 
@@ -2068,7 +2068,7 @@ void TestIntegrations::executeAction()
 
     // Fetch action execution history from mock device
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockThing1Port)));
     QNetworkReply *reply = nam.get(request);
@@ -2205,7 +2205,7 @@ void TestIntegrations::dynamicMinMax()
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
     Thing *thing = things.first();
 
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -2284,7 +2284,7 @@ void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()
     restartServer();
     enableNotifications({"Integrations"});
 
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     configuredDevices = injectAndWait("Integrations.GetThings").toMap();
     QList<QUuid> thingsWithSetupInProgress;

@@ -146,11 +146,15 @@ void WebSocketServer::onClientConnected()
     // append the new client to the client list
     m_clientList.insert(clientId, client);
 
-    connect(client, SIGNAL(pong(quint64,QByteArray)), this, SLOT(onPing(quint64,QByteArray)));
-    connect(client, SIGNAL(binaryMessageReceived(QByteArray)), this, SLOT(onBinaryMessageReceived(QByteArray)));
-    connect(client, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
+    connect(client, &QWebSocket::pong, this, &WebSocketServer::onPing);
+    connect(client, &QWebSocket::binaryMessageReceived, this, &WebSocketServer::onBinaryMessageReceived);
+    connect(client, &QWebSocket::textMessageReceived, this, &WebSocketServer::onTextMessageReceived);
+    connect(client, &QWebSocket::disconnected, this, &WebSocketServer::onClientDisconnected);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(client, &QWebSocket::errorOccurred, this, &WebSocketServer::onClientError);
+#else
     connect(client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onClientError(QAbstractSocket::SocketError)));
-    connect(client, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+#endif
 
     emit clientConnected(clientId);
 }

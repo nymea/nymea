@@ -112,15 +112,27 @@ void DebugReportGenerator::generateReport()
 
     QProcess *pingProcess = new QProcess(this);
     pingProcess->setProcessChannelMode(QProcess::MergedChannels);
-    connect(pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+    connect(pingProcess, &QProcess::finished, this, &DebugReportGenerator::onPingProcessFinished);
+#else
+    connect(pingProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+#endif
 
     QProcess *digProcess = new QProcess(this);
     digProcess->setProcessChannelMode(QProcess::MergedChannels);
-    connect(digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+    connect(digProcess, &QProcess::finished, this, &DebugReportGenerator::onDigProcessFinished);
+#else
+    connect(digProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+#endif
 
     QProcess *tracePathProcess = new QProcess(this);
     tracePathProcess->setProcessChannelMode(QProcess::MergedChannels);
-    connect(tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+    connect(tracePathProcess, &QProcess::finished, this, &DebugReportGenerator::onTracePathProcessFinished);
+#else
+    connect(tracePathProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+#endif
 
     m_runningProcesses.append(pingProcess);
     m_runningProcesses.append(digProcess);
@@ -151,7 +163,11 @@ void DebugReportGenerator::verifyRunningProcessesFinished()
         m_compressProcess = new QProcess(this);
         m_compressProcess->setProcessChannelMode(QProcess::MergedChannels);
         m_compressProcess->setWorkingDirectory(QStandardPaths::writableLocation(QStandardPaths::TempLocation));
-        connect(m_compressProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCompressProcessFinished(int, QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+        connect(m_compressProcess, &QProcess::finished, this, &DebugReportGenerator::onCompressProcessFinished);
+#else
+        connect(m_compressProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onCompressProcessFinished(int,QProcess::ExitStatus)));
+#endif
         m_compressProcess->start("tar", { "-zcf", m_reportFileName, "-C", QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/", m_reportDirectory.dirName() } );
         qCDebug(dcDebugServer()) << "Execut command" << m_compressProcess->program() << m_compressProcess->arguments();
     }

@@ -49,7 +49,7 @@
           QObject(parent)
         {
           Coap *coap = new Coap(this);
-          connect(coap, SIGNAL(replyFinished(CoapReply*)), this, SLOT(onReplyFinished(CoapReply*)));
+          connect(coap, &Coap::replyFinished, this, &MyClass::onReplyFinished);
 
           CoapRequest request(QUrl("coap://coap.me/hello"));
           coap->get(request);
@@ -96,7 +96,7 @@ Coap::Coap(QObject *parent, const quint16 &port) :
     if (!m_socket->bind(QHostAddress::AnyIPv4, port, QAbstractSocket::ShareAddress))
         qCWarning(dcCoap) << "Could not bind to port" << port << m_socket->errorString();
 
-    connect(m_socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(m_socket, &QUdpSocket::readyRead, this, &Coap::onReadyRead);
 }
 
 /*! Performs a ping request to the CoAP server specified in the given \a request.

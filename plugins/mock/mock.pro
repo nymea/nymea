@@ -1,6 +1,6 @@
 include(../plugins.pri)
 
-QT+= network
+QT += network
 
 TARGET = $$qtLibraryTarget(nymea_integrationpluginmock)
 

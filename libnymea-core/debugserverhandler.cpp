@@ -29,13 +29,11 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
-#include "servers/httprequest.h"
 #include "servers/httpreply.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "debugserverhandler.h"
 #include "nymeaconfiguration.h"
-#include "stdio.h"
 #include "version.h"
 
 #include <QXmlStreamWriter>
@@ -321,7 +319,12 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         qCDebug(dcDebugServer()) << "Start ping nymea.io process";
         m_pingProcess = new QProcess(this);
         m_pingProcess->setProcessChannelMode(QProcess::MergedChannels);
-        connect(m_pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+        connect(m_pingProcess, &QProcess::finished, this, &DebugServerHandler::onPingProcessFinished);
+#else
+        connect(m_pingProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+#endif
         m_pingProcess->start("ping", { "-c", "4", "nymea.io" } );
 
         m_pingReply = HttpReply::createAsyncReply();
@@ -339,7 +342,11 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         qCDebug(dcDebugServer()) << "Start dig nymea.io process";
         m_digProcess = new QProcess(this);
         m_digProcess->setProcessChannelMode(QProcess::MergedChannels);
-        connect(m_digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+        connect(m_digProcess, &QProcess::finished, this, &DebugServerHandler::onDigProcessFinished);
+#else
+        connect(m_digProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+#endif
         m_digProcess->start("dig", { "nymea.io" } );
 
         m_digReply = HttpReply::createAsyncReply();
@@ -357,7 +364,11 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         qCDebug(dcDebugServer()) << "Start tracepath nymea.io process";
         m_tracePathProcess = new QProcess(this);
         m_tracePathProcess->setProcessChannelMode(QProcess::MergedChannels);
-        connect(m_tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+        connect(m_tracePathProcess, &QProcess::finished, this, &DebugServerHandler::onTracePathProcessFinished);
+#else
+        connect(m_tracePathProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+#endif
         m_tracePathProcess->start("tracepath", { "nymea.io" } );
 
         m_tracePathReply = HttpReply::createAsyncReply();
@@ -448,7 +459,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             loggingRules << "*.debug=false";
             // Load the rules from nymead.conf file and append them to the rules
             foreach (const QString &category, settings.childKeys()) {
-                loggingRules << QString("%1=%2").arg(category).arg(settings.value(category, "false").toString());
+                loggingRules << QString("%1=%2").arg(category, settings.value(category, "false").toString());
             }
             settings.endGroup();
             QLoggingCategory::setFilterRules(loggingRules.join('\n'));
@@ -542,19 +553,19 @@ void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogCont
     QString finalMessage;
     switch (type) {
     case QtDebugMsg:
-        finalMessage = QString(" I | %1: %2\n").arg(context.category).arg(message);
+        finalMessage = QString(" I | %1: %2\n").arg(context.category, message);
         break;
     case QtInfoMsg:
-        finalMessage = QString(" I | %1: %2\n").arg(context.category).arg(message);
+        finalMessage = QString(" I | %1: %2\n").arg(context.category, message);
         break;
     case QtWarningMsg:
-        finalMessage = QString(" W | %1: %2\n").arg(context.category).arg(message);
+        finalMessage = QString(" W | %1: %2\n").arg(context.category, message);
         break;
     case QtCriticalMsg:
-        finalMessage = QString(" C | %1: %2\n").arg(context.category).arg(message);
+        finalMessage = QString(" C | %1: %2\n").arg(context.category, message);
         break;
     case QtFatalMsg:
-        finalMessage = QString(" F | %1: %2\n").arg(context.category).arg(message);
+        finalMessage = QString(" F | %1: %2\n").arg(context.category, message);
         break;
     }
 
@@ -646,7 +657,11 @@ void DebugServerHandler::onWebsocketClientConnected()
     s_websocketClients.append(client);
     qCDebug(dcDebugServer()) << "New websocket client connected:" << client->peerAddress().toString();
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(client, &QWebSocket::errorOccurred, this, &DebugServerHandler::onWebsocketClientError);
+#else
     connect(client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onWebsocketClientError(QAbstractSocket::SocketError)));
+#endif
     connect(client, &QWebSocket::disconnected, this, &DebugServerHandler::onWebsocketClientDisconnected);
 }
 
@@ -678,7 +693,7 @@ void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatu
     if (m_pingReply) {
         m_pingReply->setPayload(processOutput);
         m_pingReply->setHttpStatusCode(HttpReply::Ok);
-        m_pingReply->finished();
+        emit m_pingReply->finished();
         m_pingReply = nullptr;
     }
 
@@ -695,7 +710,7 @@ void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus
     if (m_digReply) {
         m_digReply->setPayload(processOutput);
         m_digReply->setHttpStatusCode(HttpReply::Ok);
-        m_digReply->finished();
+        emit m_digReply->finished();
         m_digReply = nullptr;
     }
 
@@ -712,7 +727,7 @@ void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::Exit
     if (m_tracePathReply) {
         m_tracePathReply->setPayload(processOutput);
         m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
-        m_tracePathReply->finished();
+        emit m_tracePathReply->finished();
         m_tracePathReply = nullptr;
     }
 
@@ -982,7 +997,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The language description in the server infromation section of the debug interface
     writer.writeTextElement("th", tr("Language"));
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeTerritoryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
+#else
     writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeCountryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
+#endif
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
@@ -1033,7 +1053,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("td", qVersion());
     writer.writeEndElement(); // tr
 
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         // Note: http://snapcraft.io/docs/reference/env
 
         writer.writeStartElement("tr");

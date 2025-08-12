@@ -4,7 +4,13 @@ TARGET = nymea
 TEMPLATE = lib
 
 QT += network bluetooth dbus serialport sql
-QT -= gui
+
+greaterThan(QT_MAJOR_VERSION, 5) {
+    # In Qt6 we need explictily add the gui module in order to have QColor available
+    QT += gui
+} else {
+    QT -= gui
+}
 
 DEFINES += LIBNYMEA_LIBRARY
 

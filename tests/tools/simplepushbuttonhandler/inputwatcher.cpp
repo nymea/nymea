@@ -39,7 +39,7 @@
 InputWatcher::InputWatcher(QObject *parent) : QObject(parent)
 {
     m_notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
-    connect(m_notifier, SIGNAL(activated(int)), this, SLOT(readyRead()));
+    connect(m_notifier, &QSocketNotifier::activated, this, &InputWatcher::readyRead);
 }
 
 void InputWatcher::readyRead()

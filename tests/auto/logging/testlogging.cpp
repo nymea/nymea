@@ -216,7 +216,7 @@ void TestLogging::stateChangeLogs()
     clearLoggingDatabase(logSourceName);
 
     enableNotifications({"Integrations"});
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // trigger state change in mock device
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg(newValue.toString())));
@@ -263,7 +263,7 @@ void TestLogging::eventLog()
     clearLoggingDatabase(logSourceName);
 
     enableNotifications({"Integrations"});
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // trigger state change in mock device
     QNetworkAccessManager nam;
@@ -319,7 +319,7 @@ void TestLogging::actionLog()
 
     enableNotifications({"Logging"});
 
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // EXECUTE with params
     QVariant response = injectAndWait("Integrations.ExecuteAction", params);

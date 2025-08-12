@@ -57,7 +57,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
             tmpId.insert(23, "-");
             setServerUuid(QUuid(tmpId));
         } else {
-            qWarning(dcConfiguration()) << "Failed to open /etc/machine-id for reading. Generating a new UUID for this server instance.";
+            qCWarning(dcConfiguration()) << "Failed to open /etc/machine-id for reading. Generating a new UUID for this server instance.";
             setServerUuid(QUuid::createUuid());
         }
     }

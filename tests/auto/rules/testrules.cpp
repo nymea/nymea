@@ -142,7 +142,7 @@ private slots:
 
 void TestRules::cleanupMockHistory() {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -244,7 +244,7 @@ void TestRules::setWritableStateValue(const ThingId &thingId, const StateTypeId 
 
     QVariant currentStateValue = response.toMap().value("params").toMap().value("value");
     bool shouldGetNotification = currentStateValue != value;
-    QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy stateSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QVariantMap paramMap;
     paramMap.insert("paramTypeId", stateTypeId.toString());
@@ -287,7 +287,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     int i = 0;
     while (!actionFound && i < 50) {
         QNetworkAccessManager nam;
-        QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+        QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
         QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
         QNetworkReply *reply = nam.get(request);
         spy.wait();
@@ -307,7 +307,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
 void TestRules::verifyRuleNotExecuted()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -394,7 +394,7 @@ void TestRules::generateEvent(const EventTypeId &eventTypeId)
 {
     // Trigger an event
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // trigger event in mock
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(eventTypeId.toString())));
@@ -959,7 +959,7 @@ void TestRules::editRules()
     }
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
     response.clear();
     response = injectAndWait("Rules.EditRule", params);
     verifyRuleError(response, error);
@@ -1626,7 +1626,7 @@ void TestRules::evaluateEvent()
 
     // Trigger an event
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // trigger event in mock
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
@@ -1642,7 +1642,7 @@ void TestRules::evaluateEventParams()
 {
     // Init bool state to true
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
@@ -1735,7 +1735,7 @@ void TestRules::testStateChange() {
 
     // Change the state
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
@@ -2093,7 +2093,7 @@ void TestRules::enableDisableRule()
 
     // Trigger an event
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // trigger event in mock
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
@@ -2189,7 +2189,7 @@ void TestRules::testEventBasedAction()
 
     // Change the state
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
@@ -2206,7 +2206,7 @@ void TestRules::testEventBasedAction()
 void TestRules::testEventBasedRuleWithExitAction()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // Init bool state to true
     spy.clear();
@@ -2298,7 +2298,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 void TestRules::testStateBasedAction()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // Init bool state to true
     spy.clear();
@@ -2711,7 +2711,7 @@ void TestRules::testInitStatesActive()
 void TestRules::testInterfaceBasedEventRule()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state battery critical state to false initially
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
@@ -2813,7 +2813,7 @@ void TestRules::testInterfaceBasedEventRule()
 void TestRules::testInterfaceBasedStateRule()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state battery critical state to false initially
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
@@ -2882,7 +2882,7 @@ void TestRules::testInterfaceBasedStateRule()
 void TestRules::testThingBasedAndThingValueStateDescriptor()
 {
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // set int state to 10 initially
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(10)));
@@ -3073,7 +3073,7 @@ void TestRules::testScene()
     NymeaCore::instance()->timeManager()->setTime(now);
 
     QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
 
     // state power state to false initially
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockPowerStateTypeId.toString()).arg(false)));

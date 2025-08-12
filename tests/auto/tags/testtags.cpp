@@ -111,7 +111,7 @@ void TestTags::addTag()
     enableNotifications({"Tags"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Create a tag;
     QVariantMap params;
@@ -145,7 +145,7 @@ void TestTags::updateTagValue()
     enableNotifications({"Tags"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QString thingId = m_mockThingId.toString();
     QString appId = "testtags";
@@ -200,7 +200,7 @@ void TestTags::removeTag()
     enableNotifications({"Tags"});
 
     // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QString thingId = m_mockThingId.toString();
     QString appId = "testtags";

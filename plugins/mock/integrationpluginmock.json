@@ -292,12 +292,12 @@
                             "name": "pressButton",
                             "displayName": "Press button",
                             "paramTypes": [
-                                 {
+                                {
                                     "id": "279e0157-78ea-4bb3-a756-b12fb46cf4fc",
                                     "name": "buttonName",
                                     "displayName": "Button name",
                                     "type": "QString"
-                                 }
+                                }
                             ]
                         }
                     ],

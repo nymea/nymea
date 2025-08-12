@@ -110,11 +110,11 @@ void TestWebserver::httpVersion()
     typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
-    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
     bool encrypted = encryptedSpy.wait();
     QVERIFY2(encrypted, "could not created encrypted webserver connection.");
 
-    QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
+    QSignalSpy clientSpy(socket, &QSslSocket::readyRead);
 
     QByteArray requestData;
     requestData.append("GET /hello/nymea HTTP/1\r\n");
@@ -150,11 +150,11 @@ void TestWebserver::multiPackageMessage()
     typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
-    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
     bool encrypted = encryptedSpy.wait();
     QVERIFY2(encrypted, "could not created encrypte webserver connection.");
 
-    QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
+    QSignalSpy clientSpy(socket, &QSslSocket::readyRead);
 
     QByteArray requestData;
     requestData.append("PUT / HTTP/1.1\r\n");
@@ -220,7 +220,7 @@ void TestWebserver::checkAllowedMethodCall()
         qCWarning(dcTests) << "SSL errors:" << errors;
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
     request.setUrl(QUrl("https://localhost:3333"));
@@ -299,11 +299,11 @@ void TestWebserver::badRequests()
     typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
-    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
     bool encrypted = encryptedSpy.wait();
     QVERIFY2(encrypted, "could not created encrypte webserver connection.");
 
-    QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
+    QSignalSpy clientSpy(socket, &QSslSocket::readyRead);
 
     socket->write(request);
     bool filesWritten = socket->waitForBytesWritten(500);
@@ -352,7 +352,7 @@ void TestWebserver::getFiles()
     connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
     request.setUrl(QUrl("https://localhost:3333" + query));
@@ -375,7 +375,7 @@ void TestWebserver::getServerDescription()
     connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
     request.setUrl(QUrl("https://localhost:3333/server.xml"));
@@ -417,7 +417,7 @@ void TestWebserver::getIcons()
     connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
     request.setUrl(QUrl("https://localhost:3333" + query));
@@ -597,7 +597,7 @@ void TestWebserver::getDebugServer()
     bool ok = false;
     int statusCode = 0;
 
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
     connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });

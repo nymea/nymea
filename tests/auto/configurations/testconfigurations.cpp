@@ -101,7 +101,7 @@ void TestConfigurations::testServerName()
     QString serverUuid = basicConfigurationMap.value("serverUuid").toString();
     qDebug() << "Server name" << serverName << "(" << serverUuid << ")";
 
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set name unchanged
     QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
@@ -158,7 +158,7 @@ void TestConfigurations::testLanguages()
     // Get current configurations
     QVariantMap basicConfigurationMap = loadBasicConfiguration();
 
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set language unchanged
     QVariant response; QVariantMap params;
@@ -175,12 +175,12 @@ void TestConfigurations::testLanguages()
     response = injectAndWait("Configuration.GetAvailableLanguages");
     QVERIFY2(response.toMap().value("params").toMap().contains("languages"), "Did not get list of languages");
     QVariantMap responseMap = response.toMap().value("params").toMap();
-    QVERIFY2(responseMap.value("languages").toList().count() >= 2, "Available languages list to short: " +  responseMap.value("languages").toList().count());
+    QVERIFY2(responseMap.value("languages").toList().size() >= 2, qPrintable(QString("Available languages list to short: %1").arg(responseMap.value("languages").toList().size())));
 
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
         // create a new spy for each run as we restart the server and kill the old one in this loop
-         QSignalSpy notificationSpy2 (m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+         QSignalSpy notificationSpy2 (m_mockTcpServer, &MockTcpServer::outgoingData);
 
         // Get current configurations
         basicConfigurationMap = loadBasicConfiguration();
@@ -237,7 +237,7 @@ void TestConfigurations::testDebugServerConfiguration()
     bool debugServerEnabled = basicConfigurationMap.value("debugServerEnabled").toBool();
     qCDebug(dcTests) << "Debug server enabled" << debugServerEnabled;
 
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Unchanged debug server
     QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
@@ -295,10 +295,10 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Webserver request
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
-    QSignalSpy namSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
 
     // Check if debug interface is reachable
     QNetworkRequest request;

@@ -1,8 +1,17 @@
-QT -= gui
-CONFIG += c++11 console
+include(../../nymea.pri)
+
+greaterThan(QT_MAJOR_VERSION, 5) {
+    # In Qt6 we need explictily add the gui module
+    # in order to have QColor available
+    # Fixme: maybe integrate QColor directly to get rid of the dependency
+    QT += gui
+} else {
+    QT -= gui
+}
+
+CONFIG += console
 CONFIG -= app_bundle
 
-include(../../nymea.pri)
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 
 # FIXME: Rebuilding types here so that we can build the nymea-plugininfocompiler

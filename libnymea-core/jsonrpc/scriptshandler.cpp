@@ -172,7 +172,7 @@ JsonReply *ScriptsHandler::GetScriptContent(const QVariantMap &params)
 
 JsonReply* ScriptsHandler::AddScript(const QVariantMap &params)
 {
-    qWarning() << "Script:" << params.value("content").toString();
+    qCDebug(dcJsonRpc()) << "Script:" << params.value("content").toString();
     QVariantMap returns;
 
     ScriptEngine::AddScriptReply scriptReply = m_engine->addScript(params.value("name").toString(), params.value("content").toByteArray());

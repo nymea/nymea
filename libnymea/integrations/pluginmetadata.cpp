@@ -40,6 +40,9 @@
 #include <QJsonDocument>
 #include <QMetaObject>
 #include <QMetaEnum>
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#include <QColor>
+#endif
 
 PluginMetadata::PluginMetadata()
 {
@@ -51,6 +54,10 @@ PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn, bo
     m_isBuiltIn(isBuiltIn),
     m_strictRun(strict)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    qRegisterMetaType<QColor>("QColor");
+#endif
+
     parse(jsonObject);
 }
 
@@ -370,8 +377,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         hasError = true;
                     }
                 }
-
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                QMetaType::Type t = static_cast<QMetaType::Type>(QMetaType::fromName(QByteArray(st.value("type").toString().toUtf8())).id());
+#else
                 QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(st.value("type").toString().toLatin1().data()));
+#endif
                 if (t == QMetaType::UnknownType) {
                     m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid type: \"" + st.value("type").toString() + "\"");
                     hasError = true;

@@ -15,7 +15,6 @@
         {
             "name": "inputSource",
             "type": "QString",
-            "allowedValues": "any",
             "writable": true,
             "optional": true
         },

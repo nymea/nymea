@@ -35,7 +35,9 @@
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #include <QColor>
+#endif
 
 namespace nymeaserver {
 
@@ -43,6 +45,7 @@ StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
     m_operatorType(Types::StateOperatorAnd)
 {
+
 }
 
 StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, Types::StateOperator stateOperator):

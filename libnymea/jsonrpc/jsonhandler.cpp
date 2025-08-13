@@ -192,8 +192,6 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
     for (int i = 0; i < metaObject.propertyCount(); i++) {
         QMetaProperty metaProperty = metaObject.property(i);
         QString name = metaProperty.name();
-        // if (className == "Thing")
-        //     qCDebug(dcJsonRpc()) << "Thing!" << metaProperty.isUser() << metaProperty.isWritable() << metaProperty.revision();
 
         if (name == "objectName") {
             continue; // Skip QObject's objectName property
@@ -323,7 +321,8 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             }
 
             QVariant propertyValue = metaProperty.readOnGadget(value);
-            qCDebug(dcJsonRpc()) << metaProperty.name() << "optional:" << metaProperty.isUser() << "value:" << propertyValue << "valid:" << propertyValue.isValid() << "null:" << propertyValue.isNull();
+            // qCDebug(dcJsonRpc()) << metaProperty.name() << "optional:" << metaProperty.isUser()
+            //                      << "value:" << propertyValue << "valid:" << propertyValue.isValid() << "null:" << propertyValue.isNull();
 
             // If it's optional and empty, we may skip it
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)

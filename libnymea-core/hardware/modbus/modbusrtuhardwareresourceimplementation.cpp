@@ -30,7 +30,6 @@
 
 #include "modbusrtuhardwareresourceimplementation.h"
 #include "loggingcategories.h"
-#include "nymeasettings.h"
 #include "hardware/modbus/modbusrtumanager.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtuResource, "ModbusRtuResource")

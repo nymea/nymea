@@ -1,5 +1,6 @@
 #include "nymeabluetoothagent.h"
 
+#include <QString>
 #include <QDBusConnection>
 #include <QLoggingCategory>
 

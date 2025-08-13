@@ -414,7 +414,7 @@ void TestWebserver::getIcons()
     QFETCH(int, iconSize);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
@@ -623,8 +623,7 @@ void TestWebserver::getDebugServer()
         reply = nam.put(request, "");
     }
 
-    clientSpy.wait(1000);
-    qCCritical(dcTests()) << reply->isFinished() << reply->isRunning() << clientSpy.count();
+    clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
     ok = false;

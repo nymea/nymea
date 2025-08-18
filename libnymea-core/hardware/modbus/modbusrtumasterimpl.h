@@ -93,8 +93,14 @@ private:
     bool m_connected = false;
 
 #ifdef WITH_QTSERIALBUS
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QModbusRtuSerialClient *m_modbus = nullptr;
+#else
     QModbusRtuSerialMaster *m_modbus = nullptr;
 #endif
+
+#endif // WITH_QTSERIALBUS
 
     QString m_serialPort;
     qint32 m_baudrate;

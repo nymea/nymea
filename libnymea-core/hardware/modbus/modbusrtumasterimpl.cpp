@@ -54,7 +54,12 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     m_timeout(timeout)
 {
 #ifdef WITH_QTSERIALBUS
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    m_modbus = new QModbusRtuSerialClient(this);
+#else
     m_modbus = new QModbusRtuSerialMaster(this);
+#endif
     m_modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter, m_serialPort);
     m_modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, m_baudrate);
     m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
@@ -63,7 +68,11 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     m_modbus->setNumberOfRetries(m_numberOfRetries);
     m_modbus->setTimeout(m_timeout);
 
-    connect(m_modbus, &QModbusTcpClient::stateChanged, this, [=](QModbusDevice::State state){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(m_modbus, &QModbusRtuSerialClient::stateChanged, this, [=](QModbusDevice::State state){
+#else
+    connect(m_modbus, &QModbusRtuSerialMaster::stateChanged, this, [=](QModbusDevice::State state){
+#endif
         qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << m_serialPort << state;
         if (state == QModbusDevice::ConnectedState) {
             if (m_connected != true) {
@@ -78,7 +87,11 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
         }
     });
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(m_modbus, &QModbusRtuSerialClient::errorOccurred, this, [=](QModbusDevice::Error error){
+#else
     connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, [=](QModbusDevice::Error error){
+#endif
         qCWarning(dcModbusRtu()) << "Error occurred for modbus RTU master" << m_modbusUuid.toString() << m_serialPort << error << m_modbus->errorString();
         if (error != QModbusDevice::NoError) {
             disconnectDevice();

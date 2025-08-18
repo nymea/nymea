@@ -21,14 +21,14 @@ packagesExist(systemd) {
 greaterThan(QT_MAJOR_VERSION, 5) {
     qtHaveModule(serialbus) {
         message("Building with QtSerialBus support.")
-        QT *= serialbus
+        QT += serialbus
         DEFINES += WITH_QTSERIALBUS
     } else {
         message("QtSerialBus package not found. Building without QtSerialBus support.")
     }
 
     # Separate module in Qt6
-    QT *= concurrent
+    QT += concurrent
 } else {
     packagesExist(Qt5SerialBus) {
         message("Building with QtSerialBus support.")

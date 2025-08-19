@@ -40,7 +40,7 @@ PyObject *PythonIntegrationPlugin::pyConfigValue(PyObject *self, PyObject *args)
     char *paramTypeIdStr = nullptr;
 
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        qCWarning(dcThingManager()) << "Error parsing parameters";
         return nullptr;
     }
 
@@ -64,7 +64,7 @@ PyObject *PythonIntegrationPlugin::pySetConfigValue(PyObject *self, PyObject *ar
     PyObject *valueObj = nullptr;
 
     if (!PyArg_ParseTuple(args, "sO", &paramTypeIdStr, &valueObj)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        qCWarning(dcThingManager()) << "Error parsing parameters";
         return nullptr;
     }
 
@@ -172,7 +172,7 @@ PyObject *PythonIntegrationPlugin::pyAutoThingDisappeared(PyObject *self, PyObje
     char *thingIdStr = nullptr;
 
     if (!PyArg_ParseTuple(args, "s", &thingIdStr)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        qCWarning(dcThingManager()) << "Error parsing parameters";
         return nullptr;
     }
     ThingId thingId(thingIdStr);

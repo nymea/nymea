@@ -216,12 +216,12 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
                 if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
                     elementType = "QUuid";
                 }
-                QMetaType::Type variantType = static_cast<QMetaType::Type>(QVariant::nameToType(elementType.toUtf8()));
+                QMetaType::Type variantType = static_cast<QMetaType::Type>(QMetaType::fromName(elementType.toUtf8()).id());
                 typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
             } else {
                 QString typeNameRaw = QString(metaProperty.typeName());
-                QString propertyNameRaw = QString(metaProperty.name());
-                QString metaTypeNameRaw = QString(metaProperty.metaType().name());
+                // QString propertyNameRaw = QString(metaProperty.name());
+                // QString metaTypeNameRaw = QString(metaProperty.metaType().name());
                 if (typeNameRaw.contains("QFlag")) {
                     QString enumType = QString(typeNameRaw).split("::").last().remove('<').remove('>');
                     typeName = QString("$ref:%1").arg(m_flagsEnums.key(enumType));

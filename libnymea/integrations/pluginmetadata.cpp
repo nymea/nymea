@@ -31,8 +31,6 @@
 #include "pluginmetadata.h"
 #include "thingutils.h"
 
-#include "loggingcategories.h"
-
 #include "types/interface.h"
 
 #include <QJsonObject>
@@ -758,6 +756,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                     }
                     if (!ifaceParamType.allowedValues().isEmpty() && ifaceParamType.allowedValues() != paramType.allowedValues()) {
+                        qCritical() << ifaceParamType.allowedValues();
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \"" +
                                                   paramType.name() + "\" has not matching allowed values.");
                         hasError = true;
@@ -807,6 +806,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                     }
                     if (!ifaceStateType.possibleValues().isEmpty() && ifaceStateType.possibleValues() != stateType.possibleValues()) {
+                        qCritical() << ifaceStateType.possibleValues();
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching allowed values.");
                         hasError = true;
                     }
@@ -1077,7 +1077,11 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         }
 
         // Check type
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        QMetaType::Type t = static_cast<QMetaType::Type>(QMetaType::fromName(pt.value("type").toString().toUtf8()).id());
+#else
         QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(pt.value("type").toString().toLatin1().data()));
+#endif
         if (t == QMetaType::UnknownType) {
             m_validationErrors.append("Param type \"" + paramName + "\" has unknown invalid type \"" + pt.value("type").toString() + "\"");
             hasErrors = true;

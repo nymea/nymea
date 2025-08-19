@@ -60,7 +60,7 @@ Thing::ThingError ThingUtils::verifyParams(const QList<ParamType> paramTypes, co
         }
 
         if (!found) {
-            qCWarning(dcThing) << "Missing parameter:" << paramType.name() << params;
+            qCWarning(dcThing()) << "Missing parameter:" << paramType.name() << params;
             return Thing::ThingErrorMissingParameter;
         }
     }
@@ -76,7 +76,7 @@ Thing::ThingError ThingUtils::verifyParam(const QList<ParamType> paramTypes, con
         }
     }
 
-    qCWarning(dcThing) << "Invalid parameter" << param.paramTypeId().toString() << "in parameter list";
+    qCWarning(dcThing()) << "Invalid parameter" << param.paramTypeId().toString() << "in parameter list";
     return Thing::ThingErrorInvalidParameter;
 }
 
@@ -84,58 +84,58 @@ Thing::ThingError ThingUtils::verifyParam(const QList<ParamType> paramTypes, con
 Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.id() != param.paramTypeId()) {
-        qCWarning(dcThing) << "Parameter id" << param.paramTypeId().toString() << "does not match with ParamType id" << paramType.id().toString();
+        qCWarning(dcThing()) << "Parameter id" << param.paramTypeId().toString() << "does not match with ParamType id" << paramType.id().toString();
         return Thing::ThingErrorInvalidParameter;
     }
 
     if (!param.value().canConvert(static_cast<int>(paramType.type()))) {
-        qCWarning(dcThing) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(static_cast<int>(paramType.type()));
+        qCWarning(dcThing()) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(static_cast<int>(paramType.type()));
         return Thing::ThingErrorInvalidParameter;
     }
 
     if (!param.value().convert(static_cast<int>(paramType.type()))) {
-        qCWarning(dcThing) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(static_cast<int>(paramType.type())) << " Got:" << param.value();
+        qCWarning(dcThing()) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(static_cast<int>(paramType.type())) << " Got:" << param.value();
         return Thing::ThingErrorInvalidParameter;
     }
 
     if (paramType.type() == QMetaType::Int) {
         if (paramType.maxValue().isValid() && param.value().toInt() > paramType.maxValue().toInt()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
         }
 
         if (paramType.minValue().isValid() && param.value().toInt() < paramType.minValue().toInt()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
     } else if (paramType.type() == QMetaType::UInt) {
         if (paramType.maxValue().isValid() && param.value().toUInt() > paramType.maxValue().toUInt()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
         }
 
         if (paramType.minValue().isValid() && param.value().toUInt() < paramType.minValue().toUInt()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
     } else if (paramType.type() == QMetaType::Double) {
         if (paramType.maxValue().isValid() && param.value().toDouble() > paramType.maxValue().toDouble()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
         }
 
         if (paramType.minValue().isValid() && param.value().toDouble() < paramType.minValue().toDouble()) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
     } else {
         if (paramType.maxValue().isValid() && ThingUtils::variantGreaterThan(param.value(), paramType.maxValue())) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
         }
 
         if (paramType.minValue().isValid() && ThingUtils::variantLessThan(param.value(), paramType.minValue())) {
-            qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
     }
@@ -146,7 +146,7 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
             allowedValues.append(value.toString());
         }
 
-        qCWarning(dcThing) << "Value not in allowed values for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Allowed:" << allowedValues.join(",");
+        qCWarning(dcThing()) << "Value not in allowed values for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Allowed:" << allowedValues.join(",");
         return Thing::ThingErrorInvalidParameter;
     }
 
@@ -174,7 +174,7 @@ Interface ThingUtils::loadInterface(const QString &name)
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(f.readAll(), &error);
     if (error.error != QJsonParseError::NoError) {
-        qCWarning(dcThingManager) << "Cannot load interface definition for interface" << name << ":" << error.errorString();
+        qCWarning(dcThingManager()) << "Cannot load interface definition for interface" << name << ":" << error.errorString();
         return iface;
     }
     QVariantMap content = jsonDoc.toVariant().toMap();
@@ -199,11 +199,21 @@ Interface ThingUtils::loadInterface(const QString &name)
 
         InterfaceParamType paramType;
         paramType.setName(paramMap.value("name").toString());
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(paramMap.value("type").toString().toUtf8()).id()));
+#else
         paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(paramMap.value("type").toByteArray())));
+#endif
         paramType.setMinValue(paramMap.value("minValue"));
         paramType.setMaxValue(paramMap.value("maxValue"));
         paramType.setDefaultValue(paramMap.value("defaultValue"));
-        paramType.setAllowedValues(paramMap.value("allowedValues").toList());
+
+        if (paramMap.value("allowedValues").toString() == "any") {
+            // Note: Since Qt6 toList converts any to a char list ['a', 'n', 'y']
+            paramType.setAllowedValues(QVariantList());
+        } else {
+            paramType.setAllowedValues(paramMap.value("allowedValues").toList());
+        }
         paramType.setReadOnly(paramMap.value("readOnly").toBool());
         //paramType.setOptional(paramMap.value("optional", false).toBool());
 
@@ -211,7 +221,7 @@ Interface ThingUtils::loadInterface(const QString &name)
             QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
             int enumValue = unitEnum.keyToValue("Unit" + paramMap.value("unit").toByteArray());
             if (enumValue == -1) {
-                qCWarning(dcThingManager) << "Invalid unit" << paramMap.value("unit").toString() << "in interface" << name;
+                qCWarning(dcThingManager()) << "Invalid unit" << paramMap.value("unit").toString() << "in interface" << name;
             } else {
                 paramType.setUnit(static_cast<Types::Unit>(enumValue));
             }
@@ -226,8 +236,18 @@ Interface ThingUtils::loadInterface(const QString &name)
         QVariantMap stateMap = stateVariant.toMap();
         InterfaceStateType stateType;
         stateType.setName(stateMap.value("name").toString());
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        stateType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(stateMap.value("type").toString().toUtf8()).id()));
+#else
         stateType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(stateMap.value("type").toByteArray())));
-        stateType.setPossibleValues(stateMap.value("allowedValues").toList());
+#endif
+        if (stateMap.value("allowedValues").toString() == "any") {
+            // Note: Since Qt6 toList converts any to a char list ['a', 'n', 'y']
+            stateType.setPossibleValues(QVariantList());
+
+        } else {
+            stateType.setPossibleValues(stateMap.value("allowedValues").toList());
+        }
         stateType.setMinValue(stateMap.value("minValue"));
         stateType.setMaxValue(stateMap.value("maxValue"));
         stateType.setOptional(stateMap.value("optional", false).toBool());
@@ -235,7 +255,7 @@ Interface ThingUtils::loadInterface(const QString &name)
             QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
             int enumValue = unitEnum.keyToValue("Unit" + stateMap.value("unit").toByteArray());
             if (enumValue == -1) {
-                qCWarning(dcThingManager) << "Invalid unit" << stateMap.value("unit").toString() << "in interface" << name;
+                qCWarning(dcThingManager()) << "Invalid unit" << stateMap.value("unit").toString() << "in interface" << name;
             } else {
                 stateType.setUnit(static_cast<Types::Unit>(enumValue));
             }
@@ -276,8 +296,17 @@ Interface ThingUtils::loadInterface(const QString &name)
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(actionParamVariant.toMap().value("name").toString());
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(actionParamVariant.toMap().value("type").toString().toUtf8()).id()));
+#else
             paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(actionParamVariant.toMap().value("type").toByteArray())));
-            paramType.setAllowedValues(actionParamVariant.toMap().value("allowedValues").toList());
+#endif
+            if (actionParamVariant.toMap().value("allowedValues").toString() == "any") {
+                // Note: Since Qt6 toList converts any to a char list ['a', 'n', 'y']
+                paramType.setAllowedValues(QVariantList());
+            } else {
+                paramType.setAllowedValues(actionParamVariant.toMap().value("allowedValues").toList());
+            }
             paramType.setMinValue(actionParamVariant.toMap().value("min"));
             paramType.setDefaultValue(actionParamVariant.toMap().value("defaultValue"));
             paramTypes.append(paramType);
@@ -298,8 +327,17 @@ Interface ThingUtils::loadInterface(const QString &name)
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(eventParamVariant.toMap().value("name").toString());
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(eventParamVariant.toMap().value("type").toString().toUtf8()).id()));
+#else
             paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(eventParamVariant.toMap().value("type").toByteArray())));
-            paramType.setAllowedValues(eventParamVariant.toMap().value("allowedValues").toList());
+#endif
+            if (eventParamVariant.toMap().value("allowedValues").toString() == "any") {
+                // Note: Since Qt6 toList converts any to a char list ['a', 'n', 'y']
+                paramType.setAllowedValues(QVariantList());
+            } else {
+                paramType.setAllowedValues(eventParamVariant.toMap().value("allowedValues").toList());
+            }
             paramType.setMinValue(eventParamVariant.toMap().value("minValue"));
             paramType.setMaxValue(eventParamVariant.toMap().value("maxValue"));
             paramType.setDefaultValue(eventParamVariant.toMap().value("defaultValue"));
@@ -351,7 +389,7 @@ QStringList ThingUtils::generateInterfaceParentList(const QString &interface)
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(f.readAll(), &error);
     if (error.error != QJsonParseError::NoError) {
-        qCWarning(dcThingManager) << "Cannot load interface definition for interface" << interface << ":" << error.errorString();
+        qCWarning(dcThingManager()) << "Cannot load interface definition for interface" << interface << ":" << error.errorString();
         return QStringList();
     }
     QStringList ret = {interface};

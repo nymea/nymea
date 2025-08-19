@@ -192,7 +192,7 @@ static PyObject * PyThing_paramValue(PyThing* self, PyObject* args)
     char *paramTypeIdStr = nullptr;
 
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        qCWarning(dcThingManager()) << "Error parsing parameters";
         return nullptr;
     }
 
@@ -226,7 +226,7 @@ static PyObject * PyThing_setting(PyThing* self, PyObject* args)
     char *paramTypeIdStr = nullptr;
 
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        qCWarning(dcThingManager()) << "Error parsing parameters";
         return nullptr;
     }
 

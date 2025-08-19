@@ -419,7 +419,7 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
         }
     }
     Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting state %1 to %2").arg(stateType.name()).arg(value.toString()).toUtf8());
-    qCWarning(dcThing).nospace() << this << ": Failed setting state " << stateType.name() << " to " << value;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting state " << stateType.name() << " to " << value;
 }
 
 /*! Sets the value for the \l{State} matching the given \a stateName in this thing to value. */
@@ -467,7 +467,7 @@ void Thing::setStateMinValue(const StateTypeId &stateTypeId, const QVariant &min
         }
     }
     Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting minimum state value %1 to %2").arg(stateType.name()).arg(minValue.toString()).toUtf8());
-    qCWarning(dcThing).nospace() << this << ": Failed setting minimum state value " << stateType.name() << " to " << minValue;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting minimum state value " << stateType.name() << " to " << minValue;
 }
 
 /*! Sets the minimum value for the \l{State} matching the given \a stateName in this thing to value. */
@@ -513,7 +513,7 @@ void Thing::setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &max
         }
     }
     Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting maximum state value %1 to %2").arg(stateType.name()).arg(maxValue.toString()).toUtf8());
-    qCWarning(dcThing).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << maxValue;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << maxValue;
 }
 
 /*! Sets the maximum value for the \l{State} matching the given \a stateName in this thing to value. */
@@ -564,7 +564,7 @@ void Thing::setStateMinMaxValues(const StateTypeId &stateTypeId, const QVariant 
         }
     }
     Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting maximum state value %1 to %2").arg(stateType.name()).arg(maxValue.toString()).toUtf8());
-    qCWarning(dcThing).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << maxValue;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << maxValue;
 
 }
 
@@ -591,10 +591,10 @@ void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVarian
 
             if (!values.contains(m_states.value(i).value())) {
                 if (values.contains(stateType.defaultValue())) {
-                    qCInfo(dcThing).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to default value of " << stateType.defaultValue();
+                    qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to default value of " << stateType.defaultValue();
                     m_states[i].setValue(stateType.defaultValue());
                 } else if (!values.isEmpty()) {
-                    qCInfo(dcThing).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new value of " << values.first();
+                    qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new value of " << values.first();
                     m_states[i].setValue(values.first());
                 }
             }
@@ -602,7 +602,7 @@ void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVarian
             return;
         }
     }
-    qCWarning(dcThing).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << values;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << values;
     Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting possible state values for %1 to %2").arg(stateType.name()).arg(QString(QJsonDocument::fromVariant(values).toJson())).toUtf8());
 
 }

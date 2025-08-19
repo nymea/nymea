@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
 
         // If running in a snappy environment, print out some details about it.
-        if (!qgetenv("SNAP").isEmpty()) {
+        if (!qEnvironmentVariableIsEmpty("SNAP")) {
             // Note: http://snapcraft.io/docs/reference/env
             qCInfo(dcApplication()) << "Snap name       :" << qgetenv("SNAP_NAME");
             qCInfo(dcApplication()) << "Snap version    :" << qgetenv("SNAP_VERSION");

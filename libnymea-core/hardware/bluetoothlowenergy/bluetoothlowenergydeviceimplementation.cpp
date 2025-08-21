@@ -48,7 +48,11 @@ BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(c
     connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDeviceImplementation::onDisconnected);
     connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished);
     connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDeviceImplementation::onStateChanged);
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    connect(m_controller, &QLowEnergyController::errorOccurred, this, &BluetoothLowEnergyDeviceImplementation::onDeviceError);
+#else
     connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
+#endif
 }
 
 QString BluetoothLowEnergyDeviceImplementation::name() const

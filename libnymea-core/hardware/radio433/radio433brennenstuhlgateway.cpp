@@ -41,7 +41,7 @@ Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     // UDP socket to sending data to gateway
     m_gateway = new QUdpSocket(this);
     connect(m_gateway, &QUdpSocket::readyRead, this, &Radio433BrennenstuhlGateway::readData);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(m_gateway, &QUdpSocket::errorOccurred, this, &Radio433BrennenstuhlGateway::gatewayError);
 #else
     connect(m_gateway, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(gatewayError(QAbstractSocket::SocketError)));

@@ -278,7 +278,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
     connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
 #else
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
@@ -517,7 +517,7 @@ void WebServer::onEncrypted()
     connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
     connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
 #else
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));

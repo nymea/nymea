@@ -54,9 +54,15 @@ QStringList ApiKeysProvidersLoader::pluginSearchDirs() const
             searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
         }
     } else {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
             searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "apikeysproviders");
         }
+#else
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt6", "nymea").replace("plugins", "apikeysproviders");
+        }
+#endif
         searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/apikeysproviders").absolutePath();
         searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../apikeysproviders/").absolutePath();
         searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../apikeysproviders/").absolutePath();

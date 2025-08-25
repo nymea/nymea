@@ -35,7 +35,7 @@
   \ingroup hardware
   \inmodule libnymea
 
-  The network manager class is a reimplementation of the \l{http://doc-snapshot.qt-project.org/qt5-5.4/qnetworkaccessmanager.html}{QNetworkAccessManager}
+  The network manager class is a reimplementation of the QNetworkAccessManager
   and allows plugins to send network requests and receive replies.
 
 */

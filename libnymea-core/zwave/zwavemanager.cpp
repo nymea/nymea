@@ -679,10 +679,16 @@ bool ZWaveManager::loadBackend()
     if (!envPath.isEmpty()) {
         searchDirs << QString(envPath).split(':');
     }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
         searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "zwave");
     }
+#else
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("qt6", "nymea").replace("plugins", "zwave");
+    }
+#endif
+
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
         searchDirs << libraryPath.replace("plugins", "nymea/zwave");
     }

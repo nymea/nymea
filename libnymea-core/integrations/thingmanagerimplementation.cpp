@@ -150,9 +150,15 @@ QStringList ThingManagerImplementation::pluginSearchDirs()
             searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
         }
     } else {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
             searchDirs << libraryPath.replace("qt5", "nymea");
         }
+#else
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt6", "nymea");
+        }
+#endif
         foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
             searchDirs << libraryPath.replace("plugins", "nymea/plugins");
         }

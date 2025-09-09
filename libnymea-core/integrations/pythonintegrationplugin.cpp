@@ -265,9 +265,14 @@ void PythonIntegrationPlugin::initPython()
 
     // Initialize the python engine and fire up threading support
     qCDebug(dcPythonIntegrations()) << "Initializing Python engine";
-    Py_InitializeEx(0);
-    PyEval_InitThreads();
 
+#if PY_VERSION_HEX < 0x03090000
+    // deprecated. Called by Py_Initialize(). Removed in Py3.11
+    // https://docs.python.org/3/c-api/init.html#c.PyEval_InitThreads
+    PyEval_InitThreads();
+#else
+    Py_InitializeEx(0);
+#endif
     // Needs to be imported once to be able to use PyDateTime functions
     PyDateTime_IMPORT;
 

@@ -1,3 +1,13 @@
+nymea (1.12.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Add Qt6 support
+  * Fix some typos in the code base
+  * Make sure NetworkDeviceMonitor on localhost are always reachable
+  * Update mac address database
+
+ -- jenkins <developer@nymea.io>  Tue, 23 Sep 2025 14:12:47 +0200
+
 nymea (1.11.1) jammy; urgency=medium
 
   [ Simon Stürz ]

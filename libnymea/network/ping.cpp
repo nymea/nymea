@@ -397,7 +397,7 @@ void Ping::finishReply(PingReply *reply, PingReply::Error error)
         }
         emit reply->retry(error, reply->retryCount());
 
-        // Note: will be restarted once actually sent trough the network
+        // Note: will be restarted once actually sent through the network
         reply->m_timer->stop();
 
         // Re-Enqueu the reply
@@ -560,7 +560,7 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
         PingReply::Error pingError = PingReply::ErrorNoError;
         switch(info.error()) {
         case QHostInfo::NoError:
-            qCDebug(dcPing()) << "Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
+            qCDebug(dcPing()) << "Looked up hostname after successful ping" << reply->targetHostAddress().toString() << info.hostName();
             if (info.hostName() != reply->targetHostAddress().toString())
                 reply->m_hostName = info.hostName();
 
@@ -590,7 +590,7 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
         case QHostInfo::NoError:
             qCDebug(dcPing()) << "Looked up address for hostname finished successfully" << info.hostName() << info.addresses();
             if (info.addresses().isEmpty()) {
-                qCWarning(dcPing()) << "Looked up address finished succesfully but there are no addresses available for" << info.hostName();
+                qCWarning(dcPing()) << "Looked up address finished successfully but there are no addresses available for" << info.hostName();
                 pingError = PingReply::ErrorHostNameNotFound;
             } else {
                 QHostAddress targetHostAddress;

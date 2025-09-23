@@ -113,7 +113,7 @@ void StateValueFilterAdaptive::update()
         // Add up the deviation from the current actual value to the currently filtered value
         m_totalDeviation += changeRatioToCurrentOutput;
 
-        // If the filtered value changed for more than the the standard deviation, follow slowly
+        // If the filtered value changed for more than the standard deviation, follow slowly
         // In order to not get stuck on being off for the standard deviation forever, also move closer
         // to the new value when the summed up deviation exceeds the maximum allowed total deviation
         if (qAbs(changeRatioFiltered) > m_standardDeviation || qAbs(m_totalDeviation) > m_maxTotalDeviation) {

@@ -71,7 +71,7 @@ bool ArpSocket::sendRequest()
     if (!m_isOpen)
         return false;
 
-    // Send the ARP request trough each network interface
+    // Send the ARP request through each network interface
     qCDebug(dcArpSocket()) << "Sending ARP request to all local network interfaces...";
     foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
         sendRequest(networkInterface);

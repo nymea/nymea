@@ -55,7 +55,7 @@ ThingActionInfo::ThingActionInfo(Thing *thing, const Action &action, ThingManage
             // expect this to happen. So we'll have to verify here that the plugin did not finish() by now before aborting.
             if (!m_finished) {
                 emit aborted();
-                // Also it could happen the the plugin calls finish() *in* the aborted() signal, in which case
+                // Also it could happen the plugin calls finish() *in* the aborted() signal, in which case
                 // we don't want to call finish() here now to not print a warning about duplicate finished calls
                 if (!m_finished) {
                     finish(Thing::ThingErrorTimeout);

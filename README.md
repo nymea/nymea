@@ -6,7 +6,7 @@
   </a>
 </p>
 
-nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the build-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
+nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the built-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
 
 ## Quick start
 

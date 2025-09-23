@@ -122,7 +122,7 @@
     This signal is emitted when the device name is changed.
     Note that the name can be changed by the plugin, as well as the user. Integration plugins
     should connect to this signal for their things if it possible to set the name on the actual device
-    or service. If the the device or service does not support changing the name, this will only be used
+    or service. If the device or service does not support changing the name, this will only be used
     for nymea's internal representation and is not required to be handled by the plugin.
 */
 

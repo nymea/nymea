@@ -703,6 +703,14 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
 
     bool requiresRefresh = false;
 
+    if (monitor->networkDeviceInfo().address() == QHostAddress::LocalHost) {
+        // The localhost has to be always reachable
+        monitor->setLastConnectionAttempt(currentDateTime);
+        monitor->setLastSeen(currentDateTime);
+        monitor->setReachable(true);
+        return;
+    }
+
     if (!monitor->networkDeviceInfo().isValid()) {
         qCDebug(dcNetworkDeviceDiscovery()) << "Network device info not valid for" << monitor;
         requiresRefresh = true;

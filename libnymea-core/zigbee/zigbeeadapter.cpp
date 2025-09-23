@@ -127,7 +127,7 @@ QHash<ZigbeeAdapter::ZigbeeBackendType, QString> ZigbeeAdapter::backendNames()
     QHash<ZigbeeAdapter::ZigbeeBackendType, QString> backendNameHash;
     backendNameHash.insert(ZigbeeBackendTypeDeconz, "deCONZ");
     backendNameHash.insert(ZigbeeBackendTypeNxp, "NXP");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#ifndef ZIGBEE_DISABLE_TI
     backendNameHash.insert(ZigbeeBackendTypeTi, "TI");
 #endif
     return backendNameHash;

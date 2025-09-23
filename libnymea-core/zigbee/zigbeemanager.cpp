@@ -272,7 +272,7 @@ void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
     case Zigbee::ZigbeeBackendTypeNxp:
         settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeNxp));
         break;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#ifndef ZIGBEE_DISABLE_TI
     case Zigbee::ZigbeeBackendTypeTi:
         settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeTi));
         break;
@@ -454,7 +454,7 @@ ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeA
     case ZigbeeAdapter::ZigbeeBackendTypeNxp:
         network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeNxp, this);
         break;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#ifndef ZIGBEE_DISABLE_TI
     case ZigbeeAdapter::ZigbeeBackendTypeTi:
         network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeTi, this);
         break;
@@ -642,7 +642,7 @@ ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter
     case Zigbee::ZigbeeBackendTypeNxp:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeNxp);
         break;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#ifndef ZIGBEE_DISABLE_TI
     case Zigbee::ZigbeeBackendTypeTi:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeTi);
         break;

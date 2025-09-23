@@ -27,6 +27,8 @@ greaterThan(QT_MAJOR_VERSION, 5) {
         message("QtSerialBus package not found. Building without QtSerialBus support.")
     }
 
+    DEFINES += ZIGBEE_DISABLE_TI
+
     # Separate module in Qt6
     QT += concurrent
 } else {
@@ -36,6 +38,10 @@ greaterThan(QT_MAJOR_VERSION, 5) {
         DEFINES += WITH_QTSERIALBUS
     } else {
         message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    }
+
+    contains(DEFINES, ZIGBEE_DISABLE_TI) {
+        message(Build without zigbee TI backend support)
     }
 }
 

@@ -179,7 +179,7 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
                 return;
 
             foreach (const QHostAddress &address, m_currentDiscoveryReply->currentCache().keys()) {
-                reply->hostAddressDiscovered(address);
+                emit reply->hostAddressDiscovered(address);
             }
 
             connect(m_currentDiscoveryReply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered, reply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered);
@@ -296,6 +296,12 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(Thing *thing)
                     qCDebug(dcNetworkDeviceDiscovery()) << "Host name monitor:" << networkDeviceInfo;
                     internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
                 }
+
+                // If we have not found the host yet, let's add it until we can resolve the
+                // hostname or it gets detected using the discovery. In case the network can not be discovered
+                // because it is to big, we still can find this device.
+
+                // This should also make it possible to monitor websites.
                 break;
             case NetworkDeviceInfo::MonitorModeIp:
                 // Search the IP in the cache
@@ -303,6 +309,11 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(Thing *thing)
                     qCDebug(dcNetworkDeviceDiscovery()) << "IP monitor:" << networkDeviceInfo;
                     internalMonitor->setNetworkDeviceInfo(networkDeviceInfo);
                 }
+
+                if (!internalMonitor->networkDeviceInfo().isValid()) {
+                    internalMonitor->setNetworkDeviceInfo(NetworkDeviceInfo(internalMonitor->address()));
+                }
+                // If we have not found the host yet, let's add it and try to ping the IP.
                 break;
             }
         }
@@ -428,7 +439,6 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
             }
 
             // Filter out duplicated networks (for example connected using wifi and ethernet to the same network) ...
-
             bool duplicatedNetwork = false;
             foreach (const TargetNetwork &tn, targetNetworks) {
                 if (tn.address == targetNetwork.address && tn.addressEntry.netmask() == targetNetwork.addressEntry.netmask()) {
@@ -530,14 +540,17 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
 void NetworkDeviceDiscoveryImpl::watchPingReply(PingReply *reply)
 {
     connect(reply, &PingReply::finished, this, [this, reply](){
+
+        qCDebug(dcNetworkDeviceDiscovery()) << "Ping reply finished" << reply->hostName() << reply->targetHostAddress() << reply->error();
+
         if (reply->error() == PingReply::ErrorNoError) {
 
+            // Update the cache if we have one
             int index = m_networkInfoCache.indexFromHostAddress(reply->targetHostAddress());
-            if (index < 0)
-                return;
-
-            m_lastSeen[reply->targetHostAddress()] = QDateTime::currentDateTime();
-            saveNetworkDeviceCache(m_networkInfoCache.at(index));
+            if (index >= 0) {
+                m_lastSeen[reply->targetHostAddress()] = QDateTime::currentDateTime();
+                saveNetworkDeviceCache(m_networkInfoCache.at(index));
+            }
         }
 
         // Update any relevant monitor
@@ -545,6 +558,7 @@ void NetworkDeviceDiscoveryImpl::watchPingReply(PingReply *reply)
             if ((monitor->monitorMode() == NetworkDeviceInfo::MonitorModeIp && reply->targetHostAddress() == monitor->address()) ||
                 (monitor->monitorMode() == NetworkDeviceInfo::MonitorModeHostName && reply->hostName() == monitor->hostName()) ||
                 (monitor->monitorMode() == NetworkDeviceInfo::MonitorModeMac && reply->targetHostAddress() == monitor->networkDeviceInfo().address())) {
+
                 processMonitorPingResult(reply, monitor);
             }
         }
@@ -712,8 +726,11 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
     }
 
     if (!monitor->networkDeviceInfo().isValid()) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Network device info not valid for" << monitor;
-        requiresRefresh = true;
+        // Note: we only require a refresh if there is a networkDeviceInfo (like mac address)
+        if (monitor->monitorMode() == NetworkDeviceInfo::MonitorModeMac) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Network device info not valid for" << monitor;
+            requiresRefresh = true;
+        }
     }
 
     if (monitor->lastSeen().isNull()) {

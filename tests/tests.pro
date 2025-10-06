@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS = testlib auto tools/simplepushbuttonhandler
-auto.depends += testlib
+SUBDIRS = libnymea-tests auto tools/simplepushbuttonhandler
+auto.depends += libnymea-tests

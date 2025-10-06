@@ -3,22 +3,22 @@ TARGET = nymea-tests
 
 include(../../nymea.pri)
 
-QT += testlib dbus network sql websockets
+QT *= dbus network sql websockets testlib
 
-CONFIG += link_pkgconfig
-PKGCONFIG += nymea-zigbee
+CONFIG *= link_pkgconfig
+PKGCONFIG *= nymea-zigbee
 
 greaterThan(QT_MAJOR_VERSION, 5) {
     qtHaveModule(serialbus) {
         message("Building with QtSerialBus support.")
-        QT += serialbus
-        DEFINES += WITH_QTSERIALBUS
+        QT *= serialbus
+        DEFINES *= WITH_QTSERIALBUS
     } else {
         message("QtSerialBus package not found. Building without QtSerialBus support.")
     }
 
     # Separate module in Qt6
-    QT += concurrent
+    QT *= concurrent
 } else {
     packagesExist(Qt5SerialBus) {
         message("Building with QtSerialBus support.")

@@ -56,6 +56,8 @@ private slots:
 
     void testDebugServerConfiguration();
 
+    void testDisableInsecureInterfacesEnv();
+
 private:
     QVariantMap loadBasicConfiguration();
 
@@ -295,7 +297,7 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Webserver request
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
@@ -329,13 +331,97 @@ void TestConfigurations::testDebugServerConfiguration()
 
     ok = false;
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
-    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QVERIFY2(ok, "Could not convert status code from response to int");
     QCOMPARE(statusCode, 404);
     reply->deleteLater();
 
     NymeaCore::instance()->configuration()->removeWebServerConfiguration(config.id);
 
     disableNotifications();
+}
+
+void TestConfigurations::testDisableInsecureInterfacesEnv()
+{
+    QString id = "insecure";
+
+    // Create a insecure interface
+    QVariantMap insecureTcpConfig;
+    insecureTcpConfig.insert("id", id);
+    insecureTcpConfig.insert("address", "0.0.0.0");
+    insecureTcpConfig.insert("port", 23456);
+    insecureTcpConfig.insert("sslEnabled", false);
+    insecureTcpConfig.insert("authenticationEnabled", false);
+
+    // Create a insecure interface
+    QVariantMap insecureWebSocketConfig;
+    insecureWebSocketConfig.insert("id", id);
+    insecureWebSocketConfig.insert("address", "0.0.0.0");
+    insecureWebSocketConfig.insert("port", 23457);
+    insecureWebSocketConfig.insert("sslEnabled", false);
+    insecureWebSocketConfig.insert("authenticationEnabled", false);
+
+    // Create a insecure interface
+    QVariantMap insecureTunnelProxyConfig;
+    insecureTunnelProxyConfig.insert("id", id);
+    insecureTunnelProxyConfig.insert("address", "example.nymea.io");
+    insecureTunnelProxyConfig.insert("port", 2213);
+    insecureTunnelProxyConfig.insert("sslEnabled", false);
+    insecureTunnelProxyConfig.insert("authenticationEnabled", false);
+    insecureTunnelProxyConfig.insert("ignoreSslErrors", true);
+
+    QVariantMap params; QVariant response;
+
+    params.insert("configuration", insecureTcpConfig);
+    response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.insert("configuration", insecureWebSocketConfig);
+    response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.insert("configuration", insecureTunnelProxyConfig);
+    response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    // Restart with disabled insecure interfaces
+    qputenv("NYMEA_INSECURE_INTERFACES_DISABLED", "1");
+    restartServer();
+
+    // FIXME: make sure the insecure servers are not running
+
+    // Remove the insecure configs and try to add them again and expect them to fail
+    params.clear(); response.clear();
+    params.insert("id", id);
+    response = injectAndWait("Configuration.DeleteTcpServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.clear(); response.clear();
+    params.insert("id", id);
+    response = injectAndWait("Configuration.DeleteWebSocketServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.clear(); response.clear();
+    params.insert("id", id);
+    response = injectAndWait("Configuration.DeleteTunnelProxyServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    // Make sure we cannot add insecure interfaces beside localhost
+    params.clear(); response.clear();
+    params.insert("configuration", insecureTcpConfig);
+    response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
+
+    params.clear(); response.clear();
+    params.insert("configuration", insecureWebSocketConfig);
+    response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
+
+    params.clear(); response.clear();
+    params.insert("configuration", insecureTunnelProxyConfig);
+    response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
+
+    qunsetenv("NYMEA_INSECURE_INTERFACES_DISABLED");
 }
 
 QVariantMap TestConfigurations::loadBasicConfiguration()

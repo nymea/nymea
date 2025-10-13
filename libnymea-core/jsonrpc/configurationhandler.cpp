@@ -71,6 +71,7 @@
 #include "configurationhandler.h"
 #include "nymeacore.h"
 #include "nymeaconfiguration.h"
+#include "loggingcategories.h"
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
 

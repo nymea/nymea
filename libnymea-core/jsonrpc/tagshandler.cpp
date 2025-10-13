@@ -142,7 +142,7 @@ JsonReply *TagsHandler::RemoveTag(const QVariantMap &params) const
 
 void TagsHandler::onTagAdded(const Tag &tag)
 {
-    qCDebug(dcJsonRpc) << "Notify \"Tags.TagAdded\"";
+    qCDebug(dcJsonRpc()) << "Notify \"Tags.TagAdded\"";
     QVariantMap params;
     params.insert("tag", pack(tag));
     emit TagAdded(params);
@@ -150,7 +150,7 @@ void TagsHandler::onTagAdded(const Tag &tag)
 
 void TagsHandler::onTagRemoved(const Tag &tag)
 {
-    qCDebug(dcJsonRpc) << "Notify \"Tags.TagRemoved\"";
+    qCDebug(dcJsonRpc()) << "Notify \"Tags.TagRemoved\"";
     QVariantMap params;
     params.insert("tag", pack(tag));
     emit TagRemoved(params);
@@ -158,7 +158,7 @@ void TagsHandler::onTagRemoved(const Tag &tag)
 
 void TagsHandler::onTagValueChanged(const Tag &tag)
 {
-    qCDebug(dcJsonRpc) << "Notify \"Tags.TagValueChanged\"";
+    qCDebug(dcJsonRpc()) << "Notify \"Tags.TagValueChanged\"";
     QVariantMap params;
     params.insert("tag", pack(tag));
     emit TagValueChanged(params);

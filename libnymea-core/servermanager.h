@@ -33,7 +33,6 @@
 
 #include <QObject>
 
-#include "loggingcategories.h"
 #include "nymeaconfiguration.h"
 
 #include <QSslConfiguration>
@@ -72,7 +71,6 @@ public:
 public slots:
     void setServerName(const QString &serverName);
 
-
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
@@ -95,6 +93,7 @@ private:
 
 private:
     Platform *m_platform = nullptr;
+    bool m_disableInsecureInterfaces = false;
     NymeaConfiguration *m_nymeaConfiguration = nullptr;
 
     // Interfaces

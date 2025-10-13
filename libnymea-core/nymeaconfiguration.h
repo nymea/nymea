@@ -129,7 +129,8 @@ public:
         ConfigurationErrorInvalidPort,
         ConfigurationErrorInvalidHostAddress,
         ConfigurationErrorBluetoothHardwareNotAvailable,
-        ConfigurationErrorInvalidCertificate
+        ConfigurationErrorInvalidCertificate,
+        ConfigurationErrorUnsupported
     };
     Q_ENUM(ConfigurationError)
 

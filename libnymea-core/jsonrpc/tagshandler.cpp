@@ -30,6 +30,7 @@
 
 #include "tagshandler.h"
 
+#include "loggingcategories.h"
 #include "nymeacore.h"
 #include "tagging/tagsstorage.h"
 

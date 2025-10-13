@@ -49,6 +49,7 @@
 #include "platform/platform.h"
 #include "platform/platformzeroconfcontroller.h"
 #include "version.h"
+#include "loggingcategories.h"
 
 #include "jsonrpc/jsonrpcserverimplementation.h"
 #include "servers/mocktcpserver.h"
@@ -73,6 +74,12 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     m_nymeaConfiguration(configuration),
     m_sslConfiguration(QSslConfiguration())
 {
+    // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
+    if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
+        qCInfo(dcServerManager()) << "Insecure interfaces to the core are explicit disabled. Not starting any unauthenticated or unencrypted interfaces.";
+        m_disableInsecureInterfaces = true;
+    }
+
     if (!QSslSocket::supportsSsl()) {
         qCWarning(dcServerManager()) << "SSL is not supported/installed on this platform.";
     } else {
@@ -102,8 +109,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             }
         }
         if (certsLoaded) {
-            // Update this to 1.3 when minimum required Qt is 5.12 (and known client apps can deal with it)
-            m_sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
+            m_sslConfiguration.setProtocol(QSsl::TlsV1_3OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
         }
@@ -149,6 +155,11 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
+        if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
+            qCWarning(dcServerManager()) << "Loaded insecure TCP server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            continue;
+        }
+
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
@@ -158,6 +169,11 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
+        if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
+            qCWarning(dcServerManager()) << "Loaded insecure WebSocket server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            continue;
+        }
+
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
@@ -170,10 +186,19 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     m_bluetoothServer = new BluetoothServer(this);
     m_jsonServer->registerTransportInterface(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {
-        m_bluetoothServer->startServer();
+        if (m_disableInsecureInterfaces) {
+            qCWarning(dcServerManager()) << "The bluetooth RFCOM server is enabled, but insecure server interfaces have been disabled explicitly. Not starting the bluetooth server.";
+        } else {
+            m_bluetoothServer->startServer();
+        }
     }
 
     foreach (const TunnelProxyServerConfiguration &config, configuration->tunnelProxyServerConfigurations()) {
+        if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled || config.ignoreSslErrors)) {
+            qCWarning(dcServerManager()) << "Loaded insecure tunnelproxy server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            continue;
+        }
+
         TunnelProxyServer *tunnelProxyServer = new TunnelProxyServer(configuration->serverName(), configuration->serverUuid(), config, this);
         qCDebug(dcServerManager()) << "Creating tunnel proxy server using" << config;
         m_tunnelProxyServers.insert(config.id, tunnelProxyServer);
@@ -209,14 +234,18 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
+
     connect(configuration, &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ServerManager::webSocketServerConfigurationRemoved);
+
     connect(configuration, &NymeaConfiguration::webServerConfigurationChanged, this, &ServerManager::webServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::webServerConfigurationRemoved, this, &ServerManager::webServerConfigurationRemoved);
+
     connect(configuration, &NymeaConfiguration::mqttServerConfigurationChanged, this, &ServerManager::mqttServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ServerManager::mqttServerConfigurationRemoved);
     connect(configuration, &NymeaConfiguration::mqttPolicyChanged, this, &ServerManager::mqttPolicyChanged);
     connect(configuration, &NymeaConfiguration::mqttPolicyRemoved, this, &ServerManager::mqttPolicyRemoved);
+
     connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ServerManager::tunnelProxyServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ServerManager::tunnelProxyServerConfigurationRemoved);
 }

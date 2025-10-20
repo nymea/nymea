@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 32">
+  <rect width="128" height="32" rx="6" fill="#3949ab"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Helvetica, Arial, sans-serif" font-size="18" fill="#ffffff">nymea</text>
+</svg>

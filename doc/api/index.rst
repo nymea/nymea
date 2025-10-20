@@ -7,7 +7,7 @@ and automation.
 .. toctree::
    :maxdepth: 1
 
-   libnymea
+   libnymea/index
    jsonrpc
    coap
    signals-and-slots

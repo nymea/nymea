@@ -325,8 +325,12 @@ QLocale NymeaConfiguration::locale() const
 
 void NymeaConfiguration::setLocale(const QLocale &locale)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     qCDebug(dcConfiguration()) << "Configuration: Set system locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
+#else
+    qCDebug(dcConfiguration()) << "Configuration: Set system locale:" << locale.name() << locale.nativeTerritoryName() << locale.nativeLanguageName();
 
+#endif
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
     if (settings.value("language").toString() == locale.name()) {

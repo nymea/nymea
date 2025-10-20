@@ -1,4 +1,4 @@
-8.2
+8.3
 {
     "enums": {
         "BasicType": [
@@ -34,7 +34,8 @@
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
             "ConfigurationErrorBluetoothHardwareNotAvailable",
-            "ConfigurationErrorInvalidCertificate"
+            "ConfigurationErrorInvalidCertificate",
+            "ConfigurationErrorUnsupported"
         ],
         "CreateMethod": [
             "CreateMethodUser",

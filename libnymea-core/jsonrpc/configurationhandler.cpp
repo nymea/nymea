@@ -71,6 +71,7 @@
 #include "configurationhandler.h"
 #include "nymeacore.h"
 #include "nymeaconfiguration.h"
+#include "loggingcategories.h"
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
 
@@ -448,9 +449,9 @@ JsonReply *ConfigurationHandler::SetLocation(const QVariantMap &params) const
 JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &params) const
 {
     ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
-    if (config.id.isEmpty()) {
+    if (config.id.isEmpty())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
-    }
+
     if (config.address.isNull())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
@@ -459,8 +460,17 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address).arg(config.port);
+    // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
+    if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
+        bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
+        bool isSecured = config.sslEnabled && config.authenticationEnabled;
+        if (!isLocalhost && !isSecured) {
+            qCWarning(dcJsonRpc()) << "Cannot add insecure TCP server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
+            return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
+        }
+    }
 
+    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address).arg(config.port);
     NymeaCore::instance()->configuration()->setTcpServerConfiguration(config);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
@@ -509,15 +519,25 @@ JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap 
 JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantMap &params) const
 {
     ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
-    if (config.id.isEmpty()) {
+    if (config.id.isEmpty())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
-    }
+
     if (config.address.isNull())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
     if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
+    }
+
+    // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
+    if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
+        bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
+        bool isSecured = config.sslEnabled && config.authenticationEnabled;
+        if (!isLocalhost && !isSecured) {
+            qCWarning(dcJsonRpc()) << "Cannot add insecure WebSocket server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
+            return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
+        }
     }
 
     qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2").arg(config.address).arg(config.port);
@@ -540,15 +560,23 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
 JsonReply *ConfigurationHandler::SetTunnelProxyServerConfiguration(const QVariantMap &params) const
 {
     TunnelProxyServerConfiguration config = unpack<TunnelProxyServerConfiguration>(params.value("configuration").toMap());
-    if (config.id.isEmpty()) {
+    if (config.id.isEmpty())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
-    }
+
     if (config.address.isNull())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
     if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
+    }
+
+    // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
+    if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
+        if (!config.sslEnabled || !config.authenticationEnabled || config.ignoreSslErrors) {
+            qCWarning(dcJsonRpc()) << "Cannot add insecure tunnelproxy server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
+            return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
+        }
     }
 
     qCDebug(dcJsonRpc()) << QString("Configuring tunnel proxy server %1:%2").arg(config.address).arg(config.port);
@@ -757,10 +785,10 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
     basicConfiguration.insert("location", QVariantMap{
-                                  {"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
-                                  {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
-                                  {"name", NymeaCore::instance()->configuration()->locationName()}
-                              });
+                                              {"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
+                                              {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
+                                              {"name", NymeaCore::instance()->configuration()->locationName()}
+                                          });
     basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }

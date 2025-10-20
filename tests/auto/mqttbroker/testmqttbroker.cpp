@@ -32,6 +32,7 @@
 #include "nymeacore.h"
 #include "servers/mqttbroker.h"
 #include "servers/mocktcpserver.h"
+#include "loggingcategories.h"
 
 #include <mqttclient.h>
 

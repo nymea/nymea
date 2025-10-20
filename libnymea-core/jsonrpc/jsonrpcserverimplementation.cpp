@@ -576,7 +576,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
+        qCWarning(dcJsonRpc()) << "Failed to parse JSON data" << data << ":" << error.errorString();
         sendErrorResponse(interface, clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
         return;
     }
@@ -586,7 +586,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     bool success;
     int commandId = message.value("id").toInt(&success);
     if (!success) {
-        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
+        qCWarning(dcJsonRpc()) << "Error parsing command. Missing \"id\":" << message;
         sendErrorResponse(interface, clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
@@ -594,7 +594,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QString methodString = message.value("method").toString();
     QStringList commandList = methodString.split('.');
     if (commandList.count() != 2) {
-        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
+        qCWarning(dcJsonRpc()) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
         sendErrorResponse(interface, clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
         return;
     }
@@ -607,7 +607,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         token = message.value("token").toByteArray();
     } else if (message.value("token").toByteArray() != token) {
         qCWarning(dcJsonRpc()) << "Client changed token without redoing the handshake.";
-        qCDebug(dcJsonRpc) << "Old token:" << token << "new token:" << message.value("token").toByteArray();
+        qCDebug(dcJsonRpc()) << "Old token:" << token << "new token:" << message.value("token").toByteArray();
         sendUnauthorizedResponse(interface, clientId, commandId, "Changing the user (token) requires a new handshake. Call JSONRPC.Hello.");
         interface->terminateClientConnection(clientId);
         qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";

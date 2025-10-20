@@ -1,3 +1,13 @@
+nymea (1.12.1) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Update network device monitor behavior for IP and hostname based
+    moni…
+  * Prevent double definitions from a double included testlib macro
+  * Disable insecure interfaces if configured using env
+
+ -- jenkins <developer@nymea.io>  Mon, 20 Oct 2025 13:40:24 +0200
+
 nymea (1.12.0) jammy; urgency=medium
 
   [ Simon Stürz ]

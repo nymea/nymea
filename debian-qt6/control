@@ -39,7 +39,7 @@ Section: metapackages
 Multi-Arch: same
 Depends: nymead (= ${binary:Version}),
          ${misc:Depends}
-Recommends: qml-module-qtquick2
+Recommends: qml6-module-qtquick
 Suggests: nymea-doc
 Description: An open source IoT server - meta package
  The nymea daemon is a plugin based IoT (Internet of Things) server.

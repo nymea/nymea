@@ -539,6 +539,18 @@ bool UserManager::verifyToken(const QByteArray &token)
     return true;
 }
 
+bool UserManager::restrictedThingAccess(const QByteArray &token) const
+{
+    UserInfo ui = userInfo(tokenInfo(token).username());
+    return !ui.scopes().testFlag(Types::PermissionScopeAccessAllThings);
+}
+
+QList<ThingId> UserManager::allowedThingIds(const QByteArray &token) const
+{
+    UserInfo ui = userInfo(tokenInfo(token).username());
+    return ui.allowedThingIds();
+}
+
 bool UserManager::initDB()
 {
     m_db.close();

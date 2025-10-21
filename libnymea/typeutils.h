@@ -202,6 +202,7 @@ public:
         PermissionScopeNone             = 0x0000,
         PermissionScopeControlThings    = 0x0001,
         PermissionScopeConfigureThings  = 0x0003,
+        PermissionScopeAccessAllThings  = 0x0004,
         PermissionScopeExecuteRules     = 0x0010,
         PermissionScopeConfigureRules   = 0x0030,
         PermissionScopeAdmin            = 0xFFFF,

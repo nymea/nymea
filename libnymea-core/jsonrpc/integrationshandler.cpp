@@ -38,6 +38,9 @@
 #include "integrations/browseritemresult.h"
 #include "ruleengine/ruleengine.h"
 
+#include "nymeacore.h"
+#include "usermanager/usermanager.h"
+
 #include <QDebug>
 #include <QJsonDocument>
 #include <QCryptographicHash>
@@ -769,29 +772,65 @@ JsonReply* IntegrationsHandler::GetThings(const QVariantMap &params, const JsonC
 {
     QVariantMap returns;
     QVariantList things;
-    if (params.contains("thingId")) {
-        Thing *thing = m_thingManager->findConfiguredThing(ThingId(params.value("thingId").toString()));
-        if (!thing) {
-            returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorThingNotFound));
-            return createReply(returns);
-        } else {
-            QVariantMap packedThing = pack(thing).toMap();
-            QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
-            if (!translatedSetupStatus.isEmpty()) {
-                packedThing["setupDisplayMessage"] = translatedSetupStatus;
+
+
+    if (NymeaCore::instance()->userManager()->restrictedThingAccess(context.token())) {
+        QList<ThingId> allowedThingIds = NymeaCore::instance()->userManager()->allowedThingIds(context.token());
+        if (params.contains("thingId")) {
+            ThingId thingId(params.value("thingId").toString());
+            Thing *thing = m_thingManager->findConfiguredThing(thingId);
+            if (!thing || !allowedThingIds.contains(thingId)) {
+                returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorThingNotFound));
+                return createReply(returns);
+            } else {
+                QVariantMap packedThing = pack(thing).toMap();
+                QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+                if (!translatedSetupStatus.isEmpty()) {
+                    packedThing["setupDisplayMessage"] = translatedSetupStatus;
+                }
+                things.append(packedThing);
             }
-            things.append(packedThing);
+        } else {
+            foreach (Thing *thing, m_thingManager->configuredThings()) {
+                if (!allowedThingIds.contains(thing->id()))
+                    continue;
+
+
+                QVariantMap packedThing = pack(thing).toMap();
+                QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+                if (!translatedSetupStatus.isEmpty()) {
+                    packedThing["setupDisplayMessage"] = translatedSetupStatus;
+                }
+                things.append(packedThing);
+            }
         }
     } else {
-        foreach (Thing *thing, m_thingManager->configuredThings()) {
-            QVariantMap packedThing = pack(thing).toMap();
-            QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
-            if (!translatedSetupStatus.isEmpty()) {
-                packedThing["setupDisplayMessage"] = translatedSetupStatus;
+        // Unrestricted things access
+        if (params.contains("thingId")) {
+            Thing *thing = m_thingManager->findConfiguredThing(ThingId(params.value("thingId").toString()));
+            if (!thing) {
+                returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorThingNotFound));
+                return createReply(returns);
+            } else {
+                QVariantMap packedThing = pack(thing).toMap();
+                QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+                if (!translatedSetupStatus.isEmpty()) {
+                    packedThing["setupDisplayMessage"] = translatedSetupStatus;
+                }
+                things.append(packedThing);
             }
-            things.append(packedThing);
+        } else {
+            foreach (Thing *thing, m_thingManager->configuredThings()) {
+                QVariantMap packedThing = pack(thing).toMap();
+                QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+                if (!translatedSetupStatus.isEmpty()) {
+                    packedThing["setupDisplayMessage"] = translatedSetupStatus;
+                }
+                things.append(packedThing);
+            }
         }
     }
+
     returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError));
     returns.insert("things", things);
     return createReply(returns);

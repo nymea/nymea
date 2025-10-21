@@ -56,11 +56,16 @@ public:
     Types::PermissionScopes scopes() const;
     void setScopes(Types::PermissionScopes scopes);
 
+    void setAllowedThingIds(const QList<ThingId> &allowedThingIds);
+    QList<ThingId> allowedThingIds() const;
+
 private:
     QString m_username;
     QString m_email;
     QString m_displayName;
     Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
+    QList<ThingId> m_allowedThingIds;
+
 };
 
 class UserInfoList: public QList<UserInfo>

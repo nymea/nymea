@@ -42,12 +42,13 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     QString description;
 
     params.clear(); returns.clear();
-    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
+    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If the user has not the permission \"PermissionScopeAccessAllThings\", the list of things this user has access to can be defined in the \"allowedThingIds\" property. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     params.insert("o:email", enumValueName(String));
     params.insert("o:displayName", enumValueName(String));
     params.insert("o:scopes", flagRef<Types::PermissionScopes>());
+    params.insert("o:allowedThingIds", QVariantList() << enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("CreateUser", description, params, returns);
 
@@ -87,9 +88,10 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerMethod("RemoveUser", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Set the permissions (scopes) for a given user.";
+    description = "Set the permissions (scopes) for a given user. If the user has not the permission \"PermissionScopeAccessAllThings\" the list of thing IDs this user has access to can be defined in the \"allowedThingIds\" property.";
     params.insert("username", enumValueName(String));
     params.insert("scopes", flagRef<Types::PermissionScopes>());
+    params.insert("o:allowedThingIds", QVariantList() << enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("SetUserScopes", description, params, returns);
 

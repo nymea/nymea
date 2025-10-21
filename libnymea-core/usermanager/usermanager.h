@@ -80,8 +80,10 @@ public:
 
     UserError removeToken(const QUuid &tokenId);
 
-
     bool verifyToken(const QByteArray &token);
+
+    bool restrictedThingAccess(const QByteArray &token) const;
+    QList<ThingId> allowedThingIds(const QByteArray &token) const;
 
 signals:
     void userAdded(const QString &username);
@@ -108,7 +110,9 @@ private:
     QPair<int, QString> m_pushButtonTransaction;
 
 };
+
 }
+
 Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)
 
 #endif // USERMANAGER_H

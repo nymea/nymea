@@ -63,6 +63,28 @@ DOXYGEN_XML_DIR = PROJECT_ROOT / "_doxygen" / "xml"
 breathe_projects = {"libnymea": str(DOXYGEN_XML_DIR)}
 breathe_default_project = "libnymea"
 
+# Doxygen exposes Qt's ``Q_PROPERTY`` entries as ``kind="property"`` member
+# definitions. Older Breathe releases do not map this kind to a Sphinx
+# directive which leads to ``KeyError: 'property'`` during the build. Map the
+# property kind to the regular variable handler so the documentation renders
+# instead of crashing. This is a no-op with newer Breathe versions where the
+# mapping already exists.
+try:  # pragma: no cover - optional dependency at build time only
+    from breathe.renderer.sphinxrenderer import DomainDirectiveFactory
+except Exception:  # ImportError on readthedocs / when breathe is unavailable
+    DomainDirectiveFactory = None
+
+if DomainDirectiveFactory is not None:
+    fallback = None
+    if hasattr(DomainDirectiveFactory, "cpp_members"):
+        fallback = DomainDirectiveFactory.cpp_members.get("variable")
+        if fallback and "property" not in DomainDirectiveFactory.cpp_members:
+            DomainDirectiveFactory.cpp_members["property"] = fallback
+    if fallback and hasattr(DomainDirectiveFactory, "cpp_classes") and (
+        "property" not in DomainDirectiveFactory.cpp_classes
+    ):
+        DomainDirectiveFactory.cpp_classes["property"] = fallback
+
 # -- Options for HTML output -----------------------------------------------
 
 html_theme = "alabaster"

@@ -1,0 +1,58 @@
+# Doxygen configuration for libnymea. Generated for the Sphinx + Breathe
+# documentation workflow.
+
+PROJECT_NAME           = "libnymea"
+OUTPUT_DIRECTORY       = sphinx/_doxygen
+CREATE_SUBDIRS         = NO
+OUTPUT_LANGUAGE        = English
+
+INPUT                  = ../libnymea
+FILE_PATTERNS          = *.h \
+                         *.hpp \
+                         *.hh \
+                         *.cpp
+RECURSIVE              = YES
+
+# Only generate the XML output for consumption by Breathe.
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_DOCBOOK       = NO
+
+# Parsing configuration
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = NO
+FULL_PATH_NAMES        = NO
+STRIP_FROM_PATH        = ..
+STRIP_FROM_INC_PATH    = ..
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+MULTILINE_CPP_IS_BRIEF = YES
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = NO
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_FORMAT            = "$file:$line: $text"
+
+# Preprocessor configuration.
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+SKIP_FUNCTION_MACROS   = YES
+PREDEFINED             = DECLARE_TYPE_ID
+
+# Index configuration.
+GENERATE_TREEVIEW      = YES
+ALPHABETICAL_INDEX     = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+# Misc
+CLANG_ASSISTED_PARSING = NO

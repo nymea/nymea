@@ -85,6 +85,25 @@ Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://disc
 
 A detailed documentation on how to develop with *nymea* is available on the [nymea | developer documentation](https://nymea.io/documentation/developers/).
 
+### Building the developer documentation locally
+
+The documentation is generated with Doxygen and Sphinx. Install the required
+tools before running the build helper:
+
+```
+sudo apt install doxygen qttools5-dev-tools
+python3 -m pip install -r doc/requirements.txt
+```
+
+Once the dependencies are available execute:
+
+```
+python3 doc/build_docs.py
+```
+
+HTML output is written to ``doc/html`` and a Qt Help bundle is produced under
+``doc/qthelp/libnymea.qch`` which can be imported into Qt Creator.
+
 
 ## Network discovery
 

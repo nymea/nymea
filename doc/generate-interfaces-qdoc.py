@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -22,195 +21,182 @@
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+"""Generate interface documentation as reStructuredText or QDoc."""
+
+from __future__ import annotations
+
 import argparse
-import traceback
 import json
 import os
-import sys
-import subprocess
+import re
+from pathlib import Path
+from typing import Dict, Iterable, List
 
-__version__='1.0.0'
-
-
-#--------------------------------------------------------------------------
-def printInfo(info):
-    print('[+] ' + info)
+FORMAT_RST = "rst"
+FORMAT_QDOC = "qdoc"
 
 
-#--------------------------------------------------------------------------
-def printWarning(warning):
-    print('[-] Warning: ' + warning)
+def print_info(info: str) -> None:
+    print(f"[+] {info}")
 
 
-#--------------------------------------------------------------------------
-def printError(error):
-    print('[!] Error: ' + error)
+def print_error(error: str) -> None:
+    print(f"[!] Error: {error}")
 
 
-#--------------------------------------------------------------------------
-def writeToFile(line):
-    outputFile.write('%s\n' % line)
+def load_interfaces(interfaces_dir: Path) -> Dict[str, dict]:
+    print_info(f"Loading interfaces files from {interfaces_dir}")
+    interfaces: Dict[str, dict] = {}
 
+    if not interfaces_dir.is_dir():
+        raise FileNotFoundError(f"Interface directory '{interfaces_dir}' not found")
 
-#--------------------------------------------------------------------------
-def writeCodeSection(jsonData):
-    writeToFile('\code')
-    writeToFile(json.dumps(jsonData, sort_keys=True, indent=4))
-    writeToFile('\endcode')
-    writeToFile('')
-
-
-#--------------------------------------------------------------------------
-def loadInterfaces():
-    printInfo('Loading interfaces files from %s' % interfacesDirectory)
-    
-    interfaces = {}
-    interfaceFiles = []
-    
-    # Read the file list
-    for fileName in os.listdir(interfacesDirectory):
-        if ".json" in fileName:
-            interfaceFiles.append(interfacesDirectory + "/" + fileName)
-
-    # Sort file lists for being able to get the last n days logs
-    interfaceFiles.sort()
-    for fileName in interfaceFiles:
-        name = os.path.basename(fileName)
-        interfaceName = os.path.splitext(name)[0]
-        #printInfo('    %s --> %s | %s' % (interfaceName, name, fileName))
-        interfaces[interfaceName] = loadJsonData(fileName)
-        
+    for entry in sorted(interfaces_dir.iterdir()):
+        if entry.suffix != ".json":
+            continue
+        with entry.open("r", encoding="utf-8") as handle:
+            interfaces[entry.stem] = json.load(handle)
     return interfaces
-        
-        
-#--------------------------------------------------------------------------
-def loadJsonData(fileName):
-    # Open the file
-    try:
-        jsonFile = open(fileName, 'r')
-    except:
-        printError('Could not open JSON file \"%s\"' % (fileName))
-        exit(-1)
-
-    jsonFileContent = jsonFile.read()
-    jsonFile.close()
-    
-    # Parse json content
-    try:
-        data = json.loads(jsonFileContent)
-    except ValueError as error:
-        printError('Could not load json content from %s' % (fileName))
-        printError('     %s' % (error))
-        exit(-1)
-
-    return data
 
 
-#--------------------------------------------------------------------------
-def writeDocumentationContent():
-    printInfo('Write interfaces documentation content to %s' % outputFileName)
-
-    writeToFile('\section1 Available interfaces')
-    writeToFile('This following list shows you the current available interfaces.')
-    writeToFile('')
-    
-    # Create the interfaces list
-    writeToFile('\list')
-    for interfaceName in interfaceNames:
-        writeToFile('    \li \l{%s}' % interfaceName)
-    
-    writeToFile('\endlist')
-    writeToFile('')
-    writeToFile('')
-
-    # Extract interface information
-    writeInterfaces()
-    
-    
-
-#--------------------------------------------------------------------------
-def writeInterfaces():
-    for interfaceName in interfaceNames:
-        writeToFile('\section2 %s' % interfaceName)
-        interfaceJson = interfaces[interfaceName]
-        # If a desciption is provided, use it and remove it from the map
-        if 'description' in interfaceJson:
-            writeToFile('%s' % interfaceJson['description'] )
-            interfaceJson.pop('description')
-            
-        writeCodeSection(interfaceJson)
-        writeToFile('')
-        
-        writeExtends(interfaceJson)
-        writeToFile('')
-
-        
+def slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return slug or "interface"
 
 
-#--------------------------------------------------------------------------
-def writeExtends(interfaceJson):
-    if 'extends' in interfaceJson:
-        if type(interfaceJson['extends']) is list:
-            #printInfo('extends is list: %s' % interfaceJson['extends'])
-            extendsList = list(interfaceJson['extends'])
-            extendsString = "See also: "
-            
-            extendsCount = len(extendsList)
-            for i in range(len(extendsList)):
-                if i is extendsCount - 1:
-                    extendsString += '\l{%s}' % extendsList[i]
+def json_block(data: dict) -> Iterable[str]:
+    serialized = json.dumps(data, sort_keys=True, indent=4)
+    for line in serialized.splitlines():
+        yield f"   {line}"
+
+
+def write_rst(output: Path, interfaces: Dict[str, dict]) -> None:
+    interface_names = sorted(interfaces.keys())
+    slug_map = {name: slugify(name) for name in interface_names}
+
+    print_info(f"Writing interfaces documentation to {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", encoding="utf-8") as handle:
+        handle.write(".. interfaces-begin\n\n")
+        handle.write("Interfaces catalogue\n")
+        handle.write("===================\n\n")
+        handle.write(
+            "The following interfaces are generated from the JSON metadata that\n"
+            "ships with nymea.\n\n"
+        )
+        handle.write(".. contents::\n")
+        handle.write("   :local:\n")
+        handle.write("   :depth: 1\n\n")
+
+        for name in interface_names:
+            data = interfaces[name]
+            description = data.get("description", "")
+            body = dict(data)
+            body.pop("description", None)
+
+            anchor = slug_map[name]
+            handle.write(f".. _interface-{anchor}:\n\n")
+            handle.write(f"{name}\n")
+            handle.write(f"{'-' * len(name)}\n\n")
+            if description:
+                handle.write(f"{description}\n\n")
+
+            handle.write(".. code-block:: json\n\n")
+            for line in json_block(body):
+                handle.write(f"{line}\n")
+            handle.write("\n")
+
+            extends = data.get("extends")
+            if extends:
+                if isinstance(extends, list):
+                    entries = extends
                 else:
-                    extendsString += '\l{%s}, ' % extendsList[i]
+                    entries = [extends]
+                references: List[str] = []
+                for entry in entries:
+                    target = slug_map.get(entry)
+                    if target:
+                        references.append(f":ref:`{entry} <interface-{target}>`")
+                    else:
+                        references.append(entry)
+                handle.write(f"See also: {', '.join(references)}\n\n")
 
-            writeToFile(extendsString)
-        else:
-            #printInfo('extends is string: %s' % interfaceJson['extends'])
-            writeToFile('See also: \l{%s}' % interfaceJson['extends'])
-        
+
+def write_qdoc(output: Path, interfaces: Dict[str, dict]) -> None:
+    interface_names = sorted(interfaces.keys())
+
+    print_info(f"Writing interfaces documentation to {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", encoding="utf-8") as handle:
+        handle.write("\\section1 Available interfaces\n")
+        handle.write("This following list shows you the current available interfaces.\n\n")
+        handle.write("\\list\n")
+        for name in interface_names:
+            handle.write(f"    \\li \\l{{{name}}}\n")
+        handle.write("\\endlist\n\n")
+
+        for name in interface_names:
+            data = interfaces[name]
+            description = data.get("description", "")
+            handle.write(f"\\section2 {name}\n")
+            if description:
+                handle.write(f"{description}\n")
+            handle.write("\\code\n")
+            payload = json.dumps(data, sort_keys=True, indent=4)
+            handle.write(f"{payload}\n")
+            handle.write("\\endcode\n\n")
+            extends = data.get("extends")
+            if extends:
+                if isinstance(extends, list):
+                    refs = ", ".join(f"\\l{{{item}}}" for item in extends)
+                    handle.write(f"See also: {refs}\n\n")
+                else:
+                    handle.write(f"See also: \\l{{{extends}}}\n\n")
 
 
-###########################################################################
-# Main
-###########################################################################
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='This tool generates a qdoc file out of the interfaces JSON files for the online documentation.')
-    parser.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('-i', '--interfaces', help='The path to the interfaces JSON files. Default is ../libnymea/interfaces/', metavar='path', default='../libnymea/interfaces/')
-    parser.add_argument('-o', '--output', help='The qdoc output file with the generated documentation script. Default is interfacelist.qdoc', metavar='output', default='interfacelist.qdoc')
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Generate documentation from the libnymea interface metadata."
+    )
+    parser.add_argument(
+        "-i",
+        "--interfaces",
+        metavar="path",
+        default="../libnymea/interfaces/",
+        help="Path to the JSON interface definitions.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        metavar="output",
+        default="interfacelist.qdoc",
+        help="Path to the generated documentation file.",
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        choices=[FORMAT_RST, FORMAT_QDOC],
+        default=FORMAT_RST,
+        help="Output format.",
+    )
     args = parser.parse_args()
 
-    interfacesDirectory = os.path.abspath(args.interfaces)
-    outputFileName = os.path.dirname(os.path.realpath(sys.argv[0])) + "/" + args.output
-    
-    # Print build information for debugging
-    printInfo('--> Interfaces directory: %s' % interfacesDirectory)
-    printInfo('--> Output: %s' % outputFileName)
+    interfaces_dir = Path(args.interfaces).resolve()
+    output_path = Path(args.output)
 
-    # Verify interfaces path
-    if not os.path.isdir(interfacesDirectory):
-        printError('The given interfaces directory path does not exist \"%s\"' % (interfacesDirectory))
-        exit(-1)
-
-
-    # Open qdoc file for writing
     try:
-        outputFile = open(outputFileName, 'w')
-    except:
-        printError('Could not open output file \"%s\"' % (outputFileName))
-        exit(-1)
+        interfaces = load_interfaces(interfaces_dir)
+    except FileNotFoundError as error:
+        print_error(str(error))
+        raise SystemExit(1) from error
+
+    if args.format == FORMAT_RST:
+        write_rst(output_path, interfaces)
+    else:
+        write_qdoc(output_path, interfaces)
+
+    print_info("Done.")
 
 
-    # Load all interface files
-    interfaces = loadInterfaces()
-    
-    # Get a alphabetic sorted list of interfaces
-    interfaceNames = interfaces.keys()
-    interfaceNames.sort()
-    
-    # Write the documentation
-    writeDocumentationContent()
-    
-    outputFile.close()
-    printInfo('Done.')
-
+if __name__ == "__main__":
+    main()

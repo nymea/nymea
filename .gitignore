@@ -2,6 +2,10 @@
 *.autosave
 builddir
 doc/html
+doc/qthelp
+doc/sphinx/_doxygen
+doc/sphinx/reference/generated/interfaces.rst
+doc/sphinx/reference/generated/jsonrpc-api.rst
 *api.json.new
 *.snap
 snap/parts/

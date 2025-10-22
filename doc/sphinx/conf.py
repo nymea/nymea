@@ -75,15 +75,30 @@ except Exception:  # ImportError on readthedocs / when breathe is unavailable
     DomainDirectiveFactory = None
 
 if DomainDirectiveFactory is not None:
-    fallback = None
-    if hasattr(DomainDirectiveFactory, "cpp_members"):
-        fallback = DomainDirectiveFactory.cpp_members.get("variable")
-        if fallback and "property" not in DomainDirectiveFactory.cpp_members:
-            DomainDirectiveFactory.cpp_members["property"] = fallback
-    if fallback and hasattr(DomainDirectiveFactory, "cpp_classes") and (
-        "property" not in DomainDirectiveFactory.cpp_classes
-    ):
-        DomainDirectiveFactory.cpp_classes["property"] = fallback
+    def _ensure_property_mapping(attr: str) -> tuple | None:
+        mapping = getattr(DomainDirectiveFactory, attr, None)
+        if not mapping:
+            return None
+
+        # Prefer the ``variable`` handler because Qt properties behave like
+        # data members. Fall back to any available handler to avoid crashes
+        # even if Breathe changes its internal registry names.
+        for candidate in ("variable", "member", "function"):
+            handler = mapping.get(candidate)
+            if handler:
+                break
+        else:
+            handler = next(iter(mapping.values()), None)
+
+        if handler and "property" not in mapping:
+            mapping["property"] = handler
+        return handler
+
+    fallback = _ensure_property_mapping("cpp_members")
+    if fallback is None:
+        fallback = _ensure_property_mapping("cpp_classes")
+    elif hasattr(DomainDirectiveFactory, "cpp_classes"):
+        DomainDirectiveFactory.cpp_classes.setdefault("property", fallback)
 
 # -- Options for HTML output -----------------------------------------------
 

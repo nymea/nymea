@@ -46,7 +46,8 @@ public:
         UserErrorDuplicateUserId,
         UserErrorBadPassword,
         UserErrorTokenNotFound,
-        UserErrorPermissionDenied
+        UserErrorPermissionDenied,
+        UserErrorInconsistantScopes
     };
     Q_ENUM(UserError)
 
@@ -91,6 +92,7 @@ private:
     bool validateUsername(const QString &username) const;
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
+    bool validateScopes(Types::PermissionScopes scopes) const;
 
     void dumpDBError(const QString &message);
 

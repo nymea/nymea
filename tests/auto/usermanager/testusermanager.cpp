@@ -102,6 +102,9 @@ private slots:
 
     void getUserInfo();
 
+    void testScopeConsitancy_data();
+    void testScopeConsitancy();
+
 private:
     // m_apiToken is in testBase
     QUuid m_tokenId;
@@ -116,11 +119,11 @@ void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase("*.debug=false\n"
-                                     "Application.debug=true\n"
-                                     "Tests.debug=true\n"
-                                     "UserManager.debug=true\n"
-                                     "PushButtonAgent.debug=true\n"
-                                     "MockDevice.debug=true");
+                                "Application.debug=true\n"
+                                "Tests.debug=true\n"
+                                "UserManager.debug=true\n"
+                                "PushButtonAgent.debug=true\n"
+                                "MockDevice.debug=true");
 }
 
 void TestUsermanager::init()
@@ -357,7 +360,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
 
     // Create a new clientId for alice and connect it to the server
     QUuid aliceId = QUuid::createUuid();
-    m_mockTcpServer->clientConnected(aliceId);
+    emit m_mockTcpServer->clientConnected(aliceId);
     m_mockTcpServer->injectData(aliceId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
     if (clientSpy.count() == 0) clientSpy.wait();
 
@@ -368,12 +371,12 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 
     // Disconnect alice
-    m_mockTcpServer->clientDisconnected(aliceId);
+    emit m_mockTcpServer->clientDisconnected(aliceId);
 
     // Now try with bob
     // Create a new clientId for bob and connect it to the server
     QUuid bobId = QUuid::createUuid();
-    m_mockTcpServer->clientConnected(bobId);
+    emit m_mockTcpServer->clientConnected(bobId);
     clientSpy.clear();
     m_mockTcpServer->injectData(bobId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
     if (clientSpy.count() == 0) clientSpy.wait();
@@ -495,9 +498,8 @@ void TestUsermanager::authenticateAfterPasswordChangeFail()
     QVERIFY2(disconnectedSpy.count() == 1, "Connection should have dropped");
 
     QTest::qWait(3200);
-    m_mockTcpServer->clientConnected(m_clientId);
+    emit m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
-
 }
 
 void TestUsermanager::getUserInfo()
@@ -505,14 +507,9 @@ void TestUsermanager::getUserInfo()
     authenticate();
 
     QVariant response = injectAndWait("Users.GetUserInfo");
-
     QCOMPARE(response.toMap().value("status").toString(), QString("success"));
-
     QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
-
-
     QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
-
 }
 
 void TestUsermanager::unauthenticatedCallAfterTokenRemove()
@@ -530,8 +527,116 @@ void TestUsermanager::unauthenticatedCallAfterTokenRemove()
     QVERIFY2(spy.count() == 1, "Connection should be terminated!");
 
     QTest::qWait(3200);
-    m_mockTcpServer->clientConnected(m_clientId);
+    emit m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
+}
+
+void TestUsermanager::testScopeConsitancy_data()
+{
+    QTest::addColumn<QList<Types::PermissionScope>>("scopes");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("valid: admin")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeAdmin)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: none")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeNone)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeConfigureThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: control things/rules, all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only execute rules")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeAccessAllThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorNoError";
+
+
+    QTest::newRow("invalid: missing control and all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeConfigureThings)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: control/configure things. not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeConfigureThings)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: only execute rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: only configure rules")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeConfigureRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: configure and execute rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeExecuteRules
+            << Types::PermissionScopeConfigureRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: control things/rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorInconsistantScopes";
+}
+
+void TestUsermanager::testScopeConsitancy()
+{
+    QFETCH(QList<Types::PermissionScope>, scopes);
+    QFETCH(QString, error);
+
+    authenticate();
+
+    QVariant response = injectAndWait("Users.GetUserInfo");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
+    QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
+
+    QMetaEnum metaEnum = QMetaEnum::fromType<Types::PermissionScope>();
+    QStringList scopesList;
+    foreach (Types::PermissionScope scope, scopes)
+        scopesList.append(metaEnum.valueToKey(scope));
+
+    // Now try to edit with the given scopes
+    QVariantMap params;
+    params.insert("username", userInfoMap.value("username").toString());
+    params.insert("scopes", scopesList);
+    response = injectAndWait("Users.SetUserScopes", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), error);
 }
 
 #include "testusermanager.moc"

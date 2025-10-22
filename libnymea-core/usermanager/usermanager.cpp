@@ -96,7 +96,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
 
     if (!initDB()) {
         qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
-        if (QFileInfo(m_db.databaseName()).exists()) {
+        if (QFileInfo::exists(m_db.databaseName())) {
             rotate(m_db.databaseName());
             if (!initDB()) {
                 qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
@@ -141,6 +141,7 @@ UserInfoList UserManager::users() const
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << userQuery << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return users;
     }
+
     while (resultQuery.next()) {
         UserInfo info = UserInfo(resultQuery.value("username").toString());
         info.setEmail(resultQuery.value("email").toString());
@@ -162,6 +163,11 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     if (!validatePassword(password)) {
         qCWarning(dcUserManager) << "Password failed character validation. Must contain a letter, a number and a special charactar. Minimum length: 8";
         return UserErrorBadPassword;
+    }
+
+    if (!validateScopes(scopes)) {
+        // The method warns about he specific validation
+        return UserErrorInconsistantScopes;
     }
 
     QSqlQuery checkForDuplicateUserQuery(m_db);
@@ -223,9 +229,9 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(newPassword + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QString updatePasswordQueryString = QString("UPDATE users SET password = \"%1\", salt = \"%2\" WHERE lower(username) = \"%3\";")
-            .arg(QString::fromUtf8(hashedPassword))
-            .arg(QString::fromUtf8(salt))
-            .arg(username.toLower());
+                                            .arg(QString::fromUtf8(hashedPassword))
+                                            .arg(QString::fromUtf8(salt))
+                                            .arg(username.toLower());
 
     QSqlQuery updatePasswordQuery(m_db);
     if (!updatePasswordQuery.exec(updatePasswordQueryString)) {
@@ -267,6 +273,12 @@ UserManager::UserError UserManager::removeUser(const QString &username)
 
 UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes)
 {
+    if (!validateScopes(scopes)) {
+        // The method warns about he specific validation
+        return UserErrorInconsistantScopes;
+    }
+
+
     QString scopesString = Types::scopesToStringList(scopes).join(',');
     QSqlQuery setScopesQuery(m_db);
     setScopesQuery.prepare("UPDATE users SET scopes = ? WHERE username = ?");
@@ -332,11 +344,11 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg(username.toLower())
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(deviceName);
+                                        .arg(QUuid::createUuid().toString())
+                                        .arg(username.toLower())
+                                        .arg(QString::fromUtf8(token))
+                                        .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+                                        .arg(deviceName);
 
     QSqlQuery storeTokenQuery(m_db);
     if (!storeTokenQuery.exec(storeTokenQueryString)) {
@@ -391,9 +403,8 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 */
 UserInfo UserManager::userInfo(const QString &username) const
 {
-
     QString getUserQueryString = QString("SELECT * FROM users WHERE lower(username) = \"%1\";")
-            .arg(username);
+    .arg(username);
 
     QSqlQuery getUserQuery(m_db);
     if (!getUserQuery.exec(getUserQueryString)) {
@@ -444,7 +455,7 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     }
 
     QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
+                                      .arg(QString::fromUtf8(token));
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -467,7 +478,7 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
 
     QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
+    .arg(tokenId.toString());
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -490,7 +501,7 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
     QString removeTokenQueryString = QString("DELETE FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
+    .arg(tokenId.toString());
 
     QSqlQuery removeTokenQuery(m_db);
     if (!removeTokenQuery.exec(removeTokenQueryString)) {
@@ -519,7 +530,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         return false;
     }
     QString getTokenQueryString = QString("SELECT * FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
+                                      .arg(QString::fromUtf8(token));
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -738,6 +749,47 @@ bool UserManager::validateToken(const QByteArray &token) const
     return validator.match(token).hasMatch();
 }
 
+bool UserManager::validateScopes(Types::PermissionScopes scopes) const
+{
+    if (scopes.testFlag(Types::PermissionScopeAdmin) || scopes == Types::PermissionScopeNone || scopes == Types::PermissionScopeControlThings)
+        return true;
+
+    if (scopes.testFlag(Types::PermissionScopeConfigureThings)) {
+        if (!scopes.testFlag(Types::PermissionScopeControlThings) ||
+            !scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can configure things he must have access to all things and must be able to control them.";
+            return false;
+        }
+    }
+
+    // Note: if access to all things, there are no restrictions
+    if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+        if (scopes.testFlag(Types::PermissionScopeControlThings) ||
+            scopes.testFlag(Types::PermissionScopeConfigureRules)||
+            scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user has not access to all things, he can not configure them or create/execute rules.";
+            return false;
+        }
+    }
+
+    if (scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+        if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can execute rules, he must have access to all things.";
+            return false;
+        }
+    }
+
+    if (scopes.testFlag(Types::PermissionScopeConfigureRules)) {
+        if (!scopes.testFlag(Types::PermissionScopeAccessAllThings) ||
+            !scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can create rules, he must have access to all things and be able to execute them.";
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void UserManager::dumpDBError(const QString &message)
 {
     qCCritical(dcUserManager) << message << "Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
@@ -770,11 +822,11 @@ void UserManager::onPushButtonPressed()
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg("")
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(m_pushButtonTransaction.second);
+                                        .arg(QUuid::createUuid().toString())
+                                        .arg("")
+                                        .arg(QString::fromUtf8(token))
+                                        .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+                                        .arg(m_pushButtonTransaction.second);
 
     QSqlQuery storeTokenQuery(m_db);
     if (!storeTokenQuery.exec(storeTokenQueryString) || m_db.lastError().type() != QSqlError::NoError) {

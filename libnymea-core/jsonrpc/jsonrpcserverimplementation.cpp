@@ -49,6 +49,7 @@
 #include "jsonrpc/jsonhandler.h"
 #include "jsonvalidator.h"
 #include "nymeacore.h"
+#include "usermanager/usermanager.h"
 #include "integrations/thingmanager.h"
 #include "integrations/integrationplugin.h"
 #include "integrations/thing.h"

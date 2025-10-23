@@ -222,6 +222,10 @@ public:
     static QStringList scopesToStringList(PermissionScopes scopes);
     static QString scopeToString(PermissionScope scope);
 
+    static QStringList thingIdsToStringList(const QList<ThingId> &thingIds);
+    static QList<ThingId> thingIdsFromStringList(const QStringList &stringList);
+
+
     enum LoggingType {
         LoggingTypeDiscrete,
         LoggingTypeSampled,

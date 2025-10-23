@@ -44,6 +44,24 @@ QString Types::scopeToString(Types::PermissionScope scope)
     return metaEnum.valueToKey(scope);
 }
 
+QStringList Types::thingIdsToStringList(const QList<ThingId> &thingIds)
+{
+    QStringList stringList;
+    foreach (const ThingId &thingId, thingIds)
+        stringList.append(thingId.toString());
+
+    return stringList;
+}
+
+QList<ThingId> Types::thingIdsFromStringList(const QStringList &stringList)
+{
+    QList<ThingId> thingIds;
+    foreach (const QString &idString, stringList)
+        thingIds.append(ThingId(idString));
+
+    return thingIds;
+}
+
 Types::PermissionScope Types::scopeFromString(const QString &scopeString)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<PermissionScope>();

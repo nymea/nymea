@@ -159,8 +159,11 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
     QString displayName = params.value("displayName").toString();
     QStringList scopesList = params.value("scopes", Types::scopesToStringList(Types::PermissionScopeAdmin)).toStringList();
     Types::PermissionScopes scopes = Types::scopesFromStringList(scopesList);
+    QList<ThingId> allowedThingIds;
+    foreach (const QString &thingIdString, params.value("allowedThingIds").toStringList())
+        allowedThingIds.append(ThingId(thingIdString));
 
-    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes);
+    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes, allowedThingIds);
 
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(status));
@@ -310,7 +313,8 @@ JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonCont
     Q_UNUSED(context)
     QString username = params.value("username").toString();
     Types::PermissionScopes scopes = Types::scopesFromStringList(params.value("scopes").toStringList());
-    UserManager::UserError error = m_userManager->setUserScopes(username, scopes);
+    QList<ThingId> allowedThingIds = Types::thingIdsFromStringList(params.value("allowedThingIds").toStringList());
+    UserManager::UserError error = m_userManager->setUserScopes(username, scopes, allowedThingIds);
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(error));
     return createReply(returns);

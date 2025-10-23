@@ -56,10 +56,10 @@ public:
     bool initRequired() const;
     UserInfoList users() const;
 
-    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes);
+    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds = QList<ThingId>());
     UserError changePassword(const QString &username, const QString &newPassword);
     UserError removeUser(const QString &username);
-    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes);
+    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds = QList<ThingId>());
     UserError setUserInfo(const QString &username, const QString &email, const QString &displayName);
 
     bool pushButtonAuthAvailable() const;

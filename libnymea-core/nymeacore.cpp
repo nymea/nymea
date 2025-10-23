@@ -36,6 +36,7 @@
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
 #include "jsonrpc/debughandler.h"
+#include "usermanager/usermanager.h"
 #include "version.h"
 
 #include "integrations/thingmanagerimplementation.h"

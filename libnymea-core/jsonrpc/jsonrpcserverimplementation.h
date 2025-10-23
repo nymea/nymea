@@ -28,7 +28,6 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
 #include "transportinterface.h"
-#include "usermanager/usermanager.h"
 
 #include "types/thingclass.h"
 #include "types/action.h"

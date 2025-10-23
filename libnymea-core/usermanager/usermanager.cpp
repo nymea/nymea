@@ -147,13 +147,14 @@ UserInfoList UserManager::users() const
         info.setEmail(resultQuery.value("email").toString());
         info.setDisplayName(resultQuery.value("displayName").toString());
         info.setScopes(Types::scopesFromStringList(resultQuery.value("scopes").toString().split(',')));
+        info.setAllowedThingIds(Types::thingIdsFromStringList(resultQuery.value("allowedThingIds").toString().split(',')));
         users.append(info);
     }
     return users;
 }
 
 /*! Creates a new user with the given \a username and \a password. Returns the \l UserError to inform about the result. */
-UserManager::UserError UserManager::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes)
+UserManager::UserError UserManager::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds)
 {
     if (!validateUsername(username)) {
         qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
@@ -170,6 +171,17 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
         return UserErrorInconsistantScopes;
     }
 
+    // Verify thing IDs, if there is no thing with this id, we don't save it and it will not be verified.
+    // We don't return an error, the thing might have dissapeared
+    QList<ThingId> thingIds;
+    foreach (const ThingId &thingId, allowedThingIds) {
+        if (NymeaCore::instance()->thingManager()->configuredThings().findById(thingId) == nullptr) {
+            qCWarning(dcUserManager()) << "Cannot set user scope for" << username << "because there is no thing with ID ";
+        } else {
+            thingIds.append(thingId);
+        }
+    }
+
     QSqlQuery checkForDuplicateUserQuery(m_db);
     checkForDuplicateUserQuery.prepare("SELECT * FROM users WHERE lower(username) = ?;");
     // Note: We're using toLower() on the username mainly for the reason that in old versions the username used to be an email address
@@ -183,13 +195,14 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QSqlQuery query(m_db);
-    query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) VALUES(?, ?, ?, ?, ?, ?);");
+    query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes, allowedThingIds) VALUES(?, ?, ?, ?, ?, ?, ?);");
     query.addBindValue(username.toLower());
     query.addBindValue(email);
     query.addBindValue(displayName);
     query.addBindValue(QString::fromUtf8(hashedPassword));
     query.addBindValue(QString::fromUtf8(salt));
     query.addBindValue(Types::scopesToStringList(scopes).join(','));
+    query.addBindValue(Types::thingIdsToStringList(thingIds).join(','));
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Error creating user:" << query.lastError().databaseText() << query.lastError().driverText();
@@ -271,7 +284,7 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     return UserErrorNoError;
 }
 
-UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes)
+UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds)
 {
     if (!validateScopes(scopes)) {
         // The method warns about he specific validation
@@ -279,13 +292,25 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
     }
 
 
+    // Verify thing IDs, if there is no thing with this id, we don't save it and it will not be verified.
+    // We don't return an error, the thing might have dissapeared
+    QList<ThingId> thingIds;
+    foreach (const ThingId &thingId, allowedThingIds) {
+        if (NymeaCore::instance()->thingManager()->configuredThings().findById(thingId) == nullptr) {
+            qCWarning(dcUserManager()) << "Cannot set user scope for" << username << "because there is no thing with ID ";
+        } else {
+            thingIds.append(thingId);
+        }
+    }
+
     QString scopesString = Types::scopesToStringList(scopes).join(',');
+    QString allowedThingIdsString = Types::thingIdsToStringList(thingIds).join(',');
     QSqlQuery setScopesQuery(m_db);
-    setScopesQuery.prepare("UPDATE users SET scopes = ? WHERE username = ?");
-    setScopesQuery.addBindValue(scopesString);
-    setScopesQuery.addBindValue(username);
-    setScopesQuery.exec();
-    if (setScopesQuery.lastError().type() != QSqlError::NoError) {
+    setScopesQuery.prepare("UPDATE users SET scopes = :scopes, allowedThingIds = :allowedThingIds WHERE username = :username");
+    setScopesQuery.bindValue(":scopes", scopesString);
+    setScopesQuery.bindValue(":allowedThingIds", allowedThingIdsString);
+    setScopesQuery.bindValue(":username", username);
+    if (!setScopesQuery.exec()) {
         qCWarning(dcUserManager()) << "Error updating scopes for user" << username << setScopesQuery.lastError().databaseText() << setScopesQuery.lastError().driverText();
         return UserErrorBackendError;
     }
@@ -424,6 +449,7 @@ UserInfo UserManager::userInfo(const QString &username) const
     userInfo.setEmail(getUserQuery.value("email").toString());
     userInfo.setDisplayName(getUserQuery.value("displayName").toString());
     userInfo.setScopes(Types::scopesFromStringList(getUserQuery.value("scopes").toString().split(',')));
+    userInfo.setAllowedThingIds(Types::thingIdsFromStringList(getUserQuery.value("allowedThingIds").toString().split(',')));
 
     return userInfo;
 }
@@ -476,7 +502,6 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
-
     QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";")
     .arg(tokenId.toString());
 
@@ -572,26 +597,32 @@ bool UserManager::initDB()
     }
 
     int currentVersion = -1;
-    int newVersion = 1;
+    int newVersion = 2;
+
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
-        if (!query.exec("SELECT data FROM metadata WHERE `key` = 'version';")) {
+        if (!query.exec("SELECT data FROM metadata WHERE key = 'version';")) {
             qCWarning(dcUserManager()) << "Unable to execute SQL query" << query.executedQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         } else if (query.next()) {
             currentVersion = query.value("data").toInt();
+            qCInfo(dcUserManager()) << "Current database version is" << currentVersion;
+            if (currentVersion == newVersion) {
+                qCInfo(dcUserManager()) << "The database version is up to date";
+            }
         }
     }
 
     if (!m_db.tables().contains("users")) {
-        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
+        qCDebug(dcUserManager()) << "No \"users\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT, allowedThingIds TEXT);") || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table users).");
             m_db.close();
             return false;
         }
     } else {
         if (currentVersion < 1) {
+            qCDebug(dcUserManager()) << "Start user table database migration to version 1";
             QSqlQuery query = QSqlQuery(m_db);
             if (!query.exec("ALTER TABLE users ADD COLUMN scopes TEXT;") || m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
@@ -631,44 +662,106 @@ bool UserManager::initDB()
                 m_db.close();
                 return false;
             }
-            currentVersion = 1;
+
+            qCDebug(dcUserManager()) << "Migrated successfully users table to database version 1";
         }
+
+        if (currentVersion < 2) {
+            // - Add new "allowedThingIds" row into the users table
+            // - New permission has been added "PermissionScopeAccessAllThings", the existing users require
+            //   all this permission in order to have an unchainged behavior
+            qCDebug(dcUserManager()) << "Migrating user table to version 2";
+
+            // - Add new "allowedThingIds" row into the users table, it remains is empty at this point
+            QSqlQuery query = QSqlQuery(m_db);
+            if (!query.exec("ALTER TABLE users ADD COLUMN allowedThingIds TEXT;") || m_db.lastError().isValid()) {
+                dumpDBError("Error migrating user database (table users).");
+                m_db.close();
+                return false;
+            }
+
+            if (!m_db.transaction()) {
+                dumpDBError("Error starting transaction for migrating user database (table users).");
+                return false;
+            }
+
+            QSqlQuery selectQuery(m_db);
+            if (!selectQuery.exec("SELECT username, scopes FROM users")) {
+                dumpDBError("Select failed: " + selectQuery.lastError().text());
+                return false;
+            }
+
+            QSqlQuery updateQuery(m_db);
+            updateQuery.prepare("UPDATE users SET scopes = :scopes WHERE username = :username");
+            while (selectQuery.next()) {
+                QString username = selectQuery.value("username").toString();
+                Types::PermissionScopes scopes = Types::scopesFromStringList(selectQuery.value("scopes").toString().split(','));
+
+                // In case this is an admin, make sure we store only the Admin scope
+                if (!scopes.testFlag(Types::PermissionScopeAdmin)) {
+                    scopes.setFlag(Types::PermissionScopeAccessAllThings);
+                }
+
+                updateQuery.bindValue(":scopes", Types::scopesToStringList(scopes).join(','));
+                updateQuery.bindValue(":username", username);
+
+                if (!updateQuery.exec()) {
+                    qCWarning(dcUserManager()) << "Update failed for username" << username << ":" << updateQuery.lastError().text();
+                    m_db.rollback();
+                    return false;
+                }
+            }
+
+            if (!m_db.commit()) {
+                dumpDBError("Error migrating user database (table users) to version 2. Rollback.");
+                m_db.rollback();
+                return false;
+            }
+
+            qCDebug(dcUserManager()) << "Migrated successfully users table to database version 2";
+        }        
     }
 
     if (!m_db.tables().contains("tokens")) {
-        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
+        qCDebug(dcUserManager()) << "No \"tokens\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));") || m_db.lastError().isValid()) {
-            dumpDBError("Error initializing user database (table tokens).");
+            dumpDBError("Error initializing user database (table tokens)");
             m_db.close();
             return false;
         }
     }
 
-    if (m_db.tables().contains("metadata")) {
-        if (currentVersion < newVersion) {
-            QSqlQuery query(m_db);
-            if (!query.exec(QString("UPDATE metadata SET data = %1 WHERE `key` = 'version')").arg(newVersion)) || m_db.lastError().isValid()) {
-                dumpDBError("Error updating up user database schema version!");
-                m_db.close();
-                return false;
-            }
-            qCInfo(dcUserManager()) << "Successfully migrated user database.";
-        }
-    } else {
+    if (!m_db.tables().contains("metadata")) {
+        qCDebug(dcUserManager()) << "No \"metadata\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (table metadata)!");
             m_db.close();
             return false;
         }
+
         query = QSqlQuery(m_db);
-        if (!query.exec(QString("INSERT INTO metadata (`key`, `data`) VALUES ('version', %1);").arg(newVersion)) || m_db.lastError().isValid()) {
+        query.prepare("INSERT INTO metadata (key, data) VALUES ('version', :version);");
+        query.bindValue(":version", newVersion);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (setting version metadata)!");
             m_db.close();
             return false;
         }
-        qCInfo(dcUserManager()) << "Successfully initialized user database.";
+    } else {
+        // All migrations have been done
+        if (currentVersion < newVersion) {
+            QSqlQuery query(m_db);
+            query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
+            query.bindValue(":version", newVersion);
+            if (!query.exec() || m_db.lastError().isValid()) {
+                dumpDBError("Error updating database version");
+                m_db.close();
+                return false;
+            }
+            qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
+        }
     }
 
 
@@ -700,17 +793,17 @@ bool UserManager::initDB()
         }
     }
 
-
-    qCDebug(dcUserManager()) << "User database initialized successfully.";
+    qCDebug(dcUserManager()) << "User database initialized successfully";
     return true;
 }
 
 void UserManager::rotate(const QString &dbName)
 {
     int index = 1;
-    while (QFileInfo(QString("%1.%2").arg(dbName).arg(index)).exists()) {
+    while (QFileInfo::exists(QString("%1.%2").arg(dbName).arg(index))) {
         index++;
     }
+
     qCDebug(dcUserManager()) << "Backing up old database file to" << QString("%1.%2").arg(dbName).arg(index);
     QFile f(dbName);
     if (!f.rename(QString("%1.%2").arg(dbName).arg(index))) {

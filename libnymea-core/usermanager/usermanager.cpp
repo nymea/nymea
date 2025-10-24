@@ -348,6 +348,7 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
         }
     }
 
+
     QString scopesString = Types::scopesToStringList(scopes).join(',');
     QString allowedThingIdsString = Types::thingIdsToStringList(thingIds).join(',');
 

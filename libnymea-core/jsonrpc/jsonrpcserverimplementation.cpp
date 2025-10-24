@@ -656,7 +656,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         return;
     }
     if (!handler->jsonMethods().contains(method)) {
-        qCWarning(dcJsonRpc()) << QString("JSON RPC method called for invalid method: %1.%2").arg(targetNamespace).arg(method);
+        qCWarning(dcJsonRpc()) << QString("JSON RPC method called for invalid method: %1.%2").arg(targetNamespace, method);
         sendErrorResponse(interface, clientId, commandId, "No such method");
         return;
     }

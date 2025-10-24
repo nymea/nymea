@@ -61,8 +61,9 @@ public:
     Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetStateTypes(const QVariantMap &params, const JsonContext &context) const;
-    Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
+
+    Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *BrowseThing(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params, const JsonContext &context) const;
@@ -71,7 +72,7 @@ public:
     Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context);
 
-    Q_INVOKABLE JsonReply *GetIOConnections(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetIOConnections(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ConnectIO(const QVariantMap &params);
     Q_INVOKABLE JsonReply *DisconnectIO(const QVariantMap &params);
 

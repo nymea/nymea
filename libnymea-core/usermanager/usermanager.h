@@ -77,8 +77,9 @@ public:
 
     bool verifyToken(const QByteArray &token);
 
-    bool restrictedThingAccess(const QByteArray &token) const;
-    QList<ThingId> allowedThingIds(const QByteArray &token) const;
+    bool hasRestrictedThingAccess(const QByteArray &token) const;
+    bool accessToThingGranted(const ThingId &thingId, const QByteArray &token);
+    QList<ThingId> getAllowedThingIdsForToken(const QByteArray &token) const;
 
 signals:
     void userAdded(const QString &username);

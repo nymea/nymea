@@ -311,6 +311,9 @@ JsonReply *UsersHandler::RemoveUser(const QVariantMap &params, const JsonContext
 JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(context)
+
+    qCWarning(dcJsonRpc()) << params;
+
     QString username = params.value("username").toString();
     Types::PermissionScopes scopes = Types::scopesFromStringList(params.value("scopes").toStringList());
     QList<ThingId> allowedThingIds = Types::thingIdsFromStringList(params.value("allowedThingIds").toStringList());

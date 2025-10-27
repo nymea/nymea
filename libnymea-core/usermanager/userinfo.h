@@ -39,6 +39,7 @@ class UserInfo
     Q_PROPERTY(QString email READ email)
     Q_PROPERTY(QString displayName READ displayName)
     Q_PROPERTY(Types::PermissionScopes scopes READ scopes)
+    Q_PROPERTY(QList<ThingId> allowedThingIds READ allowedThingIds)
 
 public:
     UserInfo();

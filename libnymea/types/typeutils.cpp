@@ -56,8 +56,11 @@ QStringList Types::thingIdsToStringList(const QList<ThingId> &thingIds)
 QList<ThingId> Types::thingIdsFromStringList(const QStringList &stringList)
 {
     QList<ThingId> thingIds;
-    foreach (const QString &idString, stringList)
-        thingIds.append(ThingId(idString));
+    foreach (const QString &idString, stringList) {
+        if (!idString.isEmpty()) {
+            thingIds.append(ThingId(idString));
+        }
+    }
 
     return thingIds;
 }

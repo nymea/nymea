@@ -1,4 +1,4 @@
-8.3
+8.4
 {
     "enums": {
         "BasicType": [
@@ -157,6 +157,7 @@
             "PermissionScopeNone",
             "PermissionScopeControlThings",
             "PermissionScopeConfigureThings",
+            "PermissionScopeAccessAllThings",
             "PermissionScopeExecuteRules",
             "PermissionScopeConfigureRules",
             "PermissionScopeAdmin"
@@ -365,7 +366,8 @@
             "UserErrorDuplicateUserId",
             "UserErrorBadPassword",
             "UserErrorTokenNotFound",
-            "UserErrorPermissionDenied"
+            "UserErrorPermissionDenied",
+            "UserErrorInconsistantScopes"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",
@@ -897,10 +899,10 @@
             },
             "permissionScope": "PermissionScopeNone",
             "returns": {
-                "items": [
+                "o:displayMessage": "String",
+                "o:items": [
                     "$ref:BrowserItem"
                 ],
-                "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
             }
         },
@@ -1970,8 +1972,11 @@
             }
         },
         "Users.CreateUser": {
-            "description": "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.",
+            "description": "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If the user has not the permission \"PermissionScopeAccessAllThings\", the list of things this user has access to can be defined in the \"allowedThingIds\" property. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.",
             "params": {
+                "o:allowedThingIds": [
+                    "Uuid"
+                ],
                 "o:displayName": "String",
                 "o:email": "String",
                 "o:scopes": "$ref:PermissionScopes",
@@ -2045,8 +2050,11 @@
             }
         },
         "Users.SetUserScopes": {
-            "description": "Set the permissions (scopes) for a given user.",
+            "description": "Set the permissions (scopes) for a given user. If the user has not the permission \"PermissionScopeAccessAllThings\" the list of thing IDs this user has access to can be defined in the \"allowedThingIds\" property.",
             "params": {
+                "o:allowedThingIds": [
+                    "Uuid"
+                ],
                 "scopes": "$ref:PermissionScopes",
                 "username": "String"
             },

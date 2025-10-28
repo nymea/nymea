@@ -377,7 +377,8 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Fetch IO connections. Optionally filtered by thingId and stateTypeId.";
     params.insert("o:thingId", enumValueName(Uuid));
-    returns.insert("ioConnections", objectRef<IOConnections>());
+    returns.insert("o:ioConnections", objectRef<IOConnections>());
+    returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("GetIOConnections", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
@@ -1144,6 +1145,7 @@ JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params, cons
     QVariantMap returns;
     QVariant bla = pack(ioConnections);
     returns.insert("ioConnections", pack(ioConnections));
+    returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError));
     return createReply(returns);
 }
 

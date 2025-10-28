@@ -143,7 +143,6 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
         params.insert("username", username);
         emit UserRemoved(params);
     });
-
 }
 
 QString UsersHandler::name() const
@@ -316,8 +315,15 @@ JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonCont
 
     QString username = params.value("username").toString();
     Types::PermissionScopes scopes = Types::scopesFromStringList(params.value("scopes").toStringList());
-    QList<ThingId> allowedThingIds = Types::thingIdsFromStringList(params.value("allowedThingIds").toStringList());
+    QList<ThingId> allowedThingIds;
+    if (params.contains("allowedThingIds")) {
+        allowedThingIds = Types::thingIdsFromStringList(params.value("allowedThingIds").toStringList());
+    } else {
+        allowedThingIds = m_userManager->userInfo(username).allowedThingIds();
+    }
+
     UserManager::UserError error = m_userManager->setUserScopes(username, scopes, allowedThingIds);
+
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(error));
     return createReply(returns);

@@ -1,3 +1,10 @@
+nymea (1.12.2) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * debian: Fix debian packaging scripts for Qt6 based packages
+
+ -- jenkins <developer@nymea.io>  Wed, 29 Oct 2025 12:27:49 +0100
+
 nymea (1.12.1) jammy; urgency=medium
 
   [ Simon Stürz ]

@@ -348,7 +348,6 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
         }
     }
 
-
     QString scopesString = Types::scopesToStringList(scopes).join(',');
     QString allowedThingIdsString = Types::thingIdsToStringList(thingIds).join(',');
 
@@ -632,6 +631,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         return false;
     }
 
+    //qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();
     return true;
 }
 

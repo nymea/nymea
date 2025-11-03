@@ -620,10 +620,10 @@ void TestUsermanager::testRestrictedThingAccess()
 
     // Add thing two
     QVariantMap httpportParamTwo;
-    httpportParamOne.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
-    httpportParamOne.insert("value", m_mockThing1Port - 2);
+    httpportParamTwo.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
+    httpportParamTwo.insert("value", m_mockThing1Port - 2);
     thingParams.clear();
-    thingParams << httpportParamOne;
+    thingParams << httpportParamTwo;
 
     params.clear();
     params.insert("thingClassId", mockThingClassId);
@@ -689,33 +689,32 @@ void TestUsermanager::testRestrictedThingAccess()
     response = injectAndWait("Integrations.GetThings", params);
     verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
 
-    // GetStateValue
+    // GetStateValue (no access)
     params.clear();
     params.insert("thingId", thingIdOne);
     params.insert("stateTypeId", mockConnectedStateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
 
-    // BrowseThing
+    // BrowseThing (no access)
     params.clear();
     params.insert("thingId", thingIdOne);
     response = injectAndWait("Integrations.BrowseThing", params);
     verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
 
-    // GetBrowserItem
+    // GetBrowserItem (no access)
     params.clear();
     params.insert("thingId", thingIdOne);
     response = injectAndWait("Integrations.GetBrowserItem", params);
     verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
 
-    // Make sure notification get received from allowed thing
-
-    // Make sure no notification will be recived from restricted thing
-
-
     // Clean up
-
-
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    foreach (const UserInfo &userInfo, userManager->users()) {
+        qCDebug(dcTests()) << "Removing user" << userInfo.username();
+        userManager->removeUser(userInfo.username());
+    }
+    userManager->removeUser("");
 }
 
 QTEST_MAIN(TestUsermanager)

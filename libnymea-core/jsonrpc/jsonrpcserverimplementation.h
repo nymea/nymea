@@ -27,11 +27,8 @@
 
 #include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
+#include "usermanager/userinfo.h"
 #include "transportinterface.h"
-
-#include "types/thingclass.h"
-#include "types/action.h"
-#include "types/event.h"
 
 #include <QObject>
 #include <QVariantMap>
@@ -90,6 +87,8 @@ private slots:
 
     void sendNotification(const QVariantMap &params);
     void sendClientNotification(const QUuid &clientId, const QVariantMap &params);
+    void sendClientNotification(const QVariantMap &params, const ThingId &thingId);
+    void sendClientNotification(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);
 
     void asyncReplyFinished();
 

@@ -63,7 +63,6 @@
 */
 
 #include "usermanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "pushbuttondbusservice.h"
 #include "nymeacore.h"
@@ -192,7 +191,8 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
         return UserErrorDuplicateUserId;
     }
 
-    QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
+    static QRegularExpression bracketsRe("[{}]");
+    QByteArray salt = QUuid::createUuid().toString().remove(bracketsRe).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes, allowedThingIds)"
@@ -305,6 +305,34 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
         }
     }
 
+    QList<ThingId> thingsAppeared;
+    QList<ThingId> thingsDisappeared;
+
+    // Get the current allowed things
+    if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+
+        // Restricted thing access, let's notify this user if any things appeared or dissapeard for the user
+        UserInfo currentUserInfo = userInfo(username);
+
+        // Get new appeared things for this user
+        foreach (const ThingId &thingId, thingIds) {
+            if (currentUserInfo.allowedThingIds().contains(thingId))
+                continue;
+
+            qCDebug(dcUserManager()) << "Thing with ID" << thingId.toString() << "now allowed for this user any more. Notify user" << username << "that thing appeared.";
+            thingsAppeared.append(thingId);
+        }
+
+        // Get disappeared things for this user
+        foreach (const ThingId &thingId, currentUserInfo.allowedThingIds()) {
+            if (thingIds.contains(thingId))
+                continue;
+
+            qCDebug(dcUserManager()) << "Thing with ID" << thingId.toString() << "not allowed for this user any more. Notify user" << username << "that thing dissappeared.";
+            thingsDisappeared.append(thingId);
+        }
+    }
+
     QString scopesString = Types::scopesToStringList(scopes).join(',');
     QString allowedThingIdsString = Types::thingIdsToStringList(thingIds).join(',');
 
@@ -320,16 +348,25 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
     }
 
     emit userChanged(username);
+
+    // Notify after updating the user information
+    UserInfo ui = userInfo(username);
+    foreach (const ThingId &thingId, thingsAppeared)
+        emit userThingRestrictionsChanged(ui, thingId, true);
+
+    foreach (const ThingId &thingId, thingsDisappeared)
+        emit userThingRestrictionsChanged(ui, thingId, false);
+
     return UserErrorNoError;
 }
 
 UserManager::UserError UserManager::setUserInfo(const QString &username, const QString &email, const QString &displayName)
 {
     QSqlQuery query(m_db);
-    query.prepare("UPDATE users SET email = ?, displayName = ? WHERE username = ?;");
-    query.addBindValue(email);
-    query.addBindValue(displayName);
-    query.addBindValue(username);
+    query.prepare("UPDATE users SET email = :email, displayName = :displayName WHERE username = :username;");
+    query.bindValue(":email", email);
+    query.bindValue(":displayName", displayName);
+    query.bindValue(":username", username);
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager()) << "Error updating user info for user" << username << query.lastError().databaseText() << query.lastError().driverText() << query.executedQuery();
@@ -454,7 +491,6 @@ UserInfo UserManager::userInfo(const QString &username) const
     userInfo.setDisplayName(getUserQuery.value("displayName").toString());
     userInfo.setScopes(Types::scopesFromStringList(getUserQuery.value("scopes").toString().split(',')));
     userInfo.setAllowedThingIds(Types::thingIdsFromStringList(getUserQuery.value("allowedThingIds").toString().split(',')));
-
     return userInfo;
 }
 
@@ -575,6 +611,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         qCDebug(dcUserManager) << "Authorization failed for token" << token;
         return false;
     }
+
     //qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();
     return true;
 }
@@ -596,6 +633,23 @@ bool UserManager::accessToThingGranted(const ThingId &thingId, const QByteArray 
 QList<ThingId> UserManager::getAllowedThingIdsForToken(const QByteArray &token) const
 {
     return userInfo(tokenInfo(token).username()).allowedThingIds();
+}
+
+void UserManager::onThingRemoved(const ThingId &thingId)
+{
+    // If a thing has been removed from the system, clean up any thing based permissions
+    foreach (const UserInfo &userInfo, users()) {
+        if (userInfo.allowedThingIds().contains(thingId)) {
+            QList<ThingId> allowedThingIds = userInfo.allowedThingIds();
+            allowedThingIds.removeAll(thingId);
+
+            if (setUserScopes(userInfo.username(), userInfo.scopes(), allowedThingIds) != UserErrorNoError) {
+                qCWarning(dcUserManager()) << "Failed to remove thing with ID" << thingId.toString() << "from allowed things of user" << userInfo.username();
+            } else {
+                qCDebug(dcUserManager()) << "Removed thing with ID" << thingId.toString() << "from allowed things of user" << userInfo.username();
+            }
+        }
+    }
 }
 
 bool UserManager::initDB()
@@ -775,35 +829,6 @@ bool UserManager::initDB()
         }
     }
 
-
-    // Migration from before 1.0:
-    // Push button tokens were given out without an explicit user name
-    // If we have push button tokens (userId "") but no explicit user, let's create it as admin
-    // Users without valid username will have password login disabled.
-    QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM tokens WHERE username = \"\";");
-    query.exec();
-    if (query.lastError().type() == QSqlError::NoError && query.next()) {
-        QSqlQuery query(m_db);
-        query.prepare("SELECT * FROM users WHERE username = \"\";");
-        query.exec();
-        if (!query.next()) {
-            qCDebug(dcUserManager()) << "Tokens existing but no user. Creating token admin user";
-            QSqlQuery query(m_db);
-            query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) values(?, ?, ?, ?, ?, ?);");
-            query.addBindValue("");
-            query.addBindValue("");
-            query.addBindValue("Admin");
-            query.addBindValue("");
-            query.addBindValue("");
-            query.addBindValue(Types::scopeToString(Types::PermissionScopeAdmin));
-            query.exec();
-            if (query.lastError().type() != QSqlError::NoError) {
-                qCWarning(dcUserManager) << "Error creating push button user:" << query.lastError().databaseText() << query.lastError().driverText();
-            }
-        }
-    }
-
     qCDebug(dcUserManager()) << "User database initialized successfully";
     return true;
 }
@@ -811,9 +836,8 @@ bool UserManager::initDB()
 void UserManager::rotate(const QString &dbName)
 {
     int index = 1;
-    while (QFileInfo::exists(QString("%1.%2").arg(dbName).arg(index))) {
+    while (QFileInfo::exists(QString("%1.%2").arg(dbName).arg(index)))
         index++;
-    }
 
     qCDebug(dcUserManager()) << "Backing up old database file to" << QString("%1.%2").arg(dbName).arg(index);
     QFile f(dbName);
@@ -826,30 +850,33 @@ void UserManager::rotate(const QString &dbName)
 
 bool UserManager::validateUsername(const QString &username) const
 {
-    QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
+    static QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
     return validator.match(username).hasMatch();
 }
 
 bool UserManager::validatePassword(const QString &password) const
 {
-    if (password.length() < 8) {
+    if (password.length() < 8)
         return false;
-    }
-    if (!password.contains(QRegularExpression("[a-z]"))) {
+
+    static QRegularExpression lowerRe("[a-z]");
+    if (!password.contains(lowerRe))
         return false;
-    }
-    if (!password.contains(QRegularExpression("[A-Z]"))) {
+
+    static QRegularExpression upperRe("[A-Z]");
+    if (!password.contains(upperRe))
         return false;
-    }
-    if (!password.contains(QRegularExpression("[0-9]"))) {
+
+    static QRegularExpression numbersRe("[0-9]");
+    if (!password.contains(numbersRe))
         return false;
-    }
+
     return true;
 }
 
 bool UserManager::validateToken(const QByteArray &token) const
 {
-    QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
+    static QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.match(token).hasMatch();
 }
 
@@ -897,6 +924,11 @@ bool UserManager::validateScopes(Types::PermissionScopes scopes) const
 void UserManager::dumpDBError(const QString &message)
 {
     qCCritical(dcUserManager) << message << "Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+}
+
+void UserManager::evaluateAllowedThingsForUser()
+{
+
 }
 
 void UserManager::onPushButtonPressed()

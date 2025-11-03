@@ -446,7 +446,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     connect(m_thingManager, &ThingManager::eventTriggered, this, [this](const Event &event){
         QVariantMap params;
         params.insert("event", pack(event));
-        emit EventTriggered(params);
+        emit EventTriggered(params, event.thingId());
     });
 
     params.clear(); returns.clear();
@@ -518,6 +518,21 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         }
         hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pluginList).toJson(), QCryptographicHash::Md5).toHex();
         m_cacheHashes.insert("GetPlugins", hash);
+    });
+
+    connect(NymeaCore::instance()->userManager(), &UserManager::userThingRestrictionsChanged, this, [this](const UserInfo &userInfo, const ThingId &thingId, bool accessGranted){
+
+        if (accessGranted) {
+            QVariantMap params;
+            params.insert("thing", pack(m_thingManager->findConfiguredThing(thingId)));
+            emit ThingAdded(params, userInfo);
+            qCDebug(dcJsonRpc()) << "Notify user" << userInfo.username() << "that the permission to thing with ID" << thingId.toString() << "has been granted.";
+        } else {
+            QVariantMap params;
+            params.insert("thingId", thingId);
+            emit ThingRemoved(params, userInfo);
+            qCDebug(dcJsonRpc()) << "Notify user" << userInfo.username() << "that the permission to thing with ID" << thingId.toString() << "has been dropped.";
+        }
     });
 }
 
@@ -1143,8 +1158,7 @@ JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params, cons
 
     IOConnections ioConnections = m_thingManager->ioConnections(thingId);
     QVariantMap returns;
-    QVariant bla = pack(ioConnections);
-    returns.insert("ioConnections", pack(ioConnections));
+        returns.insert("ioConnections", pack(ioConnections));
     returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError));
     return createReply(returns);
 }
@@ -1214,28 +1228,28 @@ void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateType
     params.insert("minValue", minValue);
     params.insert("maxValue", maxValue);
     params.insert("possibleValues", possibleValues);
-    emit StateChanged(params);
+    emit StateChanged(params, thing->id());
 }
 
 void IntegrationsHandler::thingRemovedNotification(const ThingId &thingId)
 {
     QVariantMap params;
     params.insert("thingId", thingId);
-    emit ThingRemoved(params);
+    emit ThingRemoved(params, thingId);
 }
 
 void IntegrationsHandler::thingAddedNotification(Thing *thing)
 {
     QVariantMap params;
     params.insert("thing", pack(thing));
-    emit ThingAdded(params);
+    emit ThingAdded(params, thing->id());
 }
 
 void IntegrationsHandler::thingChangedNotification(Thing *thing)
 {
     QVariantMap params;
     params.insert("thing", pack(thing));
-    emit ThingChanged(params);
+    emit ThingChanged(params, thing->id());
 }
 
 void IntegrationsHandler::thingSettingChangedNotification(const ThingId &thingId, const ParamTypeId &paramTypeId, const QVariant &value)
@@ -1244,7 +1258,7 @@ void IntegrationsHandler::thingSettingChangedNotification(const ThingId &thingId
     params.insert("thingId", thingId);
     params.insert("paramTypeId", paramTypeId.toString());
     params.insert("value", value);
-    emit ThingSettingChanged(params);
+    emit ThingSettingChanged(params, thingId);
 }
 
 QVariantMap IntegrationsHandler::statusToReply(Thing::ThingError status) const

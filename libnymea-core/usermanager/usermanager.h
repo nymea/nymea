@@ -81,11 +81,16 @@ public:
     bool accessToThingGranted(const ThingId &thingId, const QByteArray &token);
     QList<ThingId> getAllowedThingIdsForToken(const QByteArray &token) const;
 
+public slots:
+    void onThingRemoved(const ThingId &thingId);
+
 signals:
     void userAdded(const QString &username);
     void userRemoved(const QString &username);
     void userChanged(const QString &username);
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
+
+    void userThingRestrictionsChanged(const nymeaserver::UserInfo &userInfo, const ThingId &thingId, bool accessGranted);
 
 private:
     bool initDB();
@@ -96,6 +101,8 @@ private:
     bool validateScopes(Types::PermissionScopes scopes) const;
 
     void dumpDBError(const QString &message);
+
+    void evaluateAllowedThingsForUser();
 
 private slots:
     void onPushButtonPressed();

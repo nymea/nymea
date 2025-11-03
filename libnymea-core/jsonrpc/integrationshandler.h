@@ -26,6 +26,7 @@
 #define INTEGRATIONSHANDLER_H
 
 #include "jsonrpc/jsonhandler.h"
+#include "usermanager/userinfo.h"
 #include "integrations/thingmanager.h"
 
 namespace nymeaserver {
@@ -80,14 +81,19 @@ public:
 
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
-    void StateChanged(const QVariantMap &params);
-    void ThingRemoved(const QVariantMap &params);
-    void ThingAdded(const QVariantMap &params);
-    void ThingChanged(const QVariantMap &params);
-    void ThingSettingChanged(const QVariantMap &params);
-    void EventTriggered(const QVariantMap &params);
+    // Thing permission relevant notifications
+    void StateChanged(const QVariantMap &params, const ThingId &thingId);
+    void ThingRemoved(const QVariantMap &params, const ThingId &thingId);
+    void ThingAdded(const QVariantMap &params, const ThingId &thingId);
+    void ThingChanged(const QVariantMap &params, const ThingId &thingId);
+    void ThingSettingChanged(const QVariantMap &params, const ThingId &thingId);
+    void EventTriggered(const QVariantMap &params, const ThingId &thingId);
     void IOConnectionAdded(const QVariantMap &params);
     void IOConnectionRemoved(const QVariantMap &params);
+
+    // User specific notifications depending on the thing based permissions
+    void ThingRemoved(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);
+    void ThingAdded(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

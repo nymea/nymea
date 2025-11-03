@@ -66,7 +66,6 @@ private:
     QString m_displayName;
     Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
     QList<ThingId> m_allowedThingIds;
-
 };
 
 class UserInfoList: public QList<UserInfo>
@@ -78,4 +77,7 @@ public:
     Q_INVOKABLE void put(const QVariant &variant);
 };
 }
+
+Q_DECLARE_METATYPE(nymeaserver::UserInfo);
+
 #endif // USERINFO_H

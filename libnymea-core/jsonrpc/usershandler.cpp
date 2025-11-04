@@ -59,6 +59,13 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerMethod("ChangePassword", description, params, returns);
 
     params.clear(); returns.clear();
+    description = "Change the password for the given user. All tokens for this user will be removed in order to force all clients to log in again.";
+    params.insert("username", enumValueName(String));
+    params.insert("newPassword", enumValueName(String));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("ChangeUserPassword", description, params, returns);
+
+    params.clear(); returns.clear();
     description = "Get info about the current token (the currently logged in user).";
     returns.insert("o:userInfo", objectRef<UserInfo>());
     returns.insert("error", enumRef<UserManager::UserError>());
@@ -68,13 +75,21 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     description = "Get all the tokens for the current user.";
     returns.insert("o:tokenInfoList", objectRef<TokenInfoList>());
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("GetTokens", description, params, returns);
+    registerMethod("GetTokens", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
-    description = "Revoke access for a given token.";
+    description = "Get all the tokens for the given username.";
+    params.insert("username", enumValueName(String));
+    returns.insert("o:tokenInfoList", objectRef<TokenInfoList>());
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("GetUserTokens", description, params, returns, Types::PermissionScopeNone);
+
+
+    params.clear(); returns.clear();
+    description = "Revoke access for a given token. Depending on the logged in user only the own tokens can be removed. If you are logged in as admin, any token can be removed.";
     params.insert("tokenId", enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("RemoveToken", description, params, returns);
+    registerMethod("RemoveToken", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Return a list of all users in the system.";
@@ -191,6 +206,32 @@ JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonCon
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
 
     UserManager::UserError status = m_userManager->changePassword(tokenInfo.username(), newPassword);
+    ret.insert("error", enumValueName<UserManager::UserError>(status));
+    return createReply(ret);
+}
+
+JsonReply *UsersHandler::ChangeUserPassword(const QVariantMap &params, const JsonContext &context)
+{
+    QVariantMap ret;
+
+    QByteArray currentToken = context.token();
+    if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot change a user password from an unauthenticated connection";
+        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(ret);
+    }
+
+    if (!m_userManager->verifyToken(currentToken)) {
+        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+        qCWarning(dcJsonRpc()) << "Invalid token. Cannot change a user password from an unauthenticated connection";
+        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(ret);
+    }
+
+    QString username = params.value("username").toString();;
+    QString newPassword = params.value("newPassword").toString();
+
+    UserManager::UserError status = m_userManager->changePassword(username, newPassword);
     ret.insert("error", enumValueName<UserManager::UserError>(status));
     return createReply(ret);
 }

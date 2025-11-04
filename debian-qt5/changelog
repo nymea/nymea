@@ -1,3 +1,11 @@
+nymea (1.12.3) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Update mac address database
+  * Update systemd service documentation url
+
+ -- jenkins <developer@nymea.io>  Tue, 04 Nov 2025 11:38:32 +0100
+
 nymea (1.12.2) jammy; urgency=medium
 
   [ Simon Stürz ]

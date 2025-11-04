@@ -1048,7 +1048,8 @@
             },
             "permissionScope": "PermissionScopeNone",
             "returns": {
-                "ioConnections": "$ref:IOConnections"
+                "o:ioConnections": "$ref:IOConnections",
+                "thingError": "$ref:ThingError"
             }
         },
         "Integrations.GetPluginConfiguration": {
@@ -1971,6 +1972,17 @@
                 "error": "$ref:UserError"
             }
         },
+        "Users.ChangeUserPassword": {
+            "description": "Change the password for the given user. All tokens for this user will be removed in order to force all clients to log in again.",
+            "params": {
+                "newPassword": "String",
+                "username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
         "Users.CreateUser": {
             "description": "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If the user has not the permission \"PermissionScopeAccessAllThings\", the list of things this user has access to can be defined in the \"allowedThingIds\" property. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.",
             "params": {
@@ -2008,6 +2020,17 @@
                 "o:userInfo": "$ref:UserInfo"
             }
         },
+        "Users.GetUserTokens": {
+            "description": "Get all the tokens for the given username.",
+            "params": {
+                "username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError",
+                "o:tokenInfoList": "$ref:TokenInfoList"
+            }
+        },
         "Users.GetUsers": {
             "description": "Return a list of all users in the system.",
             "params": {
@@ -2018,7 +2041,7 @@
             }
         },
         "Users.RemoveToken": {
-            "description": "Revoke access for a given token.",
+            "description": "Revoke access for a given token. Depending on the logged in user only the own tokens can be removed. If you are logged in as admin, any token can be removed.",
             "params": {
                 "tokenId": "Uuid"
             },
@@ -3257,6 +3280,9 @@
             "sslEnabled": "Bool"
         },
         "UserInfo": {
+            "r:allowedThingIds": [
+                "Uuid"
+            ],
             "r:displayName": "String",
             "r:email": "String",
             "r:scopes": "$ref:PermissionScopes",

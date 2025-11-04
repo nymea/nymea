@@ -81,6 +81,7 @@ public:
 
     UserError removeToken(const QUuid &tokenId);
 
+
     bool verifyToken(const QByteArray &token);
 
     bool hasRestrictedThingAccess(const QByteArray &token) const;

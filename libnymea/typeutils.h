@@ -207,6 +207,8 @@ public:
         PermissionScopeConfigureRules   = 0x0030,
         PermissionScopeAdmin            = 0xFFFF,
     };
+    // TODO: PermissionScopeChangeUserInfos   = 0x0008, // Allow to change password, remove tokens, update user information (display name, email)
+
     Q_ENUM(PermissionScope)
     Q_DECLARE_FLAGS(PermissionScopes, PermissionScope)
     Q_FLAG(PermissionScopes)

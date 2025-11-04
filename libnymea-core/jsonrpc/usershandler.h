@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE JsonReply *ChangeUserPassword(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetUserInfo(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetTokens(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *GetUserTokens(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetUsers(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveUser(const QVariantMap &params, const JsonContext &context);

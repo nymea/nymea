@@ -68,6 +68,7 @@ private:
     QList<ThingId> m_allowedThingIds;
 };
 
+
 class UserInfoList: public QList<UserInfo>
 {
     Q_GADGET
@@ -76,8 +77,10 @@ public:
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
+
 }
 
 Q_DECLARE_METATYPE(nymeaserver::UserInfo);
+Q_DECLARE_METATYPE(nymeaserver::UserInfoList);
 
 #endif // USERINFO_H

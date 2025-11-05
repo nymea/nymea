@@ -43,6 +43,7 @@
 #include "jsonrpc/scriptshandler.h"
 #include "jsonrpc/debughandler.h"
 #include "usermanager/usermanager.h"
+#include "debugserverhandler.h"
 #include "version.h"
 
 #include "integrations/thingmanagerimplementation.h"
@@ -158,6 +159,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
 
     qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);
+    m_serverManager->registerWebServerResource(m_debugServerHandler);
 
     qCDebug(dcCore) << "Register Debug Handler";
     m_serverManager->jsonServer()->registerHandler(new DebugHandler(m_serverManager->jsonServer()));

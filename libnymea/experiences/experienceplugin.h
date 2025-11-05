@@ -62,5 +62,4 @@ private:
 
 Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")
 
-
 #endif // EXPERIENCEPLUGIN_H

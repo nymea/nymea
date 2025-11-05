@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,71 +28,31 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef WebServerResource_H
+#define WebServerResource_H
 
-#include <QByteArray>
+#include <QObject>
 #include <QUrlQuery>
-#include <QString>
-#include <QHash>
 
-namespace nymeaserver {
+#include "httpreply.h"
+#include "httprequest.h"
 
-class HttpRequest
+class WebServerResource : public QObject
 {
+    Q_OBJECT
 public:
-    enum RequestMethod {
-        Get,
-        Post,
-        Put,
-        Delete,
-        Options,
-        Unhandled
-    };
+    explicit WebServerResource(const QString &basePath, QObject *parent = nullptr);
+    virtual ~WebServerResource() = default;
 
-    HttpRequest();
-    HttpRequest(QByteArray rawData);
+    QString basePath() const;
 
-    QByteArray rawHeader() const;
-    QHash<QByteArray, QByteArray> rawHeaderList() const;
+    virtual bool authenticationRequired() const = 0;
 
-    RequestMethod method() const;
-    QString methodString() const;
-    QByteArray httpVersion() const;
+    virtual HttpReply *processRequest(const HttpRequest &request) = 0;
 
-    QUrl url() const;
-    QUrlQuery urlQuery() const;
+protected:
+    QString m_basePath;
 
-    QByteArray payload() const;
-
-    bool isValid() const;
-    bool isComplete() const;
-    bool hasPayload() const;
-
-    void appendData(const QByteArray &data);
-
-private:
-    QByteArray m_rawData;
-    QByteArray m_rawHeader;
-    QHash<QByteArray, QByteArray> m_rawHeaderList;
-
-    RequestMethod m_method;
-    QString m_methodString;
-    QByteArray m_httpVersion;
-
-    QUrl m_url;
-    QUrlQuery m_urlQuery;
-
-    QByteArray m_payload;
-
-    bool m_valid;
-    bool m_isComplete;
-
-    void validate();
-    RequestMethod getRequestMethodType(const QString &methodString);
 };
 
-QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
-
-}
-#endif // HTTPREQUEST_H
+#endif // WebServerResource_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,50 +28,16 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPDAEMON_H
-#define HTTPDAEMON_H
+#include "webserverresource.h"
 
-#include "typeutils.h"
-#include "types/param.h"
-
-#include <QTcpServer>
-#include <QUuid>
-#include <QDateTime>
-
-class Thing;
-class IntegrationPlugin;
-
-class HttpDaemon : public QTcpServer
+WebServerResource::WebServerResource(const QString &basePath, QObject *parent)
+    : QObject{parent},
+    m_basePath{basePath}
 {
-    Q_OBJECT
-public:
-    HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
-    ~HttpDaemon();
 
-    void incomingConnection(qintptr socket) override;
-    void actionExecuted(const ActionTypeId &actionTypeId);
+}
 
-signals:
-    void setState(const StateTypeId &stateTypeId, const QVariant &value);
-    void triggerEvent(const EventTypeId &eventTypeId, const ParamList &params);
-    void disappear();
-    void reconfigureAutodevice();
-
-private slots:
-    void readClient();
-    void discardClient();
-
-private:
-    QString generateHeader();
-    QString generateWebPage();
-
-private:
-    bool disabled;
-
-    IntegrationPlugin *m_plugin;
-    Thing *m_thing;
-
-    QList<QPair<ActionTypeId, QDateTime> > m_actionList;
-};
-
-#endif // HTTPDAEMON_H
+QString WebServerResource::basePath() const
+{
+    return m_basePath;
+}

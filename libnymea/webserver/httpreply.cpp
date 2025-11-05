@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -143,14 +143,11 @@
 
 #include "httpreply.h"
 #include "loggingcategories.h"
-#include "nymeacore.h"
-#include "version.h"
+#include "../version.h"
 
 #include <QDateTime>
 #include <QPair>
 #include <QDebug>
-
-namespace nymeaserver {
 
 HttpReply::HttpReply(QObject *parent) :
     QObject(parent),
@@ -168,7 +165,7 @@ HttpReply::HttpReply(QObject *parent) :
     // set known headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
@@ -191,7 +188,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     // set known / default headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
@@ -495,6 +492,4 @@ QDebug operator<<(QDebug debug, HttpReply *httpReply)
     debug << qUtf8Printable(httpReply->rawHeader());
     debug << qUtf8Printable(httpReply->payload());
     return debug;
-}
-
 }

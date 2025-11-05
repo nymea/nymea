@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -39,17 +39,19 @@
 #include <QMutex>
 
 #include "debugreportgenerator.h"
-#include "servers/httpreply.h"
+#include "webserver/webserverresource.h"
 
 namespace nymeaserver {
 
-class DebugServerHandler : public QObject
+class DebugServerHandler : public WebServerResource
 {
     Q_OBJECT
 public:
     explicit DebugServerHandler(QObject *parent = nullptr);
 
-    HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
+    bool authenticationRequired() const override;
+
+    HttpReply *processRequest(const HttpRequest &request) override;
 
 private:
     static QList<QWebSocket*> s_websocketClients;
@@ -68,6 +70,8 @@ private:
     HttpReply *m_tracePathReply = nullptr;
 
     DebugReportGenerator *m_debugReportGenerator = nullptr;
+
+    HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
 
     QByteArray loadResourceData(const QString &resourceFileName);
     QString getResourceFileName(const QString &requestPath);

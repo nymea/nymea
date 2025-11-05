@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -22,226 +21,261 @@
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+"""Generate JSON-RPC API documentation as reStructuredText or QDoc."""
+
+from __future__ import annotations
+
 import argparse
-import traceback
 import json
-import os
-import subprocess
+from pathlib import Path
+from typing import Dict, Iterable, List, Tuple
 
-__version__='1.0.0'
+FORMAT_RST = "rst"
+FORMAT_QDOC = "qdoc"
 
 
-#--------------------------------------------------------------------------
-def printInfo(info):
+def print_info(info: str) -> None:
     print(info)
 
 
-#--------------------------------------------------------------------------
-def printWarning(warning):
-    print('Warning: ' + warning)
+def print_error(error: str) -> None:
+    print(f"Error: {error}")
 
 
-#--------------------------------------------------------------------------
-def printError(error):
-    print('Error: ' + error)
+def json_block(data: dict) -> Iterable[str]:
+    serialized = json.dumps(data, sort_keys=True, indent=4)
+    for line in serialized.splitlines():
+        yield f"   {line}"
 
 
-#--------------------------------------------------------------------------
-def writeToFile(line):
-    outputFile.write('%s\n' % line)
+def extract_references(node: object) -> List[str]:
+    references: List[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if isinstance(key, str) and key.startswith("$ref:"):
+                references.append(key)
+            references.extend(extract_references(value))
+    elif isinstance(node, list):
+        for item in node:
+            references.extend(extract_references(item))
+    elif isinstance(node, str) and node.startswith("$ref:"):
+        references.append(node)
+    return references
 
 
-#--------------------------------------------------------------------------
-def writeCodeSection(jsonData):
-    writeToFile('\code')
-    writeToFile(json.dumps(jsonData, sort_keys=True, indent=4))
-    writeToFile('\endcode')
-
-
-#--------------------------------------------------------------------------
-def getJsonString(object, key):
-    for objectKey, value in object.items():
-        if objectKey is key:
-            return value
-
-    return None
-
-
-#--------------------------------------------------------------------------
-def extractReferences(object):
-    referenceList = []
-    for key, value in object.iteritems():
-        keyString = ('%s' % key)
-        if keyString.startswith('$ref:'):
-            referenceList.append(keyString)
-
-        valueString = ('%s' % value)
-        if valueString.startswith('$ref:'):
-            referenceList.append(valueString)
-
-        elif isinstance(value, dict):
-            referenceList.extend(extractReferences(value))
-
-        elif isinstance(value, list):
-            for item in value:
-                itemString = ('%s' % item)
-                if itemString.startswith('$ref:'):
-                    referenceList.append(itemString)
-
-                elif isinstance(item, dict):
-                    referenceList.extend(extractReferences(item))
-
-    return referenceList
-
-
-#--------------------------------------------------------------------------
-def createReferenceLine(object):
-    # Get list of all references
-    referenceList = []
-    fullReferenceList = extractReferences(object)
-    for reference in fullReferenceList:
-       if reference not in referenceList:
-           referenceList.append(reference.replace('$ref:', ''))
-
-    if not referenceList:
+def reference_text(references: Iterable[str]) -> str:
+    unique = []
+    for ref in references:
+        value = ref.replace("$ref:", "")
+        if value not in unique:
+            unique.append(value)
+    if not unique:
         return ""
-
-    # Write references from content
-    referencesString = "See also: "
-    referenceCount = len(referenceList)
-    for i in range(len(referenceList)):
-        if i is referenceCount - 1:
-            referencesString += '\l{%s}' % referenceList[i]
-        else:
-            referencesString += '\l{%s}, ' % referenceList[i]
-
-    return referencesString
+    links = ", ".join(unique)
+    return f"See also: {links}"
 
 
-#--------------------------------------------------------------------------
-def extractTypes(types):
-    typesList = []
-    for type in types:
-        typesList.append(type)
+def load_api_definition(path: Path) -> Tuple[str, Dict[str, object]]:
+    try:
+        raw = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        print_error(f"Could not read '{path}': {error}")
+        raise SystemExit(1) from error
 
-    typesSorted = sorted(typesList)
-    for type in typesSorted:
-        writeToFile('\section2 %s' % type)
-        writeCodeSection(types[type])
-        if isinstance(types[type], dict):
-            writeToFile(createReferenceLine(types[type]))
+    if not raw:
+        print_error(f"Input file '{path}' is empty")
+        raise SystemExit(1)
 
-#--------------------------------------------------------------------------
-def extractMethods(methods):
-    methodsList = []
-    for method in methods:
-        methodsList.append(method)
+    version = raw[0].strip()
+    payload = "".join(raw[1:])
+    try:
+        data = json.loads(payload)
+    except ValueError as error:
+        print_error(f"Failed to parse JSON payload: {error}")
+        raise SystemExit(1) from error
 
-    methodsSorted = sorted(methodsList)
-    for method in methodsSorted:
-        writeToFile('\section2 %s' % method)
-        writeToFile('%s' % methods[method]['description'])
-        writeToFile('Params')
-        writeCodeSection(methods[method]['params'])
-        writeToFile('Returns')
-        writeCodeSection(methods[method]['returns'])
-        writeToFile(createReferenceLine(methods[method]))
-
-#--------------------------------------------------------------------------
-def extractNotifications(notifications):
-    notificationsList = []
-    for notification in notifications:
-        notificationsList.append(notification)
-
-    notificationsSorted = sorted(notificationsList)
-    for notification in notificationsSorted:
-        writeToFile('\section2 %s' % notification)
-        writeToFile('%s' % notifications[notification]['description'])
-        writeToFile('Params')
-        writeCodeSection(notifications[notification]['params'])
-        writeToFile(createReferenceLine(notifications[notification]))
+    sorted_payload = json.dumps(data, sort_keys=True, indent=4)
+    return version, json.loads(sorted_payload)
 
 
-#--------------------------------------------------------------------------
-def writeDocumentationContent(apiVersion, apiJson):
-    printInfo('--> Write API documentation content')
-    printInfo('--> API version: \"%s\"' % (version))
+def write_rst(output: Path, version: str, api: Dict[str, object]) -> None:
+    print_info(f"--> Write API documentation to {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", encoding="utf-8") as handle:
+        handle.write(".. jsonrpc-api-begin\n\n")
+        handle.write("JSON-RPC introspection\n")
+        handle.write("======================\n\n")
+        handle.write(
+            "This document is generated from the JSON introspection data shipped\n"
+            "with nymea. It mirrors the output of ``JSONRPC.Introspect``.\n\n"
+        )
+        handle.write(f"Current version: ``{version}``\n\n")
+        handle.write(".. contents::\n   :local:\n   :depth: 2\n\n")
 
-    writeToFile('/*!')
-    writeToFile('In the following section you can find a detaild description of the current API version %s.' % apiVersion)
+        if "types" in api:
+            handle.write("Types\n-----\n\n")
+            for name in sorted(api["types"]):
+                payload = api["types"][name]
+                handle.write(f"{name}\n{'~' * len(name)}\n\n")
+                handle.write(".. code-block:: json\n\n")
+                for line in json_block(payload):
+                    handle.write(f"{line}\n")
+                handle.write("\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n\n")
 
-    writeToFile('\list')
-    writeToFile('\li \l{Types}')
-    writeToFile('\li \l{Methods}')
-    writeToFile('\li \l{Notifications}')
-    writeToFile('\endlist')
+        if "methods" in api:
+            handle.write("Methods\n-------\n\n")
+            for name in sorted(api["methods"]):
+                payload = api["methods"][name]
+                description = payload.get("description", "")
+                handle.write(f"{name}\n{'~' * len(name)}\n\n")
+                if description:
+                    handle.write(f"{description}\n\n")
+                handle.write("Parameters\n^^^^^^^^^^\n\n")
+                handle.write(".. code-block:: json\n\n")
+                for line in json_block(payload.get("params", {})):
+                    handle.write(f"{line}\n")
+                handle.write("\n")
+                handle.write("Returns\n^^^^^^^\n\n")
+                handle.write(".. code-block:: json\n\n")
+                for line in json_block(payload.get("returns", {})):
+                    handle.write(f"{line}\n")
+                handle.write("\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n\n")
+
+        if "notifications" in api:
+            handle.write("Notifications\n-------------\n\n")
+            for name in sorted(api["notifications"]):
+                payload = api["notifications"][name]
+                description = payload.get("description", "")
+                handle.write(f"{name}\n{'~' * len(name)}\n\n")
+                if description:
+                    handle.write(f"{description}\n\n")
+                handle.write("Parameters\n^^^^^^^^^^\n\n")
+                handle.write(".. code-block:: json\n\n")
+                for line in json_block(payload.get("params", {})):
+                    handle.write(f"{line}\n")
+                handle.write("\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n\n")
+
+        handle.write("Full introspect\n----------------\n\n")
+        handle.write(".. code-block:: json\n\n")
+        for line in json_block(api):
+            handle.write(f"{line}\n")
+        handle.write("\n")
 
 
-    if 'types' in apiJson:
-        writeToFile('\section1 Types')
-        extractTypes(apiJson['types'])
+def write_qdoc(output: Path, version: str, api: Dict[str, object]) -> None:
+    print_info(f"--> Write API documentation to {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", encoding="utf-8") as handle:
+        handle.write("/*!\n")
+        handle.write(
+            "In the following section you can find a detaild description of the current API version %s.\n"
+            % version
+        )
+        handle.write("\\list\n")
+        handle.write("\\li \\l{Types}\n")
+        handle.write("\\li \\l{Methods}\n")
+        handle.write("\\li \\l{Notifications}\n")
+        handle.write("\\endlist\n")
 
-    if 'methods' in apiJson:
-        writeToFile('\section1 Methods')
-        extractMethods(apiJson['methods'])
+        if "types" in api:
+            handle.write("\\section1 Types\n")
+            for name in sorted(api["types"]):
+                payload = api["types"][name]
+                handle.write(f"\\section2 {name}\n")
+                handle.write("\\code\n")
+                handle.write(f"{json.dumps(payload, sort_keys=True, indent=4)}\n")
+                handle.write("\\endcode\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n")
 
-    if 'notifications' in apiJson:
-        writeToFile("\section1 Notifications")
-        extractNotifications(apiJson['notifications'])
+        if "methods" in api:
+            handle.write("\\section1 Methods\n")
+            for name in sorted(api["methods"]):
+                payload = api["methods"][name]
+                description = payload.get("description", "")
+                handle.write(f"\\section2 {name}\n")
+                if description:
+                    handle.write(f"{description}\n")
+                handle.write("Params\n")
+                handle.write("\\code\n")
+                handle.write(f"{json.dumps(payload.get('params', {}), sort_keys=True, indent=4)}\n")
+                handle.write("\\endcode\n")
+                handle.write("Returns\n")
+                handle.write("\\code\n")
+                handle.write(f"{json.dumps(payload.get('returns', {}), sort_keys=True, indent=4)}\n")
+                handle.write("\\endcode\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n")
 
-    writeToFile("\section1 Full introspect")
-    writeCodeSection(apiJson)
-    writeToFile('*/')
+        if "notifications" in api:
+            handle.write("\\section1 Notifications\n")
+            for name in sorted(api["notifications"]):
+                payload = api["notifications"][name]
+                description = payload.get("description", "")
+                handle.write(f"\\section2 {name}\n")
+                if description:
+                    handle.write(f"{description}\n")
+                handle.write("Params\n")
+                handle.write("\\code\n")
+                handle.write(f"{json.dumps(payload.get('params', {}), sort_keys=True, indent=4)}\n")
+                handle.write("\\endcode\n")
+                ref_text = reference_text(extract_references(payload))
+                if ref_text:
+                    handle.write(f"{ref_text}\n")
+
+        handle.write("\\section1 Full introspect\n")
+        handle.write("\\code\n")
+        handle.write(f"{json.dumps(api, sort_keys=True, indent=4)}\n")
+        handle.write("\\endcode\n")
+        handle.write("*/\n")
 
 
-###########################################################################
-# Main
-###########################################################################
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='This tool generates a qdoc file out of the api.json file for the online documentation.')
-    parser.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('-j', '--jsonfile', help='The API JSON input file name with the JSON RPC api definition', metavar='jsonfile', default='../tests/auto/api.json')
-    parser.add_argument('-o', '--output', help='The qdoc outputFile with the generated documentation script', metavar='output', default='./jsonrpc-api.qdoc')
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Generate documentation from the JSON-RPC API definition."
+    )
+    parser.add_argument(
+        "-j",
+        "--jsonfile",
+        metavar="jsonfile",
+        default="../tests/auto/api.json",
+        help="Path to the JSON input produced by the API generator.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        metavar="output",
+        default="./jsonrpc-api.qdoc",
+        help="Path to the generated documentation file.",
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        choices=[FORMAT_RST, FORMAT_QDOC],
+        default=FORMAT_RST,
+        help="Output format.",
+    )
     args = parser.parse_args()
 
-    # Print build information for debugging
-    printInfo('Json file: %s' % (args.jsonfile))
-    printInfo('Output: %s' % (args.output))
+    version, api = load_api_definition(Path(args.jsonfile).resolve())
+    output_path = Path(args.output)
 
-    # Open API file for reading
-    try:
-        inputFile = open(args.jsonfile, 'r')
-    except:
-        printError('Could not open input file \"%s\"' % (args.jsonfile))
-        exit -1
+    if args.format == FORMAT_RST:
+        write_rst(output_path, version, api)
+    else:
+        write_qdoc(output_path, version, api)
 
-    # Open qdoc file for writing
-    try:
-        outputFile = open(args.output, 'w')
-    except:
-        printError('Could not open output file \"%s\"' % (args.output))
-        exit -1
 
-    # Read version line and create json content of the rest
-    inputFileContent = inputFile.read().splitlines(True)
-    inputFile.close()
-
-    # Parse verion and json data
-    version = inputFileContent[0].strip()
-    jsonRawContent = ''
-    for line in inputFileContent[1:]:
-        jsonRawContent += line
-
-    # Parse json content
-    try:
-        apiJson = json.loads(jsonRawContent)
-    except ValueError as error:
-        printError(' --> Could not load json content')
-        printError('     %s' % (error))
-        exit -1
-
-    # Sort alphabetically
-    apiJsonSortedRaw = json.dumps(apiJson, sort_keys=True, indent=4)
-    apiJsonSorted = json.loads(apiJsonSortedRaw)
-    writeDocumentationContent(version, apiJsonSorted)
+if __name__ == "__main__":
+    main()

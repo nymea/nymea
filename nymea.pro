@@ -45,11 +45,7 @@ piconly {
 }
 
 doc.depends = FORCE
-# Note: some how extraimages in qdocconf did not the trick
-doc.commands += cd $$top_srcdir/doc; ./generate-interfaces-qdoc.py;
-doc.commands += cd $$top_srcdir/doc; ./generate-api-qdoc.py;
-doc.commands += cd $$top_srcdir/doc; qdoc --highlighting config.qdocconf; cp -r images/* html/images/; \
-                cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
+doc.commands = cd $$top_srcdir/doc && python3 build_docs.py
 QMAKE_EXTRA_TARGETS += doc
 
 # Translations:
@@ -81,8 +77,12 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libn
 QMAKE_EXTRA_TARGETS += test
 
 # Show doc files in project tree
-OTHER_FILES += doc/*.qdoc* \
-               doc/tutorials/*.qdoc*
+OTHER_FILES += doc/sphinx/**/*.rst \
+               doc/sphinx/conf.py \
+               doc/sphinx/_static/* \
+               doc/Doxyfile \
+               doc/build_docs.py \
+               doc/requirements.txt
 
 # Inform about nymea build
 message(============================================)

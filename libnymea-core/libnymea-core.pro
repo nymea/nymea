@@ -69,6 +69,7 @@ HEADERS += nymeacore.h \
     logging/logengineinfluxdb.h \
     scriptengine/scriptthing.h \
     scriptengine/scriptthings.h \
+    servers/webserverresource.h \
     zwave/zwavedevicedatabase.h \
     zwave/zwavemanagerreply.h \
     zwave/zwavenodeimplementation.h \
@@ -107,8 +108,6 @@ HEADERS += nymeacore.h \
     servers/tcpserver.h \
     servers/mocktcpserver.h \
     servers/webserver.h \
-    servers/httprequest.h \
-    servers/httpreply.h \
     servers/bluetoothserver.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
@@ -210,8 +209,6 @@ SOURCES += nymeacore.cpp \
     servers/tcpserver.cpp \
     servers/mocktcpserver.cpp \
     servers/webserver.cpp \
-    servers/httprequest.cpp \
-    servers/httpreply.cpp \
     servers/websocketserver.cpp \
     servers/bluetoothserver.cpp \
     servers/mqttbroker.cpp \

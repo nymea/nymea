@@ -195,9 +195,9 @@ QString NymeaSettings::settingsPath()
 
     QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString(qgetenv("SNAP_DATA"));
+        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
     } else if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
-        path = QString(qgetenv("NYMEA_CONFIG_PATH"));
+        path = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
     } else if (settingsPrefix.contains("nymea-test")) {
         path = "/tmp/" + settingsPrefix;
     } else if (isRoot()) {
@@ -216,9 +216,9 @@ QString NymeaSettings::defaultSettingsPath()
 
     QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString(qgetenv("SNAP") + "/etc/" + organisationName);
+        path = QString::fromLocal8Bit(qgetenv("SNAP")) + "/etc/" + organisationName;
     } else if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
-        path = QString(qgetenv("NYMEA_DEFAULT_CONFIG_PATH"));
+        path = QString::fromLocal8Bit(qgetenv("NYMEA_DEFAULT_CONFIG_PATH"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else {
@@ -235,7 +235,7 @@ QString NymeaSettings::translationsPath()
 
     QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path =  QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
+        path =  QString::fromLocal8Bit(qgetenv("SNAP")) + "/usr/share/nymea/translations";
     } else if (organisationName == "nymea-test") {
         path =  "/tmp/" + organisationName;
     } else {
@@ -263,7 +263,7 @@ QString NymeaSettings::cachePath()
 
     QString path;
     if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString(qgetenv("SNAP_DATA"));
+        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName + "/cache";
     } else if (NymeaSettings::isRoot()) {

@@ -185,7 +185,7 @@ void DebugReportGenerator::saveSystemInformation()
     stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << '\n';
     stream << "Settings path: " << NymeaSettings::settingsPath() << '\n';
     stream << "Translations path: " << NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath() << '\n';
-    stream << "User: " << qgetenv("USER") << '\n';
+    stream << "User: " << QString::fromLocal8Bit(qgetenv("USER")) << '\n';
     stream << "Command: " << QCoreApplication::arguments().join(' ') << '\n';
     stream << "Qt runtime version: " << qVersion() << '\n';
     stream << "" << '\n';

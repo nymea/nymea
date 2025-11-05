@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
             QString configPath = parser.value(configurationOption);
             qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
             if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
-                QString configPathEnv = qgetenv("NYMEA_CONFIG_PATH");
+                QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
                 if (configPathEnv != configPathEnv) {
                     qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
                 }

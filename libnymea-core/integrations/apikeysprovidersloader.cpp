@@ -69,13 +69,13 @@ QStringList ApiKeysProvidersLoader::pluginSearchDirs() const
     QStringList searchDirs;
     QByteArray envExtraPathData = qgetenv(envExtraPath);
     if (!envExtraPathData.isEmpty()) {
-        searchDirs << QString::fromUtf8(envExtraPathData).split(':');
+        searchDirs << QString::fromLocal8Bit(envExtraPathData).split(':');
     }
 
     if (qEnvironmentVariableIsSet(envDefaultPath)) {
         QByteArray envDefaultPathData = qgetenv(envDefaultPath);
         if (!envDefaultPathData.isEmpty()) {
-            searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
+            searchDirs << QString::fromLocal8Bit(envDefaultPathData).split(':');
         }
     } else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

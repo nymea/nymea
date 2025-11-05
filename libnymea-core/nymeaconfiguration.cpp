@@ -594,9 +594,9 @@ void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
 {
     QString publicFolderPath;
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         // FIXME: one could point to sensible data by changing the SNAP env to i.e /etc
-        publicFolderPath = QString(qgetenv("SNAP")) + "/nymea-webinterface";
+        publicFolderPath = QString::fromLocal8Bit(qgetenv("SNAP")) + "/nymea-webinterface";
     } else {
         publicFolderPath = "/usr/share/nymea-webinterface/public/";
     }
@@ -654,7 +654,7 @@ void NymeaConfiguration::storeWebServerConfig(const WebServerConfiguration &conf
 
 WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id)
 {
-    WebServerConfiguration config;    
+    WebServerConfiguration config;
     m_settings->beginGroup(id);
     config.id = id;
     config.address = m_settings->value("address").toString();
@@ -680,7 +680,7 @@ void NymeaConfiguration::storeTunnelProxyServerConfig(const TunnelProxyServerCon
 
 TunnelProxyServerConfiguration NymeaConfiguration::readTunnelProxyServerConfig(const QString &id)
 {
-    TunnelProxyServerConfiguration config;    
+    TunnelProxyServerConfiguration config;
     m_settings->beginGroup(id);
     config.id = id;
     config.address = m_settings->value("address").toString();

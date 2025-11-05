@@ -671,7 +671,7 @@ bool ZWaveManager::loadBackend()
     QStringList searchDirs;
     QByteArray envPath = qgetenv("NYMEA_ZWAVE_PLUGIN_PATH");
     if (!envPath.isEmpty()) {
-        searchDirs << QString(envPath).split(':');
+        searchDirs << QString::fromLocal8Bit(envPath).split(':');
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {

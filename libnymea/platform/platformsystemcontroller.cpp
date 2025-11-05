@@ -93,9 +93,9 @@ QString PlatformSystemController::deviceSerialNumber() const
     // Because of this, even the most common platforms (e.g. systemd, all standard linux) differ when it comes to this.
     // In order to not being forced to write a new backend plugin just for this serial number, one can also set this by
     // using the DEVICE_SERIAL environment variable.
-    QByteArray serial;
+    QString serial;
     if (qEnvironmentVariableIsSet("DEVICE_SERIAL")) {
-        serial = qgetenv("DEVICE_SERIAL");
+        serial = QString::fromLocal8Bit(qgetenv("DEVICE_SERIAL"));
     } else {
         qCWarning(dcPlatform()) << "Platform plugin does not implement deviceSerialNumber and DEVICE_SERIAL is not set. Cannot determine device serial number.";
     }

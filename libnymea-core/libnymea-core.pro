@@ -60,6 +60,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
              $$top_srcdir/data/debug-interface/debug-interface.qrc
 
 HEADERS += nymeacore.h \
+    backupmanager.h \
     hardware/bluetoothlowenergy/bluetoothpairingjobimplementation.h \
     hardware/bluetoothlowenergy/nymeabluetoothagent.h \
     hardware/network/macaddressdatabasereplyimpl.h \
@@ -170,6 +171,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    backupmanager.cpp \
     hardware/bluetoothlowenergy/bluetoothpairingjobimplementation.cpp \
     hardware/bluetoothlowenergy/nymeabluetoothagent.cpp \
     hardware/network/macaddressdatabasereplyimpl.cpp \

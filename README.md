@@ -86,6 +86,19 @@ Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://disc
 A detailed documentation on how to develop with *nymea* is available on the [nymea | developer documentation](https://nymea.io/documentation/developers/).
 
 
+## Building the documentation
+
+The Sphinx sources for the project are located in the `doc/` directory. To generate the
+HTML documentation locally:
+
+1. Ensure Sphinx is installed (for example via `python3 -m pip install --user sphinx`).
+2. Run the documentation build:
+
+       make -C doc html
+
+The generated site will be available under `doc/_build/html/index.html`.
+
+
 ## Network discovery
 
 When starting nymead as user without root privileges, the network device discovery will not available due to missing raw socket permission. 

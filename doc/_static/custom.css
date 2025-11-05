@@ -1,0 +1,17 @@
+/* Custom styles for the nymea Sphinx documentation. */
+:root {
+  --nymea-primary: #3949ab;
+  --nymea-accent: #ff6f00;
+}
+
+a.sidebar-brand-text {
+  font-weight: 600;
+}
+
+a {
+  color: var(--nymea-primary);
+}
+
+a:hover {
+  color: var(--nymea-accent);
+}

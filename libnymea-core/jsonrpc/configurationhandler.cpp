@@ -110,6 +110,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("d:location", location);
     basicConfiguration.insert("debugServerEnabled", enumValueName(Bool));
     returns.insert("basicConfiguration", basicConfiguration);
+
     QVariantList tcpServerConfigurations;
     tcpServerConfigurations.append(objectRef<ServerConfiguration>());
     returns.insert("tcpServerConfigurations", tcpServerConfigurations);
@@ -125,6 +126,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QVariantList mqttServerConfigurations;
     mqttServerConfigurations.append(objectRef<ServerConfiguration>());
     registerMethod("GetConfigurations", description, params, returns, Types::PermissionScopeNone);
+
+
+    QVariantMap backupConfiguration;
+    backupConfiguration.insert("destinationDirectory", enumValueName(String));
+    backupConfiguration.insert("maxCount", enumValueName(Uint));
+
 
     params.clear(); returns.clear();
     description = "Set the name of the server. Default is nymea.";
@@ -204,6 +211,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteWebServerConfiguration", description, params, returns);
 
+    // Backup
+    params.clear(); returns.clear();
+    description = "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept.";
+    params.insert("destinationDirectory", enumValueName(String));
+    params.insert("maxCount", enumValueName(Uint));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("SetBackupConfiguration", description, params, returns);
+
     // MQTT
     params.clear(); returns.clear();
     description = "Get all MQTT Server configurations.";
@@ -280,6 +295,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("id", enumValueName(String));
     registerNotification("TunnelProxyServerConfigurationRemoved", description, params);
 
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever the backup configuration of this server changes.";
+    params.insert("destinationDirectory", enumValueName(String));
+    params.insert("maxCount", enumValueName(Uint));
+    registerNotification("BasicConfigurationChanged", description, params);
+
+
     params.clear(); returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
     params.insert("mqttServerConfiguration", objectRef<ServerConfiguration>());
@@ -315,7 +338,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::locationChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onLanguageChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ConfigurationHandler::onTcpServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
@@ -327,6 +349,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationChanged, this, &ConfigurationHandler::onMqttServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
+
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
 }
 
@@ -590,16 +614,27 @@ JsonReply *ConfigurationHandler::DeleteTunnelProxyServerConfiguration(const QVar
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
+JsonReply *ConfigurationHandler::GetBackupConfiguration(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    return createReply(packBackupConfiguration());
+}
+
+JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &params) const
+{
+
+}
+
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
 {
     Q_UNUSED(params)
-    QVariantMap ret;
+    QVariantMap returns;
     QVariantList mqttServerConfigs;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
         mqttServerConfigs << pack(config);
     }
-    ret.insert("mqttServerConfigurations", mqttServerConfigs);
-    return createReply(ret);
+    returns.insert("mqttServerConfigurations", mqttServerConfigs);
+    return createReply(returns);
 }
 
 JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &params) const
@@ -640,9 +675,9 @@ JsonReply *ConfigurationHandler::GetMqttPolicies(const QVariantMap &params) cons
     foreach (const MqttPolicy &policy, NymeaCore::instance()->configuration()->mqttPolicies()) {
         mqttPolicies << pack(policy);
     }
-    QVariantMap ret;
-    ret.insert("mqttPolicies", mqttPolicies);
-    return createReply(ret);
+    QVariantMap returns;
+    returns.insert("mqttPolicies", mqttPolicies);
+    return createReply(returns);
 }
 
 JsonReply *ConfigurationHandler::SetMqttPolicy(const QVariantMap &params) const
@@ -738,6 +773,12 @@ void ConfigurationHandler::onTunnelProxyServerConfigurationRemoved(const QString
     emit TunnelProxyServerConfigurationRemoved(params);
 }
 
+void ConfigurationHandler::onBackupConfigurationChanged()
+{
+    qCDebug(dcJsonRpc()) << "Notification: Backup configuration changed";
+    emit BackupConfigurationChanged(packBackupConfiguration());
+}
+
 void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: MQTT server configuration changed";
@@ -787,19 +828,19 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     return basicConfiguration;
 }
 
+QVariantMap ConfigurationHandler::packBackupConfiguration()
+{
+    QVariantMap configuration;
+    configuration.insert("destinationDirectory", NymeaCore::instance()->configuration()->backupDestinationDirectory());
+    configuration.insert("maxCount", NymeaCore::instance()->configuration()->backupMaxCount());
+    return configuration;
+}
+
 QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const
 {
     QVariantMap returns;
     returns.insert("configurationError", enumValueName<NymeaConfiguration::ConfigurationError>(status));
     return returns;
-}
-
-void ConfigurationHandler::onLanguageChanged()
-{
-    qCDebug(dcJsonRpc()) << "Notification: language configuration changed";
-    QVariantMap params;
-    params.insert("language", NymeaCore::instance()->configuration()->locale().name());
-    emit LanguageChanged(params);
 }
 
 }

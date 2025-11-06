@@ -284,7 +284,6 @@ bool ServerManager::registerWebServerResource(WebServerResource *resource)
     }
 
     m_webServerResources.insert(resource->basePath(), resource);
-
     foreach (WebServer *webserver, m_webServers)
         webserver->registerResource(resource);
 
@@ -379,7 +378,6 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
         qCDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);
         m_webServers.insert(config.id, server);
-
         foreach (WebServerResource *resource, m_webServerResources) {
             if (!server->registerResource(resource)) {
                 qCWarning(dcServerManager()) << "Unable to register resource" << resource->basePath() << "on webserver" << server->serverUrl().toString();
@@ -399,6 +397,10 @@ void ServerManager::webServerConfigurationRemoved(const QString &id)
     }
 
     WebServer *server = m_webServers.take(id);
+
+    foreach (WebServerResource *resource, m_webServerResources)
+        server->unregisterResource(resource);
+
     unregisterZeroConfService(id, "http");
     server->stopServer();
     server->deleteLater();

@@ -43,7 +43,7 @@ public:
     void setAutomaticBackupEnabled(bool automaticBackupEnabled) const;
 
     bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration");
-    void restoreBackup(const QString &fileName);
+    bool restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup = false);
 
 private:
 

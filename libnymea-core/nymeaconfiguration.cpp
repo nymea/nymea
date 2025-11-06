@@ -582,6 +582,50 @@ void NymeaConfiguration::setDebugServerEnabled(bool enabled)
     }
 }
 
+QString NymeaConfiguration::backupDestinationDirectory() const
+{
+    m_settings->beginGroup("Backup");
+    QString value = m_settings->value("destinationDirectory", "/var/backup/").toString();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setBackupDestinationDirectory(const QString &destinationDirectory)
+{
+    qCDebug(dcConfiguration()) << "Set backup destination directory" << destinationDirectory;
+    QString currentValue = backupDestinationDirectory();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("destinationDirectory", destinationDirectory);
+    m_settings->endGroup();
+
+    if (currentValue != destinationDirectory) {
+        emit backupDestinationDirectoryChanged(destinationDirectory);
+    }
+}
+
+int NymeaConfiguration::backupMaxCount() const
+{
+    m_settings->beginGroup("Backup");
+    int value = m_settings->value("maxCount", 5).toInt();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setBackupMaxCount(int maxCount)
+{
+    qCDebug(dcConfiguration()) << "Set backup max count" << maxCount;
+    int currentValue = backupMaxCount();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("maxCount", maxCount);
+    m_settings->endGroup();
+
+    if (currentValue != maxCount) {
+        emit backupMaxCountChanged(maxCount);
+    }
+}
+
 void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 {
     qCDebug(dcConfiguration()) << "Server uuid:" << uuid.toString();

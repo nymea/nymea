@@ -60,8 +60,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         }
     }
 
-    const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss");
-    const QString archiveBaseName = QString("%1_%2.tar.gz").arg(archivePrefix, timestamp);
+    const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+    const QString archiveBaseName = QString("%1-%2.tar.gz").arg(archivePrefix, timestamp);
     const QString archivePath = QDir(destinationDir).filePath(archiveBaseName);
 
     QString absSrc = QDir(sourceDir).absolutePath();
@@ -80,9 +80,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         return false;
     }
 
-    // 4) Prune old backups (keep newest 'maxBackups')
     if (maxBackups > 0) {
-        const QString pattern = QString("%1_*.tar.gz").arg(archivePrefix);
+        const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
         QFileInfoList files = dst.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks, QDir::Time); // sorted by time (newest first)
         if (files.size() <= maxBackups)
             return true;
@@ -101,7 +100,54 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     return true;
 }
 
-void BackupManager::restoreBackup(const QString &fileName)
+bool BackupManager::restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup)
 {
-    Q_UNUSED(fileName)
+    QFileInfo arcInfo(fileName);
+    if (!arcInfo.exists() || !arcInfo.isFile()) {
+        qCWarning(dcBackup()) << "Archive not found:" << fileName;
+        return false;
+    }
+
+    QFileInfo tgtInfo(destinationDir);
+    if (tgtInfo.exists()) {
+        if (!tgtInfo.isDir()) {
+            qCWarning(dcBackup()) << "Target exists and is not a directory:" << destinationDir;
+            return false;
+        }
+
+        if (safetyBackup) {
+            const QString stamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+            const QString bakDir = destinationDir + ".bak-" + stamp;
+            if (!QDir().rename(destinationDir, bakDir)) {
+                qCWarning(dcBackup()) << "Failed to move existing target to backup:" << bakDir ;
+                return false;
+            }
+
+        } else {
+            // Remove existing directory to ensure a clean restore
+            QDir dir(destinationDir);
+            if (!dir.removeRecursively()) {
+                qCWarning(dcBackup()) << "Failed to clear existing target directory:" << destinationDir;
+                return false;
+            }
+        }
+    }
+
+    if (!QDir().mkpath(destinationDir)) {
+        qCWarning(dcBackup()) << "Failed to create target directory:" << destinationDir;
+        return false;
+    }
+
+    const QString absTarget = QDir(destinationDir).absolutePath();
+    QStringList args;
+    args << "-xzf" << arcInfo.absoluteFilePath() << "-C" << absTarget;
+
+    int exitCode = QProcess::execute("tar", args);
+    if (exitCode != 0) {
+        qCWarning(dcBackup()) << "tar failed with exit code" << exitCode << "during restore. Command: tar" << args.join(' ');
+        return false;
+    }
+
+    qCInfo(dcBackup()) << "Resored backup" << fileName << "successfully into" << destinationDir;
+    return true;
 }

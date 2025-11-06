@@ -159,6 +159,13 @@ public:
     bool debugServerEnabled() const;
     void setDebugServerEnabled(bool enabled);
 
+    // Backup settings
+    QString backupDestinationDirectory() const;
+    void setBackupDestinationDirectory(const QString &destinationDirectory);
+
+    int backupMaxCount() const;
+    void setBackupMaxCount(int maxCount);
+
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
     void setTcpServerConfiguration(const ServerConfiguration &config);
@@ -201,6 +208,7 @@ public:
 private:
     NymeaSettings *m_settings = nullptr;
     NymeaSettings *m_mqttPoliciesSettings = nullptr;
+
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
@@ -249,6 +257,9 @@ signals:
     void mqttBrokerEnabledChanged();
     void mqttPortChanged();
     void debugServerEnabledChanged(bool enabled);
+
+    void backupDestinationDirectoryChanged(const QString &destinationDirectory);
+    void backupMaxCountChanged(int maxCount);
 };
 
 }

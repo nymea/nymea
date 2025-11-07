@@ -29,6 +29,9 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "webserverresource.h"
+#include "loggingcategories.h"
+
+#include <QFile>
 
 WebServerResource::WebServerResource(const QString &basePath, QObject *parent)
     : QObject{parent},
@@ -40,4 +43,44 @@ WebServerResource::WebServerResource(const QString &basePath, QObject *parent)
 QString WebServerResource::basePath() const
 {
     return m_basePath;
+}
+
+HttpReply *WebServerResource::createFileReply(const QString fileName)
+{
+    qCDebug(dcWebServer()) << "Create file reply for" << fileName;
+    HttpReply *reply = HttpReply::createSuccessReply();
+
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly)) {
+        qCWarning(dcWebServer()) << "Unable to generate file reply. The file" << fileName << "could not be opened. Respond with 403 Forbidden.";
+        return HttpReply::createErrorReply(HttpReply::Forbidden);
+    }
+
+    // Check content type
+    if (file.fileName().endsWith(".html")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
+    } else if (file.fileName().endsWith(".css")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+    } else if (file.fileName().endsWith(".pdf")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/pdf");
+    } else if (file.fileName().endsWith(".js")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/javascript; charset=\"utf-8\";");
+    } else if (file.fileName().endsWith(".ttf")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-ttf");
+    } else if (file.fileName().endsWith(".eot")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/vnd.ms-fontobject");
+    } else if (file.fileName().endsWith(".woff")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-woff");
+    } else if (file.fileName().endsWith(".jpg") || file.fileName().endsWith(".jpeg")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/jpeg");
+    } else if (file.fileName().endsWith(".png") || file.fileName().endsWith(".PNG")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
+    } else if (file.fileName().endsWith(".ico")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/x-icon");
+    } else if (file.fileName().endsWith(".svg")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/svg+xml; charset=\"utf-8\";");
+    }
+
+    reply->setPayload(file.readAll());
+    return reply;
 }

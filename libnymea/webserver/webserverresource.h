@@ -50,6 +50,8 @@ public:
 
     virtual HttpReply *processRequest(const HttpRequest &request) = 0;
 
+    static HttpReply *createFileReply(const QString fileName);
+
 protected:
     QString m_basePath;
 

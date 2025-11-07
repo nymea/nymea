@@ -447,42 +447,12 @@ void WebServer::readClient()
         if (!verifyFile(socket, path))
             return;
 
-        QFile file(path);
-        if (file.open(QFile::ReadOnly)) {
-            qCDebug(dcWebServer()) << "Load file" << file.fileName();
-            HttpReply *reply = HttpReply::createSuccessReply();
 
-            // Check content type
-            if (file.fileName().endsWith(".html")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".css")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".pdf")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/pdf");
-            } else if (file.fileName().endsWith(".js")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/javascript; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".ttf")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-ttf");
-            } else if (file.fileName().endsWith(".eot")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/vnd.ms-fontobject");
-            } else if (file.fileName().endsWith(".woff")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-woff");
-            } else if (file.fileName().endsWith(".jpg") || file.fileName().endsWith(".jpeg")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/jpeg");
-            } else if (file.fileName().endsWith(".png") || file.fileName().endsWith(".PNG")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
-            } else if (file.fileName().endsWith(".ico")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/x-icon");
-            } else if (file.fileName().endsWith(".svg")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/svg+xml; charset=\"utf-8\";");
-            }
+        HttpReply *reply = WebServerResource::createFileReply(path);
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
 
-            reply->setPayload(file.readAll());
-            reply->setClientId(clientId);
-            sendHttpReply(reply);
-            reply->deleteLater();
-            return;
-        }
     }
 
     // Reject everything else...

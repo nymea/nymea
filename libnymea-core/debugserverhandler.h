@@ -49,8 +49,6 @@ class DebugServerHandler : public WebServerResource
 public:
     explicit DebugServerHandler(QObject *parent = nullptr);
 
-    bool authenticationRequired() const override;
-
     HttpReply *processRequest(const HttpRequest &request) override;
 
 private:

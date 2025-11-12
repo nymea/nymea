@@ -203,6 +203,14 @@ HttpReply *HttpReply::createSuccessReply()
     return reply;
 }
 
+HttpReply *HttpReply::createJsonReply(const QJsonDocument &jsonDoc, const HttpReply::HttpStatusCode &statusCode)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    reply->setPayload(jsonDoc.toJson(QJsonDocument::Compact));
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    return reply;
+}
+
 HttpReply *HttpReply::createErrorReply(const HttpReply::HttpStatusCode &statusCode)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
@@ -395,6 +403,12 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
     case BadRequest:
         response = QString("Bad Request").toUtf8();
         break;
+    case Unauthorized:
+        response = QString("Unauthorized").toUtf8();
+        break;
+    case PaymentRequired:
+        response = QString("Payment required").toUtf8();
+        break;
     case Forbidden:
         response = QString("Forbidden").toUtf8();
         break;
@@ -403,6 +417,9 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
         break;
     case MethodNotAllowed:
         response = QString("Method Not Allowed").toUtf8();
+        break;
+    case NotAcceptable:
+        response = QString("Not Acceptable").toUtf8();
         break;
     case RequestTimeout:
         response = QString("Request Timeout").toUtf8();

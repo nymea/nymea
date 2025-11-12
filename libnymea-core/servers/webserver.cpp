@@ -379,7 +379,14 @@ void WebServer::readClient()
     // Verify if we habe a resource for this request
     foreach (WebServerResource *resource, m_resources) {
         if (request.url().path().startsWith(resource->basePath())) {
-            qCDebug(dcWebServer()) << "Let the resource handle this request";
+            if (!resource->enabled()) {
+                qCDebug(dcWebServer()) << "The corresponding resource exists but is not enabled. Respond with 404 Not Found.";
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
+                reply->setClientId(clientId);
+                sendHttpReply(reply);
+                reply->deleteLater();
+            }
+
             qCDebug(dcDebugServer()) << "Request:" << request.url().toString();
             HttpReply *reply = resource->processRequest(request);
             reply->setClientId(clientId);

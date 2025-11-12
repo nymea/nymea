@@ -51,14 +51,9 @@ DebugServerHandler::DebugServerHandler(QObject *parent) :
     onDebugServerEnabledChanged(NymeaCore::instance()->configuration()->debugServerEnabled());
 }
 
-bool DebugServerHandler::authenticationRequired() const
-{
-    return false;
-}
-
 HttpReply *DebugServerHandler::processRequest(const HttpRequest &request)
 {
-    if (NymeaCore::instance()->configuration()->debugServerEnabled()) {
+    if (m_enabled) {
 
         // Verify methods
         if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
@@ -658,6 +653,8 @@ void DebugServerHandler::onDebugServerEnabledChanged(bool enabled)
             m_websocketServer = nullptr;
         }
     }
+
+    setEnabled(enabled);
 }
 
 void DebugServerHandler::onWebsocketClientConnected()

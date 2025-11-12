@@ -46,14 +46,19 @@ public:
 
     QString basePath() const;
 
-    virtual bool authenticationRequired() const = 0;
+    bool enabled() const;
+    void setEnabled(bool enabled);
 
     virtual HttpReply *processRequest(const HttpRequest &request) = 0;
 
     static HttpReply *createFileReply(const QString fileName);
 
+signals:
+    void enabledChanged(bool enabled);
+
 protected:
     QString m_basePath;
+    bool m_enabled = true;
 
 };
 

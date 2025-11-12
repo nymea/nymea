@@ -30,6 +30,7 @@
 #include <QHash>
 #include <QTimer>
 #include <QUuid>
+#include <QJsonDocument>
 
 // Note: RFC 7231 HTTP/1.1 Semantics and Content -> http://tools.ietf.org/html/rfc7231
 
@@ -45,9 +46,12 @@ public:
         Found                   = 302,
         PermanentRedirect       = 308,
         BadRequest              = 400,
+        Unauthorized            = 401,
+        PaymentRequired         = 402,
         Forbidden               = 403,
         NotFound                = 404,
         MethodNotAllowed        = 405,
+        NotAcceptable           = 406,
         RequestTimeout          = 408,
         Conflict                = 409,
         InternalServerError     = 500,
@@ -80,6 +84,7 @@ public:
 
     static HttpReply *createSuccessReply();
     static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
+    static HttpReply *createJsonReply(const QJsonDocument &jsonDoc, const HttpReply::HttpStatusCode &statusCode = HttpStatusCode::Ok);
     static HttpReply *createAsyncReply();
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);

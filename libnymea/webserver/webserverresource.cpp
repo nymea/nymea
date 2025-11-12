@@ -45,16 +45,32 @@ QString WebServerResource::basePath() const
     return m_basePath;
 }
 
+bool WebServerResource::enabled() const
+{
+    return m_enabled;
+}
+
+void WebServerResource::setEnabled(bool enabled)
+{
+    if (m_enabled == enabled)
+        return;
+
+    qCDebug(dcWebServer()) << "The resource" << m_basePath << "is now" << (enabled ? "enabled" : "disabled");
+    m_enabled = enabled;
+    emit enabledChanged(m_enabled);
+}
+
 HttpReply *WebServerResource::createFileReply(const QString fileName)
 {
     qCDebug(dcWebServer()) << "Create file reply for" << fileName;
-    HttpReply *reply = HttpReply::createSuccessReply();
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
         qCWarning(dcWebServer()) << "Unable to generate file reply. The file" << fileName << "could not be opened. Respond with 403 Forbidden.";
         return HttpReply::createErrorReply(HttpReply::Forbidden);
     }
+
+    HttpReply *reply = HttpReply::createSuccessReply();
 
     // Check content type
     if (file.fileName().endsWith(".html")) {

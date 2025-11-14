@@ -73,7 +73,15 @@ NetworkDeviceInfo::MonitorMode NetworkDeviceMonitorImpl::monitorMode() const
 
 void NetworkDeviceMonitorImpl::setMonitorMode(NetworkDeviceInfo::MonitorMode monitorMode)
 {
+    if (m_monitorMode == monitorMode)
+        return;
+
     m_monitorMode = monitorMode;
+
+    if (m_networkDeviceInfo.monitorMode() != monitorMode) {
+        m_networkDeviceInfo.setMonitorMode(monitorMode);
+        emit networkDeviceInfoChanged(m_networkDeviceInfo);
+    }
 }
 
 NetworkDeviceInfo NetworkDeviceMonitorImpl::networkDeviceInfo() const
@@ -163,7 +171,7 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
 
         break;
     case NetworkDeviceInfo::MonitorModeHostName:
-        if (!m_hostName.isEmpty() && networkDeviceInfo.hostName() == m_hostName)
+        if (!m_hostName.isEmpty() && networkDeviceInfo.hostName().compare(m_hostName, Qt::CaseInsensitive) == 0)
             myNetworkDevice = true;
 
         break;

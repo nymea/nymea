@@ -176,12 +176,14 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
     return myNetworkDevice;
 }
 
-bool NetworkDeviceMonitorImpl::operator==(NetworkDeviceMonitorImpl *other) const
+bool NetworkDeviceMonitorImpl::operator==(const NetworkDeviceMonitorImpl &other) const
 {
-    return m_macAddress == other->macAddress() && m_hostName == other->hostName() && m_address == other->address();
+    return m_macAddress == other.macAddress()
+            && m_hostName == other.hostName()
+            && m_address == other.address();
 }
 
-bool NetworkDeviceMonitorImpl::operator!=(NetworkDeviceMonitorImpl *other) const
+bool NetworkDeviceMonitorImpl::operator!=(const NetworkDeviceMonitorImpl &other) const
 {
     return !operator==(other);
 }

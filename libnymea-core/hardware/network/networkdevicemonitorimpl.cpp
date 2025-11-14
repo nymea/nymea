@@ -126,7 +126,11 @@ uint NetworkDeviceMonitorImpl::pingRetries() const
 
 void NetworkDeviceMonitorImpl::setPingRetries(uint pingRetries)
 {
+    if (m_pingRetries == pingRetries)
+        return;
+
     m_pingRetries = pingRetries;
+    emit pingRetriesChanged(m_pingRetries);
 }
 
 PingReply *NetworkDeviceMonitorImpl::currentPingReply() const
@@ -154,7 +158,7 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
     bool myNetworkDevice = false;
     switch (m_monitorMode) {
     case NetworkDeviceInfo::MonitorModeMac:
-        if (!m_macAddress.isNull() && networkDeviceInfo.macAddressInfos().count() == 1 && networkDeviceInfo.macAddressInfos().hasMacAddress(m_macAddress))
+        if (!m_macAddress.isNull() && networkDeviceInfo.macAddressInfos().hasMacAddress(m_macAddress))
             myNetworkDevice = true;
 
         break;

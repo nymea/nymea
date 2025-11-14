@@ -237,7 +237,8 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
             // QFlags<Class:Enum>, therefore we need to remove additionally all < >
             typeName = QString("$ref:%1").arg(typeNameRaw.split("::").last().remove('<').remove('>'));
         } else if (metaProperty.isFlagType()) {
-            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
+            QString flagType = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
+            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(flagType, flagType);
         } else if (typeId == QMetaType::QVariantList) {
             typeName = QVariantList() << enumValueName(Variant);
         } else {
@@ -260,7 +261,8 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
         } else if (metaProperty.isEnumType()) {
             typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
         } else if (metaProperty.isFlagType()) {
-            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
+            QString flagType = QString(metaProperty.typeName()).split("::").last();
+            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(flagType, flagType);
         } else if (metaProperty.type() == QVariant::List) {
             typeName = QVariantList() << enumValueName(Variant);
         } else {
@@ -509,7 +511,7 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             // Special treatment for QDateTime (converting to time_t)
             if (typeId == QMetaType::QDateTime) {
                 QDateTime dateTime = propertyValue.toDateTime();
-                if (metaProperty.isUser() && dateTime.toSecsSinceEpoch() == 0) {
+                if (metaProperty.isUser() && (!dateTime.isValid() || dateTime.isNull())) {
                     continue;
                 }
                 propertyValue = propertyValue.toDateTime().toSecsSinceEpoch();
@@ -536,16 +538,20 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
 
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
+        QVariantList list;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-        if (static_cast<QMetaType::Type>(value.typeId()) != QMetaType::QVariantList) {
+        QMetaType::Type valueType = static_cast<QMetaType::Type>(value.typeId());
 #else
-        if (static_cast<QMetaType::Type>(value.type()) != QMetaType::QVariantList) {
+        QMetaType::Type valueType = static_cast<QMetaType::Type>(value.type());
 #endif
+        if (!value.isValid() || value.isNull()) {
+            list = QVariantList();
+        } else if (valueType == QMetaType::QVariantList || valueType == QMetaType::QStringList) {
+            list = value.toList();
+        } else {
             qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
             return QVariant();
         }
-
-        QVariantList list = value.toList();
 
         int typeId = QMetaType::type(metaObject.className());
         void* ptr = QMetaType::create(typeId);
@@ -612,16 +618,36 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                             intList.append(val.toInt());
                         }
                         metaProperty.writeOnGadget(ptr, QVariant::fromValue(intList));
-                    } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")
-                               || metaProperty.typeName() == QStringLiteral("QList<ThingId>")
-                               || metaProperty.typeName() == QStringLiteral("QList<EventTypeId>")
-                               || metaProperty.typeName() == QStringLiteral("QList<StateTypeId>")
-                               || metaProperty.typeName() == QStringLiteral("QList<ActionTypeId>")) {
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")) {
                         QList<QUuid> uuidList;
                         foreach (const QVariant &val, variant.toList()) {
                             uuidList.append(val.toUuid());
                         }
                         metaProperty.writeOnGadget(ptr, QVariant::fromValue(uuidList));
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<ThingId>")) {
+                        QList<ThingId> thingIds;
+                        foreach (const QVariant &val, variant.toList()) {
+                            thingIds.append(ThingId(val.toUuid()));
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(thingIds));
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<EventTypeId>")) {
+                        QList<EventTypeId> eventTypeIds;
+                        foreach (const QVariant &val, variant.toList()) {
+                            eventTypeIds.append(EventTypeId(val.toUuid()));
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(eventTypeIds));
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<StateTypeId>")) {
+                        QList<StateTypeId> stateTypeIds;
+                        foreach (const QVariant &val, variant.toList()) {
+                            stateTypeIds.append(StateTypeId(val.toUuid()));
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(stateTypeIds));
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<ActionTypeId>")) {
+                        QList<ActionTypeId> actionTypeIds;
+                        foreach (const QVariant &val, variant.toList()) {
+                            actionTypeIds.append(ActionTypeId(val.toUuid()));
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(actionTypeIds));
                     }
                     continue;
                 }

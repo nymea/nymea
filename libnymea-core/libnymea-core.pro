@@ -69,7 +69,6 @@ HEADERS += nymeacore.h \
     logging/logengineinfluxdb.h \
     scriptengine/scriptthing.h \
     scriptengine/scriptthings.h \
-    servers/webserverresource.h \
     zwave/zwavedevicedatabase.h \
     zwave/zwavemanagerreply.h \
     zwave/zwavenodeimplementation.h \

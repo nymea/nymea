@@ -391,6 +391,7 @@ void WebServer::readClient()
                 reply->setClientId(clientId);
                 sendHttpReply(reply);
                 reply->deleteLater();
+                return;
             }
 
             qCDebug(dcDebugServer()) << "Request:" << request.url().toString();

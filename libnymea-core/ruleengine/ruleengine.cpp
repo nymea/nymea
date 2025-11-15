@@ -1730,8 +1730,10 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             CalendarItem calendarItem;
-            calendarItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
-            calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
+            if (settings.contains("dateTime")) {
+                calendarItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime").toLongLong()));
+            }
+            calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString(), "hh:mm"));
             calendarItem.setDuration(settings.value("duration", 0).toUInt());
 
             QList<int> weekDays;
@@ -1768,8 +1770,10 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             TimeEventItem timeEventItem;
-            timeEventItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
-            timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
+            if (settings.contains("dateTime")) {
+                timeEventItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime").toLongLong()));
+            }
+            timeEventItem.setTime(QTime::fromString(settings.value("time").toString(), "hh:mm"));
 
             QList<int> weekDays;
             QList<int> monthDays;

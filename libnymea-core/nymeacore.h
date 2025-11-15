@@ -45,7 +45,6 @@
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
 
-#include "debugserverhandler.h"
 
 #include <QObject>
 
@@ -69,6 +68,7 @@ class ZigbeeManager;
 class ZWaveManager;
 class ModbusRtuManager;
 class SerialPortMonitor;
+class DebugServerHandler;
 
 namespace scriptengine {
 class ScriptEngine;

@@ -31,6 +31,8 @@
 #include "nymeatestbase.h"
 #include "nymeacore.h"
 
+#include <webserver/httpreply.h>
+
 #include <QXmlReader>
 #include <QRegularExpression>
 

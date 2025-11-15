@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,50 +28,68 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPDAEMON_H
-#define HTTPDAEMON_H
+#ifndef HTTPREQUEST_H
+#define HTTPREQUEST_H
 
-#include "typeutils.h"
-#include "types/param.h"
+#include <QByteArray>
+#include <QUrlQuery>
+#include <QString>
+#include <QHash>
 
-#include <QTcpServer>
-#include <QUuid>
-#include <QDateTime>
-
-class Thing;
-class IntegrationPlugin;
-
-class HttpDaemon : public QTcpServer
+class HttpRequest
 {
-    Q_OBJECT
 public:
-    HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
-    ~HttpDaemon();
+    enum RequestMethod {
+        Get,
+        Post,
+        Put,
+        Delete,
+        Options,
+        Unhandled
+    };
 
-    void incomingConnection(qintptr socket) override;
-    void actionExecuted(const ActionTypeId &actionTypeId);
+    HttpRequest();
+    HttpRequest(QByteArray rawData);
 
-signals:
-    void setState(const StateTypeId &stateTypeId, const QVariant &value);
-    void triggerEvent(const EventTypeId &eventTypeId, const ParamList &params);
-    void disappear();
-    void reconfigureAutodevice();
+    QByteArray rawHeader() const;
+    QHash<QByteArray, QByteArray> rawHeaderList() const;
 
-private slots:
-    void readClient();
-    void discardClient();
+    RequestMethod method() const;
+    QString methodString() const;
+    QByteArray httpVersion() const;
+
+    QUrl url() const;
+    QUrlQuery urlQuery() const;
+
+    QByteArray payload() const;
+
+    bool isValid() const;
+    bool isComplete() const;
+    bool hasPayload() const;
+
+    void appendData(const QByteArray &data);
 
 private:
-    QString generateHeader();
-    QString generateWebPage();
+    QByteArray m_rawData;
+    QByteArray m_rawHeader;
+    QHash<QByteArray, QByteArray> m_rawHeaderList;
 
-private:
-    bool disabled;
+    RequestMethod m_method;
+    QString m_methodString;
+    QByteArray m_httpVersion;
 
-    IntegrationPlugin *m_plugin;
-    Thing *m_thing;
+    QUrl m_url;
+    QUrlQuery m_urlQuery;
 
-    QList<QPair<ActionTypeId, QDateTime> > m_actionList;
+    QByteArray m_payload;
+
+    bool m_valid;
+    bool m_isComplete;
+
+    void validate();
+    RequestMethod getRequestMethodType(const QString &methodString);
 };
 
-#endif // HTTPDAEMON_H
+QDebug operator<<(QDebug debug, const HttpRequest &httpRequest);
+
+#endif // HTTPREQUEST_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -45,6 +45,7 @@ class UserInfo
     Q_PROPERTY(QString email READ email)
     Q_PROPERTY(QString displayName READ displayName)
     Q_PROPERTY(Types::PermissionScopes scopes READ scopes)
+    Q_PROPERTY(QList<ThingId> allowedThingIds READ allowedThingIds)
 
 public:
     UserInfo();
@@ -62,12 +63,17 @@ public:
     Types::PermissionScopes scopes() const;
     void setScopes(Types::PermissionScopes scopes);
 
+    void setAllowedThingIds(const QList<ThingId> &allowedThingIds);
+    QList<ThingId> allowedThingIds() const;
+
 private:
     QString m_username;
     QString m_email;
     QString m_displayName;
     Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
+    QList<ThingId> m_allowedThingIds;
 };
+
 
 class UserInfoList: public QList<UserInfo>
 {
@@ -77,5 +83,10 @@ public:
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
+
 }
+
+Q_DECLARE_METATYPE(nymeaserver::UserInfo);
+Q_DECLARE_METATYPE(nymeaserver::UserInfoList);
+
 #endif // USERINFO_H

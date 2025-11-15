@@ -93,7 +93,7 @@ public:
         ThingErrorItemNotFound,
         ThingErrorItemNotExecutable,
         ThingErrorUnsupportedFeature,
-        ThingErrorTimeout,
+        ThingErrorTimeout
     };
     Q_ENUM(ThingError)
 

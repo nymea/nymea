@@ -1,3 +1,21 @@
+nymea (1.14.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Interfaces: Add extended energystorage and improve EV charger
+    interfaces
+  * Thing based user permissions
+  * Extend webserver resource management
+  * JSONRPC: Improve list handling of API list types
+  * NetworkDeviceMonitor: Improve ping and network device monitor
+    behavior
+  * Add ANGENTS.md file
+  * Update translations
+  * NymeaCore: class cleanup and statup improvements
+  * RuleEngine: Improve TimeDescriptor and CalendarItem DateTime Time
+    loa…
+
+ -- jenkins <developer@nymea.io>  Sat, 15 Nov 2025 16:35:28 +0100
+
 nymea (1.12.3) jammy; urgency=medium
 
   [ Simon Stürz ]

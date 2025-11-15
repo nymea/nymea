@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2025, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -68,8 +68,6 @@
 
 #include <QUrlQuery>
 #include <QRegularExpression>
-
-namespace nymeaserver {
 
 /*! Construct an empty \l{HttpRequest}. */
 HttpRequest::HttpRequest() :
@@ -285,4 +283,3 @@ QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
     return debug;
 }
 
-}

@@ -39,11 +39,13 @@ class ThingManager;
 
 namespace nymeaserver {
 
+class ServerManager;
+
 class ExperienceManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent = nullptr);
+    explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, QObject *parent = nullptr);
 
     QList<ExperiencePlugin *> plugins() const;
 
@@ -56,6 +58,8 @@ private slots:
 private:
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
+    ServerManager *m_serverManager = nullptr;
+
     QList<ExperiencePlugin *> m_plugins;
 
     QStringList pluginSearchDirs() const;

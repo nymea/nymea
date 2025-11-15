@@ -130,7 +130,8 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         break;
     }
 
-    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(fileName), QSettings::IniFormat, this);
+    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + fileName;
+    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat, this);
 }
 
 /*! Destructor of the NymeaSettings.*/
@@ -143,6 +144,9 @@ NymeaSettings::~NymeaSettings()
 QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)
 {
     QFileInfo settingsFileInfo(filePath);
+    if (!settingsFileInfo.isAbsolute()) {
+        settingsFileInfo = QFileInfo(NymeaSettings::settingsPath() + QDir::separator() + settingsFileInfo.filePath());
+    }
     if (!settingsFileInfo.exists()) {
         // Settings file does not exist yet, check if we have a default version of the file
         QFileInfo defaultSettingsFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + settingsFileInfo.fileName());

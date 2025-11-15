@@ -46,7 +46,7 @@
         <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="305"/>
         <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="2086"/>
         <source>The plugin for this thing is not loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pluginet til dette element er ikke indlæst.</translation>
     </message>
 </context>
 <context>
@@ -74,12 +74,12 @@ nymea er en open source IoT-server (&quot;Internet of Things&quot;), som giver m
     <message>
         <location filename="../server/main.cpp" line="102"/>
         <source>Disables logging all debug, info and warning categories.</source>
-        <translation type="unfinished"></translation>
+        <translation>Deaktiverer logning af alle debug-, info- og advarselskategorier.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="105"/>
         <source>Enables all info and debug categories except *Traffic and *Debug categories.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverer alle info- og debugkategorier undtagen *Traffic og *Debug.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="108"/>
@@ -89,7 +89,7 @@ nymea er en open source IoT-server (&quot;Internet of Things&quot;), som giver m
     <message>
         <location filename="../server/main.cpp" line="111"/>
         <source>Log output is colorized by default. Use this option to disable colors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Loguddata er som standard farvelagt. Brug denne indstilling for at deaktivere farver.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="114"/>
@@ -104,12 +104,16 @@ Examples:
 -d NoApplicationInfo
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Fejlsøgningskategorier der skal aktiveres. Sæt &quot;No&quot; foran for at deaktivere. Tilføj endelserne &quot;Info&quot; eller &quot;Warnings&quot; for at målrette info- og advarselsbeskeder. Når en fejlsøgningskategori aktiveres, aktiveres den tilsvarende infokategori automatisk.
+Eksempler:
+-d ThingManager
+-d NoApplicationInfo
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="121"/>
         <source>Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777). Note that such interfaces will not require any authentication as they are intended to be used for automated testing only.</source>
-        <translation type="unfinished"></translation>
+        <translation>Yderligere interfaces der skal lyttes på. I nymea-URI-format (f.eks. nymeas://127.0.0.2:7777). Bemærk at sådanne interfaces ikke kræver godkendelse, da de kun er beregnet til automatiserede tests.</translation>
     </message>
 </context>
 <context>
@@ -131,7 +135,7 @@ Examples:
         <location filename="../libnymea-core/debugserverhandler.cpp" line="931"/>
         <source>Information</source>
         <extracomment>The name of the section tab in the debug server interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Information</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="947"/>
@@ -140,7 +144,7 @@ Examples:
         <extracomment>The name of the section tab in the debug server interface
 ----------
 The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Netværk</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="991"/>
@@ -260,18 +264,18 @@ The network section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1165"/>
         <source>Generate report</source>
         <extracomment>In the server information section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Generér rapport</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1168"/>
         <source>If you want to provide all the debug information to a developer, you can generate a report file, which contains all information needed for reproducing a system and get information about possible problems.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hvis du vil give alle fejlsøgningsoplysninger til en udvikler, kan du generere en rapportfil, der indeholder alle oplysninger, der er nødvendige for at genskabe et system og finde mulige problemer.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1196"/>
         <source>Generate report file</source>
         <extracomment>The generate debug report button text of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Generér rapportfil</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1234"/>
@@ -283,17 +287,17 @@ The network section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1370"/>
         <source>Thing settings</source>
         <extracomment>The thing settings download description of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Thing-indstillinger</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1742"/>
         <source>This test shows the trace path from the nymea device to the nymea.io server.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne test viser sporingsruten fra nymea-enheden til nymea.io-serveren.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1781"/>
         <source>This section allows you to see the live logs of the nymea server.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne sektion lader dig se live-loggene fra nymea-serveren.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="939"/>
@@ -317,55 +321,55 @@ The download logs section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="983"/>
         <source>Please note that this debug interface may allow accessing sensitive data about the nymea system and connected devices and services. It is recommended to disable it again when not needed any more.</source>
         <extracomment>The warning message of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Bemærk at dette fejlsøgningsinterface kan give adgang til følsomme data om nymea-systemet samt tilsluttede enheder og tjenester. Det anbefales at deaktivere det igen, når det ikke længere behøves.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1114"/>
         <source>System information</source>
         <extracomment>The system information section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Systeminformation</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1121"/>
         <source>Hostname</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Værtsnavn</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1132"/>
         <source>Architecture</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Arkitektur</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1138"/>
         <source>Kernel type</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Kerneltype</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1144"/>
         <source>Kernel version</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Kernelversion</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1150"/>
         <source>Product type</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Produkttype</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1156"/>
         <source>Product version</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Produktversion</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1185"/>
         <source>Please note that the generated debug report may contain sensitive data about the nymea system and connected devices and services.</source>
         <extracomment>The warning message of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Bemærk at den genererede fejlsøgningsrapport kan indeholde følsomme data om nymea-systemet samt tilsluttede enheder og tjenester.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1256"/>
@@ -397,7 +401,7 @@ The download logs section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1604"/>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1654"/>
         <source>Show</source>
-        <translation type="unfinished"></translation>
+        <translation>Vis</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1310"/>
@@ -427,101 +431,101 @@ The download logs section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1520"/>
         <source>Tag settings</source>
         <extracomment>The tag settings download description of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Tag-indstillinger</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1569"/>
         <source>MQTT policies</source>
         <extracomment>The MQTT policies download description of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>MQTT-politikker</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1619"/>
         <source>IO Connections</source>
         <extracomment>The MQTT policies download description of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>IO-forbindelser</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1677"/>
         <source>This section allows you to perform different network connectivity tests in order to find out if the device where nymea is running has full network connectivity.</source>
         <extracomment>The network section description of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Denne sektion gør det muligt at udføre forskellige netværksforbindelsestests for at finde ud af, om enheden der kører nymea har fuld netværksforbindelse.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1683"/>
         <source>Ping</source>
         <extracomment>The ping section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ping</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1686"/>
         <source>This test makes four ping attempts to the nymea.io server.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne test foretager fire pingforsøg til nymea.io-serveren.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1695"/>
         <source>Start ping test</source>
         <extracomment>The ping button text of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Start pingtest</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1711"/>
         <source>DNS lookup</source>
         <extracomment>The DNS lookup section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>DNS-opslag</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1714"/>
         <source>This test makes a dynamic name server lookup for nymea.io.</source>
-        <translation type="unfinished"></translation>
+        <translation>Denne test foretager et dynamisk navneopslag for nymea.io.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1724"/>
         <source>Start DNS lookup test</source>
         <extracomment>The ping button text of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Start DNS-opslagstest</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1739"/>
         <source>Trace path</source>
         <extracomment>The trace section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Sporingsrute</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1751"/>
         <source>Start trace path test</source>
         <extracomment>The trace path button text of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Start sporingsrutetest</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1778"/>
         <source>Server live logs</source>
         <extracomment>The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Server-live-logs</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1793"/>
         <source>Start logs</source>
         <extracomment>The connect button for the log stream of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Start logs</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1832"/>
         <source>Logging filters</source>
         <extracomment>The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Logfiltre</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1871"/>
         <source>Logging filters plugins</source>
         <extracomment>The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Logfiltre for plugins</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1910"/>
         <source>Released under the GNU GENERAL PUBLIC LICENSE Version 3.</source>
         <extracomment>The footer license note of the debug interface</extracomment>
-        <translation type="unfinished">Udgivet i henhold til GNU GENERAL PUBLIC LICENSE Version 2. {3.?}</translation>
+        <translation>Udgivet under GNU GENERAL PUBLIC LICENSE Version 3.</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1984"/>

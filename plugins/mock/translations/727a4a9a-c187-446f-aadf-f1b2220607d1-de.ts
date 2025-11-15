@@ -739,145 +739,145 @@ The name of the EventType ({61ebadc0-47ea-4800-8c45-ee5222cddb4b}) of ThingClass
     <message>
         <source>Generic Temperature Sensor (Mock)</source>
         <extracomment>The name of the ThingClass ({f8917e12-c9cb-4ea1-a06e-1ce6db2194f3})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Generischer Temperatursensor (Mock)</translation>
     </message>
     <message>
         <source>Input</source>
         <extracomment>The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, ActionType: input, ID: {fd341f72-6d9a-4812-9f66-47197c48a935})
 ----------
 The name of the StateType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Eingang</translation>
     </message>
     <message>
         <source>Integer</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {315d94bd-52a1-45cc-8632-efe53fd96762})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ganzzahl</translation>
     </message>
     <message>
         <source>Integer with limits</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {bc22a725-8c09-44b7-94a6-c3b89b042718})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ganzzahl mit Grenzen</translation>
     </message>
     <message>
         <source>Localized list</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, ActionType: localizedList, ID: {23df3dce-bd10-4eb3-b5e3-221168440cd4})
 ----------
 The name of the StateType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Lokalisierte Liste</translation>
     </message>
     <message>
         <source>Maximum temperature</source>
         <extracomment>The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {7077c56f-c35b-4252-8c15-8fb549be04ce})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Maximale Temperatur</translation>
     </message>
     <message>
         <source>Maximum value for int with limits</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: settings, ID: {984e7ae0-6de7-447e-bc4d-5afde8a00f27})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Maximalwert für Ganzzahl mit Grenzen</translation>
     </message>
     <message>
         <source>Minimum temperature</source>
         <extracomment>The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {803cddbf-94c7-4f35-bc7a-18698b03b942})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Minimale Temperatur</translation>
     </message>
     <message>
         <source>Minimum value for int with limits</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: settings, ID: {9c34c881-e825-4f27-bb5c-db868bc60fb1})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Minimalwert für Ganzzahl mit Grenzen</translation>
     </message>
     <message>
         <source>One</source>
         <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Eins</translation>
     </message>
     <message>
         <source>Param with default value</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: withParams, ID: {d1e428ae-eb8c-45aa-b1b0-e3d7de659c3a})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Parameter mit Standardwert</translation>
     </message>
     <message>
         <source>Power</source>
         <extracomment>The name of the ParamType (ThingClass: virtualIoLightMock, ActionType: power, ID: {d1917b3d-1530-4cf9-90f7-263ee88e714b})
 ----------
 The name of the StateType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Leistung</translation>
     </message>
     <message>
         <source>Press button</source>
         <extracomment>The name of the ActionType ({592dfded-0144-4947-bd02-ca84c2124f39}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Knopf drücken</translation>
     </message>
     <message>
         <source>Result count</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c-4c3f-8655-76400d0fb6ce})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ergebnisanzahl</translation>
     </message>
     <message>
         <source>Set Digital Output 1</source>
         <extracomment>The name of the ActionType ({d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Digitalausgang 1</translation>
     </message>
     <message>
         <source>Set Digital Output 2</source>
         <extracomment>The name of the ActionType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Digitalausgang 2</translation>
     </message>
     <message>
         <source>Set Output Input 1</source>
         <extracomment>The name of the ActionType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Ausgang-Eingang 1</translation>
     </message>
     <message>
         <source>Set Output Input 2</source>
         <extracomment>The name of the ActionType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Ausgang-Eingang 2</translation>
     </message>
     <message>
         <source>Set analog input 1</source>
         <extracomment>The name of the ActionType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze analogen Eingang 1</translation>
     </message>
     <message>
         <source>Set battery level</source>
         <extracomment>The name of the ActionType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Batteriestand</translation>
     </message>
     <message>
         <source>Set dummy int state with limits</source>
         <extracomment>The name of the ActionType ({5aa479bd-537a-4716-9852-52f6eec58722}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Dummy-Ganzzahlzustand mit Grenzen</translation>
     </message>
     <message>
         <source>Set input</source>
         <extracomment>The name of the ActionType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Eingang</translation>
     </message>
     <message>
         <source>Set power</source>
         <extracomment>The name of the ActionType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Leistung</translation>
     </message>
     <message>
         <source>Set signal strength</source>
         <extracomment>The name of the ActionType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Signalstärke</translation>
     </message>
     <message>
         <source>Set update status</source>
         <extracomment>The name of the ActionType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Update-Status</translation>
     </message>
     <message>
         <source>Set value</source>
         <extracomment>The name of the ActionType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze Wert</translation>
     </message>
     <message>
         <source>Signal strength</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: signalStrength, ID: {2a0213bf-4af3-4384-904e-3376348a597e})
 ----------
 The name of the StateType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Signalstärke</translation>
     </message>
     <message>
         <source>String value 1</source>
@@ -910,59 +910,59 @@ The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b}
     <message>
         <source>Temperature</source>
         <extracomment>The name of the StateType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Temperatur</translation>
     </message>
     <message>
         <source>Two</source>
         <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zwei</translation>
     </message>
     <message>
         <source>Update firmware</source>
         <extracomment>The name of the ActionType ({f2b847dd-ab40-4278-940b-3615f1d7dfd3}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Firmware aktualisieren</translation>
     </message>
     <message>
         <source>Update status</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: updateStatus, ID: {ebc41327-53d5-40c2-8e7b-1164a8ff359e})
 ----------
 The name of the StateType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisierungsstatus</translation>
     </message>
     <message>
         <source>available</source>
         <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Verfügbar</translation>
     </message>
     <message>
         <source>configParamBool</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {c75723b6-ea4f-4982-9751-6c5e39c88145})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>configParamBool</translation>
     </message>
     <message>
         <source>configParamInt</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {e1f72121-a426-45e2-b475-8262b5cdf103})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>configParamInt</translation>
     </message>
     <message>
         <source>idle</source>
         <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Leerlauf</translation>
     </message>
     <message>
         <source>nymea</source>
         <extracomment>The name of the vendor ({2062d64d-3232-433c-88bc-0d33c0ba2ba6})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>nymea</translation>
     </message>
     <message>
         <source>updating</source>
         <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisierung</translation>
     </message>
     <message>
         <source>🎄</source>
         <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>🎄</translation>
     </message>
     <message>
         <source>Value A</source>

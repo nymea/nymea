@@ -36,6 +36,7 @@
 #include <QDateTime>
 #include <QHostAddress>
 #include <QNetworkInterface>
+#include <QMetaType>
 
 #include "libnymea.h"
 #include "macaddressinfos.h"
@@ -103,5 +104,7 @@ private:
 };
 
 QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
+
+Q_DECLARE_METATYPE(NetworkDeviceInfo)
 
 #endif // NETWORKDEVICEINFO_H

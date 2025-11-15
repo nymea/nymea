@@ -75,8 +75,8 @@ public:
 
     bool isMyNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo) const;
 
-    bool operator==(NetworkDeviceMonitorImpl *other) const;
-    bool operator!=(NetworkDeviceMonitorImpl *other) const;
+    bool operator==(const NetworkDeviceMonitorImpl &other) const;
+    bool operator!=(const NetworkDeviceMonitorImpl &other) const;
 
 private:
     MacAddress m_macAddress;

@@ -31,6 +31,10 @@
 #include "networkdeviceinfo.h"
 #include "macaddress.h"
 
+#include <QMetaType>
+
+static const int networkDeviceInfoMetaTypeId = qRegisterMetaType<NetworkDeviceInfo>("NetworkDeviceInfo");
+
 NetworkDeviceInfo::NetworkDeviceInfo()
 {
 

@@ -229,8 +229,6 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("o:token", enumValueName(String));
     registerNotification("PushButtonAuthFinished", description, params);
 
-    QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
-
     connect(NymeaCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServerImplementation::onPushButtonAuthFinished);
 
     m_connectionLockdownTimer.setSingleShot(true);

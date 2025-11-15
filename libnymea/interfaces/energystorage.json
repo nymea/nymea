@@ -1,5 +1,5 @@
 {
-    "description": "Interfaces for devices that store electrical energy and can return it at a later point, such as batteries. The currentPower state follows the usual convention that positive is 'consumed' energy and negative values represent 'produced' or in this case 'returned' energy.",
+    "description": "Interfaces for devices that store electrical energy such as batteries. The 'currentPower' state represents the AC measurement and follows the usual convention that positive is 'consumed' energy and negative values represent 'produced' or in this case 'returned' energy.",
     "extends": ["battery", "smartmeter"],
     "states": [
         {
@@ -11,7 +11,8 @@
         {
             "name": "capacity",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         }
     ]
 }

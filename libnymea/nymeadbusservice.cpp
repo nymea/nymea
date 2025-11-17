@@ -27,27 +27,72 @@
 
 NYMEA_LOGGING_CATEGORY(dcDBus, "DBus")
 
+namespace {
+const QString kNymeaInterface = QStringLiteral("io.nymea.nymead");
+const QString kLegacyInterface = QStringLiteral("io.guh.nymead");
+const QString kNymeaNamespace = QStringLiteral("/io/nymea/");
+const QString kLegacyNamespace = QStringLiteral("/io/guh/");
+bool gLegacyServiceWarningLogged = false;
+bool gLegacyObjectWarningLogged = false;
+}
+
 QDBusConnection::BusType NymeaDBusService::s_busType = QDBusConnection::SystemBus;
 
 NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent):
     QObject(parent),
     m_connection(s_busType == QDBusConnection::SystemBus ? QDBusConnection::systemBus() : QDBusConnection::sessionBus())
 {
-    bool status = m_connection.registerService("io.guh.nymead");
+    bool status = m_connection.registerService(kNymeaInterface);
     if (!status) {
-        qCWarning(dcDBus()) << "Failed to register D-Bus service.";
+        qCWarning(dcDBus()) << "Failed to register D-Bus service" << kNymeaInterface;
         return;
     }
-    QString finalObjectPath;
+
+    bool legacyServiceStatus = m_connection.registerService(kLegacyInterface);
+    if (!legacyServiceStatus) {
+        qCWarning(dcDBus()) << "Failed to register legacy D-Bus service" << kLegacyInterface << "- older clients might not be able to connect.";
+    } else if (!gLegacyServiceWarningLogged) {
+        qCWarning(dcDBus()) << "The D-Bus service" << kLegacyInterface << "is deprecated and kept only for backwards compatibility. Please migrate to" << kNymeaInterface << ".";
+        gLegacyServiceWarningLogged = true;
+    }
+
+    QString normalizedObjectPath;
     foreach (const QString &part, objectPath.split(' ')) {
-        finalObjectPath.append(part.at(0).toUpper());
-        finalObjectPath.append(part.right(part.length() - 1));
+        normalizedObjectPath.append(part.at(0).toUpper());
+        normalizedObjectPath.append(part.right(part.length() - 1));
     }
-    status = m_connection.registerObject(finalObjectPath, "io.guh.nymead", parent, QDBusConnection::ExportScriptableSlots);
+
+    QString nymeaObjectPath = normalizedObjectPath;
+    QString legacyObjectPath;
+    bool registerLegacyObject = false;
+
+    if (normalizedObjectPath.contains(kNymeaNamespace)) {
+        legacyObjectPath = normalizedObjectPath;
+        legacyObjectPath.replace(kNymeaNamespace, kLegacyNamespace);
+        registerLegacyObject = true;
+    } else if (normalizedObjectPath.contains(kLegacyNamespace)) {
+        legacyObjectPath = normalizedObjectPath;
+        nymeaObjectPath = normalizedObjectPath;
+        nymeaObjectPath.replace(kLegacyNamespace, kNymeaNamespace);
+        registerLegacyObject = true;
+    }
+
+    status = m_connection.registerObject(nymeaObjectPath, kNymeaInterface, parent, QDBusConnection::ExportScriptableSlots);
     if (!status) {
-        qCWarning(dcDBus()) << "Failed to register D-Bus object:" << finalObjectPath;
+        qCWarning(dcDBus()) << "Failed to register D-Bus object:" << nymeaObjectPath;
         return;
     }
+
+    if (registerLegacyObject) {
+        bool legacyObjectStatus = m_connection.registerObject(legacyObjectPath, kLegacyInterface, parent, QDBusConnection::ExportScriptableSlots);
+        if (!legacyObjectStatus) {
+            qCWarning(dcDBus()) << "Failed to register deprecated legacy D-Bus object:" << legacyObjectPath;
+        } else if (!gLegacyObjectWarningLogged) {
+            qCWarning(dcDBus()) << "The D-Bus interface" << kLegacyInterface << "is deprecated and only kept for backwards compatibility.";
+            gLegacyObjectWarningLogged = true;
+        }
+    }
+
     m_isValid = true;
 }
 
@@ -68,4 +113,3 @@ void NymeaDBusService::setBusType(QDBusConnection::BusType busType)
 {
     s_busType = busType;
 }
-

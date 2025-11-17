@@ -29,10 +29,13 @@
 #include <QDBusConnection>
 #include <QDBusContext>
 
+/*! Helper to expose QObject subclasses on D-Bus under the nymea namespace.
+ *  The legacy io.guh.nymead interface remains registered for backwards
+ *  compatibility but is deprecated and will be removed in a future release. */
 class NymeaDBusService : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
+    Q_CLASSINFO("D-Bus Interface", "io.nymea.nymead")
 
 public:
     explicit NymeaDBusService(const QString &objectPath, QObject *parent = nullptr);

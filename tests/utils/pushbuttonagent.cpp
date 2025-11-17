@@ -45,7 +45,7 @@ bool PushButtonAgent::init(QDBusConnection::BusType busType)
         return false;
     }
 
-    QDBusMessage message = QDBusMessage::createMethodCall("io.guh.nymead", "/io/guh/nymead/UserManager", "io.guh.nymead", "RegisterButtonAgent");
+    QDBusMessage message = QDBusMessage::createMethodCall("io.nymea.nymead", "/io/nymea/nymead/UserManager", "io.nymea.nymead", "RegisterButtonAgent");
     message << QVariant::fromValue(QDBusObjectPath("/nymea/pushbuttonhandler"));
     QDBusMessage reply = bus.call(message);
     if (!reply.errorName().isEmpty()) {

@@ -96,7 +96,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy");
-    NymeaCore::instance()->userManager()->createUser("dummy", "DummyPW1!", "dummy@guh.io", "Dummy", Types::PermissionScopeAdmin);
+    NymeaCore::instance()->userManager()->createUser("dummy", "DummyPW1!", "dummy@nymea.io", "Dummy", Types::PermissionScopeAdmin);
     m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {
@@ -465,4 +465,3 @@ void NymeaTestBase::createMock()
     m_mockThingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY2(!m_mockThingId.isNull(), "Newly created mock thing id must not be null.");
 }
-

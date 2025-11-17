@@ -26,7 +26,7 @@
     \class HardwareResource
     \brief The base class for hardware resources.
 
-    \inmodule libguh
+    \inmodule libnymea
 
     \sa HardwareResource
 */
@@ -73,7 +73,7 @@ HardwareResource::HardwareResource(const QString &name, QObject *parent) :
     QObject(parent),
     m_name(name)
 {
-    new NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, this);
+    new NymeaDBusService("/io/nymea/nymead/HardwareManager/" + name, this);
 }
 
 /*! Returns the name of this resource. */

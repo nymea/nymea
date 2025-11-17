@@ -32,7 +32,7 @@
 
 // Id definitions
 PluginId pluginId = PluginId("28c7b102-3ac8-41f6-8dc0-f4787222a186");
-VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
+VendorId nymeaVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId simplebuttonDeviceClassId = DeviceClassId("c16ba02d-c982-4b45-8ca2-1945d94d8e66");
 ActionTypeId simplebuttonPressActionTypeId = ActionTypeId("64c4ced5-9a1a-4858-81dd-1b5c94dba495");
 EventTypeId simplebuttonPressedEventTypeId = EventTypeId("f9652210-9aed-4f38-8c19-2fd54f703fbe");

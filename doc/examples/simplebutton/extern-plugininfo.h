@@ -29,7 +29,7 @@
 
 // Id definitions
 extern PluginId pluginId;
-extern VendorId guhVendorId;
+extern VendorId nymeaVendorId;
 extern DeviceClassId simplebuttonDeviceClassId;
 extern ActionTypeId simplebuttonPressActionTypeId;
 extern EventTypeId simplebuttonPressedEventTypeId;

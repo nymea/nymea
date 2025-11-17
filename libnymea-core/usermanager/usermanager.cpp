@@ -104,7 +104,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
         }
     }
 
-    m_pushButtonDBusService = new PushButtonDBusService("/io/guh/nymead/UserManager", this);
+    m_pushButtonDBusService = new PushButtonDBusService("/io/nymea/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
     m_pushButtonTransaction = QPair<int, QString>(-1, QString());
 }

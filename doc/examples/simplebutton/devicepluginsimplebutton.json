@@ -4,7 +4,7 @@
     "id": "28c7b102-3ac8-41f6-8dc0-f4787222a186",
     "vendors": [
         {
-            "name": "guh",
+            "name": "nymea",
             "displayName": "nymea",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
@@ -42,6 +42,5 @@
         }
     ]
 }
-
 
 

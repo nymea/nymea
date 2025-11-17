@@ -37,13 +37,13 @@ the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/ras
     </td>
     <td> 
       <p>
-         <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
+         <a href="https://play.google.com/store/apps/details?id=io.nymea.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
          <img border="0" align="middle" alt="Android Badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width=250>
      </p>
     </td>
     <td> 
       <p>
-        <a href="https://open-store.io/app/io.guh.nymeaapp">
+        <a href="https://open-store.io/app/io.nymea.nymeaapp">
         <img border="0" align="middle" alt="Openstore Badge" src="https://open-store.io/badges/en_US.png" width=200>
       </p>
     </td>

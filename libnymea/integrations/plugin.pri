@@ -1,5 +1,5 @@
 #  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>
-#  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>
+#  Copyright (C) 2018 Simon Stürz <simon.stuerz@nymea.io>
 #
 #  This file is part of nymea.
 #

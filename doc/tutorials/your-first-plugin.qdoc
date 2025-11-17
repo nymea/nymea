@@ -63,7 +63,7 @@
 
     \section2 The device class definition
 
-    The Vendor section has not changed, since this example was developed from the guh Vendor.
+    The Vendor section has not changed, since this example was developed from the nymea vendor.
 
     In order to give this simple button the required action and event described in the beginning of this tutorial,
     we have to define the appropriate types:

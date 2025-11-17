@@ -97,4 +97,10 @@ This will allow nymead to create raw sockets for ARP and ICMP network discovery 
 
 ## License
 --------------------------------------------
-> nymea is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License.
+nymea is free software developed by chargebyte austria GmbH, former nymea GmbH.
+Server components, tools, plugins and tests in this repository are licensed under the GNU General Public License version 3 or (at your option) any later version. Public SDK libraries found in `libnymea/` and `libnymea-core/` are provided under the GNU Lesser General Public License version 3 or (at your option) any later version so they can be linked from external applications.
+
+Copyright (C) 2013 - 2024, nymea GmbH  
+Copyright (C) 2024 - 2025, chargebyte austria GmbH
+
+See `LICENSE.GPL3` and `LICENSE.LGPL3` for the complete license texts.

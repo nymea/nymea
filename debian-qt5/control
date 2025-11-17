@@ -1,13 +1,13 @@
 Source: nymea
 Section: utils
 Priority: optional
-Maintainer: Simon Stürz <simon.stuerz@nymea.io>
+Maintainer: chargebyte austria GmbH <contact@nymea.io>
 Standards-Version: 4.6.0
 Homepage: https://nymea.io
 Vcs-Git: https://github.com/nymea/nymea.git
-Build-Depends: debhelper (>= 9.0.0),
+Build-Depends: debhelper,
                dbus-test-runner,
-               dpkg-dev (>= 1.16.1~),
+               dpkg-dev,
                libnymea-mqtt-dev (>= 0.1.2),
                libnymea-networkmanager-dev (>= 1.5.0~),
                libnymea-remoteproxyclient-dev (>= 0.1.13),

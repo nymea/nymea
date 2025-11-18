@@ -20,7 +20,7 @@
 * You should have received a copy of the GNU General Public License
 * along with nymea. If not, see <https://www.gnu.org/licenses/>.
 *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
             if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
                 QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
-                if (configPathEnv != configPathEnv) {
+                if (configPathEnv != configPath) {
                     qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
                 }
             }

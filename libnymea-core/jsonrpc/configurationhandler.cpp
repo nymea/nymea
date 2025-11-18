@@ -97,12 +97,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Get all configuration parameters of the server.";
+
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", enumValueName(String));
     basicConfiguration.insert("serverUuid", enumValueName(Uuid));
     basicConfiguration.insert("d:serverTime", enumValueName(Uint));
     basicConfiguration.insert("d:timeZone", enumValueName(String));
     basicConfiguration.insert("d:language", enumValueName(String));
+
     QVariantMap location;
     location.insert("latitude", enumValueName(Double));
     location.insert("longitude", enumValueName(Double));
@@ -110,6 +112,10 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("d:location", location);
     basicConfiguration.insert("debugServerEnabled", enumValueName(Bool));
     returns.insert("basicConfiguration", basicConfiguration);
+
+    QVariantMap backupConfiguration;
+    backupConfiguration.insert("destinationDirectory", enumValueName(String));
+    backupConfiguration.insert("maxCount", enumValueName(Uint));
 
     QVariantList tcpServerConfigurations;
     tcpServerConfigurations.append(objectRef<ServerConfiguration>());
@@ -125,12 +131,9 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigurations);
     QVariantList mqttServerConfigurations;
     mqttServerConfigurations.append(objectRef<ServerConfiguration>());
+    returns.insert("mqttServerConfigurations", mqttServerConfigurations);
+    returns.insert("backupConfigurations", backupConfiguration);
     registerMethod("GetConfigurations", description, params, returns, Types::PermissionScopeNone);
-
-
-    QVariantMap backupConfiguration;
-    backupConfiguration.insert("destinationDirectory", enumValueName(String));
-    backupConfiguration.insert("maxCount", enumValueName(Uint));
 
 
     params.clear(); returns.clear();
@@ -219,6 +222,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetBackupConfiguration", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Create a backup of the current configuration. It will be stored in the configured destination directory. Also the maxCout configuration will be considered.";
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("CreateBackup", description, params, returns);
+
+
     // MQTT
     params.clear(); returns.clear();
     description = "Get all MQTT Server configurations.";
@@ -295,13 +304,11 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("id", enumValueName(String));
     registerNotification("TunnelProxyServerConfigurationRemoved", description, params);
 
-
     params.clear(); returns.clear();
-    description = "Emitted whenever the backup configuration of this server changes.";
+    description = "Emitted whenever the backup configuration changes.";
     params.insert("destinationDirectory", enumValueName(String));
     params.insert("maxCount", enumValueName(Uint));
-    registerNotification("BasicConfigurationChanged", description, params);
-
+    registerNotification("BackupConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
@@ -350,8 +357,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
-
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::backupDestinationDirectoryChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::backupMaxCountChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -365,6 +372,8 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     Q_UNUSED(params)
     QVariantMap returns;
     returns.insert("basicConfiguration", packBasicConfiguration());
+    returns.insert("backupConfigurations", packBackupConfiguration());
+
     QVariantList tcpServerConfigs;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
         tcpServerConfigs.append(pack(config));
@@ -614,15 +623,30 @@ JsonReply *ConfigurationHandler::DeleteTunnelProxyServerConfiguration(const QVar
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
-JsonReply *ConfigurationHandler::GetBackupConfiguration(const QVariantMap &params) const
-{
-    Q_UNUSED(params)
-    return createReply(packBackupConfiguration());
-}
-
 JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &params) const
 {
+    QString destinationDirectory = params.value("destinationDirectory").toString();
+    uint maxCount = params.value("maxCount").toUInt();
+    QDir destinationDir(destinationDirectory);
+    if (!destinationDir.exists()) {
+        // Try to make the directory
+        if (!destinationDir.mkpath(destinationDirectory)) {
+            qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination directory does not exist and could not be created." << destinationDir;
+            return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
+        }
+    }
 
+    NymeaCore::instance()->configuration()->setBackupDestinationDirectory(destinationDirectory);
+    NymeaCore::instance()->configuration()->setBackupMaxCount(maxCount);
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::CreateBackup(const QVariantMap &params) const
+{
+    Q_UNUSED(params);
+    qCDebug(dcJsonRpc()) << "Request to create a configuration backup received.";
+
+    NymeaCore::instance()->
 }
 
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
@@ -630,9 +654,9 @@ JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList mqttServerConfigs;
-    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations())
         mqttServerConfigs << pack(config);
-    }
+
     returns.insert("mqttServerConfigurations", mqttServerConfigs);
     return createReply(returns);
 }
@@ -640,9 +664,9 @@ JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &
 JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &params) const
 {
     ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
-    if (config.id.isEmpty()) {
+    if (config.id.isEmpty())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
-    }
+
     if (config.address.isNull())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
@@ -709,6 +733,12 @@ void ConfigurationHandler::onBasicConfigurationChanged()
     emit BasicConfigurationChanged(params);
 }
 
+void ConfigurationHandler::onBackupConfigurationChanged()
+{
+    qCDebug(dcJsonRpc()) << "Notification: Backup configuration changed";
+    emit BackupConfigurationChanged(packBackupConfiguration());
+}
+
 void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
@@ -771,12 +801,6 @@ void ConfigurationHandler::onTunnelProxyServerConfigurationRemoved(const QString
     QVariantMap params;
     params.insert("id", id);
     emit TunnelProxyServerConfigurationRemoved(params);
-}
-
-void ConfigurationHandler::onBackupConfigurationChanged()
-{
-    qCDebug(dcJsonRpc()) << "Notification: Backup configuration changed";
-    emit BackupConfigurationChanged(packBackupConfiguration());
 }
 
 void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)

@@ -124,6 +124,7 @@ public:
         ConfigurationErrorInvalidId,
         ConfigurationErrorInvalidPort,
         ConfigurationErrorInvalidHostAddress,
+        ConfigurationErrorInvalidDestinationDir,
         ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate,
         ConfigurationErrorUnsupported

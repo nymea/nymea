@@ -8,6 +8,7 @@ snap/parts/
 snap/prime/
 snap/stage/
 doc/interfacelist.qdoc
+build/
 
 # Never add downloaded json data
 data/mac-database/macaddress.io-db.json

@@ -1,59 +1,49 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: nymea
-Upstream-Contact: nymea GmbH <contact@nymea.io>
-Copyright: 2013-2024, nymea GmbH
-Download: http://www.github.com/nymea/nymea
+Upstream-Contact: chargebyte austria GmbH <contact@nymea.io>
 Source: https://github.com/nymea/nymea.git
+Download: https://github.com/nymea/nymea
 
-License: GPL-3
- On Debian systems, the complete text of the GNU General
- Public License can be found in `/usr/share/common-licenses/GPL-3'.
-
-License: LGPL-3
- On Debian systems, the complete text of the GNU Lesser General
- Public License can be found in `/usr/share/common-licenses/LGPL-3'.
-
-License: BSD
- On Debian systems, the complete text of the BSD
- License can be found in `/usr/share/common-licenses/BSD'.
-
+Files: *
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+           2024-2025, chargebyte austria GmbH <contact@nymea.io>
+License: GPL-3+
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in `/usr/share/common-licenses/GPL-3`.
 
 Files: server/*
-License: GPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+       tests/*
+       tools/*
+       plugins/*
+       doc/*
+       data/*
+       translations/*
+       debian/*
+       *.py
+       *.pro
+License: GPL-3+
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in `/usr/share/common-licenses/GPL-3`.
 
-Files: server/qtservice/*
-License: BSD
-Copyright: 2013, Digia Plc
-
-Files: tests/*
-License: GPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
-
-Files: translations/*
-License: LGPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
-
-Files: doc/*
-License: GPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
-
-Files: debian/*
-License: GPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+Files: tests/libnymea-tests/*
+License: LGPL-3+
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 3 can be found in `/usr/share/common-licenses/LGPL-3`.
 
 Files: libnymea/*
-License: LGPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+       libnymea-core/*
+License: LGPL-3+
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 3 can be found in `/usr/share/common-licenses/LGPL-3`.
 
-Files: plugins/*
-License: GGPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
-	
-Files: data/*
-License: LGPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+Files: server/qtservice/*
+Copyright: 2013, Digia Plc
+License: BSD-3-clause
+ On Debian systems, the complete text of the BSD license can be found in
+ `/usr/share/common-licenses/BSD`.
 
-Files: tools/*
-License: GGPL-3
-Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+Files: doc/examples/*/debian/*
+       doc/examples/*/LICENSE
+License: GPL-3+
+ On Debian systems, the complete text of the GNU General Public
+ License version 3 can be found in `/usr/share/common-licenses/GPL-3`.

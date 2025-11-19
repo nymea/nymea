@@ -1211,177 +1211,177 @@ nymea (0.9.0) xenial; urgency=medium
 
   * Rename to nymea
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 09 Oct 2018 22:54:50 +0200
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Tue, 09 Oct 2018 22:54:50 +0200
 
-guh (0.8.3) xenial; urgency=medium
+nymea (0.8.3) xenial; urgency=medium
 
   * Add debug server
   * Add interfaces
 
- -- Simon Stürz <simon.stuerz@guh.io>  Thu, 08 Feb 2018 23:10:42 +0100
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 08 Feb 2018 23:10:42 +0100
 
-guh (0.8.2) xenial; urgency=medium
+nymea (0.8.2) xenial; urgency=medium
 
   * New hardware manager api
   * Introduce push button authentication
 
- -- Simon Stürz <simon.stuerz@guh.io>  Fri, 01 Dec 2017 07:56:26 +0100
+ -- Simon Stürz <simon.stuerz@nymea.io>  Fri, 01 Dec 2017 07:56:26 +0100
 
-guh (0.8.1) xenial; urgency=medium
+nymea (0.8.1) xenial; urgency=medium
 
   * Avahi interfaces and collision handling
   * JSON RPC traffic standardized
   * Settings fixed
 
- -- Simon Stürz <simon.stuerz@guh.io>  Mon, 02 Oct 2017 12:52:44 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Mon, 02 Oct 2017 12:52:44 +0200
 
-guh (0.8.0) xenial; urgency=medium
+nymea (0.8.0) xenial; urgency=medium
 
   * Add support for SSL on all connection interfaces
   * Add support for authentication on TCP and WebSocket Servers
   * Allow fine grained configuration of server interfaces through config file
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 06 Sep 2017 14:34:56 +0200
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Wed, 06 Sep 2017 14:34:56 +0200
 
-guh (0.7.10) xenial; urgency=medium
+nymea (0.7.10) xenial; urgency=medium
 
   * Make it cross compilable
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 12 Jul 2017 15:14:56 +0100
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Wed, 12 Jul 2017 15:14:56 +0100
 
-guh (0.7.9) xenial; urgency=medium
+nymea (0.7.9) xenial; urgency=medium
 
   * Fixing some bugs
 
- -- Simon Stürz <simon.stuerz@guh.io>  Thu, 16 Feb 2017 15:12:56 +0100
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 16 Feb 2017 15:12:56 +0100
 
-guh (0.7.8) xenial; urgency=medium
+nymea (0.7.8) xenial; urgency=medium
 
   * Add networkmanager
 
- -- Simon Stürz <simon.stuerz@guh.io>  Thu, 6 Oct 2016 14:31:48 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 6 Oct 2016 14:31:48 +0200
 
-guh (0.7.6) xenial; urgency=medium
+nymea (0.7.6) xenial; urgency=medium
 
   * Add translations
   * Add bluetooth server
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 14 Sep 2016 15:43:22 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Wed, 14 Sep 2016 15:43:22 +0200
 
-guh (0.7.5) xenial; urgency=medium
+nymea (0.7.5) xenial; urgency=medium
 
   * Configuration API and server settings
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 11 Jul 2016 23:15:13 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Mon, 11 Jul 2016 23:15:13 +0200
 
-guh (0.7.4) xenial; urgency=medium
+nymea (0.7.4) xenial; urgency=medium
 
   * Add cloud connection
-  * Add guhd configuration 
+  * Add nymead configuration 
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 17 Jun 2016 18:35:02 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 17 Jun 2016 18:35:02 +0200
 
-guh (0.7.3) xenial; urgency=medium
+nymea (0.7.3) xenial; urgency=medium
 
   * Add plugin property recommendations for client applications
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 16 May 2016 11:24:06 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 16 May 2016 11:24:06 +0200
 
-guh (0.7.2) xenial; urgency=medium
+nymea (0.7.2) xenial; urgency=medium
 
   * Add Avahi support
-  * Add guh-plugins-maker package
+  * Add nymea-plugins-maker package
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 28 Apr 2016 14:56:17 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 28 Apr 2016 14:56:17 +0200
 
-guh (0.7.1) wily; urgency=medium
+nymea (0.7.1) wily; urgency=medium
 
   * Add Timemanager
   * Add Time based rules
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 18 Apr 2016 13:43:01 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Mon, 18 Apr 2016 13:43:01 +0200
 
-guh (0.7.0) wily; urgency=medium
+nymea (0.7.0) wily; urgency=medium
 
   * Add CoAP
   * Add OAuth2
   * Parent/child device relation
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 30 Nov 2015 11:29:03 +0100
+ -- Simon Stürz <simon.stuerz@nymea.io>  Mon, 30 Nov 2015 11:29:03 +0100
 
-guh (0.6.0) vivid; urgency=medium
+nymea (0.6.0) vivid; urgency=medium
 
   * Add websocket server
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 04 Aug 2015 16:13:43 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Sat, 04 Aug 2015 16:13:43 +0200
 
-guh (0.5.0) vivid; urgency=medium
+nymea (0.5.0) vivid; urgency=medium
 
   * Add webserver and REST API
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 01 Aug 2015 14:52:12 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Sat, 01 Aug 2015 14:52:12 +0200
 
-guh (0.4.0) vivid; urgency=medium
+nymea (0.4.0) vivid; urgency=medium
 
   * add EditDevice and notifications
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 06 May 2015 10:13:58 +0200
+ -- Simon Stürz <simon.stuerz@nymea.io>  Wed, 06 May 2015 10:13:58 +0200
 
-guh (0.3.0) utopic; urgency=medium
+nymea (0.3.0) utopic; urgency=medium
 
   * update rule engine and many other small changes
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 16 Mar 2015 09:52:40 +0100
+ -- Simon Stürz <simon.stuerz@nymea.io>  Mon, 16 Mar 2015 09:52:40 +0100
 
-guh (0.2.0) UNRELEASED; urgency=medium
+nymea (0.2.0) UNRELEASED; urgency=medium
 
   * split plugins into dynamic libs and packages
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Sat, 11 Oct 2014 05:09:41 +0200
 
-guh (0.1.8) utopic; urgency=medium
+nymea (0.1.8) utopic; urgency=medium
 
   * allow calling AddRule with a single eventDescriptor but also with a list
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 15 Jun 2014 00:33:36 +0200
 
-guh (0.1.7) utopic; urgency=medium
+nymea (0.1.7) utopic; urgency=medium
 
   * implement StateEvaluators
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 23:27:31 +0200
 
-guh (0.1.6) utopic; urgency=medium
+nymea (0.1.6) utopic; urgency=medium
 
   * state changes auto generate events now
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 20:28:17 +0200
 
-guh (0.1.5) utopic; urgency=medium
+nymea (0.1.5) utopic; urgency=medium
 
   * align params/paramTypes with the rest of the type system
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 08 Jun 2014 20:24:25 +0200
 
-guh (0.1.4) trusty; urgency=medium
+nymea (0.1.4) trusty; urgency=medium
 
   * Add discoveryParams to DeviceClass
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:30:49 +0200
 
-guh (0.1.3) trusty; urgency=medium
+nymea (0.1.3) trusty; urgency=medium
 
   * Added Actions.GetActionType(actionTypeId) to JSONRPC
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:30:38 +0200
 
-guh (0.1.2) trusty; urgency=medium
+nymea (0.1.2) trusty; urgency=medium
 
   * Added Plugin configs
 
  -- Michael Zanetti <michael_zanetti@gmx.net>  Mon, 05 May 2014 20:26:46 +0200
 
-guh (0.1.1) trusty; urgency=low
+nymea (0.1.1) trusty; urgency=low
 
   * Initial release.
 

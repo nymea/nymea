@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                                     *
- * Copyright (C) 2017 Georgi Yatsev <georgi.yatsev@guh.io>                             *
- * Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                                *
+ * Copyright (C) 2017 Georgi Yatsev <georgi.yatsev@nymea.io>                            *
+ * Copyright (C) 2018 Simon Stürz <simon.stuerz@nymea.io>                               *
  *                                                                                     *
  * Permission is hereby granted, free of charge, to any person obtaining a copy        *
  * of this software and associated documentation files (the "Software"), to deal       *

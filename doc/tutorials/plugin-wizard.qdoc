@@ -6,7 +6,7 @@
 
 
     This tutorial shows you how to start a new plugin project using the nymea-qtcreator wizard. You can find the source code of the
-    qt-creator wizard on our \l{https://github.com/guh/nymea-qtcreator-wizards}{github page}.
+    qt-creator wizard on our \l{https://github.com/nymea/nymea-qtcreator-wizards}{github page}.
 
 
     \section1 Create the plugin project
@@ -125,7 +125,7 @@
         \printuntil "vendors"
 
         In the vendors section you can see the vendor specific properties. There can be multiple vendors defined in one plugin,
-        each with its own device classes. The uuid of the vendor guh is known, and therefore already filled out. You have to update
+        each with its own device classes. The uuid of the vendor nymea is known, and therefore already filled out. You have to update
         the vendor uuid, name and id with your plugin information.
 
         \printuntil "thingClasses"

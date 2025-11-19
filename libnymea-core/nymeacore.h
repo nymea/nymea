@@ -57,7 +57,6 @@ class UserManager;
 class Platform;
 class System;
 class ExperienceManager;
-class CloudManager;
 class ZigbeeManager;
 class ZWaveManager;
 class ModbusRtuManager;
@@ -102,7 +101,6 @@ public:
     BluetoothServer *bluetoothServer() const;
     NetworkManager *networkManager() const;
     UserManager *userManager() const;
-    CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
     TagsStorage *tagsStorage() const;
     Platform *platform() const;
@@ -134,7 +132,6 @@ private:
     LogEngine *m_logEngine = nullptr;
     Logger *m_logger = nullptr;
     TimeManager *m_timeManager = nullptr;
-    CloudManager *m_cloudManager = nullptr;
     HardwareManagerImplementation *m_hardwareManager = nullptr;
     DebugServerHandler *m_debugServerHandler = nullptr;
     TagsStorage *m_tagsStorage = nullptr;

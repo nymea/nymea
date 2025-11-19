@@ -22,9 +22,7 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QtTest>
-
-#include "logging/logengine.h"
+#include "testusermanager.h"
 #include "nymeacore.h"
 #include "nymeatestbase.h"
 #include "usermanager/usermanager.h"
@@ -33,79 +31,9 @@
 
 #include "../../utils/pushbuttonagent.h"
 
+#include "../plugins/mock/extern-plugininfo.h"
+
 using namespace nymeaserver;
-
-class TestUsermanager: public NymeaTestBase
-{
-    Q_OBJECT
-public:
-    TestUsermanager(QObject* parent = nullptr);
-
-private slots:
-    void initTestCase();
-
-    void init();
-
-    void loginValidation_data();
-    void loginValidation();
-
-    void createUser();
-
-    void authenticate();
-
-    /*
-    Cases for push button auth:
-
-    Case 1: regular pushbutton
-    - alice sends Users.RequestPushButtonAuth, gets "OK" back (if push button hardware is available)
-    - alice pushes the hardware button and gets a notification on jsonrpc containing the token for local auth
-    */
-    void authenticatePushButton();
-
-    /*
-    Case 2: if we have an attacker in the network, he could try to call requestPushButtonAuth and
-    hope someone would eventually press the button and give him a token. In order to prevent this,
-    any previous attempt for a push button auth needs to be cancelled when a new request comes in:
-
-    * Mallory does RequestPushButtonAuth, gets OK back
-    * Alice does RequestPushButtonAuth,
-    * Mallory receives a "PushButtonFailed" notification
-    * Alice receives OK
-    * Alice presses the hardware button
-    * Alice reveices a notification with token, mallory receives nothing
-
-    Case 3: Mallory tries to hijack it back again
-
-    * Mallory does RequestPushButtonAuth, gets OK back
-    * Alice does RequestPusButtonAuth,
-    * Alice gets ok reply, Mallory gets failed notification
-    * Mallory quickly does RequestPushButtonAuth again to win the fight
-    * Alice gets failed notification and can instruct the user to _not_ press the button now until procedure is restarted
-    */
-    void authenticatePushButtonAuthInterrupt();
-
-    void authenticatePushButtonAuthConnectionDrop();
-
-    void createDuplicateUser();
-
-    void getTokens();
-
-    void removeToken();
-
-    void unauthenticatedCallAfterTokenRemove();
-
-    void changePassword();
-
-    void authenticateAfterPasswordChangeOK();
-
-    void authenticateAfterPasswordChangeFail();
-
-    void getUserInfo();
-
-private:
-    // m_apiToken is in testBase
-    QUuid m_tokenId;
-};
 
 TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
 {
@@ -116,11 +44,11 @@ void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase("*.debug=false\n"
-                                     "Application.debug=true\n"
-                                     "Tests.debug=true\n"
-                                     "UserManager.debug=true\n"
-                                     "PushButtonAgent.debug=true\n"
-                                     "MockDevice.debug=true");
+                                "Application.debug=true\n"
+                                "Tests.debug=true\n"
+                                "UserManager.debug=true\n"
+                                "PushButtonAgent.debug=true\n"
+                                "MockDevice.debug=true");
 }
 
 void TestUsermanager::init()
@@ -357,7 +285,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
 
     // Create a new clientId for alice and connect it to the server
     QUuid aliceId = QUuid::createUuid();
-    m_mockTcpServer->clientConnected(aliceId);
+    emit m_mockTcpServer->clientConnected(aliceId);
     m_mockTcpServer->injectData(aliceId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
     if (clientSpy.count() == 0) clientSpy.wait();
 
@@ -368,12 +296,12 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 
     // Disconnect alice
-    m_mockTcpServer->clientDisconnected(aliceId);
+    emit m_mockTcpServer->clientDisconnected(aliceId);
 
     // Now try with bob
     // Create a new clientId for bob and connect it to the server
     QUuid bobId = QUuid::createUuid();
-    m_mockTcpServer->clientConnected(bobId);
+    emit m_mockTcpServer->clientConnected(bobId);
     clientSpy.clear();
     m_mockTcpServer->injectData(bobId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
     if (clientSpy.count() == 0) clientSpy.wait();
@@ -495,9 +423,8 @@ void TestUsermanager::authenticateAfterPasswordChangeFail()
     QVERIFY2(disconnectedSpy.count() == 1, "Connection should have dropped");
 
     QTest::qWait(3200);
-    m_mockTcpServer->clientConnected(m_clientId);
+    emit m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
-
 }
 
 void TestUsermanager::getUserInfo()
@@ -505,14 +432,9 @@ void TestUsermanager::getUserInfo()
     authenticate();
 
     QVariant response = injectAndWait("Users.GetUserInfo");
-
     QCOMPARE(response.toMap().value("status").toString(), QString("success"));
-
     QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
-
-
     QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
-
 }
 
 void TestUsermanager::unauthenticatedCallAfterTokenRemove()
@@ -530,9 +452,270 @@ void TestUsermanager::unauthenticatedCallAfterTokenRemove()
     QVERIFY2(spy.count() == 1, "Connection should be terminated!");
 
     QTest::qWait(3200);
-    m_mockTcpServer->clientConnected(m_clientId);
+    emit m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
 }
 
-#include "testusermanager.moc"
+void TestUsermanager::testScopeConsitancy_data()
+{
+    QTest::addColumn<QList<Types::PermissionScope>>("scopes");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("valid: admin")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeAdmin)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: none")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeNone)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeConfigureThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only control, all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: control things/rules, all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeAccessAllThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorNoError";
+
+    QTest::newRow("valid: only execute rules")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeAccessAllThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorNoError";
+
+
+    QTest::newRow("invalid: missing control and all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeConfigureThings)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: control/configure things. not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeConfigureThings)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: only execute rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: only configure rules")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeConfigureRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: configure and execute rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeExecuteRules
+            << Types::PermissionScopeConfigureRules)
+        << "UserErrorInconsistantScopes";
+
+    QTest::newRow("invalid: control things/rules, not all things")
+        << (QList<Types::PermissionScope>()
+            << Types::PermissionScopeControlThings
+            << Types::PermissionScopeExecuteRules)
+        << "UserErrorInconsistantScopes";
+}
+
+void TestUsermanager::testScopeConsitancy()
+{
+    QFETCH(QList<Types::PermissionScope>, scopes);
+    QFETCH(QString, error);
+
+    authenticate();
+
+    QVariant response = injectAndWait("Users.GetUserInfo");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
+    QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
+
+    QMetaEnum metaEnum = QMetaEnum::fromType<Types::PermissionScope>();
+    QStringList scopesList;
+    foreach (Types::PermissionScope scope, scopes)
+        scopesList.append(metaEnum.valueToKey(scope));
+
+    // Now try to edit with the given scopes
+    QVariantMap params;
+    params.insert("username", userInfoMap.value("username").toString());
+    params.insert("scopes", scopesList);
+    response = injectAndWait("Users.SetUserScopes", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), error);
+}
+
+void TestUsermanager::testRestrictedThingAccess()
+{
+    // Add 2 mock things
+    ThingId thingIdOne;
+    ThingId thingIdTwo;
+
+    QString usernameAdmin = "admin";
+    QString passwordAdmin = "Bla1234*";
+
+    QString usernameGuest = "guest";
+    QString passwordGuest = "Bla1234+";
+
+    QVariant response;
+    QVariantList thingParams;
+    QVariantMap params;
+
+    injectAndWait("JSONRPC.Hello");
+
+    // Create admin user
+    params.clear();
+    params.insert("username", usernameAdmin);
+    params.insert("password", passwordAdmin);
+    response = injectAndWait("JSONRPC.CreateUser", params);
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error creating user");
+    QVERIFY2(response.toMap().value("params").toMap().value("error").toString() == "UserErrorNoError", "Error creating user");
+
+    // Authenticate admin user
+    params.clear();
+    params.insert("username", usernameAdmin);
+    params.insert("password", passwordAdmin);
+    params.insert("deviceName", "autotests");
+    response = injectAndWait("JSONRPC.Authenticate", params);
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
+    QVERIFY2(response.toMap().value("params").toMap().value("success").toString() == "true", "Error authenticating");
+
+    m_adminToken = response.toMap().value("params").toMap().value("token").toByteArray();
+
+    // Use the admin token for now
+    m_apiToken = m_adminToken;
+
+    // Add thing one
+    QVariantMap httpportParamOne;
+    httpportParamOne.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
+    httpportParamOne.insert("value", m_mockThing1Port - 1);
+    thingParams << httpportParamOne;
+
+    params.clear();
+    params.insert("thingClassId", mockThingClassId);
+    params.insert("name", "Test thing available for all users");
+    params.insert("thingParams", thingParams);
+    response = injectAndWait("Integrations.AddThing", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorNoError));
+    thingIdOne = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
+
+    // Add thing two
+    QVariantMap httpportParamTwo;
+    httpportParamTwo.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
+    httpportParamTwo.insert("value", m_mockThing1Port - 2);
+    thingParams.clear();
+    thingParams << httpportParamTwo;
+
+    params.clear();
+    params.insert("thingClassId", mockThingClassId);
+    params.insert("name", "Test thing available for all users");
+    params.insert("thingParams", thingParams);
+    response = injectAndWait("Integrations.AddThing", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorNoError));
+    thingIdTwo = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
+
+
+    // Create guest user
+    QStringList scopes;
+    scopes << "PermissionScopeControlThings";
+    QVariantList allowedThingIds;
+    allowedThingIds << thingIdTwo;
+
+    params.clear();
+    params.insert("username", usernameGuest);
+    params.insert("password", passwordGuest);
+    params.insert("scopes", scopes);
+    params.insert("allowedThingIds", allowedThingIds);
+    response = injectAndWait("Users.CreateUser", params);
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error creating user");
+    QVERIFY2(response.toMap().value("params").toMap().value("error").toString() == "UserErrorNoError", "Error creating user");
+
+    response = injectAndWait("Integrations.GetThings");
+    QVariantList things = response.toMap().value("params").toMap().value("things").toList();
+    //qCDebug(dcTests()) << qUtf8Printable(QJsonDocument::fromVariant(things).toJson(QJsonDocument::Indented));
+    QVERIFY2(things.count() >= 2, "Expected to get 2 or more things as admin");
+
+    // Everything set up, now authenticate as guest
+
+    // Authenticate guest user
+    params.clear();
+    params.insert("username", usernameGuest);
+    params.insert("password", passwordGuest);
+    params.insert("deviceName", "autotests");
+    response = injectAndWait("JSONRPC.Authenticate", params);
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
+    QVERIFY2(response.toMap().value("params").toMap().value("success").toString() == "true", "Error authenticating");
+
+    m_guestToken = response.toMap().value("params").toMap().value("token").toByteArray();
+
+    // Use the admin token for now
+    m_apiToken = m_guestToken;
+
+    // Try to access restricted thing
+
+    response = injectAndWait("Integrations.GetThings");
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorNoError));
+    things = response.toMap().value("params").toMap().value("things").toList();
+    QVERIFY2(things.count() == 1, "Expected to get exactly 1 things as guest");
+
+    // GetThings (access)
+    params.clear();
+    params.insert("thingId", thingIdTwo);
+    response = injectAndWait("Integrations.GetThings", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorNoError));
+
+    // GetThings (no access)
+    params.clear();
+    params.insert("thingId", thingIdOne);
+    response = injectAndWait("Integrations.GetThings", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
+
+    // GetStateValue (no access)
+    params.clear();
+    params.insert("thingId", thingIdOne);
+    params.insert("stateTypeId", mockConnectedStateTypeId);
+    response = injectAndWait("Integrations.GetStateValue", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
+
+    // BrowseThing (no access)
+    params.clear();
+    params.insert("thingId", thingIdOne);
+    response = injectAndWait("Integrations.BrowseThing", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
+
+    // GetBrowserItem (no access)
+    params.clear();
+    params.insert("thingId", thingIdOne);
+    response = injectAndWait("Integrations.GetBrowserItem", params);
+    verifyError(response, "thingError", enumValueName(Thing::ThingErrorThingNotFound));
+
+    // Clean up
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    foreach (const UserInfo &userInfo, userManager->users()) {
+        qCDebug(dcTests()) << "Removing user" << userInfo.username();
+        userManager->removeUser(userInfo.username());
+    }
+    userManager->removeUser("");
+}
+
 QTEST_MAIN(TestUsermanager)
+

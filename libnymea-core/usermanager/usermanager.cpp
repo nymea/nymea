@@ -63,7 +63,6 @@
 */
 
 #include "usermanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "pushbuttondbusservice.h"
 #include "nymeacore.h"
@@ -96,7 +95,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
 
     if (!initDB()) {
         qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
-        if (QFileInfo(m_db.databaseName()).exists()) {
+        if (QFileInfo::exists(m_db.databaseName())) {
             rotate(m_db.databaseName());
             if (!initDB()) {
                 qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
@@ -141,18 +140,20 @@ UserInfoList UserManager::users() const
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << userQuery << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return users;
     }
+
     while (resultQuery.next()) {
         UserInfo info = UserInfo(resultQuery.value("username").toString());
         info.setEmail(resultQuery.value("email").toString());
         info.setDisplayName(resultQuery.value("displayName").toString());
         info.setScopes(Types::scopesFromStringList(resultQuery.value("scopes").toString().split(',')));
+        info.setAllowedThingIds(Types::thingIdsFromStringList(resultQuery.value("allowedThingIds").toString().split(',')));
         users.append(info);
     }
     return users;
 }
 
 /*! Creates a new user with the given \a username and \a password. Returns the \l UserError to inform about the result. */
-UserManager::UserError UserManager::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes)
+UserManager::UserError UserManager::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds)
 {
     if (!validateUsername(username)) {
         qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
@@ -164,26 +165,53 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
         return UserErrorBadPassword;
     }
 
+    if (!validateScopes(scopes)) {
+        // The method warns about he specific validation
+        return UserErrorInconsistantScopes;
+    }
+
+    // Verify thing IDs, if there is no thing with this id, we don't save it and it will not be verified.
+    // We don't return an error, the thing might have dissapeared
+    QList<ThingId> thingIds;
+    ThingManager *thingManager = NymeaCore::instance()->thingManager();
+    if (!thingManager) {
+        qCWarning(dcUserManager()) << "Cannot validate allowed things for user" << username
+                                   << "because thing manager is not available yet. Skipping validation.";
+        thingIds = allowedThingIds;
+    } else {
+        foreach (const ThingId &thingId, allowedThingIds) {
+            if (thingManager->configuredThings().findById(thingId) == nullptr) {
+                qCWarning(dcUserManager()) << "Cannot set user scope for" << username << "because there is no thing with ID ";
+            } else {
+                thingIds.append(thingId);
+            }
+        }
+    }
+
     QSqlQuery checkForDuplicateUserQuery(m_db);
-    checkForDuplicateUserQuery.prepare("SELECT * FROM users WHERE lower(username) = ?;");
+    checkForDuplicateUserQuery.prepare("SELECT * FROM users WHERE lower(username) = :username;");
+    checkForDuplicateUserQuery.bindValue(":username", username.toLower());
     // Note: We're using toLower() on the username mainly for the reason that in old versions the username used to be an email address
-    checkForDuplicateUserQuery.addBindValue(username.toLower());
     checkForDuplicateUserQuery.exec();
     if (checkForDuplicateUserQuery.first()) {
-        qCWarning(dcUserManager) << "Username already in use";
+        qCWarning(dcUserManager) << "Username" << username << "already in use";
         return UserErrorDuplicateUserId;
     }
 
-    QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
+    static QRegularExpression bracketsRe("[{}]");
+    QByteArray salt = QUuid::createUuid().toString().remove(bracketsRe).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QSqlQuery query(m_db);
-    query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) VALUES(?, ?, ?, ?, ?, ?);");
-    query.addBindValue(username.toLower());
-    query.addBindValue(email);
-    query.addBindValue(displayName);
-    query.addBindValue(QString::fromUtf8(hashedPassword));
-    query.addBindValue(QString::fromUtf8(salt));
-    query.addBindValue(Types::scopesToStringList(scopes).join(','));
+    query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes, allowedThingIds)"
+                  "VALUES(:username, :email, :displayName, :password, :salt, :scopes, :allowedThingIds);");
+
+    query.bindValue(":username", username.toLower());
+    query.bindValue(":email", email);
+    query.bindValue(":displayName", displayName);
+    query.bindValue(":password", QString::fromUtf8(hashedPassword));
+    query.bindValue(":salt", QString::fromUtf8(salt));
+    query.bindValue(":scopes", Types::scopesToStringList(scopes).join(','));
+    query.bindValue(":allowedThingIds", Types::thingIdsToStringList(thingIds).join(','));
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Error creating user:" << query.lastError().databaseText() << query.lastError().driverText();
@@ -222,14 +250,15 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     // Update the password
     QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(newPassword + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
-    QString updatePasswordQueryString = QString("UPDATE users SET password = \"%1\", salt = \"%2\" WHERE lower(username) = \"%3\";")
-            .arg(QString::fromUtf8(hashedPassword))
-            .arg(QString::fromUtf8(salt))
-            .arg(username.toLower());
 
     QSqlQuery updatePasswordQuery(m_db);
-    if (!updatePasswordQuery.exec(updatePasswordQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << updatePasswordQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    updatePasswordQuery.prepare("UPDATE users SET password = :password, salt = :salt WHERE lower(username) = :username;");
+    updatePasswordQuery.bindValue(":password", QString::fromUtf8(hashedPassword));
+    updatePasswordQuery.bindValue(":salt", QString::fromUtf8(salt));
+    updatePasswordQuery.bindValue(":username", username.toLower());
+
+    if (!updatePasswordQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << updatePasswordQuery.executedQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserErrorBackendError;
     }
 
@@ -244,7 +273,7 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
 
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
-    QString dropUserQueryString = QString("DELETE FROM users WHERE lower(username) =\"%1\";").arg(username.toLower());
+    QString dropUserQueryString = QString("DELETE FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
     QSqlQuery dropUserQuery(m_db);
     if (!dropUserQuery.exec(dropUserQueryString)) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropUserQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
@@ -265,30 +294,95 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     return UserErrorNoError;
 }
 
-UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes)
+UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds)
 {
+    if (!validateScopes(scopes)) {
+        // The method warns about he specific validation
+        return UserErrorInconsistantScopes;
+    }
+
+    // Verify thing IDs, if there is no thing with this id, we don't save it and it will not be verified.
+    // We don't return an error, the thing might have dissapeared
+    QList<ThingId> thingIds;
+    ThingManager *thingManager = NymeaCore::instance()->thingManager();
+    if (!thingManager) {
+        qCWarning(dcUserManager()) << "Cannot validate allowed things for user" << username
+                                   << "because thing manager is not available yet. Skipping validation.";
+        thingIds = allowedThingIds;
+    } else {
+        foreach (const ThingId &thingId, allowedThingIds) {
+            if (thingManager->configuredThings().findById(thingId) == nullptr) {
+                qCWarning(dcUserManager()) << "The user" << username << "should have access to thing with ID"
+                                           << thingId.toString() << "but there is no such thing. Ignoring value.";
+            } else {
+                thingIds.append(thingId);
+            }
+        }
+    }
+
+    QList<ThingId> thingsAppeared;
+    QList<ThingId> thingsDisappeared;
+
+    // Get the current allowed things
+    if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+
+        // Restricted thing access, let's notify this user if any things appeared or dissapeard for the user
+        UserInfo currentUserInfo = userInfo(username);
+
+        // Get new appeared things for this user
+        foreach (const ThingId &thingId, thingIds) {
+            if (currentUserInfo.allowedThingIds().contains(thingId))
+                continue;
+
+            qCDebug(dcUserManager()) << "Thing with ID" << thingId.toString() << "now allowed for this user any more. Notify user" << username << "that thing appeared.";
+            thingsAppeared.append(thingId);
+        }
+
+        // Get disappeared things for this user
+        foreach (const ThingId &thingId, currentUserInfo.allowedThingIds()) {
+            if (thingIds.contains(thingId))
+                continue;
+
+            qCDebug(dcUserManager()) << "Thing with ID" << thingId.toString() << "not allowed for this user any more. Notify user" << username << "that thing dissappeared.";
+            thingsDisappeared.append(thingId);
+        }
+    }
+
     QString scopesString = Types::scopesToStringList(scopes).join(',');
+    QString allowedThingIdsString = Types::thingIdsToStringList(thingIds).join(',');
+
+    qCDebug(dcUserManager()) << "Updating scopes of user" << username << "Scopes:" << scopes << "Allowed things:" << allowedThingIds;
+
     QSqlQuery setScopesQuery(m_db);
-    setScopesQuery.prepare("UPDATE users SET scopes = ? WHERE username = ?");
-    setScopesQuery.addBindValue(scopesString);
-    setScopesQuery.addBindValue(username);
-    setScopesQuery.exec();
-    if (setScopesQuery.lastError().type() != QSqlError::NoError) {
+    setScopesQuery.prepare("UPDATE users SET scopes = :scopes, allowedThingIds = :allowedThingIds WHERE username = :username;");
+    setScopesQuery.bindValue(":username", username);
+    setScopesQuery.bindValue(":scopes", scopesString);
+    setScopesQuery.bindValue(":allowedThingIds", allowedThingIdsString);
+    if (!setScopesQuery.exec()) {
         qCWarning(dcUserManager()) << "Error updating scopes for user" << username << setScopesQuery.lastError().databaseText() << setScopesQuery.lastError().driverText();
         return UserErrorBackendError;
     }
 
     emit userChanged(username);
+
+    // Notify after updating the user information
+    UserInfo ui = userInfo(username);
+    foreach (const ThingId &thingId, thingsAppeared)
+        emit userThingRestrictionsChanged(ui, thingId, true);
+
+    foreach (const ThingId &thingId, thingsDisappeared)
+        emit userThingRestrictionsChanged(ui, thingId, false);
+
     return UserErrorNoError;
 }
 
 UserManager::UserError UserManager::setUserInfo(const QString &username, const QString &email, const QString &displayName)
 {
     QSqlQuery query(m_db);
-    query.prepare("UPDATE users SET email = ?, displayName = ? WHERE username = ?;");
-    query.addBindValue(email);
-    query.addBindValue(displayName);
-    query.addBindValue(username);
+    query.prepare("UPDATE users SET email = :email, displayName = :displayName WHERE username = :username;");
+    query.bindValue(":email", email);
+    query.bindValue(":displayName", displayName);
+    query.bindValue(":username", username);
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager()) << "Error updating user info for user" << username << query.lastError().databaseText() << query.lastError().driverText() << query.executedQuery();
@@ -315,13 +409,14 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     }
 
     QSqlQuery passwordQuery(m_db);
-    passwordQuery.prepare("SELECT password, salt FROM users WHERE lower(username) = ?;");
-    passwordQuery.addBindValue(username.toLower());
+    passwordQuery.prepare("SELECT password, salt FROM users WHERE lower(username) = :username;");
+    passwordQuery.bindValue(":username", username.toLower());
     passwordQuery.exec();
     if (!passwordQuery.first()) {
         qCWarning(dcUserManager) << "No such username" << username;
         return QByteArray();
     }
+
     QByteArray salt = passwordQuery.value("salt").toByteArray();
     QByteArray hashedPassword = passwordQuery.value("password").toByteArray();
 
@@ -331,16 +426,18 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     }
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
-    QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg(username.toLower())
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(deviceName);
 
     QSqlQuery storeTokenQuery(m_db);
-    if (!storeTokenQuery.exec(storeTokenQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << storeTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    storeTokenQuery.prepare("INSERT INTO tokens (id, username, token, creationdate, devicename)"
+                            "VALUES (:id, :username, :token, :creationdate, :devicename)");
+    storeTokenQuery.bindValue(":id", QUuid::createUuid().toString());
+    storeTokenQuery.bindValue(":username", username.toLower());
+    storeTokenQuery.bindValue(":token", QString::fromUtf8(token));
+    storeTokenQuery.bindValue(":creationdate", NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+    storeTokenQuery.bindValue(":devicename", deviceName);
+
+    if (!storeTokenQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << storeTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return QByteArray();
     }
 
@@ -391,18 +488,16 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 */
 UserInfo UserManager::userInfo(const QString &username) const
 {
-
-    QString getUserQueryString = QString("SELECT * FROM users WHERE lower(username) = \"%1\";")
-            .arg(username);
-
     QSqlQuery getUserQuery(m_db);
-    if (!getUserQuery.exec(getUserQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getUserQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    getUserQuery.prepare("SELECT * FROM users WHERE lower(username) = :username;");
+    getUserQuery.bindValue(":username", username);
+    if (!getUserQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getUserQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserInfo();
     }
 
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Query for user" << username << "failed:" << getUserQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        qCWarning(dcUserManager) << "Query for user" << username << "failed:" << getUserQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserInfo();
     }
 
@@ -413,7 +508,7 @@ UserInfo UserManager::userInfo(const QString &username) const
     userInfo.setEmail(getUserQuery.value("email").toString());
     userInfo.setDisplayName(getUserQuery.value("displayName").toString());
     userInfo.setScopes(Types::scopesFromStringList(getUserQuery.value("scopes").toString().split(',')));
-
+    userInfo.setAllowedThingIds(Types::thingIdsFromStringList(getUserQuery.value("allowedThingIds").toString().split(',')));
     return userInfo;
 }
 
@@ -422,8 +517,8 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     QList<TokenInfo> ret;
 
     QSqlQuery query(m_db);
-    query.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE lower(username) = ?;");
-    query.addBindValue(username.toLower());
+    query.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE lower(username) = :username;");
+    query.bindValue(":username", username.toLower());
     query.exec();
     if (m_db.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Query for tokens failed:" << query.lastError().databaseText() << query.lastError().driverText() << query.executedQuery();
@@ -443,17 +538,16 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
         return TokenInfo();
     }
 
-    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
-
     QSqlQuery getTokenQuery(m_db);
-    if (!getTokenQuery.exec(getTokenQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = :token;");
+    getTokenQuery.bindValue(":token", QString::fromUtf8(token));
+    if (!getTokenQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return TokenInfo();
     }
 
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Query for token failed:" << getTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        qCWarning(dcUserManager) << "Query for token failed:" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return TokenInfo();
     }
 
@@ -465,18 +559,16 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
-
-    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
-
     QSqlQuery getTokenQuery(m_db);
-    if (!getTokenQuery.exec(getTokenQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = :id;");
+    getTokenQuery.bindValue(":id", tokenId.toString());
+    if (!getTokenQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return TokenInfo();
     }
 
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Query for token failed:" << getTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        qCWarning(dcUserManager) << "Query for token failed:" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return TokenInfo();
     }
 
@@ -489,21 +581,22 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
-    QString removeTokenQueryString = QString("DELETE FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
-
     QSqlQuery removeTokenQuery(m_db);
-    if (!removeTokenQuery.exec(removeTokenQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << removeTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    removeTokenQuery.prepare("DELETE FROM tokens WHERE id = :id;");
+    removeTokenQuery.bindValue(":id", tokenId.toString());
+
+    if (!removeTokenQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << removeTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserErrorBackendError;
     }
 
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Removing token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << removeTokenQueryString;
+        qCWarning(dcUserManager) << "Removing token failed:" << removeTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserErrorBackendError;
     }
+
     if (removeTokenQuery.numRowsAffected() != 1) {
-        qCWarning(dcUserManager) << "Token not found in DB";
+        qCWarning(dcUserManager) << "Tried to remove token, but the token could not be found in the DB.";
         return UserErrorTokenNotFound;
     }
 
@@ -518,25 +611,63 @@ bool UserManager::verifyToken(const QByteArray &token)
         qCWarning(dcUserManager) << "Token failed character validation" << token;
         return false;
     }
-    QString getTokenQueryString = QString("SELECT * FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
 
     QSqlQuery getTokenQuery(m_db);
-    if (!getTokenQuery.exec(getTokenQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    getTokenQuery.prepare("SELECT * FROM tokens WHERE token = :token;");
+    getTokenQuery.bindValue(":token", QString::fromUtf8(token));
+
+    if (!getTokenQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return false;
     }
 
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Query for token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokenQueryString;
+        qCWarning(dcUserManager) << "Query for token failed:" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokenQuery.lastQuery();
         return false;
     }
+
     if (!getTokenQuery.first()) {
         qCDebug(dcUserManager) << "Authorization failed for token" << token;
         return false;
     }
-    //qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();
+
     return true;
+}
+
+bool UserManager::hasRestrictedThingAccess(const QByteArray &token) const
+{
+    UserInfo ui = userInfo(tokenInfo(token).username());
+    return !ui.scopes().testFlag(Types::PermissionScopeAccessAllThings);
+}
+
+bool UserManager::accessToThingGranted(const ThingId &thingId, const QByteArray &token)
+{
+    if (!hasRestrictedThingAccess(token))
+        return true;
+
+    return getAllowedThingIdsForToken(token).contains(thingId);
+}
+
+QList<ThingId> UserManager::getAllowedThingIdsForToken(const QByteArray &token) const
+{
+    return userInfo(tokenInfo(token).username()).allowedThingIds();
+}
+
+void UserManager::onThingRemoved(const ThingId &thingId)
+{
+    // If a thing has been removed from the system, clean up any thing based permissions
+    foreach (const UserInfo &userInfo, users()) {
+        if (userInfo.allowedThingIds().contains(thingId)) {
+            QList<ThingId> allowedThingIds = userInfo.allowedThingIds();
+            allowedThingIds.removeAll(thingId);
+
+            if (setUserScopes(userInfo.username(), userInfo.scopes(), allowedThingIds) != UserErrorNoError) {
+                qCWarning(dcUserManager()) << "Failed to remove thing with ID" << thingId.toString() << "from allowed things of user" << userInfo.username();
+            } else {
+                qCDebug(dcUserManager()) << "Removed thing with ID" << thingId.toString() << "from allowed things of user" << userInfo.username();
+            }
+        }
+    }
 }
 
 bool UserManager::initDB()
@@ -549,26 +680,32 @@ bool UserManager::initDB()
     }
 
     int currentVersion = -1;
-    int newVersion = 1;
+    int newVersion = 2;
+
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
-        if (!query.exec("SELECT data FROM metadata WHERE `key` = 'version';")) {
+        if (!query.exec("SELECT data FROM metadata WHERE key = 'version';")) {
             qCWarning(dcUserManager()) << "Unable to execute SQL query" << query.executedQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
         } else if (query.next()) {
             currentVersion = query.value("data").toInt();
+            qCInfo(dcUserManager()) << "Current database version is" << currentVersion;
+            if (currentVersion == newVersion) {
+                qCInfo(dcUserManager()) << "The database version is up to date";
+            }
         }
     }
 
     if (!m_db.tables().contains("users")) {
-        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
+        qCDebug(dcUserManager()) << "No \"users\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT, allowedThingIds TEXT);") || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table users).");
             m_db.close();
             return false;
         }
     } else {
         if (currentVersion < 1) {
+            qCDebug(dcUserManager()) << "Start user table database migration to version 1";
             QSqlQuery query = QSqlQuery(m_db);
             if (!query.exec("ALTER TABLE users ADD COLUMN scopes TEXT;") || m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
@@ -608,86 +745,118 @@ bool UserManager::initDB()
                 m_db.close();
                 return false;
             }
-            currentVersion = 1;
+
+            qCDebug(dcUserManager()) << "Migrated successfully users table to database version 1";
         }
+
+        if (currentVersion < 2) {
+            // - Add new "allowedThingIds" row into the users table
+            // - New permission has been added "PermissionScopeAccessAllThings", the existing users require
+            //   all this permission in order to have an unchainged behavior
+            qCDebug(dcUserManager()) << "Migrating user table to version 2";
+
+            // - Add new "allowedThingIds" row into the users table, it remains is empty at this point
+            QSqlQuery query = QSqlQuery(m_db);
+            if (!query.exec("ALTER TABLE users ADD COLUMN allowedThingIds TEXT;") || m_db.lastError().isValid()) {
+                dumpDBError("Error migrating user database (table users).");
+                m_db.close();
+                return false;
+            }
+
+            if (!m_db.transaction()) {
+                dumpDBError("Error starting transaction for migrating user database (table users).");
+                return false;
+            }
+
+            QSqlQuery selectQuery(m_db);
+            if (!selectQuery.exec("SELECT username, scopes FROM users")) {
+                dumpDBError("Select failed: " + selectQuery.lastError().text());
+                return false;
+            }
+
+            QSqlQuery updateQuery(m_db);
+            updateQuery.prepare("UPDATE users SET scopes = :scopes WHERE username = :username");
+            while (selectQuery.next()) {
+                QString username = selectQuery.value("username").toString();
+                Types::PermissionScopes scopes = Types::scopesFromStringList(selectQuery.value("scopes").toString().split(','));
+
+                // In case this is an admin, make sure we store only the Admin scope
+                if (!scopes.testFlag(Types::PermissionScopeAdmin)) {
+                    scopes.setFlag(Types::PermissionScopeAccessAllThings);
+                }
+
+                updateQuery.bindValue(":scopes", Types::scopesToStringList(scopes).join(','));
+                updateQuery.bindValue(":username", username);
+
+                if (!updateQuery.exec()) {
+                    qCWarning(dcUserManager()) << "Update failed for username" << username << ":" << updateQuery.lastError().text();
+                    m_db.rollback();
+                    return false;
+                }
+            }
+
+            if (!m_db.commit()) {
+                dumpDBError("Error migrating user database (table users) to version 2. Rollback.");
+                m_db.rollback();
+                return false;
+            }
+
+            qCDebug(dcUserManager()) << "Migrated successfully users table to database version 2";
+        }        
     }
 
     if (!m_db.tables().contains("tokens")) {
-        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
+        qCDebug(dcUserManager()) << "No \"tokens\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));") || m_db.lastError().isValid()) {
-            dumpDBError("Error initializing user database (table tokens).");
+            dumpDBError("Error initializing user database (table tokens)");
             m_db.close();
             return false;
         }
     }
 
-    if (m_db.tables().contains("metadata")) {
-        if (currentVersion < newVersion) {
-            QSqlQuery query(m_db);
-            if (!query.exec(QString("UPDATE metadata SET data = %1 WHERE `key` = 'version')").arg(newVersion)) || m_db.lastError().isValid()) {
-                dumpDBError("Error updating up user database schema version!");
-                m_db.close();
-                return false;
-            }
-            qCInfo(dcUserManager()) << "Successfully migrated user database.";
-        }
-    } else {
+    if (!m_db.tables().contains("metadata")) {
+        qCDebug(dcUserManager()) << "No \"metadata\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (table metadata)!");
             m_db.close();
             return false;
         }
+
         query = QSqlQuery(m_db);
-        if (!query.exec(QString("INSERT INTO metadata (`key`, `data`) VALUES ('version', %1);").arg(newVersion)) || m_db.lastError().isValid()) {
+        query.prepare("INSERT INTO metadata (key, data) VALUES ('version', :version);");
+        query.bindValue(":version", newVersion);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (setting version metadata)!");
             m_db.close();
             return false;
         }
-        qCInfo(dcUserManager()) << "Successfully initialized user database.";
-    }
-
-
-    // Migration from before 1.0:
-    // Push button tokens were given out without an explicit user name
-    // If we have push button tokens (userId "") but no explicit user, let's create it as admin
-    // Users without valid username will have password login disabled.
-    QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM tokens WHERE username = \"\";");
-    query.exec();
-    if (query.lastError().type() == QSqlError::NoError && query.next()) {
-        QSqlQuery query(m_db);
-        query.prepare("SELECT * FROM users WHERE username = \"\";");
-        query.exec();
-        if (!query.next()) {
-            qCDebug(dcUserManager()) << "Tokens existing but no user. Creating token admin user";
+    } else {
+        // All migrations have been done
+        if (currentVersion < newVersion) {
             QSqlQuery query(m_db);
-            query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) values(?, ?, ?, ?, ?, ?);");
-            query.addBindValue("");
-            query.addBindValue("");
-            query.addBindValue("Admin");
-            query.addBindValue("");
-            query.addBindValue("");
-            query.addBindValue(Types::scopeToString(Types::PermissionScopeAdmin));
-            query.exec();
-            if (query.lastError().type() != QSqlError::NoError) {
-                qCWarning(dcUserManager) << "Error creating push button user:" << query.lastError().databaseText() << query.lastError().driverText();
+            query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
+            query.bindValue(":version", newVersion);
+            if (!query.exec() || m_db.lastError().isValid()) {
+                dumpDBError("Error updating database version");
+                m_db.close();
+                return false;
             }
+            qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
         }
     }
 
-
-    qCDebug(dcUserManager()) << "User database initialized successfully.";
+    qCDebug(dcUserManager()) << "User database initialized successfully";
     return true;
 }
 
 void UserManager::rotate(const QString &dbName)
 {
     int index = 1;
-    while (QFileInfo(QString("%1.%2").arg(dbName).arg(index)).exists()) {
+    while (QFileInfo::exists(QString("%1.%2").arg(dbName).arg(index)))
         index++;
-    }
+
     qCDebug(dcUserManager()) << "Backing up old database file to" << QString("%1.%2").arg(dbName).arg(index);
     QFile f(dbName);
     if (!f.rename(QString("%1.%2").arg(dbName).arg(index))) {
@@ -699,36 +868,85 @@ void UserManager::rotate(const QString &dbName)
 
 bool UserManager::validateUsername(const QString &username) const
 {
-    QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
+    static QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
     return validator.match(username).hasMatch();
 }
 
 bool UserManager::validatePassword(const QString &password) const
 {
-    if (password.length() < 8) {
+    if (password.length() < 8)
         return false;
-    }
-    if (!password.contains(QRegularExpression("[a-z]"))) {
+
+    static QRegularExpression lowerRe("[a-z]");
+    if (!password.contains(lowerRe))
         return false;
-    }
-    if (!password.contains(QRegularExpression("[A-Z]"))) {
+
+    static QRegularExpression upperRe("[A-Z]");
+    if (!password.contains(upperRe))
         return false;
-    }
-    if (!password.contains(QRegularExpression("[0-9]"))) {
+
+    static QRegularExpression numbersRe("[0-9]");
+    if (!password.contains(numbersRe))
         return false;
-    }
+
     return true;
 }
 
 bool UserManager::validateToken(const QByteArray &token) const
 {
-    QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
+    static QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.match(token).hasMatch();
+}
+
+bool UserManager::validateScopes(Types::PermissionScopes scopes) const
+{
+    if (scopes.testFlag(Types::PermissionScopeAdmin) || scopes == Types::PermissionScopeNone || scopes == Types::PermissionScopeControlThings)
+        return true;
+
+    if (scopes.testFlag(Types::PermissionScopeConfigureThings)) {
+        if (!scopes.testFlag(Types::PermissionScopeControlThings) ||
+            !scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can configure things he must have access to all things and must be able to control them.";
+            return false;
+        }
+    }
+
+    // Note: if access to all things, there are no restrictions
+    if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+        if (scopes.testFlag(Types::PermissionScopeControlThings) ||
+            scopes.testFlag(Types::PermissionScopeConfigureRules)||
+            scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user has not access to all things, he can not configure them or create/execute rules.";
+            return false;
+        }
+    }
+
+    if (scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+        if (!scopes.testFlag(Types::PermissionScopeAccessAllThings)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can execute rules, he must have access to all things.";
+            return false;
+        }
+    }
+
+    if (scopes.testFlag(Types::PermissionScopeConfigureRules)) {
+        if (!scopes.testFlag(Types::PermissionScopeAccessAllThings) ||
+            !scopes.testFlag(Types::PermissionScopeExecuteRules)) {
+            qCWarning(dcUserManager()) << "Invalid scopes combination. If a user can create rules, he must have access to all things and be able to execute them.";
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void UserManager::dumpDBError(const QString &message)
 {
     qCCritical(dcUserManager) << message << "Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+}
+
+void UserManager::evaluateAllowedThingsForUser()
+{
+
 }
 
 void UserManager::onPushButtonPressed()
@@ -758,11 +976,11 @@ void UserManager::onPushButtonPressed()
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg("")
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(m_pushButtonTransaction.second);
+                                        .arg(QUuid::createUuid().toString())
+                                        .arg("")
+                                        .arg(QString::fromUtf8(token))
+                                        .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+                                        .arg(m_pushButtonTransaction.second);
 
     QSqlQuery storeTokenQuery(m_db);
     if (!storeTokenQuery.exec(storeTokenQueryString) || m_db.lastError().type() != QSqlError::NoError) {

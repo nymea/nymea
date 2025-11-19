@@ -36,6 +36,7 @@
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
 #include "jsonrpc/debughandler.h"
+#include "usermanager/usermanager.h"
 #include "version.h"
 
 #include "integrations/thingmanagerimplementation.h"
@@ -159,10 +160,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
-
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
+    connect(m_thingManager, &ThingManagerImplementation::thingRemoved, m_userManager, &UserManager::onThingRemoved);
 
     m_logger->log({"started"}, {{"version", NYMEA_VERSION_STRING}});
+
 #ifdef WITH_SYSTEMD
     sd_notify(0, "READY=1");
 #endif
@@ -295,7 +297,7 @@ QStringList NymeaCore::loggingFiltersPlugins()
     QStringList loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, ThingManagerImplementation::pluginsMetadata()) {
         QString pluginName = pluginMetadata.value("name").toString();
-        loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
+        loggingFiltersPlugins << pluginName.at(0).toUpper() + pluginName.mid(1);
     }
     return loggingFiltersPlugins;
 }
@@ -367,7 +369,6 @@ JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 
 void NymeaCore::thingManagerLoaded()
 {
-
     // Tell hardare resources we're done with loading stuff...
     m_hardwareManager->thingsLoaded();
 
@@ -395,7 +396,6 @@ void NymeaCore::thingManagerLoaded()
             m_tagsStorage->removeTag(tag);
         }
     }
-
 }
 
 }

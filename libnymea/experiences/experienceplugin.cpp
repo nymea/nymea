@@ -36,6 +36,13 @@ void ExperiencePlugin::init()
 
 }
 
+/*! This method will can be used to provide a web server resource to the core.
+  Override this method and provide an object. The resource will be added to the webserver after the init() method has been called. */
+WebServerResource *ExperiencePlugin::webServerResource() const
+{
+    return nullptr;
+}
+
 /*! Returns a pointer to the DeviceManager. The pointer won't be valid unless init() has been called. */
 ThingManager *ExperiencePlugin::thingManager()
 {

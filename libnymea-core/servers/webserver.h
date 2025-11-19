@@ -43,10 +43,11 @@
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
-namespace nymeaserver {
-
 class HttpReply;
 class HttpRequest;
+class WebServerResource;
+
+namespace nymeaserver {
 
 class WebServerClient : public QObject
 {
@@ -80,8 +81,13 @@ public:
     ~WebServer() override;
 
     QUrl serverUrl() const;
+    WebServerConfiguration configuration() const;
 
     void sendHttpReply(HttpReply *reply);
+
+    QList<WebServerResource *> resources() const;
+    bool registerResource(WebServerResource *resource);
+    void unregisterResource(WebServerResource *resource);
 
 private:
     QHash<QUuid, QSslSocket *> m_clientList;
@@ -92,6 +98,8 @@ private:
     WebServerConfiguration m_configuration;
     QSslConfiguration m_sslConfiguration;
 
+    QHash<QString, WebServerResource *> m_resources;
+
     bool m_enabled = false;
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
@@ -99,15 +107,15 @@ private:
 
     QByteArray createServerXmlDocument(QHostAddress address);
     HttpReply *processIconRequest(const QString &fileName);
-    HttpReply *processDebugRequest(const QString &requestPath);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
 signals:
-    void httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
+
+    void httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
 
 private slots:
     void readClient();
@@ -116,12 +124,14 @@ private slots:
     void onError(QAbstractSocket::SocketError error);
     void onAsyncReplyFinished();
 
+    void setupClient(const QUuid &clientId, QSslSocket *socket);
+
 public slots:
-    void setConfiguration(const WebServerConfiguration &config);
+    void setConfiguration(const nymeaserver::WebServerConfiguration &config);
     void setServerName(const QString &serverName);
     bool startServer();
     bool stopServer();
-    WebServerConfiguration configuration() const;
+
 
 };
 

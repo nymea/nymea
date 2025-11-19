@@ -32,6 +32,7 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
+class WebServerResource;
 
 namespace nymeaserver {
 
@@ -55,12 +56,13 @@ public:
 
     // Interfaces
     JsonRPCServerImplementation *jsonServer() const;
-
-    BluetoothServer* bluetoothServer() const;
-
+    BluetoothServer *bluetoothServer() const;
     MockTcpServer *mockTcpServer() const;
-
     MqttBroker *mqttBroker() const;
+
+    // Resources for the webservers
+    bool registerWebServerResource(WebServerResource *resource);
+    void unregisterWebServerResource(WebServerResource *resource);
 
 public slots:
     void setServerName(const QString &serverName);
@@ -94,13 +96,15 @@ private:
     JsonRPCServerImplementation *m_jsonServer;
 
     BluetoothServer *m_bluetoothServer;
-    QHash<QString, TcpServer*> m_tcpServers;
-    QHash<QString, WebSocketServer*> m_webSocketServers;
-    QHash<QString, WebServer*> m_webServers;
+    QHash<QString, TcpServer *> m_tcpServers;
+    QHash<QString, WebSocketServer *> m_webSocketServers;
+    QHash<QString, WebServer *> m_webServers;
     QHash<QString, TunnelProxyServer *> m_tunnelProxyServers;
     MockTcpServer *m_mockTcpServer;
 
     MqttBroker *m_mqttBroker;
+
+    QHash<QString, WebServerResource *> m_webServerResources;
 
     // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;

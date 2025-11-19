@@ -5,9 +5,10 @@ usr/include/nymea/experiences/*
 usr/include/nymea/hardware/*
 usr/include/nymea/integrations/*
 usr/include/nymea/jsonrpc/*
+usr/include/nymea/logging/*
 usr/include/nymea/network/*
 usr/include/nymea/platform/*
 usr/include/nymea/time/*
 usr/include/nymea/types/*
-usr/include/nymea/logging/*
+usr/include/nymea/webserver/*
 usr/lib/@DEB_HOST_MULTIARCH@/pkgconfig/nymea.pc

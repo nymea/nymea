@@ -139,6 +139,9 @@ HEADERS += \
     platform/platformupdatecontroller.h \
     platform/platformzeroconfcontroller.h \
     experiences/experienceplugin.h \
+    webserver/httprequest.h \
+    webserver/httpreply.h \
+    webserver/webserverresource.h \
 
 SOURCES += \
     hardware/modbus/modbusrtuhardwareresource.cpp \
@@ -257,6 +260,9 @@ SOURCES += \
     platform/platformupdatecontroller.cpp \
     platform/platformzeroconfcontroller.cpp \
     experiences/experienceplugin.cpp \
+    webserver/httprequest.cpp \
+    webserver/httpreply.cpp \
+    webserver/webserverresource.cpp \
 
 
 RESOURCES += \

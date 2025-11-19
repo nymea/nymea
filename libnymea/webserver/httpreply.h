@@ -30,16 +30,14 @@
 #include <QHash>
 #include <QTimer>
 #include <QUuid>
+#include <QJsonDocument>
 
 // Note: RFC 7231 HTTP/1.1 Semantics and Content -> http://tools.ietf.org/html/rfc7231
-
-namespace nymeaserver {
 
 class HttpReply: public QObject
 {
     Q_OBJECT
 public:
-
     enum HttpStatusCode {
         Ok                      = 200,
         Created                 = 201,
@@ -48,9 +46,12 @@ public:
         Found                   = 302,
         PermanentRedirect       = 308,
         BadRequest              = 400,
+        Unauthorized            = 401,
+        PaymentRequired         = 402,
         Forbidden               = 403,
         NotFound                = 404,
         MethodNotAllowed        = 405,
+        NotAcceptable           = 406,
         RequestTimeout          = 408,
         Conflict                = 409,
         InternalServerError     = 500,
@@ -81,9 +82,10 @@ public:
     HttpReply(QObject *parent = nullptr);
     HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok, const Type &type = TypeSync, QObject *parent = nullptr);
 
-    static HttpReply* createSuccessReply();
-    static HttpReply* createErrorReply(const HttpReply::HttpStatusCode &statusCode);
-    static HttpReply* createAsyncReply();
+    static HttpReply *createSuccessReply();
+    static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
+    static HttpReply *createJsonReply(const QJsonDocument &jsonDoc, const HttpReply::HttpStatusCode &statusCode = HttpStatusCode::Ok);
+    static HttpReply *createAsyncReply();
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;
@@ -116,9 +118,9 @@ public:
     bool timedOut() const;
 
 private:
-    HttpStatusCode m_statusCode;
+    HttpStatusCode m_statusCode = HttpReply::Ok;
     QByteArray m_reasonPhrase;
-    Type m_type;
+    Type m_type = HttpReply::TypeSync;
     QUuid m_clientId;
 
     QByteArray m_rawHeader;
@@ -127,11 +129,11 @@ private:
 
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 
-    bool m_closeConnection;
+    bool m_closeConnection = false;
 
     QTimer *m_timer = nullptr;
     int m_timeout = 60000;
-    bool m_timedOut;
+    bool m_timedOut = false;
 
     QByteArray getHttpReasonPhrase(const HttpStatusCode &statusCode);
     QByteArray getHeaderType(const HttpHeaderType &headerType);
@@ -148,7 +150,5 @@ signals:
 };
 
 QDebug operator<<(QDebug debug, HttpReply *httpReply);
-
-}
 
 #endif // HTTPREPLY_H

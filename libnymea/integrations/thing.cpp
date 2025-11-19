@@ -317,6 +317,15 @@ States Thing::states() const
     return m_states;
 }
 
+
+/*! Returns true, a \l{Param} with the given \a paramTypeId exists for this thing. */
+bool Thing::hasParam(const QString &paramName) const
+{
+    ParamTypeId paramTypeId = m_thingClass.paramTypes().findByName(paramName).id();
+    return m_params.hasParam(paramTypeId);
+}
+
+
 /*! Returns true, a \l{Param} with the given \a paramTypeId exists for this thing. */
 bool Thing::hasParam(const ParamTypeId &paramTypeId) const
 {

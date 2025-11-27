@@ -109,7 +109,8 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             }
         }
         if (certsLoaded) {
-            m_sslConfiguration.setProtocol(QSsl::TlsV1_3OrLater);
+             // iOS still requires a 1.2+ fallback for local connections, the rest seems to work with 1.3
+            m_sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
         }

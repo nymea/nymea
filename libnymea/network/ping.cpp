@@ -191,6 +191,13 @@ void Ping::performPing(PingReply *reply)
 
     // Get host ip address
     struct hostent *hostname = gethostbyname(reply->targetHostAddress().toString().toLocal8Bit().constData());
+    if (!hostname) {
+        m_error = PingReply::ErrorHostNameLookupFailed;
+        qCWarning(dcPing()) << "Failed to resolve host" << reply->targetHostAddress().toString() << hstrerror(h_errno);
+        finishReply(reply, m_error);
+        return;
+    }
+
     struct sockaddr_in pingAddress;
     memset(&pingAddress, 0, sizeof(pingAddress));
     pingAddress.sin_family = hostname->h_addrtype;
@@ -421,6 +428,12 @@ void Ping::cleanUpReply(PingReply *reply)
         QHostInfo::abortHostLookup(lookupId);
         m_pendingHostNameLookups.remove(lookupId);
     }
+
+    if (m_pendingHostAddressLookups.values().contains(reply)) {
+        int lookupId = m_pendingHostAddressLookups.key(reply);
+        QHostInfo::abortHostLookup(lookupId);
+        m_pendingHostAddressLookups.remove(lookupId);
+    }
 }
 
 void Ping::onSocketReadyRead(int socketDescriptor)
@@ -493,6 +506,8 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                               << "Time:" << reply->duration() << "[ms]";
 
             if (reply->doHostLookup()) {
+                // Prevent timeout while waiting for the hostname lookup to finish
+                reply->m_timer->stop();
                 // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
                 int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
                 m_pendingHostNameLookups.insert(lookupId, reply);

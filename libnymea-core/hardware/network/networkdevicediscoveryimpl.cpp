@@ -515,15 +515,12 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
                                                         << "-->"
                                                         << reply->targetHostAddress().toString();
 
-                    removeFromNetworkDeviceCache(oldAddress);
-
                     NetworkDeviceInfo info = m_networkInfoCache.at(i);
+                    removeFromNetworkDeviceCache(oldAddress);
                     info.setAddress(reply->targetHostAddress());
 
                     monitor->setNetworkDeviceInfo(info);
-                    m_networkInfoCache[i] = info;
-                    m_networkInfoCache.sortNetworkDevices();
-                    saveNetworkDeviceCache(info);
+                    updateCache(info);
                     break;
                 }
             }
@@ -812,14 +809,11 @@ void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &inte
                                                     << "-->"
                                                     << address.toString();
 
-                removeFromNetworkDeviceCache(oldAddress);
-
                 NetworkDeviceInfo info = m_networkInfoCache.at(i);
+                removeFromNetworkDeviceCache(oldAddress);
                 info.setAddress(address);
 
-                m_networkInfoCache[i] = info;
-                m_networkInfoCache.sortNetworkDevices();
-                saveNetworkDeviceCache(info);
+                updateCache(info);
 
                 foreach (NetworkDeviceMonitorImpl *monitor, m_monitors.keys()) {
                     if (monitor->macAddress() == macAddress) {

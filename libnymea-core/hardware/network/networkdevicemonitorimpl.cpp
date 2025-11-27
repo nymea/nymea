@@ -73,7 +73,15 @@ NetworkDeviceInfo::MonitorMode NetworkDeviceMonitorImpl::monitorMode() const
 
 void NetworkDeviceMonitorImpl::setMonitorMode(NetworkDeviceInfo::MonitorMode monitorMode)
 {
+    if (m_monitorMode == monitorMode)
+        return;
+
     m_monitorMode = monitorMode;
+
+    if (m_networkDeviceInfo.monitorMode() != monitorMode) {
+        m_networkDeviceInfo.setMonitorMode(monitorMode);
+        emit networkDeviceInfoChanged(m_networkDeviceInfo);
+    }
 }
 
 NetworkDeviceInfo NetworkDeviceMonitorImpl::networkDeviceInfo() const
@@ -126,7 +134,11 @@ uint NetworkDeviceMonitorImpl::pingRetries() const
 
 void NetworkDeviceMonitorImpl::setPingRetries(uint pingRetries)
 {
+    if (m_pingRetries == pingRetries)
+        return;
+
     m_pingRetries = pingRetries;
+    emit pingRetriesChanged(m_pingRetries);
 }
 
 PingReply *NetworkDeviceMonitorImpl::currentPingReply() const
@@ -154,12 +166,12 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
     bool myNetworkDevice = false;
     switch (m_monitorMode) {
     case NetworkDeviceInfo::MonitorModeMac:
-        if (!m_macAddress.isNull() && networkDeviceInfo.macAddressInfos().count() == 1 && networkDeviceInfo.macAddressInfos().hasMacAddress(m_macAddress))
+        if (!m_macAddress.isNull() && networkDeviceInfo.macAddressInfos().hasMacAddress(m_macAddress))
             myNetworkDevice = true;
 
         break;
     case NetworkDeviceInfo::MonitorModeHostName:
-        if (!m_hostName.isEmpty() && networkDeviceInfo.hostName() == m_hostName)
+        if (!m_hostName.isEmpty() && networkDeviceInfo.hostName().compare(m_hostName, Qt::CaseInsensitive) == 0)
             myNetworkDevice = true;
 
         break;
@@ -172,12 +184,14 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
     return myNetworkDevice;
 }
 
-bool NetworkDeviceMonitorImpl::operator==(NetworkDeviceMonitorImpl *other) const
+bool NetworkDeviceMonitorImpl::operator==(const NetworkDeviceMonitorImpl &other) const
 {
-    return m_macAddress == other->macAddress() && m_hostName == other->hostName() && m_address == other->address();
+    return m_macAddress == other.macAddress()
+            && m_hostName == other.hostName()
+            && m_address == other.address();
 }
 
-bool NetworkDeviceMonitorImpl::operator!=(NetworkDeviceMonitorImpl *other) const
+bool NetworkDeviceMonitorImpl::operator!=(const NetworkDeviceMonitorImpl &other) const
 {
     return !operator==(other);
 }

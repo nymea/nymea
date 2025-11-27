@@ -1,3 +1,15 @@
+nymea (1.12.4) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * JSONRPC: Improve list handling of API list types
+  * NetworkDeviceMonitor: Improve ping and network device monitor
+    behavior
+  * RuleEngine: Improve TimeDescriptor and CalendarItem DateTime Time
+    loa…
+  * server: Add fallback to TSL 1.2 or later for encrypted connections
+
+ -- jenkins <developer@nymea.io>  Thu, 27 Nov 2025 11:05:38 +0100
+
 nymea (1.12.3) jammy; urgency=medium
 
   [ Simon Stürz ]

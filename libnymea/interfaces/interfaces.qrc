@@ -101,5 +101,6 @@
         <file>firesensor.json</file>
         <file>childlock.json</file>
         <file>networkdevice.json</file>
+        <file>valve.json</file>
     </qresource>
 </RCC>

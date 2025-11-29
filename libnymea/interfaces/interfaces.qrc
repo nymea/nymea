@@ -107,5 +107,6 @@
         <file>hlccharger.json</file>
         <file>powerflowcontroller.json</file>
         <file>evchargerdc.json</file>
+        <file>valve.json</file>
     </qresource>
 </RCC>

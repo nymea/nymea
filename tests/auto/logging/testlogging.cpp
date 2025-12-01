@@ -324,18 +324,12 @@ void TestLogging::actionLog()
     // EXECUTE with params
     QVariant response = injectAndWait("Integrations.ExecuteAction", params);
 
-    // wait for the outgoing data
-    // 3 packets: ExecuteAction reply,  LogDatabaseUpdated signal and LogEntryAdded signal
-    while (clientSpy.count() < 3) {
-        bool success = clientSpy.wait();
-        if (!success) {
-            break;
-        }
-    }
-
-    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVariantList logEntryAddedVariants;
+    QTRY_VERIFY_WITH_TIMEOUT([&]() {
+        logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+        return !logEntryAddedVariants.isEmpty();
+    }(), 5000);
     qWarning() << QJsonDocument::fromVariant(logEntryAddedVariants).toJson();
-    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
 
     bool found = false;
     foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
@@ -360,10 +354,10 @@ void TestLogging::actionLog()
     params.insert("thingId", m_mockThingId);
     response = injectAndWait("Integrations.ExecuteAction", params);
 
-    clientSpy.wait();
-
-    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY(!logEntryAddedVariants.isEmpty());
+    QTRY_VERIFY_WITH_TIMEOUT([&]() {
+        logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+        return !logEntryAddedVariants.isEmpty();
+    }(), 5000);
 
     // get this logentry with filter
     params.clear();
@@ -379,10 +373,10 @@ void TestLogging::actionLog()
     params.insert("thingId", m_mockThingId);
     response = injectAndWait("Integrations.ExecuteAction", params);
 
-    clientSpy.wait();
-
-    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+    QTRY_VERIFY_WITH_TIMEOUT([&]() {
+        logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+        return !logEntryAddedVariants.isEmpty();
+    }(), 5000);
 
     found = false;
     foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
@@ -479,4 +473,3 @@ void TestLogging::removeThing()
 
 #include "testlogging.moc"
 QTEST_MAIN(TestLogging)
-

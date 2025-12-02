@@ -37,13 +37,13 @@ the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/ras
     </td>
     <td> 
       <p>
-         <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
+         <a href="https://play.google.com/store/apps/details?id=io.nymea.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
          <img border="0" align="middle" alt="Android Badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width=250>
      </p>
     </td>
     <td> 
       <p>
-        <a href="https://open-store.io/app/io.guh.nymeaapp">
+        <a href="https://open-store.io/app/io.nymea.nymeaapp">
         <img border="0" align="middle" alt="Openstore Badge" src="https://open-store.io/badges/en_US.png" width=200>
       </p>
     </td>
@@ -97,4 +97,10 @@ This will allow nymead to create raw sockets for ARP and ICMP network discovery 
 
 ## License
 --------------------------------------------
-> nymea is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License.
+nymea is free software developed by chargebyte austria GmbH, former nymea GmbH.
+Server components, tools, plugins and tests in this repository are licensed under the GNU General Public License version 3 or (at your option) any later version. Public SDK libraries found in `libnymea/` and `libnymea-core/` are provided under the GNU Lesser General Public License version 3 or (at your option) any later version so they can be linked from external applications.
+
+Copyright (C) 2013 - 2024, nymea GmbH  
+Copyright (C) 2024 - 2025, chargebyte austria GmbH
+
+See `LICENSE.GPL3` and `LICENSE.LGPL3` for the complete license texts.

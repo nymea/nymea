@@ -1,3 +1,12 @@
+nymea (1.13.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * NetworkDeviceMonitor: Improve ping and network device monitor
+    behavior
+  * Update license text and add SPDX identifier
+
+ -- jenkins <developer@nymea.io>  Tue, 02 Dec 2025 10:38:46 +0100
+
 nymea (1.12.4) jammy; urgency=medium
 
   [ Simon Stürz ]

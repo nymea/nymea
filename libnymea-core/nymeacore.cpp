@@ -56,6 +56,7 @@
 
 #include <QDir>
 #include <QCoreApplication>
+#include <QMetaObject>
 
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
@@ -165,6 +166,8 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
     connect(m_thingManager, &ThingManagerImplementation::thingRemoved, m_userManager, &UserManager::onThingRemoved);
 
+    QMetaObject::invokeMethod(m_serverManager->jsonServer(), "setup", Qt::QueuedConnection);
+
     m_logger->log({"started"}, {{"version", NYMEA_VERSION_STRING}});
 
 #ifdef WITH_SYSTEMD
@@ -269,10 +272,12 @@ QStringList NymeaCore::getAvailableLanguages()
     foreach (const QString &path, searchPaths) {
         QDir translationDirectory(path);
         translationDirectory.setNameFilters(QStringList() << "*.qm");
-        translationFiles = translationDirectory.entryList();
-        qCDebug(dcTranslations()) << translationFiles.count() << "translations in" << path;
-        if (translationFiles.count() > 0) {
-            break;
+        const QStringList filesInPath = translationDirectory.entryList();
+        qCDebug(dcTranslations()) << filesInPath.count() << "translations in" << path;
+        foreach (const QString &translationFile, filesInPath) {
+            if (!translationFiles.contains(translationFile)) {
+                translationFiles.append(translationFile);
+            }
         }
     }
 
@@ -317,11 +322,6 @@ NetworkManager *NymeaCore::networkManager() const
 UserManager *NymeaCore::userManager() const
 {
     return m_userManager;
-}
-
-CloudManager *NymeaCore::cloudManager() const
-{
-    return m_cloudManager;
 }
 
 DebugServerHandler *NymeaCore::debugServerHandler() const

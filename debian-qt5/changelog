@@ -1,3 +1,15 @@
+nymea (1.14.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Thing based user permissions
+  * Extend webserver resource management
+  * Update translations
+  * NymeaCore: class cleanup and statup improvements
+  * Valve interface
+  * Stabalize verify action exectued tests
+
+ -- jenkins <developer@nymea.io>  Fri, 05 Dec 2025 16:04:22 +0100
+
 nymea (1.13.0) jammy; urgency=medium
 
   [ Simon Stürz ]

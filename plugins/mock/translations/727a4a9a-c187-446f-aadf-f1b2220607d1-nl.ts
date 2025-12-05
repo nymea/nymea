@@ -623,7 +623,7 @@ The name of the ParamType (ThingClass: pushButtonMock, Type: discovery, ID: {c40
     <message>
         <source>set power</source>
         <extracomment>The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock</extracomment>
-        <translation type="unfinished">aan-/uitzetten</translation>
+        <translation>vermogen instellen</translation>
     </message>
     <message>
         <source>Mock setting</source>
@@ -790,7 +790,7 @@ The name of the StateType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass
     <message>
         <source>Result count</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c-4c3f-8655-76400d0fb6ce})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Aantal resultaten</translation>
     </message>
     <message>
         <source>Set Digital Output 1</source>
@@ -805,12 +805,12 @@ The name of the StateType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass
     <message>
         <source>Set Output Input 1</source>
         <extracomment>The name of the ActionType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Stel uitgang-invoer 1 in</translation>
     </message>
     <message>
         <source>Set Output Input 2</source>
         <extracomment>The name of the ActionType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Stel uitgang-invoer 2 in</translation>
     </message>
     <message>
         <source>Set analog input 1</source>

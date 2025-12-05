@@ -42,12 +42,13 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     QString description;
 
     params.clear(); returns.clear();
-    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
+    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If the user has not the permission \"PermissionScopeAccessAllThings\", the list of things this user has access to can be defined in the \"allowedThingIds\" property. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     params.insert("o:email", enumValueName(String));
     params.insert("o:displayName", enumValueName(String));
     params.insert("o:scopes", flagRef<Types::PermissionScopes>());
+    params.insert("o:allowedThingIds", QVariantList() << enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("CreateUser", description, params, returns);
 
@@ -55,7 +56,14 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     description = "Change the password for the currently logged in user.";
     params.insert("newPassword", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("ChangePassword", description, params, returns);
+    registerMethod("ChangePassword", description, params, returns); // TODO: PermissionScopeChangeUserInfos
+
+    params.clear(); returns.clear();
+    description = "Change the password for the given user. All tokens for this user will be removed in order to force all clients to log in again.";
+    params.insert("username", enumValueName(String));
+    params.insert("newPassword", enumValueName(String));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("ChangeUserPassword", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Get info about the current token (the currently logged in user).";
@@ -67,13 +75,21 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     description = "Get all the tokens for the current user.";
     returns.insert("o:tokenInfoList", objectRef<TokenInfoList>());
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("GetTokens", description, params, returns);
+    registerMethod("GetTokens", description, params, returns);  // TODO: PermissionScopeChangeUserInfos
 
     params.clear(); returns.clear();
-    description = "Revoke access for a given token.";
+    description = "Get all the tokens for the given username.";
+    params.insert("username", enumValueName(String));
+    returns.insert("o:tokenInfoList", objectRef<TokenInfoList>());
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("GetUserTokens", description, params, returns);
+
+
+    params.clear(); returns.clear();
+    description = "Revoke access for a given token. Depending on the logged in user only the own tokens can be removed. If you are logged in as admin, any token can be removed.";
     params.insert("tokenId", enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("RemoveToken", description, params, returns);
+    registerMethod("RemoveToken", description, params, returns);  // TODO: PermissionScopeChangeUserInfos
 
     params.clear(); returns.clear();
     description = "Return a list of all users in the system.";
@@ -87,9 +103,10 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerMethod("RemoveUser", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Set the permissions (scopes) for a given user.";
+    description = "Set the permissions (scopes) for a given user. If the user has not the permission \"PermissionScopeAccessAllThings\" the list of thing IDs this user has access to can be defined in the \"allowedThingIds\" property.";
     params.insert("username", enumValueName(String));
     params.insert("scopes", flagRef<Types::PermissionScopes>());
+    params.insert("o:allowedThingIds", QVariantList() << enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("SetUserScopes", description, params, returns);
 
@@ -141,7 +158,6 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
         params.insert("username", username);
         emit UserRemoved(params);
     });
-
 }
 
 QString UsersHandler::name() const
@@ -157,8 +173,11 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
     QString displayName = params.value("displayName").toString();
     QStringList scopesList = params.value("scopes", Types::scopesToStringList(Types::PermissionScopeAdmin)).toStringList();
     Types::PermissionScopes scopes = Types::scopesFromStringList(scopesList);
+    QList<ThingId> allowedThingIds;
+    foreach (const QString &thingIdString, params.value("allowedThingIds").toStringList())
+        allowedThingIds.append(ThingId(thingIdString));
 
-    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes);
+    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes, allowedThingIds);
 
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(status));
@@ -167,19 +186,20 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
 
 JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonContext &context)
 {
-    QVariantMap ret;
+    QVariantMap returns;
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot change password from an unauthenticated connection";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
+
     if (!m_userManager->verifyToken(currentToken)) {
         // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
         qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
 
     QString newPassword = params.value("newPassword").toString();
@@ -187,52 +207,82 @@ JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonCon
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
 
     UserManager::UserError status = m_userManager->changePassword(tokenInfo.username(), newPassword);
-    ret.insert("error", enumValueName<UserManager::UserError>(status));
-    return createReply(ret);
+    returns.insert("error", enumValueName<UserManager::UserError>(status));
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::ChangeUserPassword(const QVariantMap &params, const JsonContext &context)
+{
+    QVariantMap returns;
+
+    QByteArray currentToken = context.token();
+    if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot change a user password from an unauthenticated connection";
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
+    }
+
+    if (!m_userManager->verifyToken(currentToken)) {
+        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+        qCWarning(dcJsonRpc()) << "Invalid token. Cannot change a user password from an unauthenticated connection";
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
+    }
+
+    QString username = params.value("username").toString();;
+    QString newPassword = params.value("newPassword").toString();
+
+    UserManager::UserError status = m_userManager->changePassword(username, newPassword);
+    returns.insert("error", enumValueName<UserManager::UserError>(status));
+    return createReply(returns);
 }
 
 JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(params)
-    QVariantMap ret;
+
+    QVariantMap returns;
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot get user info from an unauthenticated connection";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
+
     if (!m_userManager->verifyToken(currentToken)) {
         // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
         qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
 
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
 
     UserInfo userInfo = m_userManager->userInfo(tokenInfo.username());
-    ret.insert("userInfo", pack(userInfo));
-    ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
-    return createReply(ret);
+    returns.insert("userInfo", pack(userInfo));
+    returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
+    return createReply(returns);
 }
 
 JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(params)
-    QVariantMap ret;
+
+    QVariantMap returns;
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
+
     if (!m_userManager->verifyToken(currentToken)) {
         // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
         qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
 
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
@@ -242,52 +292,87 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext 
     foreach (const TokenInfo &tokenInfo, tokens) {
         retList << pack(tokenInfo);
     }
-    ret.insert("tokenInfoList", retList);
-    ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
-    return createReply(ret);
+    returns.insert("tokenInfoList", retList);
+    returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::GetUserTokens(const QVariantMap &params, const JsonContext &context)
+{
+    QVariantMap returns;
+
+    QByteArray currentToken = context.token();
+    if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
+    }
+
+    if (!m_userManager->verifyToken(currentToken)) {
+        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
+    }
+
+    QString username = params.value("username").toString();;
+
+    qCDebug(dcJsonRpc()) << "Fetching tokens for user" << username;
+    QList<TokenInfo> tokens = m_userManager->tokens(username);
+    QVariantList retList;
+    foreach (const TokenInfo &tokenInfo, tokens) {
+        retList << pack(tokenInfo);
+    }
+    returns.insert("tokenInfoList", retList);
+    returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
+    return createReply(returns);
 }
 
 JsonReply *UsersHandler::RemoveToken(const QVariantMap &params, const JsonContext &context)
 {
-    QVariantMap ret;
+    QVariantMap returns;
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot remove a token from an unauthenticated connection.";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
+
     if (!m_userManager->verifyToken(currentToken)) {
         // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
         qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
+
     QUuid tokenId = params.value("tokenId").toUuid();
+
     TokenInfo tokenToRemove = m_userManager->tokenInfo(tokenId);
     if (tokenToRemove.id().isNull()) {
         qCWarning(dcJsonRpc()) << "Token with ID" << tokenId << "not found";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorTokenNotFound));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorTokenNotFound));
+        return createReply(returns);
     }
 
     TokenInfo currentTokenInfo = m_userManager->tokenInfo(currentToken);
     if (currentTokenInfo.username() != tokenToRemove.username()) {
         qCWarning(dcJsonRpc()) << "Cannot remove a token from another user!";
-        ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
 
     qCDebug(dcJsonRpc()) << "Removing token" << tokenId << "for user" << currentTokenInfo.username();
 
     UserManager::UserError error = m_userManager->removeToken(tokenId);
-    ret.insert("error", enumValueName<UserManager::UserError>(error));
-    return createReply(ret);
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
+    return createReply(returns);
 }
 
 JsonReply *UsersHandler::GetUsers(const QVariantMap &params)
 {
     Q_UNUSED(params)
+
     QVariantMap reply;
     reply.insert("users", pack(m_userManager->users()));
     return createReply(reply);
@@ -306,9 +391,20 @@ JsonReply *UsersHandler::RemoveUser(const QVariantMap &params, const JsonContext
 JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(context)
+
+    qCWarning(dcJsonRpc()) << params;
+
     QString username = params.value("username").toString();
     Types::PermissionScopes scopes = Types::scopesFromStringList(params.value("scopes").toStringList());
-    UserManager::UserError error = m_userManager->setUserScopes(username, scopes);
+    QList<ThingId> allowedThingIds;
+    if (params.contains("allowedThingIds")) {
+        allowedThingIds = Types::thingIdsFromStringList(params.value("allowedThingIds").toStringList());
+    } else {
+        allowedThingIds = m_userManager->userInfo(username).allowedThingIds();
+    }
+
+    UserManager::UserError error = m_userManager->setUserScopes(username, scopes, allowedThingIds);
+
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(error));
     return createReply(returns);
@@ -316,7 +412,7 @@ JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonCont
 
 JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContext &context)
 {
-    QVariantMap ret;
+    QVariantMap returns;
 
     TokenInfo callingTokenInfo = m_userManager->tokenInfo(context.token());
     QString username;
@@ -328,8 +424,8 @@ JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContex
     }
 
     if (callingTokenInfo.username() != username && !m_userManager->userInfo(callingTokenInfo.username()).scopes().testFlag(Types::PermissionScopeAdmin)) {
-        ret.insert("error", enumValueName(UserManager::UserErrorPermissionDenied));
-        return createReply(ret);
+        returns.insert("error", enumValueName(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
     }
 
     UserInfo changedUserInfo = m_userManager->userInfo(username);
@@ -347,8 +443,8 @@ JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContex
         displayName = changedUserInfo.displayName();
     }
     UserManager::UserError status = m_userManager->setUserInfo(username, email, displayName);
-    ret.insert("error", enumValueName(status));
-    return createReply(ret);
+    returns.insert("error", enumValueName(status));
+    return createReply(returns);
 }
 
 }

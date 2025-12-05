@@ -112,6 +112,7 @@ public:
 
     ParamList params() const;
     bool hasParam(const ParamTypeId &paramTypeId) const;
+    bool hasParam(const QString &paramName) const;
     void setParams(const ParamList &params);
 
     QVariant paramValue(const ParamTypeId &paramTypeId) const;

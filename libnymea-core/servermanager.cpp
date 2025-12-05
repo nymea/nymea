@@ -56,6 +56,8 @@
 
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
+#include <webserver/webserverresource.h>
+
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
@@ -214,6 +216,13 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
         WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
         m_webServers.insert(config.id, webServer);
+
+        foreach (WebServerResource *resource, m_webServerResources) {
+            if (!webServer->registerResource(resource)) {
+                qCWarning(dcServerManager()) << "Unable to register resource" << resource->basePath() << "on webserver" << webServer->serverUrl().toString();
+            }
+        }
+
         if (webServer->startServer()) {
             registerZeroConfService(config, "http", "_http._tcp");
         }
@@ -266,6 +275,29 @@ MockTcpServer *ServerManager::mockTcpServer() const
 MqttBroker *ServerManager::mqttBroker() const
 {
     return m_mqttBroker;
+}
+
+bool ServerManager::registerWebServerResource(WebServerResource *resource)
+{
+    if (m_webServerResources.contains(resource->basePath())) {
+        qCDebug(dcServerManager()) << "Could not register web server resource" << resource->basePath() << "because a resource with this path has already been registered";
+        return false;
+    }
+
+    m_webServerResources.insert(resource->basePath(), resource);
+    foreach (WebServer *webserver, m_webServers)
+        webserver->registerResource(resource);
+
+    return true;
+}
+
+void ServerManager::unregisterWebServerResource(WebServerResource *resource)
+{
+    m_webServerResources.remove(resource->basePath());
+
+    foreach (WebServer *webserver, m_webServers)
+        webserver->unregisterResource(resource);
+
 }
 
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
@@ -347,6 +379,11 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
         qCDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);
         m_webServers.insert(config.id, server);
+        foreach (WebServerResource *resource, m_webServerResources) {
+            if (!server->registerResource(resource)) {
+                qCWarning(dcServerManager()) << "Unable to register resource" << resource->basePath() << "on webserver" << server->serverUrl().toString();
+            }
+        }
     }
     if (server->startServer()) {
         registerZeroConfService(config, "http", "_http._tcp");
@@ -359,7 +396,12 @@ void ServerManager::webServerConfigurationRemoved(const QString &id)
         qCWarning(dcServerManager()) << "Received a Web Server config removed event but don't have a Web Server instance for it.";
         return;
     }
+
     WebServer *server = m_webServers.take(id);
+
+    foreach (WebServerResource *resource, m_webServerResources)
+        server->unregisterResource(resource);
+
     unregisterZeroConfService(id, "http");
     server->stopServer();
     server->deleteLater();

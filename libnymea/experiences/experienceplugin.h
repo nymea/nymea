@@ -29,8 +29,10 @@
 
 class ThingManager;
 class JsonRPCServer;
+class WebServerResource;
 
 namespace nymeaserver {
+
 class ExperienceManager;
 }
 class ExperiencePlugin : public QObject
@@ -38,12 +40,15 @@ class ExperiencePlugin : public QObject
     Q_OBJECT
 public:
     explicit ExperiencePlugin(QObject *parent = nullptr);
+    virtual ~ExperiencePlugin() = default;
 
     virtual void init() = 0;
 
+    virtual WebServerResource *webServerResource() const;
+
 protected:
-    ThingManager* thingManager();
-    JsonRPCServer* jsonRpcServer();
+    ThingManager *thingManager();
+    JsonRPCServer *jsonRpcServer();
 
 private:
     friend class nymeaserver::ExperienceManager;
@@ -55,6 +60,5 @@ private:
 };
 
 Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")
-
 
 #endif // EXPERIENCEPLUGIN_H

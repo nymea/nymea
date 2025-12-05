@@ -122,7 +122,7 @@ void ZWaveManager::loadZWaveNetworks()
     NymeaSettings settings(NymeaSettings::SettingsRoleZWave);
     qCDebug(dcZWave()) << "Loading ZWave networks from" << settings.fileName();
     settings.beginGroup("Networks");
-    foreach (const QString &uuidString, settings.childGroups()) {
+        foreach (const QString &uuidString, settings.childGroups()) {
         settings.beginGroup(uuidString);
         QString serialPort = settings.value("serialPort").toString();
         quint32 homeId = settings.value("homeId").toULongLong();

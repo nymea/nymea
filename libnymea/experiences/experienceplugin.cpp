@@ -55,11 +55,16 @@ JsonRPCServer *ExperiencePlugin::jsonRpcServer()
     return m_jsonRpcServer;
 }
 
+LogEngine *ExperiencePlugin::logEngine()
+{
+    return m_logEngine;
+}
 
-void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer)
+void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine)
 {
     m_thingManager = deviceManager;
     m_jsonRpcServer = jsonRPCServer;
+    m_logEngine = logEngine;
 
     init();
 }

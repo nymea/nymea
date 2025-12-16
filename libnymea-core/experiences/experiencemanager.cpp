@@ -26,7 +26,7 @@
 #include "experiences/experienceplugin.h"
 #include "servermanager.h"
 
-#include "jsonrpc/jsonrpcserverimplementation.h"
+#include "jsonrpc/jsonrpcserver.h"
 #include "loggingcategories.h"
 
 #include <QCoreApplication>
@@ -36,11 +36,12 @@
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, QObject *parent) :
+ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, LogEngine *logEngine, QObject *parent) :
     QObject{parent},
     m_thingManager{thingManager},
     m_jsonRpcServer{jsonRpcServer},
-    m_serverManager{serverManager}
+    m_serverManager{serverManager},
+    m_logEngine{logEngine}
 
 {
     staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -124,7 +125,7 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     qCDebug(dcExperiences()) << "Loaded experience plugin:" << loader.fileName();
     m_plugins.append(plugin);
     plugin->setParent(this);
-    plugin->initPlugin(m_thingManager, m_jsonRpcServer);
+    plugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine);
 
     if (plugin->webServerResource()) {
         m_serverManager->registerWebServerResource(plugin->webServerResource());
@@ -136,7 +137,7 @@ void ExperienceManager::loadExperiencePlugin(ExperiencePlugin *experiencePlugin)
     qCDebug(dcExperiences()) << "Adding experience plugin:" << experiencePlugin;
     m_plugins.append(experiencePlugin);
     experiencePlugin->setParent(this);
-    experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer);
+    experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine);
 
     if (experiencePlugin->webServerResource()) {
         m_serverManager->registerWebServerResource(experiencePlugin->webServerResource());

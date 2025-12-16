@@ -159,7 +159,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_serverManager->jsonServer()->registerHandler(new DebugHandler(m_serverManager->jsonServer()));
 
     qCDebug(dcCore()) << "Loading experiences";
-    m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), m_serverManager, this);
+    m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), m_serverManager, m_logEngine, this);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);

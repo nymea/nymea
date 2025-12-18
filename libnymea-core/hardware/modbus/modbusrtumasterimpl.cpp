@@ -28,24 +28,32 @@
 #include <QLoggingCategory>
 
 #ifdef WITH_QTSERIALBUS
-#include <QtSerialBus/QModbusReply>
 #include <QtSerialBus/QModbusDataUnit>
+#include <QtSerialBus/QModbusReply>
 #endif
 
 Q_DECLARE_LOGGING_CATEGORY(dcModbusRtu)
 
 namespace nymeaserver {
 
-ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout, QObject *parent) :
-    ModbusRtuMaster(parent),
-    m_modbusUuid(modbusUuid),
-    m_serialPort(serialPort),
-    m_baudrate(baudrate),
-    m_parity(parity),
-    m_dataBits(dataBits),
-    m_stopBits(stopBits),
-    m_numberOfRetries(numberOfRetries),
-    m_timeout(timeout)
+ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid,
+                                         const QString &serialPort,
+                                         qint32 baudrate,
+                                         QSerialPort::Parity parity,
+                                         QSerialPort::DataBits dataBits,
+                                         QSerialPort::StopBits stopBits,
+                                         int numberOfRetries,
+                                         int timeout,
+                                         QObject *parent)
+    : ModbusRtuMaster(parent)
+    , m_modbusUuid(modbusUuid)
+    , m_serialPort(serialPort)
+    , m_baudrate(baudrate)
+    , m_parity(parity)
+    , m_dataBits(dataBits)
+    , m_stopBits(stopBits)
+    , m_numberOfRetries(numberOfRetries)
+    , m_timeout(timeout)
 {
 #ifdef WITH_QTSERIALBUS
 
@@ -63,9 +71,9 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     m_modbus->setTimeout(m_timeout);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    connect(m_modbus, &QModbusRtuSerialClient::stateChanged, this, [=](QModbusDevice::State state){
+    connect(m_modbus, &QModbusRtuSerialClient::stateChanged, this, [=](QModbusDevice::State state) {
 #else
-    connect(m_modbus, &QModbusRtuSerialMaster::stateChanged, this, [=](QModbusDevice::State state){
+    connect(m_modbus, &QModbusRtuSerialMaster::stateChanged, this, [=](QModbusDevice::State state) {
 #endif
         qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << m_serialPort << state;
         if (state == QModbusDevice::ConnectedState) {
@@ -82,9 +90,9 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     });
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    connect(m_modbus, &QModbusRtuSerialClient::errorOccurred, this, [=](QModbusDevice::Error error){
+    connect(m_modbus, &QModbusRtuSerialClient::errorOccurred, this, [=](QModbusDevice::Error error) {
 #else
-    connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, [=](QModbusDevice::Error error){
+    connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, [=](QModbusDevice::Error error) {
 #endif
         qCWarning(dcModbusRtu()) << "Error occurred for modbus RTU master" << m_modbusUuid.toString() << m_serialPort << error << m_modbus->errorString();
         if (error != QModbusDevice::NoError) {
@@ -254,7 +262,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddr
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -299,7 +307,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(int slaveAddress, int reg
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -344,7 +352,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(int slaveAddress, int reg
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -389,7 +397,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(int slaveAddress, int r
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -435,7 +443,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -466,7 +474,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
 #endif
 }
 
-
 ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int registerAddress, const QVector<quint16> &values)
 {
 #ifdef WITH_QTSERIALBUS
@@ -482,7 +489,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
     // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
     connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
-    connect(modbusReply, &QModbusReply::finished, reply, [=](){
+    connect(modbusReply, &QModbusReply::finished, reply, [=]() {
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -513,4 +520,4 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
 #endif
 }
 
-}
+} // namespace nymeaserver

@@ -27,15 +27,15 @@
 
 #include <QObject>
 
-#include "typeutils.h"
 #include "integrations/thing.h"
 #include "types/action.h"
+#include "typeutils.h"
 
 class TestHelper : public QObject
 {
     Q_OBJECT
 public:
-    static TestHelper* instance();
+    static TestHelper *instance();
 
     Q_INVOKABLE void logEvent(const QString &thingId, const QString &eventId, const QVariantMap &params);
     Q_INVOKABLE void logStateChange(const QString &thingId, const QString &stateId, const QVariant &value);
@@ -55,7 +55,7 @@ signals:
 
 private:
     explicit TestHelper(QObject *parent = nullptr);
-    static TestHelper* s_instance;
+    static TestHelper *s_instance;
 };
 
 #endif // TESTHELPER_H

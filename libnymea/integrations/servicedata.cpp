@@ -24,12 +24,10 @@
 
 #include "servicedata.h"
 
-ServiceData::ServiceData(const ThingId &thingId, const QDateTime &timestamp):
-    m_thingId(thingId),
-    m_timestamp(timestamp)
-{
-
-}
+ServiceData::ServiceData(const ThingId &thingId, const QDateTime &timestamp)
+    : m_thingId(thingId)
+    , m_timestamp(timestamp)
+{}
 
 ThingId ServiceData::thingId() const
 {

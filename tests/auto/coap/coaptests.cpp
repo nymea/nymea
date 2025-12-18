@@ -26,7 +26,8 @@
 
 #include <QJsonDocument>
 
-CoapTests::CoapTests(QObject *parent) : QObject(parent)
+CoapTests::CoapTests(QObject *parent)
+    : QObject(parent)
 {
     m_coap = new Coap(this);
     m_uploadData = QByteArray("                   GNU GENERAL PUBLIC LICENSE \n"
@@ -56,7 +57,6 @@ CoapTests::CoapTests(QObject *parent) : QObject(parent)
                               "them if you wish), that you receive source code or can get it if you\n"
                               "want it, that you can change the software or use pieces of it in new\n"
                               "free programs, and that you know you can do these things.");
-
 }
 
 void CoapTests::invalidUrl_data()
@@ -74,7 +74,7 @@ void CoapTests::invalidUrl()
     CoapRequest request(url);
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -87,7 +87,7 @@ void CoapTests::invalidScheme()
 {
     CoapRequest request(QUrl("http://coap.me"));
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
 
     // Get
     CoapReply *reply = m_coap->get(request);
@@ -142,7 +142,7 @@ void CoapTests::ping()
     request.setUrl(QUrl("coap://coap.me/"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->ping(request);
     spy.wait();
 
@@ -161,7 +161,7 @@ void CoapTests::hello()
 
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     qDebug() << reply->isRunning() << reply->errorString();
     spy.wait();
@@ -180,7 +180,7 @@ void CoapTests::broken()
     CoapRequest request(QUrl("coap://coap.me:5683/broken"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -198,7 +198,7 @@ void CoapTests::query()
     CoapRequest request(QUrl("coap://coap.me/query?nymea=awesome"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -216,7 +216,7 @@ void CoapTests::subPath()
     CoapRequest request(QUrl("coap://coap.me/path/sub1"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -234,7 +234,7 @@ void CoapTests::extendedOptionLength()
     CoapRequest request(QUrl("coap://coap.me:5683/123412341234123412341234"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -252,7 +252,7 @@ void CoapTests::specialCharacters()
     CoapRequest request(QUrl("coap://coap.me:5683/blåbærsyltetøy"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -284,7 +284,7 @@ void CoapTests::extendedDelta()
     CoapRequest request(url);
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -302,7 +302,7 @@ void CoapTests::secret()
     CoapRequest request(QUrl("coap://coap.me/secret"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -320,7 +320,7 @@ void CoapTests::separated()
     CoapRequest request(QUrl("coap://coap.me:5683/separate"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait(10000);
 
@@ -338,7 +338,7 @@ void CoapTests::deleteResource()
     CoapRequest request(QUrl("coap://coap.me:5683/validate"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->deleteResource(request);
     spy.wait();
 
@@ -357,7 +357,7 @@ void CoapTests::post()
     request.setContentType();
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->post(request, "nymea is awesome");
     spy.wait();
 
@@ -375,7 +375,7 @@ void CoapTests::put()
     CoapRequest request(QUrl("coap://coap.me:5683/validate"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->put(request, "nymea is awesome");
     spy.wait();
 
@@ -394,7 +394,7 @@ void CoapTests::jsonMessage()
     CoapRequest request(QUrl("coap://coap.me:5683/5"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -418,7 +418,7 @@ void CoapTests::largeDownload()
     CoapRequest request(QUrl("coap://coap.me:5683/large"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait(20000);
 
@@ -437,7 +437,7 @@ void CoapTests::largeCreate()
     CoapRequest request(QUrl("coap://coap.me:5683/large-create"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
 
     CoapReply *reply = m_coap->post(request, m_uploadData);
     spy.wait(20000);
@@ -471,7 +471,7 @@ void CoapTests::largeUpdate()
     CoapRequest request(QUrl("coap://coap.me:5683/large-update"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
 
     CoapReply *reply = m_coap->put(request, m_uploadData);
     spy.wait(20000);
@@ -502,7 +502,7 @@ void CoapTests::largeUpdate()
 
 void CoapTests::multipleCalls()
 {
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
 
     QList<CoapReply *> replies;
 
@@ -532,7 +532,7 @@ void CoapTests::coreLinkParser()
     CoapRequest request(QUrl("coap://coap.me/.well-known/core"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
     CoapReply *reply = m_coap->get(request);
     spy.wait();
 
@@ -557,8 +557,8 @@ void CoapTests::observeResource()
     CoapRequest request(QUrl("coap://vs0.inf.ethz.ch/obs"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
-    QSignalSpy notificationSpy(m_coap, SIGNAL(notificationReceived(CoapObserveResource,int,QByteArray)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
+    QSignalSpy notificationSpy(m_coap, SIGNAL(notificationReceived(CoapObserveResource, int, QByteArray)));
 
     CoapReply *reply = m_coap->enableResourceNotifications(request);
     spy.wait();
@@ -581,8 +581,8 @@ void CoapTests::observeLargeResource()
     CoapRequest request(QUrl("coap://vs0.inf.ethz.ch/obs-large"));
     qDebug() << request.url().toString();
 
-    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
-    QSignalSpy notificationSpy(m_coap, SIGNAL(notificationReceived(CoapObserveResource,int,QByteArray)));
+    QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply *)));
+    QSignalSpy notificationSpy(m_coap, SIGNAL(notificationReceived(CoapObserveResource, int, QByteArray)));
 
     CoapReply *reply = m_coap->enableResourceNotifications(request);
     spy.wait();

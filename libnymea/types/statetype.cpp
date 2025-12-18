@@ -34,19 +34,14 @@
 
 #include "statetype.h"
 
-StateType::StateType()
-{
-
-}
+StateType::StateType() {}
 
 /*! Constructs a StateType with the given \a id.
  *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
  *  hardcode it into the plugin json file. */
-StateType::StateType(const StateTypeId &id):
-    m_id(id)
-{
-
-}
+StateType::StateType(const StateTypeId &id)
+    : m_id(id)
+{}
 
 /*! Returns the id of the StateType. */
 StateTypeId StateType::id() const

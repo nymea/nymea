@@ -38,16 +38,13 @@
 #include "coapobserveresource.h"
 
 /*! Constructs a CoapObserveResource. */
-CoapObserveResource::CoapObserveResource()
-{
-}
+CoapObserveResource::CoapObserveResource() {}
 
 /*! Constructs a CoapObserveResource with the given \a url and \a token. */
-CoapObserveResource::CoapObserveResource(const QUrl &url, const QByteArray &token):
-    m_url(url),
-    m_token(token)
-{
-}
+CoapObserveResource::CoapObserveResource(const QUrl &url, const QByteArray &token)
+    : m_url(url)
+    , m_token(token)
+{}
 
 /*! Returns the url of this \l{CoapObserveResource}. */
 QUrl CoapObserveResource::url() const

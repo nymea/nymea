@@ -49,7 +49,6 @@ public:
 
     virtual QString deviceSerialNumber() const;
 
-
 signals:
     void availableChanged();
     void timeZoneManagementAvailableChanged();

@@ -25,9 +25,8 @@
 #ifndef PYTHINGPAIRINGINFO_H
 #define PYTHINGPAIRINGINFO_H
 
-
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "pyparam.h"
 
@@ -58,11 +57,9 @@
  *
  */
 
-
-
-typedef struct {
-    PyObject_HEAD
-    ThingPairingInfo* info;
+typedef struct
+{
+    PyObject_HEAD ThingPairingInfo *info;
     PyObject *pyTransactionId = nullptr;
     PyObject *pyThingClassId = nullptr;
     PyObject *pyThingId = nullptr;
@@ -80,10 +77,10 @@ static PyMemberDef PyThingPairingInfo_members[] = {
     {"parentId", T_OBJECT_EX, offsetof(PyThingPairingInfo, pyParentId), READONLY, "The ThingId for the parent of the thing to be set up."},
     {"params", T_OBJECT_EX, offsetof(PyThingPairingInfo, pyParams), READONLY, "The params for the thing to be set up."},
     {"oAuthUrl", T_OBJECT_EX, offsetof(PyThingPairingInfo, pyOAuthUrl), 0, "An OAuth url if required for the pairing."},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
-static int PyThingPairingInfo_init(PyThingPairingInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/)
+static int PyThingPairingInfo_init(PyThingPairingInfo * /*self*/, PyObject * /*args*/, PyObject * /*kwds*/)
 {
     qCDebug(dcPythonIntegrations()) << "+++ ThingPairingInfo";
     return 0;
@@ -100,7 +97,7 @@ void PyThingPairingInfo_setInfo(PyThingPairingInfo *self, ThingPairingInfo *info
     self->pyParams = PyParams_FromParamList(info->params());
 }
 
-static void PyThingPairingInfo_dealloc(PyThingPairingInfo * self)
+static void PyThingPairingInfo_dealloc(PyThingPairingInfo *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- ThingPairingInfo";
     Py_XDECREF(self->pyTransactionId);
@@ -113,7 +110,8 @@ static void PyThingPairingInfo_dealloc(PyThingPairingInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyThingPairingInfo_paramValue(PyThingPairingInfo* self, PyObject* args) {
+static PyObject *PyThingPairingInfo_paramValue(PyThingPairingInfo *self, PyObject *args)
+{
     char *paramTypeIdStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
@@ -122,7 +120,7 @@ static PyObject * PyThingPairingInfo_paramValue(PyThingPairingInfo* self, PyObje
 
     ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
     for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
-        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        PyParam *pyParam = reinterpret_cast<PyParam *>(PyTuple_GetItem(self->pyParams, i));
         // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
         ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
         if (ptid == paramTypeId) {
@@ -134,7 +132,7 @@ static PyObject * PyThingPairingInfo_paramValue(PyThingPairingInfo* self, PyObje
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThingPairingInfo_finish(PyThingPairingInfo* self, PyObject* args)
+static PyObject *PyThingPairingInfo_finish(PyThingPairingInfo *self, PyObject *args)
 {
     int status;
     char *message = nullptr;
@@ -158,23 +156,22 @@ static PyObject * PyThingPairingInfo_finish(PyThingPairingInfo* self, PyObject* 
 }
 
 static PyMethodDef PyThingPairingInfo_methods[] = {
-    { "paramValue", (PyCFunction)PyThingPairingInfo_paramValue, METH_VARARGS, "Get a param value for the thing to be paired"},
-    { "finish", (PyCFunction)PyThingPairingInfo_finish, METH_VARARGS, "Finish a discovery" },
+    {"paramValue", (PyCFunction) PyThingPairingInfo_paramValue, METH_VARARGS, "Get a param value for the thing to be paired"},
+    {"finish", (PyCFunction) PyThingPairingInfo_finish, METH_VARARGS, "Finish a discovery"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyThingPairingInfoType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingPairingInfo", /* tp_name */
-    sizeof(PyThingPairingInfo), /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    (destructor)PyThingPairingInfo_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.ThingPairingInfo", /* tp_name */
+    sizeof(PyThingPairingInfo),                              /* tp_basicsize */
+    0,                                                       /* tp_itemsize */
+    (destructor) PyThingPairingInfo_dealloc,                 /* tp_dealloc */
 };
 
 static void registerThingPairingInfoType(PyObject *module)
 {
     PyThingPairingInfoType.tp_new = PyType_GenericNew;
-    PyThingPairingInfoType.tp_init = (initproc)PyThingPairingInfo_init;
+    PyThingPairingInfoType.tp_init = (initproc) PyThingPairingInfo_init;
     PyThingPairingInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingPairingInfoType.tp_methods = PyThingPairingInfo_methods;
     PyThingPairingInfoType.tp_members = PyThingPairingInfo_members;
@@ -183,11 +180,8 @@ static void registerThingPairingInfoType(PyObject *module)
     if (PyType_Ready(&PyThingPairingInfoType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "ThingPairingInfo", (PyObject *)&PyThingPairingInfoType);
+    PyModule_AddObject(module, "ThingPairingInfo", (PyObject *) &PyThingPairingInfoType);
 }
-
-
-
 
 #pragma GCC diagnostic pop
 

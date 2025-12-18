@@ -25,19 +25,19 @@
 #ifndef UPNPDISCOVERYIMPLEMENTATION_H
 #define UPNPDISCOVERYIMPLEMENTATION_H
 
-#include <QUrl>
-#include <QTimer>
-#include <QUdpSocket>
 #include <QHostAddress>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QNetworkAccessManager>
+#include <QTimer>
+#include <QUdpSocket>
+#include <QUrl>
 
 #include "upnpdiscoveryrequest.h"
 
+#include "network/upnp/upnpdevicedescriptor.h"
 #include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdiscoveryreply.h"
-#include "network/upnp/upnpdevicedescriptor.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // nymea basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
@@ -68,7 +68,7 @@ private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
-    QHash<QNetworkReply*, UpnpDeviceDescriptor> m_informationRequestList;
+    QHash<QNetworkReply *, UpnpDeviceDescriptor> m_informationRequestList;
 
     bool m_available = false;
     bool m_enabled = false;
@@ -93,9 +93,8 @@ private slots:
 public slots:
     bool enable();
     bool disable();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // UPNPDISCOVERYIMPLEMENTATION_H

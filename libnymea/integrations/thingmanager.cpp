@@ -37,7 +37,8 @@
     \l{IntegrationPlugin}{integration plugins}.
 */
 
-ThingManager::ThingManager(QObject *parent) : QObject(parent)
+ThingManager::ThingManager(QObject *parent)
+    : QObject(parent)
 {
     qRegisterMetaType<Param>();
     qRegisterMetaType<ParamList>();

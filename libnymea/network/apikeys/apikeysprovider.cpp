@@ -24,8 +24,6 @@
 
 #include "apikeysprovider.h"
 
-ApiKeysProvider::ApiKeysProvider(QObject *parent):
-    QObject(parent)
-{
-
-}
+ApiKeysProvider::ApiKeysProvider(QObject *parent)
+    : QObject(parent)
+{}

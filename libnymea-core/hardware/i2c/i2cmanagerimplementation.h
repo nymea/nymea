@@ -27,13 +27,13 @@
 
 #include "hardware/i2c/i2cmanager.h"
 
-#include <QObject>
-#include <QMutex>
-#include <QTimer>
-#include <QHash>
+#include <QDateTime>
 #include <QFuture>
 #include <QFutureWatcher>
-#include <QDateTime>
+#include <QHash>
+#include <QMutex>
+#include <QObject>
+#include <QTimer>
 
 class QFile;
 
@@ -43,7 +43,6 @@ class I2CManagerImplementation : public I2CManager
 {
     Q_OBJECT
 public:
-
     explicit I2CManagerImplementation(QObject *parent = nullptr);
     ~I2CManagerImplementation();
 
@@ -60,20 +59,22 @@ private slots:
     void nextCycle();
 
 private:
-    class ReadingInfo {
+    class ReadingInfo
+    {
     public:
         int interval;
         QDateTime lastReading;
     };
-    class WritingInfo {
+    class WritingInfo
+    {
     public:
         QByteArray data;
         I2CDevice *device;
     };
 
     QMutex m_mutex;
-    QHash<I2CDevice*, ReadingInfo> m_readers;
-    QHash<I2CDevice*, QFile*> m_openFiles;
+    QHash<I2CDevice *, ReadingInfo> m_readers;
+    QHash<I2CDevice *, QFile *> m_openFiles;
 
     QMutex m_writeQueueMutex;
     QList<WritingInfo> m_writeQueue;
@@ -81,9 +82,8 @@ private:
     QFutureWatcher<void> m_watcher;
 
     QTimer m_pollTimer;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // I2CMANAGERIMPLEMENTATION_H

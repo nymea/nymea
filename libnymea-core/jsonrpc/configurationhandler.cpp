@@ -60,20 +60,18 @@
     The \a params contains the map for the notification.
 */
 
-
-
 #include "configurationhandler.h"
-#include "nymeacore.h"
-#include "nymeaconfiguration.h"
 #include "loggingcategories.h"
+#include "nymeaconfiguration.h"
+#include "nymeacore.h"
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
 
 namespace nymeaserver {
 
 /*! Constructs a new \l ConfigurationHandler with the given \a parent. */
-ConfigurationHandler::ConfigurationHandler(QObject *parent):
-    JsonHandler(parent)
+ConfigurationHandler::ConfigurationHandler(QObject *parent)
+    : JsonHandler(parent)
 {
     // Enums
     registerEnum<NymeaConfiguration::ConfigurationError>();
@@ -85,17 +83,21 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     registerObject<MqttPolicy>();
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the list of available timezones.";
     returns.insert("timeZones", QVariantList() << enumValueName(String));
     registerMethod("GetTimeZones", description, params, returns, Types::PermissionScopeNone, "Use System.GetTimeZones instead.");
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Returns a list of locale codes available for the server. i.e. en_US, de_AT";
     returns.insert("languages", QVariantList() << enumValueName(String));
     registerMethod("GetAvailableLanguages", description, params, returns, Types::PermissionScopeNone, "Use the locale property in the Handshake message instead.");
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all configuration parameters of the server.";
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", enumValueName(String));
@@ -126,186 +128,226 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     mqttServerConfigurations.append(objectRef<ServerConfiguration>());
     registerMethod("GetConfigurations", description, params, returns, Types::PermissionScopeNone);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Set the name of the server. Default is nymea.";
-    params.insert("serverName",  enumValueName(String));
+    params.insert("serverName", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetServerName", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Set the time zone of the server. See also: \"GetTimeZones\"";
-    params.insert("timeZone",  enumValueName(String));
+    params.insert("timeZone", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetTimeZone", description, params, returns, Types::PermissionScopeAdmin, "Use System.SetTimeZone instead.");
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
-    params.insert("language",  enumValueName(String));
+    params.insert("language", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetLanguage", description, params, returns, Types::PermissionScopeAdmin, "Use the locale property in the Handshake message instead.");
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Sets the server location.";
     params.insert("location", location);
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetLocation", description, params, returns, Types::PermissionScopeAdmin);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Enable or disable the debug server.";
-    params.insert("enabled",  enumValueName(String));
+    params.insert("enabled", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetDebugServerEnabled", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description = "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you "
+                  "are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
     params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetTcpServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description
+        = "Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.";
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteTcpServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Configure a WebSocket Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description = "Configure a WebSocket Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. "
+                  "Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
     params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetWebSocketServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Delete a WebSocket Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description = "Delete a WebSocket Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection "
+                  "will be dropped.";
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteWebSocketServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Configure a Tunnel Proxy Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description = "Configure a Tunnel Proxy Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. "
+                  "Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
     params.insert("configuration", objectRef<TunnelProxyServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetTunnelProxyServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Delete a Tunnel Proxy Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.clear();
+    returns.clear();
+    description = "Delete a Tunnel Proxy Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the "
+                  "connection will be dropped.";
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteTunnelProxyServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Configure a WebServer interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added.";
     params.insert("configuration", objectRef<WebServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetWebServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Delete a WebServer interface of the server.";
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteWebServerConfiguration", description, params, returns);
 
     // MQTT
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all MQTT Server configurations.";
     returns.insert("mqttServerConfigurations", QVariantList() << objectRef<ServerConfiguration>());
     registerMethod("GetMqttServerConfigurations", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.";
+    params.clear();
+    returns.clear();
+    description = "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. "
+                  "Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.";
     params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetMqttServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Delete a MQTT Server interface of the server.";
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteMqttServerConfiguration", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all MQTT broker policies.";
     returns.insert("mqttPolicies", QVariantList() << objectRef<MqttPolicy>());
     registerMethod("GetMqttPolicies", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.";
     params.insert("policy", objectRef<MqttPolicy>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetMqttPolicy", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Delete a MQTT policy from the broker.";
     params.insert("clientId", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteMqttPolicy", description, params, returns);
 
     // Notifications
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the basic configuration of this server changes.";
     params.insert("basicConfiguration", basicConfiguration);
     registerNotification("BasicConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the language of the server changed. The Plugins, Vendors and ThingClasses have to be reloaded to get the translated data.";
     params.insert("language", enumValueName(String));
     registerNotification("LanguageChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the TCP server configuration changes.";
     params.insert("tcpServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("TcpServerConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a TCP server configuration is removed.";
     params.insert("id", enumValueName(String));
     registerNotification("TcpServerConfigurationRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the web socket server configuration changes.";
     params.insert("webSocketServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("WebSocketServerConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a WebSocket server configuration is removed.";
     params.insert("id", enumValueName(String));
     registerNotification("WebSocketServerConfigurationRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the tunnel proxy server configuration changes.";
     params.insert("tunnelProxyServerConfiguration", objectRef<TunnelProxyServerConfiguration>());
     registerNotification("TunnelProxyServerConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a tunnel proxy server configuration is removed.";
     params.insert("id", enumValueName(String));
     registerNotification("TunnelProxyServerConfigurationRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
     params.insert("mqttServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("MqttServerConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a MQTT server configuration is removed.";
     params.insert("id", enumValueName(String));
     registerNotification("MqttServerConfigurationRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the web server configuration changes.";
     params.insert("webServerConfiguration", objectRef<WebServerConfiguration>());
     registerNotification("WebServerConfigurationChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a Web server configuration is removed.";
     params.insert("id", enumValueName(String));
     registerNotification("WebServerConfigurationRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a MQTT broker policy is changed.";
     params.insert("policy", objectRef<MqttPolicy>());
     registerNotification("MqttPolicyChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a MQTT broker policy is removed.";
     params.insert("clientId", enumValueName(String));
     registerNotification("MqttPolicyRemoved", description, params);
@@ -322,8 +364,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationRemoved, this, &ConfigurationHandler::onWebServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ConfigurationHandler::onWebSocketServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ConfigurationHandler::onTunnelProxyServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ConfigurationHandler::onTunnelProxyServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(),
+            &NymeaConfiguration::tunnelProxyServerConfigurationChanged,
+            this,
+            &ConfigurationHandler::onTunnelProxyServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(),
+            &NymeaConfiguration::tunnelProxyServerConfigurationRemoved,
+            this,
+            &ConfigurationHandler::onTunnelProxyServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationChanged, this, &ConfigurationHandler::onMqttServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
@@ -350,7 +398,6 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     QVariantList webServerConfigs;
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         webServerConfigs.append(pack(config));
-
     }
     returns.insert("webServerConfigurations", webServerConfigs);
 
@@ -778,11 +825,10 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toSecsSinceEpoch());
     basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
-    basicConfiguration.insert("location", QVariantMap{
-                                              {"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
-                                              {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
-                                              {"name", NymeaCore::instance()->configuration()->locationName()}
-                                          });
+    basicConfiguration.insert("location",
+                              QVariantMap{{"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
+                                          {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
+                                          {"name", NymeaCore::instance()->configuration()->locationName()}});
     basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }
@@ -802,4 +848,4 @@ void ConfigurationHandler::onLanguageChanged()
     emit LanguageChanged(params);
 }
 
-}
+} // namespace nymeaserver

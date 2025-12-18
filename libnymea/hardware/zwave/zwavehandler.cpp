@@ -24,7 +24,4 @@
 
 #include "zwavehandler.h"
 
-ZWaveHandler::ZWaveHandler()
-{
-
-}
+ZWaveHandler::ZWaveHandler() {}

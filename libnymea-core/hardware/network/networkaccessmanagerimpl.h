@@ -26,16 +26,16 @@
 #define NETWORKACCESSMANAGERIMPL_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "network/networkaccessmanager.h"
+#include "typeutils.h"
 
-#include <QObject>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 #include <QDebug>
-#include <QUrl>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
 #include <QTimer>
+#include <QUrl>
 
 namespace nymeaserver {
 
@@ -71,16 +71,15 @@ private:
     bool m_enabled = false;
 
     QNetworkAccessManager *m_manager;
-    QHash<QNetworkReply*, QTimer*> m_timeoutTimers;
+    QHash<QNetworkReply *, QTimer *> m_timeoutTimers;
 
-    void hookupTimeoutTimer(QNetworkReply* reply);
+    void hookupTimeoutTimer(QNetworkReply *reply);
 
 private slots:
     void networkReplyFinished();
     void networkTimeout();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NETWORKACCESSMANAGER_H

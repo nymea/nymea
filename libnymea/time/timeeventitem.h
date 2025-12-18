@@ -62,7 +62,7 @@ private:
 };
 Q_DECLARE_METATYPE(TimeEventItem)
 
-class TimeEventItems: public QList<TimeEventItem>
+class TimeEventItems : public QList<TimeEventItem>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -75,6 +75,5 @@ public:
 Q_DECLARE_METATYPE(TimeEventItems)
 
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
-
 
 #endif // TIMEEVENTITEM_H

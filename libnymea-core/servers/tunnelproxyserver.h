@@ -79,9 +79,8 @@ private:
     QHash<QUuid, TunnelProxySocket *> m_clients;
 
     void initConfiguration();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TUNNELPROXYSERVER_H

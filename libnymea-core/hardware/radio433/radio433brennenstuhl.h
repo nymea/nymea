@@ -27,9 +27,9 @@
 
 #include <QObject>
 
-#include "libnymea.h"
-#include "hardwareresource.h"
 #include "hardware/radio433/radio433.h"
+#include "hardwareresource.h"
+#include "libnymea.h"
 #include "radio433brennenstuhlgateway.h"
 
 namespace nymeaserver {
@@ -50,7 +50,6 @@ public slots:
 private slots:
     void brennenstuhlAvailableChanged(bool available);
 
-
 protected:
     void setEnabled(bool enabled) override;
 
@@ -60,7 +59,6 @@ private:
     bool m_enabled = false;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // RADIO433BRENENSTUHL_H
-

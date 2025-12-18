@@ -28,10 +28,9 @@
 #include <QtCore/QtGlobal>
 
 #if defined(LIBNYMEA_LIBRARY)
-#    define LIBNYMEA_EXPORT Q_DECL_EXPORT
+#define LIBNYMEA_EXPORT Q_DECL_EXPORT
 #else
-#    define LIBNYMEA_EXPORT Q_DECL_IMPORT
+#define LIBNYMEA_EXPORT Q_DECL_IMPORT
 #endif
 
 #endif // LIBNYMEA_H
-

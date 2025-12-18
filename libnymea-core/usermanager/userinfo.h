@@ -25,10 +25,10 @@
 #ifndef USERINFO_H
 #define USERINFO_H
 
-#include <QUuid>
-#include <QObject>
-#include <QVariant>
 #include "typeutils.h"
+#include <QObject>
+#include <QUuid>
+#include <QVariant>
 
 namespace nymeaserver {
 
@@ -63,7 +63,7 @@ private:
     Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
 };
 
-class UserInfoList: public QList<UserInfo>
+class UserInfoList : public QList<UserInfo>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -71,5 +71,5 @@ public:
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
-}
+} // namespace nymeaserver
 #endif // USERINFO_H

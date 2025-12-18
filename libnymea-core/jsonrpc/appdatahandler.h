@@ -25,8 +25,8 @@
 #ifndef APPDATAHANDLER_H
 #define APPDATAHANDLER_H
 
-#include <QObject>
 #include "jsonrpc/jsonhandler.h"
+#include <QObject>
 
 class AppDataHandler : public JsonHandler
 {
@@ -41,7 +41,6 @@ public:
 
 signals:
     void Changed(const QVariantMap &params);
-
 };
 
 #endif // APPDATAHANDLER_H

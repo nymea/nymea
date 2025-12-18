@@ -60,11 +60,11 @@
 #include "loggingcategories.h"
 
 /*! Constructs a new Pwm interface for the given \a chipNumber (\tt{/sys/class/pwm/pwmchip<chipNumber>}) with the given \a parent. */
-Pwm::Pwm(int chipNumber, QObject *parent) :
-    QObject(parent),
-    m_chipNumber(chipNumber),
-    m_period(0),
-    m_dutyCycle(0)
+Pwm::Pwm(int chipNumber, QObject *parent)
+    : QObject(parent)
+    , m_chipNumber(chipNumber)
+    , m_period(0)
+    , m_dutyCycle(0)
 {
     m_pwmDirectory = QDir("/sys/class/pwm/pwmchip" + QString::number(chipNumber) + "/");
 }
@@ -203,7 +203,7 @@ double Pwm::frequency()
 bool Pwm::setFrequency(double kHz)
 {
     // p = 1 / f
-    long nanoSeconds = (long)(100000000 / (kHz * 1000));
+    long nanoSeconds = (long) (100000000 / (kHz * 1000));
     return setPeriod(nanoSeconds);
 }
 
@@ -261,7 +261,7 @@ Pwm::Polarity Pwm::polarity()
 
     if (value == "normal") {
         return PolarityNormal;
-    } else if(value == "inversed") {
+    } else if (value == "inversed") {
         return PolarityInversed;
     }
 
@@ -307,7 +307,7 @@ bool Pwm::setPolarity(Pwm::Polarity polarity)
 /*! Returns the current percentage of this Pwm. */
 int Pwm::percentage()
 {
-    return (int)(dutyCycle() * (100.0 / period()) + 0.5);
+    return (int) (dutyCycle() * (100.0 / period()) + 0.5);
 }
 
 /*! Returns true, if the percentage of this Pwm has been set to \a percentage successfully. */
@@ -336,7 +336,7 @@ QDebug operator<<(QDebug d, Pwm *pwm)
 {
     QDebugStateSaver saver(d);
     d << "-----------------------------------";
-    d << "\n--> pwm0 on pwmChip" << pwm->chipNumber()  << ":";
+    d << "\n--> pwm0 on pwmChip" << pwm->chipNumber() << ":";
     d << "\n------------------";
     d << "\n          enabled:" << pwm->isEnabled();
     d << "\n           period:" << pwm->period() << "[ns]";

@@ -24,18 +24,13 @@
 
 #include "logentry.h"
 
-LogEntry::LogEntry()
-{
+LogEntry::LogEntry() {}
 
-}
-
-LogEntry::LogEntry(const QDateTime &timestamp, const QString &source, const QVariantMap &values):
-    m_timestamp(timestamp),
-    m_source(source),
-    m_values(values)
-{
-
-}
+LogEntry::LogEntry(const QDateTime &timestamp, const QString &source, const QVariantMap &values)
+    : m_timestamp(timestamp)
+    , m_source(source)
+    , m_values(values)
+{}
 
 QDateTime LogEntry::timestamp() const
 {
@@ -52,16 +47,13 @@ QVariantMap LogEntry::values() const
     return m_values;
 }
 
-LogEntries::LogEntries(): QList<LogEntry>()
-{
+LogEntries::LogEntries()
+    : QList<LogEntry>()
+{}
 
-}
-
-LogEntries::LogEntries(const QList<LogEntry> &other):
-    QList<LogEntry>(other)
-{
-
-}
+LogEntries::LogEntries(const QList<LogEntry> &other)
+    : QList<LogEntry>(other)
+{}
 
 QVariant LogEntries::get(int index) const
 {

@@ -26,12 +26,11 @@
 
 using namespace nymeaserver;
 
-class TestPlugins: public NymeaTestBase
+class TestPlugins : public NymeaTestBase
 {
     Q_OBJECT
 
 private slots:
-
 };
 
 #include "testplugins.moc"

@@ -24,16 +24,11 @@
 
 #include "macaddressinfos.h"
 
-MacAddressInfos::MacAddressInfos()
-{
-
-}
+MacAddressInfos::MacAddressInfos() {}
 
 MacAddressInfos::MacAddressInfos(const QVector<MacAddressInfo> &other)
     : QVector<MacAddressInfo>(other)
-{
-
-}
+{}
 
 int MacAddressInfos::indexFromMacAddress(const QString &macAddress)
 {
@@ -93,9 +88,7 @@ void MacAddressInfos::removeMacAddress(const MacAddress &macAddress)
 
 void MacAddressInfos::sortInfos()
 {
-    std::sort(this->begin(), this->end(), [](const MacAddressInfo& a, const MacAddressInfo& b) {
-        return a.macAddress().toByteArray() < b.macAddress().toByteArray();
-    });
+    std::sort(this->begin(), this->end(), [](const MacAddressInfo &a, const MacAddressInfo &b) { return a.macAddress().toByteArray() < b.macAddress().toByteArray(); });
 }
 
 bool MacAddressInfos::isComplete() const

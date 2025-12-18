@@ -24,20 +24,17 @@
 
 #include "plugininfocache.h"
 
-#include <QSettings>
-#include <QStandardPaths>
 #include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QRegularExpression>
+#include <QSettings>
+#include <QStandardPaths>
 
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeasettings.h"
 
-PluginInfoCache::PluginInfoCache()
-{
-
-}
+PluginInfoCache::PluginInfoCache() {}
 
 void PluginInfoCache::cachePluginInfo(const QJsonObject &metaData)
 {

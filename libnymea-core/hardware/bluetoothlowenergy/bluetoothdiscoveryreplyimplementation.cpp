@@ -28,11 +28,9 @@
 
 namespace nymeaserver {
 
-BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyImplementation(QObject *parent) :
-    BluetoothDiscoveryReply(parent)
-{
-
-}
+BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyImplementation(QObject *parent)
+    : BluetoothDiscoveryReply(parent)
+{}
 
 bool BluetoothDiscoveryReplyImplementation::isFinished() const
 {
@@ -75,4 +73,4 @@ void BluetoothDiscoveryReplyImplementation::setFinished()
     deleteLater();
 }
 
-}
+} // namespace nymeaserver

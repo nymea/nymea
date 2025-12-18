@@ -25,13 +25,13 @@
 #ifndef PLATFORMZEROCONFCONTROLLER_H
 #define PLATFORMZEROCONFCONTROLLER_H
 
-#include <QObject>
 #include "hardwareresource.h"
+#include <QObject>
 
 class ZeroConfServiceBrowser;
 class ZeroConfServicePublisher;
 
-class PlatformZeroConfController: public HardwareResource
+class PlatformZeroConfController : public HardwareResource
 {
     Q_OBJECT
 public:

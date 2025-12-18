@@ -22,8 +22,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
 
 #include "platform/platform.h"
@@ -33,14 +33,12 @@
 
 using namespace nymeaserver;
 
-class TestTimeManager: public NymeaTestBase
+class TestTimeManager : public NymeaTestBase
 {
     Q_OBJECT
 
 private:
-    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
-        verifyError(response, "ruleError", enumValueName(error));
-    }
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) { verifyError(response, "ruleError", enumValueName(error)); }
 
 private slots:
     void initTestCase();
@@ -138,12 +136,12 @@ private:
 void TestTimeManager::initTestCase()
 {
     NymeaTestBase::initTestCase("*.debug=false\n"
-                                 "Tests.debug=true\n"
-                                 "RuleEngine.debug=true\n"
-//                                 "RuleEngineDebug.debug=true\n"
-                                 "Mock.debug=true\n"
-                                 "JsonRpc.debug=true\n"
-                                 "TimeManager.debug=true");
+                                "Tests.debug=true\n"
+                                "RuleEngine.debug=true\n"
+                                //                                 "RuleEngineDebug.debug=true\n"
+                                "Mock.debug=true\n"
+                                "JsonRpc.debug=true\n"
+                                "TimeManager.debug=true");
 }
 
 void TestTimeManager::loadSaveTimeDescriptor_data()
@@ -173,7 +171,7 @@ void TestTimeManager::loadSaveTimeDescriptor_data()
     QTest::addColumn<QVariantMap>("timeDescriptor");
 
     QTest::newRow("calendarItems") << createTimeDescriptorCalendar(calendarItems);
-//    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
+    //    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
 }
 
 void TestTimeManager::loadSaveTimeDescriptor()
@@ -183,7 +181,8 @@ void TestTimeManager::loadSaveTimeDescriptor()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action;
+    QVariantMap ruleMap;
+    QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -209,9 +208,9 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVERIFY2(timeDescriptorMap == timeDescriptor,
              QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
-             .arg(QString(QJsonDocument::fromVariant(timeDescriptor).toJson()))
-             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
-             .toUtf8());
+                 .arg(QString(QJsonDocument::fromVariant(timeDescriptor).toJson()))
+                 .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+                 .toUtf8());
 
     // Restart the server
     restartServer();
@@ -224,9 +223,9 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVERIFY2(timeDescriptorMap == timeDescriptorMapLoaded,
              QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
-             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
-             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson()))
-             .toUtf8());
+                 .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+                 .arg(QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson()))
+                 .toUtf8());
 
     // REMOVE rule
     QVariantMap removeParams;
@@ -301,41 +300,66 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::addColumn<RuleEngine::RuleError>("error");
 
     QTest::newRow("valid: calendarItem") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5)) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: calendarItem dateTime") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5)) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: calendarItem dateTime - yearly") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem dateTime") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5))
+                                                  << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem dateTime - yearly") << createTimeDescriptorCalendar(
+        createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionYearly))
+                                                           << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - daily") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5, repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - none") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - hourly") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItems - weekly - multiple days") << createTimeDescriptorCalendar(calendarItems) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: calendarItem - monthly - multiple days") << createTimeDescriptorCalendar(createCalendarItem("23:00", 5, repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem - monthly - multiple days")
+        << createTimeDescriptorCalendar(createCalendarItem("23:00", 5, repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
     QTest::newRow("valid: timeEventItem") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00")) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: timeEventItem dateTime") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch())) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: timeEventItem dateTime - yearly") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem dateTime") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch()))
+                                                   << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem dateTime - yearly") << createTimeDescriptorTimeEvent(
+        createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionYearly))
+                                                            << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - daily") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00", repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - none") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - hourly") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - weekly - multiple days") << createTimeDescriptorTimeEvent(timeEventItems) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: timeEventItem - monthly - multiple days") << createTimeDescriptorTimeEvent(createTimeEventItem("23:00", repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem - monthly - multiple days")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("23:00", repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
-    QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone))
+                                                << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(
+        createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionDaily))
+                                                            << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
-    QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem - weekly - monthDays") << createTimeDescriptorCalendar(createCalendarItem("15:30", 20, repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem - invalid weekdays  (negative)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem - invalid weekdays  (to big)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidWeekDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem - invalid monthdays  (negative)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem - invalid monthdays  (to big)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - monthly - weekDays")
+        << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - weekly - monthDays")
+        << createTimeDescriptorCalendar(createCalendarItem("15:30", 20, repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - invalid weekdays  (negative)")
+        << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - invalid weekdays  (to big)")
+        << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidWeekDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - invalid monthdays  (negative)")
+        << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: calendarItem - invalid monthdays  (to big)")
+        << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
 
-    QTest::newRow("invalid: timeEventItem none") << createTimeDescriptorTimeEvent(createTimeEventItem("00:12", repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
-    QTest::newRow("invalid: timeEventItem - monthly - weekDays") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - weekly - monthDays") << createTimeDescriptorTimeEvent(createTimeEventItem("15:30", repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - invalid weekdays  (negative)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - invalid weekdays  (to big)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - invalid monthdays  (negative)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - invalid monthdays  (to big)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem none") << createTimeDescriptorTimeEvent(createTimeEventItem("00:12", repeatingOptionInvalidNone))
+                                                 << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption")
+        << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
+    QTest::newRow("invalid: timeEventItem - monthly - weekDays")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - weekly - monthDays")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("15:30", repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - invalid weekdays  (negative)")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - invalid weekdays  (to big)")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - invalid monthdays  (negative)")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
+    QTest::newRow("invalid: timeEventItem - invalid monthdays  (to big)")
+        << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
 }
 
 void TestTimeManager::addTimeDescriptor()
@@ -344,7 +368,8 @@ void TestTimeManager::addTimeDescriptor()
     QFETCH(RuleEngine::RuleError, error);
 
     // ADD the rule
-    QVariantMap ruleMap; QVariantMap action;
+    QVariantMap ruleMap;
+    QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -382,7 +407,8 @@ void TestTimeManager::addTimeDescriptorInvalidTimes()
     QFETCH(QVariantMap, timeDescriptor);
 
     // ADD the rule
-    QVariantMap ruleMap; QVariantMap action;
+    QVariantMap ruleMap;
+    QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -412,7 +438,9 @@ void TestTimeManager::testCalendarDateTime()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -487,7 +515,10 @@ void TestTimeManager::testCalendarItemHourly()
 
     initTimeManager();
 
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction; QVariantMap repeatingOptionHourly;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
+    QVariantMap repeatingOptionHourly;
     repeatingOptionHourly.insert("mode", "RepeatingModeHourly");
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
@@ -528,7 +559,7 @@ void TestTimeManager::testCalendarItemHourly()
         verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         // check the next 24 hours in 8h steps
-        for (int i = 0; i < 24; i+=8) {
+        for (int i = 0; i < 24; i += 8) {
             // inactive
             NymeaCore::instance()->timeManager()->setTime(future);
             verifyRuleNotExecuted();
@@ -548,7 +579,7 @@ void TestTimeManager::testCalendarItemHourly()
             verifyRuleNotExecuted();
 
             // 'i' hours "Back to the future"
-            future = future.addSecs(i*60*60);
+            future = future.addSecs(i * 60 * 60);
         }
     }
 
@@ -581,7 +612,9 @@ void TestTimeManager::testCalendarItemDaily()
 
     initTimeManager();
 
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -627,7 +660,7 @@ void TestTimeManager::testCalendarItemDaily()
             verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
             // active unchanged
-            NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+            NymeaCore::instance()->timeManager()->setTime(future.addSecs(6 * 60));
             verifyRuleNotExecuted();
             // inactive
             NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
@@ -680,7 +713,9 @@ void TestTimeManager::testCalendarItemWeekly()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -730,7 +765,6 @@ void TestTimeManager::testCalendarItemWeekly()
         if (!overlapping) {
             // check the next 7 days (because not overlapping the week)
             for (int i = 0; i < 7; i++) {
-
                 // inactive
                 NymeaCore::instance()->timeManager()->setTime(future);
                 verifyRuleNotExecuted();
@@ -743,7 +777,7 @@ void TestTimeManager::testCalendarItemWeekly()
                     verifyRuleExecuted(mockWithoutParamsActionTypeId);
                     cleanupMockHistory();
                     // active unchanged
-                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6 * 60));
                     verifyRuleNotExecuted();
                     // inactive
                     NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
@@ -757,7 +791,7 @@ void TestTimeManager::testCalendarItemWeekly()
                     future = future.addDays(1);
                 } else {
                     // should not trigger today
-                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6 * 60));
                     verifyRuleNotExecuted();
 
                     // One day "Back to the future"
@@ -835,7 +869,9 @@ void TestTimeManager::testCalendarItemMonthly()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -877,7 +913,6 @@ void TestTimeManager::testCalendarItemMonthly()
     QDateTime future = QDateTime(currentDateTime.date(), QTime::fromString(time, "hh:mm").addSecs(-60));
 
     if (!overlapping) {
-
         // run one month to the future
         for (int i = 0; i < 31; i++) {
             QDateTime dateTime = future.addDays(i);
@@ -892,7 +927,7 @@ void TestTimeManager::testCalendarItemMonthly()
                 verifyRuleExecuted(mockWithoutParamsActionTypeId);
                 cleanupMockHistory();
                 // active unchanged
-                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(6* 60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(6 * 60));
                 verifyRuleNotExecuted();
                 // inactive
                 NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(11 * 60));
@@ -950,8 +985,10 @@ void TestTimeManager::testCalendarYearlyDateTime_data()
     QTest::addColumn<QDateTime>("dateTime");
     QTest::addColumn<int>("duration");
 
-    QTest::newRow("dateTime - yearly - christmas") << QDateTime::fromString(QString("24.12.%1 20:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 60;
-    QTest::newRow("dateTime - yearly - new year") << QDateTime::fromString(QString("31.12.%1 23:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 120;
+    QTest::newRow("dateTime - yearly - christmas") << QDateTime::fromString(QString("24.12.%1 20:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm")
+                                                   << 60;
+    QTest::newRow("dateTime - yearly - new year") << QDateTime::fromString(QString("31.12.%1 23:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm")
+                                                  << 120;
     QTest::newRow("dateTime - yearly - valentines day") << QDateTime::fromString("14.02.2017 08:00", "dd.MM.yyyy hh:mm") << 120;
 }
 
@@ -963,7 +1000,9 @@ void TestTimeManager::testCalendarYearlyDateTime()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap;
+    QVariantMap action;
+    QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -1023,7 +1062,6 @@ void TestTimeManager::testCalendarYearlyDateTime()
     // inactive unchanged
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
     verifyRuleNotExecuted();
-
 
     // One year "Back to the future"
     oneMinuteBeforeEvent = oneMinuteBeforeEvent.addYears(1);
@@ -1110,7 +1148,6 @@ void TestTimeManager::testCalendarItemStates_data()
     stateEvaluator.insert("childEvaluators", childEvaluators);
     stateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
-
     // The rule
     QVariantMap ruleMap;
     ruleMap.insert("name", "Time and state based daily calendar rule");
@@ -1119,7 +1156,7 @@ void TestTimeManager::testCalendarItemStates_data()
     ruleMap.insert("exitActions", QVariantList() << exitAction);
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10, repeatingOptionDaily)));
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(07,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(07, 59)));
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1130,19 +1167,18 @@ void TestTimeManager::testCalendarItemStates_data()
     QTest::addColumn<bool>("trigger");
     QTest::addColumn<bool>("active");
 
-    QTest::newRow("07:59 | true - 66") << QDateTime(QDate::currentDate(), QTime(07,59)) << true << 66 << false << false;
-    QTest::newRow("08:00 | true - 66") << QDateTime(QDate::currentDate(), QTime(8,0)) << true << 66 << true << true;
-    QTest::newRow("08:01 | true - 66") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << 66 << false << false;
-    QTest::newRow("08:02 | false - 66") << QDateTime(QDate::currentDate(), QTime(8,2)) << false << 66 << true << false;
-    QTest::newRow("08:03 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,3)) << true << 65 << true << true;
-    QTest::newRow("08:06 | true - 64") << QDateTime(QDate::currentDate(), QTime(8,6)) << true << 64 << true << false;
-    QTest::newRow("08:07 | false - 64") << QDateTime(QDate::currentDate(), QTime(8,7)) << false << 64 << false << false;
-    QTest::newRow("08:07 | false - 65") << QDateTime(QDate::currentDate(), QTime(8,7)) << false << 65 << false << false;
-    QTest::newRow("08:08 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,8)) << true << 65 << true << true;
-    QTest::newRow("08:09 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,9)) << true << 65 << false << false;
-    QTest::newRow("08:10 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,10)) << true << 65 << true << false;
-    QTest::newRow("08:11 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,11)) << true << 65 << false << false;
-
+    QTest::newRow("07:59 | true - 66") << QDateTime(QDate::currentDate(), QTime(07, 59)) << true << 66 << false << false;
+    QTest::newRow("08:00 | true - 66") << QDateTime(QDate::currentDate(), QTime(8, 0)) << true << 66 << true << true;
+    QTest::newRow("08:01 | true - 66") << QDateTime(QDate::currentDate(), QTime(8, 1)) << true << 66 << false << false;
+    QTest::newRow("08:02 | false - 66") << QDateTime(QDate::currentDate(), QTime(8, 2)) << false << 66 << true << false;
+    QTest::newRow("08:03 | true - 65") << QDateTime(QDate::currentDate(), QTime(8, 3)) << true << 65 << true << true;
+    QTest::newRow("08:06 | true - 64") << QDateTime(QDate::currentDate(), QTime(8, 6)) << true << 64 << true << false;
+    QTest::newRow("08:07 | false - 64") << QDateTime(QDate::currentDate(), QTime(8, 7)) << false << 64 << false << false;
+    QTest::newRow("08:07 | false - 65") << QDateTime(QDate::currentDate(), QTime(8, 7)) << false << 65 << false << false;
+    QTest::newRow("08:08 | true - 65") << QDateTime(QDate::currentDate(), QTime(8, 8)) << true << 65 << true << true;
+    QTest::newRow("08:09 | true - 65") << QDateTime(QDate::currentDate(), QTime(8, 9)) << true << 65 << false << false;
+    QTest::newRow("08:10 | true - 65") << QDateTime(QDate::currentDate(), QTime(8, 10)) << true << 65 << true << false;
+    QTest::newRow("08:11 | true - 65") << QDateTime(QDate::currentDate(), QTime(8, 11)) << true << 65 << false << false;
 }
 
 void TestTimeManager::testCalendarItemStates()
@@ -1173,7 +1209,6 @@ void TestTimeManager::testCalendarItemStates()
     if (!trigger) {
         verifyRuleNotExecuted();
     }
-
 }
 
 void TestTimeManager::testCalendarItemEvent_data()
@@ -1197,7 +1232,7 @@ void TestTimeManager::testCalendarItemEvent_data()
     ruleMap.insert("eventDescriptors", QVariantList() << eventDescriptor);
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10)));
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7, 59)));
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1208,15 +1243,13 @@ void TestTimeManager::testCalendarItemEvent_data()
     response = injectAndWait("Rules.GetRuleDetails", params);
     printJson(response);
 
-
     QTest::addColumn<QDateTime>("dateTime");
     QTest::addColumn<bool>("trigger");
 
-    QTest::newRow("07:59 | not trigger") << QDateTime(QDate::currentDate(), QTime(07,59)) << false;
-    QTest::newRow("08:00 | trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << true;
-    QTest::newRow("08:05 | trigger") << QDateTime(QDate::currentDate(), QTime(8,5)) << true;
-    QTest::newRow("08:10 | not trigger") << QDateTime(QDate::currentDate(), QTime(8,10)) << false;
-
+    QTest::newRow("07:59 | not trigger") << QDateTime(QDate::currentDate(), QTime(07, 59)) << false;
+    QTest::newRow("08:00 | trigger") << QDateTime(QDate::currentDate(), QTime(8, 0)) << true;
+    QTest::newRow("08:05 | trigger") << QDateTime(QDate::currentDate(), QTime(8, 5)) << true;
+    QTest::newRow("08:10 | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 10)) << false;
 }
 
 void TestTimeManager::testCalendarItemEvent()
@@ -1242,7 +1275,7 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
 {
     initTimeManager();
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7, 59)));
 
     // Action (without params)
     QVariantMap action;
@@ -1285,11 +1318,11 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
     QTest::addColumn<bool>("boolValue");
     QTest::addColumn<bool>("trigger");
 
-    QTest::newRow("07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(07,59)) << true << false;
-    QTest::newRow("08:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << true << true;
-    QTest::newRow("08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << false << false;
-    QTest::newRow("08:02 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8,2)) << true << true;
-    QTest::newRow("08:10 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,10)) << true << false;
+    QTest::newRow("07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(07, 59)) << true << false;
+    QTest::newRow("08:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8, 0)) << true << true;
+    QTest::newRow("08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 1)) << false << false;
+    QTest::newRow("08:02 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8, 2)) << true << true;
+    QTest::newRow("08:10 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 10)) << true << false;
 }
 
 void TestTimeManager::testCalendarItemStatesEvent()
@@ -1316,7 +1349,7 @@ void TestTimeManager::testCalendarItemCrossesMidnight()
 {
     initTimeManager();
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20, 00)));
 
     // Action
     QVariantMap action;
@@ -1343,48 +1376,47 @@ void TestTimeManager::testCalendarItemCrossesMidnight()
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (20:00)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(22,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(22, 59)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (22:59)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 00)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (23:00)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23,10)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 10)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (23:10)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00, 00)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (00:00)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00,30)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00, 30)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (00:30)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(01,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(01, 00)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (01:00)");
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(02,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(02, 00)));
 
     response = injectAndWait("Rules.GetRuleDetails", params);
     QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (02:00)");
-
 }
 
 void TestTimeManager::testEventBasedWithCalendarItemCrossingMidnight()
 {
     initTimeManager();
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20,00)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20, 00)));
 
     // Event descriptor
     QVariantMap eventDescriptor;
@@ -1459,7 +1491,8 @@ void TestTimeManager::testEventItemDateTime()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action;
+    QVariantMap ruleMap;
+    QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -1501,8 +1534,8 @@ void TestTimeManager::testEventItemHourly_data()
 {
     QTest::addColumn<QTime>("time");
 
-    QTest::newRow("timeEvent - houly 08:10") << QTime(8,10);
-    QTest::newRow("timeEvent - houly 12:33") << QTime(12,33);
+    QTest::newRow("timeEvent - houly 08:10") << QTime(8, 10);
+    QTest::newRow("timeEvent - houly 12:33") << QTime(12, 33);
 }
 
 void TestTimeManager::testEventItemHourly()
@@ -1538,7 +1571,7 @@ void TestTimeManager::testEventItemHourly()
     QDateTime beforeEventDateTime = QDateTime(currentDateTime.date(), time.addSecs(-60));
 
     // check the next 24 hours in 8h steps
-    for (int i = 0; i < 24; i+=8) {
+    for (int i = 0; i < 24; i += 8) {
         // Back to the future (8h)
         beforeEventDateTime = beforeEventDateTime.addSecs(i * 60 * 60);
 
@@ -1569,8 +1602,8 @@ void TestTimeManager::testEventItemDaily_data()
     QTest::addColumn<QTime>("time");
     QTest::addColumn<bool>("withRepeatingOption");
 
-    QTest::newRow("timeEvent - daily 10:01") << QTime(10,1) << false;
-    QTest::newRow("timeEvent - daily 22:22") << QTime(22,22) << true;
+    QTest::newRow("timeEvent - daily 10:01") << QTime(10, 1) << false;
+    QTest::newRow("timeEvent - daily 22:22") << QTime(22, 22) << true;
 }
 
 void TestTimeManager::testEventItemDaily()
@@ -1641,8 +1674,8 @@ void TestTimeManager::testEventItemWeekly_data()
     QTest::addColumn<QTime>("time");
     QTest::addColumn<QVariantList>("weekDays");
 
-    QTest::newRow("timeEvent - houly 08:10") << QTime(8,10) << (QVariantList() << 6 << 7);
-    QTest::newRow("timeEvent - houly 12:33") << QTime(12,33) << (QVariantList() << 2 << 4 << 7);
+    QTest::newRow("timeEvent - houly 08:10") << QTime(8, 10) << (QVariantList() << 6 << 7);
+    QTest::newRow("timeEvent - houly 12:33") << QTime(12, 33) << (QVariantList() << 2 << 4 << 7);
 }
 
 void TestTimeManager::testEventItemWeekly()
@@ -1723,8 +1756,8 @@ void TestTimeManager::testEventItemMonthly_data()
     QTest::addColumn<QTime>("time");
     QTest::addColumn<QVariantList>("monthDays");
 
-    QTest::newRow("timeEvent - houly 08:10") << QTime(8,10) << (QVariantList() << 1 << 12 << 17 << 19 << 31);
-    QTest::newRow("timeEvent - houly 12:33") << QTime(12,33) << (QVariantList() << 2 << 4 << 7 << 30);
+    QTest::newRow("timeEvent - houly 08:10") << QTime(8, 10) << (QVariantList() << 1 << 12 << 17 << 19 << 31);
+    QTest::newRow("timeEvent - houly 12:33") << QTime(12, 33) << (QVariantList() << 2 << 4 << 7 << 30);
 }
 
 void TestTimeManager::testEventItemMonthly()
@@ -1819,7 +1852,8 @@ void TestTimeManager::testEventItemYearly()
     repeatingOptionYearly.insert("mode", "RepeatingModeYearly");
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action;
+    QVariantMap ruleMap;
+    QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("thingId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
@@ -1870,12 +1904,11 @@ void TestTimeManager::testEventItemYearly()
     verifyRuleError(response);
 }
 
-
 void TestTimeManager::testEventItemStates_data()
 {
     initTimeManager();
 
-    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7, 59)));
 
     // Action (without params)
     QVariantMap action;
@@ -1918,16 +1951,16 @@ void TestTimeManager::testEventItemStates_data()
     QTest::addColumn<bool>("boolValue");
     QTest::addColumn<bool>("trigger");
 
-    QTest::newRow("TimeEvent 07:59 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << false << false;
-    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << true << false;
-    QTest::newRow("TimeEvent 08:00 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << false << false;
-    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << true << false;
-    QTest::newRow("TimeEvent 08:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << true << true;
-    QTest::newRow("TimeEvent 08:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << false;
-    QTest::newRow("TimeEvent 08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << false;
-    QTest::newRow("TimeEvent 08:30 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,30)) << true << false;
-    QTest::newRow("TimeEvent 09:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(9,0)) << true << true;
-    QTest::newRow("TimeEvent 09:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(9,1)) << true << false;
+    QTest::newRow("TimeEvent 07:59 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(7, 59)) << false << false;
+    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7, 59)) << true << false;
+    QTest::newRow("TimeEvent 08:00 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 0)) << false << false;
+    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7, 59)) << true << false;
+    QTest::newRow("TimeEvent 08:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8, 0)) << true << true;
+    QTest::newRow("TimeEvent 08:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 1)) << true << false;
+    QTest::newRow("TimeEvent 08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 1)) << true << false;
+    QTest::newRow("TimeEvent 08:30 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8, 30)) << true << false;
+    QTest::newRow("TimeEvent 09:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(9, 0)) << true << true;
+    QTest::newRow("TimeEvent 09:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(9, 1)) << true << false;
 }
 
 void TestTimeManager::testEventItemStates()
@@ -1950,11 +1983,10 @@ void TestTimeManager::testEventItemStates()
     }
 }
 
-
 void TestTimeManager::testEnableDisableTimeRule()
 {
     initTimeManager();
-    QDateTime dateTime(QDate::currentDate(), QTime(10,15));
+    QDateTime dateTime(QDate::currentDate(), QTime(10, 15));
 
     // Repeating option
     QVariantMap repeatingOptionDaily;
@@ -1970,7 +2002,6 @@ void TestTimeManager::testEnableDisableTimeRule()
     ruleMap.insert("name", "Time based daily event rule");
     ruleMap.insert("actions", QVariantList() << action);
     ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.time().toString("hh:mm"), repeatingOptionDaily)));
-
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1988,7 +2019,6 @@ void TestTimeManager::testEnableDisableTimeRule()
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(1));
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(2));
     verifyRuleNotExecuted();
-
 
     // Now DISABLE the rule
     QVariantMap enableDisableParams;
@@ -2057,7 +2087,8 @@ void TestTimeManager::verifyRuleNotExecuted()
     reply->deleteLater();
 }
 
-void TestTimeManager::cleanupMockHistory() {
+void TestTimeManager::cleanupMockHistory()
+{
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockThing1Port))));
@@ -2154,7 +2185,8 @@ void TestTimeManager::setBoolState(const bool &value)
         QVERIFY2(notification.contains("thingId"), "Integrations.StateChanged notification does not contain thingId");
         QVERIFY2(ThingId(notification.value("thingId").toString()) == m_mockThingId, "Integrations.StateChanged notification does not contain the correct thingId");
         QVERIFY2(notification.contains("stateTypeId"), "Integrations.StateChanged notification does not contain stateTypeId");
-        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockBoolStateTypeId, "Integrations.StateChanged notification does not contain the correct stateTypeId");
+        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockBoolStateTypeId,
+                 "Integrations.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Integrations.StateChanged notification does not contain new state value");
         QVERIFY2(notification.value("value").toBool() == value, "Integrations.StateChanged notification does not contain the new value");
     }

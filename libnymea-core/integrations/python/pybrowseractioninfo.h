@@ -25,8 +25,8 @@
 #ifndef PYBROWSERACTIONINFO_H
 #define PYBROWSERACTIONINFO_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "pything.h"
 
@@ -54,21 +54,21 @@
  *
  */
 
-typedef struct {
-    PyObject_HEAD
-    BrowserActionInfo* info;
+typedef struct
+{
+    PyObject_HEAD BrowserActionInfo *info;
     PyThing *pyThing;
     PyObject *pyItemId;
 } PyBrowserActionInfo;
 
-
-static PyObject* PyBrowserActionInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
-    PyBrowserActionInfo *self = (PyBrowserActionInfo*)type->tp_alloc(type, 0);
+static PyObject *PyBrowserActionInfo_new(PyTypeObject *type, PyObject * /*args*/, PyObject * /*kwds*/)
+{
+    PyBrowserActionInfo *self = (PyBrowserActionInfo *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qCDebug(dcPythonIntegrations()) << "+++ PyBrowserActionInfo";
-    return (PyObject*)self;
+    return (PyObject *) self;
 }
 
 void PyBrowserActionInfo_setInfo(PyBrowserActionInfo *self, BrowserActionInfo *info, PyThing *pyThing)
@@ -79,7 +79,7 @@ void PyBrowserActionInfo_setInfo(PyBrowserActionInfo *self, BrowserActionInfo *i
     self->pyItemId = PyUnicode_FromString(info->browserAction().itemId().toUtf8());
 }
 
-static void PyBrowserActionInfo_dealloc(PyBrowserActionInfo * self)
+static void PyBrowserActionInfo_dealloc(PyBrowserActionInfo *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyBrowserActionInfo";
     Py_DECREF(self->pyThing);
@@ -87,7 +87,8 @@ static void PyBrowserActionInfo_dealloc(PyBrowserActionInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyBrowserActionInfo_finish(PyBrowserActionInfo* self, PyObject* args) {
+static PyObject *PyBrowserActionInfo_finish(PyBrowserActionInfo *self, PyObject *args)
+{
     int status;
     char *message = nullptr;
 
@@ -109,25 +110,23 @@ static PyObject * PyBrowserActionInfo_finish(PyBrowserActionInfo* self, PyObject
 static PyMemberDef PyBrowserActionInfo_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyBrowserActionInfo, pyThing), 0, "Thing this action is for"},
     {"itemId", T_OBJECT_EX, offsetof(PyBrowserActionInfo, pyItemId), 0, "The browser item id to be executed"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyMethodDef PyBrowserActionInfo_methods[] = {
-    { "finish", (PyCFunction)PyBrowserActionInfo_finish, METH_VARARGS, "finish an action" },
-    {nullptr, nullptr, 0, nullptr} // sentinel
+    {"finish", (PyCFunction) PyBrowserActionInfo_finish, METH_VARARGS, "finish an action"}, {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyBrowserActionInfoType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.BrowserActionInfo",    /* tp_name */
-    sizeof(PyBrowserActionInfo),  /* tp_basicsize */
-    0,                           /* tp_itemsize */
-    (destructor)PyBrowserActionInfo_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.BrowserActionInfo", /* tp_name */
+    sizeof(PyBrowserActionInfo),                              /* tp_basicsize */
+    0,                                                        /* tp_itemsize */
+    (destructor) PyBrowserActionInfo_dealloc,                 /* tp_dealloc */
 };
 
 static void registerBrowserActionInfoType(PyObject *module)
 {
-    PyBrowserActionInfoType.tp_new = (newfunc)PyBrowserActionInfo_new;
+    PyBrowserActionInfoType.tp_new = (newfunc) PyBrowserActionInfo_new;
     PyBrowserActionInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyBrowserActionInfoType.tp_methods = PyBrowserActionInfo_methods;
     PyBrowserActionInfoType.tp_members = PyBrowserActionInfo_members;
@@ -136,9 +135,8 @@ static void registerBrowserActionInfoType(PyObject *module)
     if (PyType_Ready(&PyBrowserActionInfoType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "BrowserActionInfo", (PyObject *)&PyBrowserActionInfoType);
+    PyModule_AddObject(module, "BrowserActionInfo", (PyObject *) &PyBrowserActionInfoType);
 }
-
 
 #pragma GCC diagnostic pop
 

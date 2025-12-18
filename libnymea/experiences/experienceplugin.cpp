@@ -24,17 +24,13 @@
 
 #include "experienceplugin.h"
 
-ExperiencePlugin::ExperiencePlugin(QObject *parent) : QObject(parent)
-{
-
-}
+ExperiencePlugin::ExperiencePlugin(QObject *parent)
+    : QObject(parent)
+{}
 
 /*! This method will be called when the plugin has been completely loaded and experience
     logic may start operating. A plugin can reimplment this to do initialisation code. */
-void ExperiencePlugin::init()
-{
-
-}
+void ExperiencePlugin::init() {}
 
 /*! Returns a pointer to the DeviceManager. The pointer won't be valid unless init() has been called. */
 ThingManager *ExperiencePlugin::thingManager()
@@ -47,7 +43,6 @@ JsonRPCServer *ExperiencePlugin::jsonRpcServer()
 {
     return m_jsonRpcServer;
 }
-
 
 void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer)
 {

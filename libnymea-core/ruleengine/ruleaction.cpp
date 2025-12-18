@@ -24,45 +24,35 @@
 
 #include "ruleaction.h"
 
-RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId, const RuleActionParams &params):
-    m_thingId(thingId),
-    m_actionTypeId(actionTypeId),
-    m_ruleActionParams(params)
-{
+RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId, const RuleActionParams &params)
+    : m_thingId(thingId)
+    , m_actionTypeId(actionTypeId)
+    , m_ruleActionParams(params)
+{}
 
-}
+RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params)
+    : m_interface(interface)
+    , m_interfaceAction(interfaceAction)
+    , m_ruleActionParams(params)
+{}
 
-RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params) :
-    m_interface(interface),
-    m_interfaceAction(interfaceAction),
-    m_ruleActionParams(params)
-{
+RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId)
+    : m_thingId(thingId)
+    , m_browserItemId(browserItemId)
+{}
 
-}
-
-RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId):
-    m_thingId(thingId),
-    m_browserItemId(browserItemId)
-{
-
-}
-
-RuleAction::RuleAction(const RuleAction &other) :
-    m_thingId(other.thingId()),
-    m_actionTypeId(other.actionTypeId()),
-    m_browserItemId(other.browserItemId()),
-    m_interface(other.interface()),
-    m_interfaceAction(other.interfaceAction()),
-    m_ruleActionParams(other.ruleActionParams())
-{
-
-}
+RuleAction::RuleAction(const RuleAction &other)
+    : m_thingId(other.thingId())
+    , m_actionTypeId(other.actionTypeId())
+    , m_browserItemId(other.browserItemId())
+    , m_interface(other.interface())
+    , m_interfaceAction(other.interfaceAction())
+    , m_ruleActionParams(other.ruleActionParams())
+{}
 
 bool RuleAction::isValid() const
 {
-    return (!m_actionTypeId.isNull() && !m_thingId.isNull())
-            || (!m_interface.isEmpty() && !m_interfaceAction.isEmpty())
-            || (!m_thingId.isNull() && !m_browserItemId.isEmpty());
+    return (!m_actionTypeId.isNull() && !m_thingId.isNull()) || (!m_interface.isEmpty() && !m_interfaceAction.isEmpty()) || (!m_thingId.isNull() && !m_browserItemId.isEmpty());
 }
 
 RuleAction::Type RuleAction::type() const
@@ -205,7 +195,9 @@ void RuleAction::operator=(const RuleAction &other)
 QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", ThingId:" << ruleAction.thingId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << '\n';
+    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", ThingId:" << ruleAction.thingId().toString()
+                  << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")"
+                  << '\n';
     for (int i = 0; i < ruleAction.ruleActionParams().count(); i++) {
         dbg.nospace() << "    " << i << ": " << ruleAction.ruleActionParams().at(i) << '\n';
     }
@@ -216,21 +208,17 @@ QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleActionList (count:" << ruleActionList.count() << "):" << '\n';
-    for (int i = 0; i < ruleActionList.count(); i++ ) {
+    for (int i = 0; i < ruleActionList.count(); i++) {
         dbg.nospace() << "  " << i << ": " << ruleActionList.at(i);
     }
     return dbg;
 }
 
-RuleActions::RuleActions()
-{
+RuleActions::RuleActions() {}
 
-}
-
-RuleActions::RuleActions(const QList<RuleAction> &other): QList<RuleAction>(other)
-{
-
-}
+RuleActions::RuleActions(const QList<RuleAction> &other)
+    : QList<RuleAction>(other)
+{}
 
 QVariant RuleActions::get(int index) const
 {

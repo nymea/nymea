@@ -63,6 +63,6 @@ private:
     QTimer m_timeoutTimer;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MODBUSRTUREPLYIMPL_H

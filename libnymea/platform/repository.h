@@ -51,7 +51,7 @@ private:
 };
 Q_DECLARE_METATYPE(Repository)
 
-class Repositories: public QList<Repository>
+class Repositories : public QList<Repository>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

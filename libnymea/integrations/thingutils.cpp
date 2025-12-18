@@ -30,10 +30,7 @@
 #include <QJsonParseError>
 #include <QMetaEnum>
 
-ThingUtils::ThingUtils()
-{
-
-}
+ThingUtils::ThingUtils() {}
 
 /*! Verify if the given \a params matches the given \a paramTypes.*/
 Thing::ThingError ThingUtils::verifyParams(const QList<ParamType> paramTypes, const ParamList &params)
@@ -83,12 +80,14 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
     }
 
     if (!param.value().canConvert(static_cast<int>(paramType.type()))) {
-        qCWarning(dcThing()) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(static_cast<int>(paramType.type()));
+        qCWarning(dcThing()) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value()
+                             << " Expected:" << QVariant::typeToName(static_cast<int>(paramType.type()));
         return Thing::ThingErrorInvalidParameter;
     }
 
     if (!param.value().convert(static_cast<int>(paramType.type()))) {
-        qCWarning(dcThing()) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(static_cast<int>(paramType.type())) << " Got:" << param.value();
+        qCWarning(dcThing()) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(static_cast<int>(paramType.type()))
+                             << " Got:" << param.value();
         return Thing::ThingErrorInvalidParameter;
     }
 
@@ -193,7 +192,7 @@ Interface ThingUtils::loadInterface(const QString &name)
 
         InterfaceParamType paramType;
         paramType.setName(paramMap.value("name").toString());
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(paramMap.value("type").toString().toUtf8()).id()));
 #else
         paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(paramMap.value("type").toByteArray())));
@@ -230,7 +229,7 @@ Interface ThingUtils::loadInterface(const QString &name)
         QVariantMap stateMap = stateVariant.toMap();
         InterfaceStateType stateType;
         stateType.setName(stateMap.value("name").toString());
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         stateType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(stateMap.value("type").toString().toUtf8()).id()));
 #else
         stateType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(stateMap.value("type").toByteArray())));
@@ -282,15 +281,15 @@ Interface ThingUtils::loadInterface(const QString &name)
         InterfaceActionType actionType;
         actionType.setName(actionVariant.toMap().value("name").toString());
         actionType.setOptional(actionVariant.toMap().value("optional").toBool());
-//        if (actionVariant.toMap().contains("logged")) {
-//            actionType.setLoggingOverride(true);
-//            actionType.setSuggestLogging(actionVariant.toMap().value("logged").toBool());
-//        }
+        //        if (actionVariant.toMap().contains("logged")) {
+        //            actionType.setLoggingOverride(true);
+        //            actionType.setSuggestLogging(actionVariant.toMap().value("logged").toBool());
+        //        }
         ParamTypes paramTypes;
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(actionParamVariant.toMap().value("name").toString());
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(actionParamVariant.toMap().value("type").toString().toUtf8()).id()));
 #else
             paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(actionParamVariant.toMap().value("type").toByteArray())));
@@ -321,7 +320,7 @@ Interface ThingUtils::loadInterface(const QString &name)
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(eventParamVariant.toMap().value("name").toString());
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             paramType.setType(static_cast<QMetaType::Type>(QMetaType::fromName(eventParamVariant.toMap().value("type").toString().toUtf8()).id()));
 #else
             paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(eventParamVariant.toMap().value("type").toByteArray())));
@@ -403,7 +402,7 @@ QStringList ThingUtils::generateInterfaceParentList(const QString &interface)
 bool ThingUtils::variantLessThan(const QVariant &leftHandSide, const QVariant &rightHandSide)
 {
     // Note: https://www.mail-archive.com/development@qt-project.org/msg39450.html
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return (QVariant::compare(leftHandSide, rightHandSide) == QPartialOrdering::Less);
 #else
     return leftHandSide < rightHandSide;
@@ -413,7 +412,7 @@ bool ThingUtils::variantLessThan(const QVariant &leftHandSide, const QVariant &r
 bool ThingUtils::variantGreaterThan(const QVariant &leftHandSide, const QVariant &rightHandSide)
 {
     // Note: https://www.mail-archive.com/development@qt-project.org/msg39450.html
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return (QVariant::compare(leftHandSide, rightHandSide) == QPartialOrdering::Greater);
 #else
     return leftHandSide > rightHandSide;

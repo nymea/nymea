@@ -29,8 +29,8 @@
 
 #include "jsonrpc/jsonhandler.h"
 
-#include "platform/platform.h"
 #include "platform/package.h"
+#include "platform/platform.h"
 #include "platform/repository.h"
 
 namespace nymeaserver {
@@ -84,6 +84,6 @@ private:
     Platform *m_platform = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // SYSTEMHANDLER_H

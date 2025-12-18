@@ -25,8 +25,8 @@
 #ifndef PLUGININFOCACHE_H
 #define PLUGININFOCACHE_H
 
-#include "types/thingclass.h"
 #include "integrations/integrationplugin.h"
+#include "types/thingclass.h"
 
 class PluginInfoCache
 {

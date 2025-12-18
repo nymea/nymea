@@ -25,9 +25,9 @@
 #ifndef BLUETOOTHDISCOVERYREPLY_H
 #define BLUETOOTHDISCOVERYREPLY_H
 
-#include <QObject>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothHostInfo>
+#include <QObject>
 
 #include "libnymea.h"
 
@@ -54,7 +54,6 @@ public:
 signals:
     void finished();
     void errorOccurred(const BluetoothDiscoveryReplyError &error);
-
 };
 
 #endif // BLUETOOTHDISCOVERYREPLY_H

@@ -129,7 +129,6 @@
     \value UnknownOptionError
 */
 
-
 /*! \fn void CoapPdu::getStatusCodeString(const StatusCode &statusCode);
     Returns the human readable status code for the given \a statusCode.
 */
@@ -155,37 +154,37 @@
 #include "coappdu.h"
 #include "coapoption.h"
 
+#include <QDataStream>
+#include <QLoggingCategory>
 #include <QMetaEnum>
 #include <QTime>
-#include <QLoggingCategory>
-#include <QDataStream>
 
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 
 /*! Constructs a CoapPdu with the given \a parent. */
-CoapPdu::CoapPdu(QObject *parent) :
-    QObject(parent),
-    m_version(1),
-    m_messageType(Confirmable),
-    m_reqRspCode(Empty),
-    m_messageId(0),
-    m_contentType(TextPlain),
-    m_payload(QByteArray()),
-    m_error(NoError)
+CoapPdu::CoapPdu(QObject *parent)
+    : QObject(parent)
+    , m_version(1)
+    , m_messageType(Confirmable)
+    , m_reqRspCode(Empty)
+    , m_messageId(0)
+    , m_contentType(TextPlain)
+    , m_payload(QByteArray())
+    , m_error(NoError)
 {
     std::srand(QDateTime::currentMSecsSinceEpoch());
 }
 
 /*! Constructs a CoapPdu from the given \a data with the given \a parent. */
-CoapPdu::CoapPdu(const QByteArray &data, QObject *parent) :
-    QObject(parent),
-    m_version(1),
-    m_messageType(Confirmable),
-    m_reqRspCode(Empty),
-    m_messageId(0),
-    m_contentType(TextPlain),
-    m_payload(QByteArray()),
-    m_error(NoError)
+CoapPdu::CoapPdu(const QByteArray &data, QObject *parent)
+    : QObject(parent)
+    , m_version(1)
+    , m_messageType(Confirmable)
+    , m_reqRspCode(Empty)
+    , m_messageId(0)
+    , m_contentType(TextPlain)
+    , m_payload(QByteArray())
+    , m_error(NoError)
 {
     std::srand(QDateTime::currentMSecsSinceEpoch());
     unpack(data);
@@ -257,7 +256,7 @@ quint16 CoapPdu::messageId() const
 */
 void CoapPdu::createMessageId()
 {
-    setMessageId((quint16)std::rand() % 65536);
+    setMessageId((quint16) std::rand() % 65536);
 }
 
 /*! Sets the messageId of this \l{CoapPdu} to the given \a messageId. */
@@ -295,9 +294,9 @@ void CoapPdu::createToken()
 {
     m_token.clear();
     // make sure that the toke has a minimum size of 1
-    quint8 length = (quint8)(std::rand() % 7) + 1;
+    quint8 length = (quint8) (std::rand() % 7) + 1;
     for (int i = 0; i < length; i++) {
-        m_token.append((char)std::rand() % 256);
+        m_token.append((char) std::rand() % 256);
     }
 }
 
@@ -324,7 +323,6 @@ QList<CoapOption> CoapPdu::options() const
 {
     return m_options;
 }
-
 
 /*! Adds the given \a option with the given \a data to this \l{CoapPdu}.
 
@@ -356,7 +354,7 @@ void CoapPdu::addOption(CoapOption::Option option, const QByteArray &data)
 
     // insert option (keep the list sorted to ensure a positiv option delta)
     int index = 0;
-    for (int i = 0; i < m_options.length(); i ++) {
+    for (int i = 0; i < m_options.length(); i++) {
         index = i;
         if (m_options.at(i).option() <= option) {
             continue;
@@ -426,14 +424,14 @@ QByteArray CoapPdu::pack() const
     QByteArray header;
     header.resize(4);
     header.fill('0');
-    quint8 *rawHeader = (quint8 *)header.data();
+    quint8 *rawHeader = (quint8 *) header.data();
     rawHeader[0] = m_version << 6;
-    rawHeader[0] |= (quint8)m_messageType << 4;
-    rawHeader[0] |= (quint8)m_token.size();
-    rawHeader[1] = (quint8)m_reqRspCode;
-    rawHeader[2] = (quint8)(m_messageId >> 8);
-    rawHeader[3] = (quint8)(m_messageId & 0xff);
-    pduData = QByteArray::fromRawData((char *)rawHeader, 4);
+    rawHeader[0] |= (quint8) m_messageType << 4;
+    rawHeader[0] |= (quint8) m_token.size();
+    rawHeader[1] = (quint8) m_reqRspCode;
+    rawHeader[2] = (quint8) (m_messageId >> 8);
+    rawHeader[3] = (quint8) (m_messageId & 0xff);
+    pduData = QByteArray::fromRawData((char *) rawHeader, 4);
 
     // token
     pduData.append(m_token);
@@ -445,8 +443,8 @@ QByteArray CoapPdu::pack() const
         quint8 optionByte = 0;
 
         // encode option delta
-        quint16 optionDelta = (quint8)option.option() - prevOption;
-        prevOption = (quint8)option.option();
+        quint16 optionDelta = (quint8) option.option() - prevOption;
+        prevOption = (quint8) option.option();
 
         quint8 extendedOptionDeltaByte = 0;
         quint16 bigExtendedOptionDeltaByte = 0;
@@ -481,21 +479,21 @@ QByteArray CoapPdu::pack() const
         }
 
         // add obligatory option byte
-        pduData.append((char)optionByte);
+        pduData.append((char) optionByte);
 
         // check extended option delta bytes
         if (extendedOptionDeltaByte != 0)
-            pduData.append((char)extendedOptionDeltaByte);
+            pduData.append((char) extendedOptionDeltaByte);
 
         if (bigExtendedOptionDeltaByte != 0)
-            pduData.append((char)bigExtendedOptionDeltaByte);
+            pduData.append((char) bigExtendedOptionDeltaByte);
 
         // check extended option length bytes
         if (extendedOptionLengthByte != 0)
-            pduData.append((char)extendedOptionLengthByte);
+            pduData.append((char) extendedOptionLengthByte);
 
         if (bigExtendedOptionLengthByte != 0)
-            pduData.append((char)extendedOptionLengthByte);
+            pduData.append((char) extendedOptionLengthByte);
 
         // add the option data
         pduData.append(option.data());
@@ -503,7 +501,7 @@ QByteArray CoapPdu::pack() const
     pduData.append(optionsData);
 
     if (!m_payload.isEmpty()) {
-        pduData.append((char)255);
+        pduData.append((char) 255);
         pduData.append(m_payload.data());
     }
 
@@ -521,13 +519,13 @@ void CoapPdu::unpack(const QByteArray &data)
     stream >> flags;
 
     setVersion((flags & 0xc0) >> 6);
-//    qCDebug(dcCoap()) << "Version:" << m_version;
+    //    qCDebug(dcCoap()) << "Version:" << m_version;
 
     setMessageType(static_cast<MessageType>((flags & 0x30) >> 4));
-//    qCDebug(dcCoap()) << "Message Type:" << messageType();
+    //    qCDebug(dcCoap()) << "Message Type:" << messageType();
 
     quint8 tokenLength = flags & 0x0f;
-//    qCDebug(dcCoap()) << "Token length:" << tokenLength;
+    //    qCDebug(dcCoap()) << "Token length:" << tokenLength;
     if (tokenLength > 8) {
         qCWarning(dcCoap()) << "Inavalid token length" << tokenLength;
         m_error = InvalidTokenError;
@@ -537,12 +535,12 @@ void CoapPdu::unpack(const QByteArray &data)
     quint8 reqRspCode;
     stream >> reqRspCode;
     setReqRspCode(static_cast<ReqRspCode>(reqRspCode));
-//    qCDebug(dcCoap()) << "Req/Rsp code:" << reqRspCode();
+    //    qCDebug(dcCoap()) << "Req/Rsp code:" << reqRspCode();
 
     quint16 messageId;
     stream >> messageId;
     setMessageId(messageId);
-//    qCDebug(dcCoap()) << "Message ID:" << messageId;
+    //    qCDebug(dcCoap()) << "Message ID:" << messageId;
     char tokenData[tokenLength];
     if (stream.readRawData(tokenData, tokenLength) != tokenLength) {
         qCWarning(dcCoap()) << "Token data not complete.";
@@ -551,13 +549,12 @@ void CoapPdu::unpack(const QByteArray &data)
     }
     QByteArray token(tokenData, tokenLength);
     setToken(token);
-//    qCDebug(dcCoap()) << "Token:" << token.toHex();
-
+    //    qCDebug(dcCoap()) << "Token:" << token.toHex();
 
     while (!stream.atEnd()) {
         quint8 optionByte;
         stream >> optionByte;
-//        qCDebug(dcCoap()) << "OptionByte:" << optionByte;
+        //        qCDebug(dcCoap()) << "OptionByte:" << optionByte;
 
         if (optionByte == 0xff) {
             char payloadData[65507]; // Max UDP datagram size
@@ -570,37 +567,37 @@ void CoapPdu::unpack(const QByteArray &data)
 
         quint16 optionDelta;
         optionDelta = (optionByte & 0xf0) >> 4;
-//        qCDebug(dcCoap()) << "Option delta:" << optionDelta;
+        //        qCDebug(dcCoap()) << "Option delta:" << optionDelta;
         quint16 optionLength = (optionByte & 0x0f);
-//        qCDebug(dcCoap()) << "Option length:" << optionLength;
+        //        qCDebug(dcCoap()) << "Option length:" << optionLength;
 
         if (optionDelta == 13) {
             quint8 optionDeltaExtended;
             stream >> optionDeltaExtended;
             optionDelta = optionDeltaExtended + 13;
-//            qCDebug(dcCoap()).nospace() << "Extended option delta (8 bit): " << optionDelta << " (" << optionDeltaExtended << " + 13)";
+            //            qCDebug(dcCoap()).nospace() << "Extended option delta (8 bit): " << optionDelta << " (" << optionDeltaExtended << " + 13)";
         } else if (optionDelta == 14) {
             quint16 optionDeltaExtended;
             stream >> optionDeltaExtended;
             optionDelta = optionDeltaExtended + 269;
-//            qCDebug(dcCoap()).nospace() << "Extended option delta (16 bit): " << optionDelta << " (" << optionDeltaExtended << " + 269)";
+            //            qCDebug(dcCoap()).nospace() << "Extended option delta (16 bit): " << optionDelta << " (" << optionDeltaExtended << " + 269)";
         }
 
         if (optionLength == 13) {
             quint8 optionLengthExtended;
             stream >> optionLengthExtended;
             optionLength = optionLengthExtended + 13;
-//            qCDebug(dcCoap()).nospace() << "Extended option length (8 bit): " << optionLength << " (" << optionLengthExtended << " + 13)";
+            //            qCDebug(dcCoap()).nospace() << "Extended option length (8 bit): " << optionLength << " (" << optionLengthExtended << " + 13)";
         } else if (optionLength == 14) {
             quint16 optionLengthExtended;
             stream >> optionLengthExtended;
             optionLength = optionLengthExtended + 269;
-//            qCDebug(dcCoap()).nospace() << "Extended option kength (16 bit): " << optionDelta << " (" << optionLengthExtended << " + 269)";
+            //            qCDebug(dcCoap()).nospace() << "Extended option kength (16 bit): " << optionDelta << " (" << optionLengthExtended << " + 269)";
         }
 
         char optionData[optionLength];
         stream.readRawData(optionData, optionLength);
-//        qCDebug(dcCoap()) << "Option data:" << QByteArray(optionData, optionLength);
+        //        qCDebug(dcCoap()) << "Option data:" << QByteArray(optionData, optionLength);
 
         addOption(static_cast<CoapOption::Option>(optionDelta), QByteArray(optionData, optionLength));
     }
@@ -618,7 +615,7 @@ QDebug operator<<(QDebug debug, const CoapPdu &coapPdu)
     debug.nospace() << "CoapPdu(" << messageTypeEnum.valueToKey(coapPdu.messageType()) << ")" << '\n';
     debug.nospace() << "  Code: " << CoapPdu::getReqRspCodeString(coapPdu.reqRspCode()) << '\n';
     debug.nospace() << "  Ver: " << coapPdu.version() << '\n';
-    debug.nospace() << "  Token: " << coapPdu.token().length() << " " << "0x"+ coapPdu.token().toHex() << '\n';
+    debug.nospace() << "  Token: " << coapPdu.token().length() << " " << "0x" + coapPdu.token().toHex() << '\n';
     debug.nospace() << "  Message ID: " << coapPdu.messageId() << '\n';
     debug.nospace() << "  Payload size: " << coapPdu.payload().size() << '\n';
     foreach (const CoapOption &option, coapPdu.options()) {

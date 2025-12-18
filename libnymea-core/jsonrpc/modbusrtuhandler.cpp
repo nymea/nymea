@@ -28,9 +28,9 @@
 
 namespace nymeaserver {
 
-ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *parent) :
-    JsonHandler(parent),
-    m_modbusRtuManager(modbusRtuManager)
+ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *parent)
+    : JsonHandler(parent)
+    , m_modbusRtuManager(modbusRtuManager)
 {
     qRegisterMetaType<nymeaserver::SerialPort>();
     registerEnum<ModbusRtuManager::ModbusRtuError>();
@@ -56,7 +56,8 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     QString description;
 
     // GetSerialPorts
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of available serial ports from the host system.";
     returns.insert("serialPorts", objectRef<SerialPorts>());
     registerMethod("GetSerialPorts", description, params, returns);
@@ -74,7 +75,8 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     registerNotification("SerialPortRemoved", description, params);
 
     // GetModbusRtuMasters
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of configured modbus RTU masters.";
     returns.insert("o:modbusRtuMasters", QVariantList() << objectRef("ModbusRtuMaster"));
     returns.insert("modbusError", enumRef<ModbusRtuManager::ModbusRtuError>());
@@ -99,7 +101,8 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     registerNotification("ModbusRtuMasterChanged", description, params);
 
     // AddModbusRtuMaster
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Add a new modbus RTU master with the given configuration. The timeout value is in milli seconds and the minimum value is 10 ms.";
     params.insert("serialPort", enumValueName(String));
     params.insert("baudrate", enumValueName(Uint));
@@ -113,14 +116,16 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     registerMethod("AddModbusRtuMaster", description, params, returns);
 
     // RemoveModbusRtuMaster
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove the modbus RTU master with the given modbus UUID.";
     params.insert("modbusUuid", enumValueName(Uuid));
     returns.insert("modbusError", enumRef<ModbusRtuManager::ModbusRtuError>());
     registerMethod("RemoveModbusRtuMaster", description, params, returns);
 
     // ReconfigureModbusRtuMaster
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Reconfigure the modbus RTU master with the given UUID and configuration.";
     params.insert("modbusUuid", enumValueName(Uuid));
     params.insert("serialPort", enumValueName(String));
@@ -134,32 +139,32 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     registerMethod("ReconfigureModbusRtuMaster", description, params, returns);
 
     // Serial port monitor
-    connect(modbusRtuManager, &ModbusRtuManager::serialPortAdded, this, [=](const SerialPort &serialPort){
+    connect(modbusRtuManager, &ModbusRtuManager::serialPortAdded, this, [=](const SerialPort &serialPort) {
         QVariantMap params;
         params.insert("serialPort", pack(serialPort));
         emit SerialPortAdded(params);
     });
 
-    connect(modbusRtuManager, &ModbusRtuManager::serialPortRemoved, this, [=](const SerialPort &serialPort){
+    connect(modbusRtuManager, &ModbusRtuManager::serialPortRemoved, this, [=](const SerialPort &serialPort) {
         QVariantMap params;
         params.insert("serialPort", pack(serialPort));
         emit SerialPortRemoved(params);
     });
 
     // Modbus manager
-    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster){
+    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster) {
         QVariantMap params;
         params.insert("modbusRtuMaster", packModbusRtuMaster(modbusRtuMaster));
         emit ModbusRtuMasterAdded(params);
     });
 
-    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterChanged, this, [=](ModbusRtuMaster *modbusRtuMaster){
+    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterChanged, this, [=](ModbusRtuMaster *modbusRtuMaster) {
         QVariantMap params;
         params.insert("modbusRtuMaster", packModbusRtuMaster(modbusRtuMaster));
         emit ModbusRtuMasterChanged(params);
     });
 
-    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterRemoved, this, [=](ModbusRtuMaster *modbusRtuMaster){
+    connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterRemoved, this, [=](ModbusRtuMaster *modbusRtuMaster) {
         QVariantMap params;
         params.insert("modbusUuid", modbusRtuMaster->modbusUuid());
         emit ModbusRtuMasterRemoved(params);
@@ -200,7 +205,6 @@ JsonReply *ModbusRtuHandler::GetModbusRtuMasters(const QVariantMap &params)
     } else {
         returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(ModbusRtuManager::ModbusRtuErrorNotSupported));
     }
-
 
     return createReply(returnMap);
 }
@@ -261,7 +265,6 @@ JsonReply *ModbusRtuHandler::ReconfigureModbusRtuMaster(const QVariantMap &param
     return createReply(returnMap);
 }
 
-
 QVariantMap ModbusRtuHandler::packModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)
 {
     QVariantMap modbusRtuMasterMap;
@@ -277,4 +280,4 @@ QVariantMap ModbusRtuHandler::packModbusRtuMaster(ModbusRtuMaster *modbusRtuMast
     return modbusRtuMasterMap;
 }
 
-}
+} // namespace nymeaserver

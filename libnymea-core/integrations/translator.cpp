@@ -25,19 +25,17 @@
 #include "translator.h"
 #include "thingmanagerimplementation.h"
 
-#include <nymeasettings.h>
-#include <loggingcategories.h>
 #include <integrations/integrationplugin.h>
+#include <loggingcategories.h>
+#include <nymeasettings.h>
 
-#include <QDir>
 #include <QCoreApplication>
+#include <QDir>
 #include <QRegularExpression>
 
-Translator::Translator(ThingManagerImplementation *thingManager):
-    m_thingManager(thingManager)
-{
-
-}
+Translator::Translator(ThingManagerImplementation *thingManager)
+    : m_thingManager(thingManager)
+{}
 
 Translator::~Translator()
 {
@@ -61,7 +59,7 @@ QString Translator::translate(const PluginId &pluginId, const QString &string, c
         loadTranslator(plugin, locale);
     }
 
-    QTranslator* translator = m_translatorContexts.value(plugin->pluginId()).translators.value(locale.name());
+    QTranslator *translator = m_translatorContexts.value(plugin->pluginId()).translators.value(locale.name());
     QString translatedString = translator->translate(plugin->pluginName().toUtf8(), string.toUtf8());
     if (translatedString.isEmpty()) {
         translatedString = translator->translate(plugin->metaObject()->className(), string.toUtf8());
@@ -84,14 +82,18 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
 
     bool loaded = false;
     // check if there are local translations
-    QTranslator* translator = new QTranslator();
+    QTranslator *translator = new QTranslator();
 
     if (plugin->isBuiltIn()) {
-        if (translator->load(locale, QCoreApplication::instance()->applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
-            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + QCoreApplication::applicationName() + "-[" + locale.name() + "].qm";
+        if (translator
+                ->load(locale, QCoreApplication::instance()->applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
+            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from"
+                                      << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + QCoreApplication::applicationName() + "-["
+                                             + locale.name() + "].qm";
             loaded = true;
         } else if (translator->load(locale, QCoreApplication::instance()->applicationName(), "-", NymeaSettings::translationsPath(), ".qm")) {
-            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << NymeaSettings::translationsPath()+ "/" + QCoreApplication::applicationName() + "-[" + locale.name() + "].qm";
+            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from"
+                                      << NymeaSettings::translationsPath() + "/" + QCoreApplication::applicationName() + "-[" + locale.name() + "].qm";
             loaded = true;
         }
     } else {
@@ -99,14 +101,17 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
 
         foreach (const QString &pluginPath, m_thingManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {
-                qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(pluginPath + "/translations/").absolutePath();
+                qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from"
+                                          << QDir(pluginPath + "/translations/").absolutePath();
                 loaded = true;
                 break;
             }
             foreach (const QString &subdir, QDir(pluginPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-                qCDebug(dcTranslations()) << "|- Searching for translations for" << plugin->pluginName() << "in subdir" << QDir(pluginPath + "/" + subdir + "/translations/").absolutePath() << locale << pluginId;
+                qCDebug(dcTranslations()) << "|- Searching for translations for" << plugin->pluginName() << "in subdir"
+                                          << QDir(pluginPath + "/" + subdir + "/translations/").absolutePath() << locale << pluginId;
                 if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/" + subdir + "/translations/").absolutePath(), ".qm")) {
-                    qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(pluginPath + "/" + subdir + "/translations/").absolutePath() + "/" + pluginId + "-[" + locale.name() + "].qm";
+                    qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from"
+                                              << QDir(pluginPath + "/" + subdir + "/translations/").absolutePath() + "/" + pluginId + "-[" + locale.name() + "].qm";
                     loaded = true;
                     break;
                 }
@@ -118,7 +123,8 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
 
         // otherwise use the system translations
         if (!loaded && translator->load(locale, pluginId, "-", NymeaSettings::translationsPath(), ".qm")) {
-            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for" << plugin->pluginName() << "from" <<  NymeaSettings::translationsPath() + "/" + pluginId + "-[" + locale.name() + "].qm";
+            qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for" << plugin->pluginName() << "from"
+                                      << NymeaSettings::translationsPath() + "/" + pluginId + "-[" + locale.name() + "].qm";
             loaded = true;
         }
 
@@ -126,7 +132,6 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
             qCDebug(dcTranslations()) << "* Could not load translation" << locale.name() << "for plugin" << plugin->pluginName() << "(" << pluginId << ")";
         }
     }
-
 
     if (!loaded) {
         translator = m_translatorContexts.value(plugin->pluginId()).translators.value("en_US");
@@ -138,5 +143,4 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
         m_translatorContexts.insert(plugin->pluginId(), ctx);
     }
     m_translatorContexts[plugin->pluginId()].translators.insert(locale.name(), translator);
-
 }

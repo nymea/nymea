@@ -26,22 +26,22 @@
 
 #include <QDebug>
 
-ZWaveNode::ZWaveNode(QObject *parent):
-    QObject{parent}
-{
-
-}
+ZWaveNode::ZWaveNode(QObject *parent)
+    : QObject{parent}
+{}
 
 QDebug operator<<(QDebug debug, ZWaveNode *node)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace().noquote() << "\nNode ID: " << node->nodeId() << (node->name().isEmpty() ? "" : ", " + node->name()) << " Z-Wave Version: " << node->version() << (node->isZWavePlusDevice() ? "+" : "") << "\n"
+    debug.nospace().noquote() << "\nNode ID: " << node->nodeId() << (node->name().isEmpty() ? "" : ", " + node->name()) << " Z-Wave Version: " << node->version()
+                              << (node->isZWavePlusDevice() ? "+" : "") << "\n"
                               << "├ Type: " << node->nodeType() << "\n"
                               << "├ Role: " << node->role() << "\n"
                               << "├ DeviceType: " << node->deviceType() << ", Plus DeviceType: " << node->plusDeviceType() << "\n"
                               << "├ Manufacturer: " << node->manufacturerName() << " (" << QString("0x%1").arg(node->manufacturerId(), 4, 16, QChar('0')) << ")\n"
-                              << "├ Product: " << node->productName() << " (" << QString("0x%1").arg(node->productId(), 4, 16, QChar('0')) << "), Product type: " << QString("0x%1").arg(node->productType(), 4, 16, QChar('0')) << "\n";
-    QMap<int,QList<ZWaveValue>> byInstance;
+                              << "├ Product: " << node->productName() << " (" << QString("0x%1").arg(node->productId(), 4, 16, QChar('0'))
+                              << "), Product type: " << QString("0x%1").arg(node->productType(), 4, 16, QChar('0')) << "\n";
+    QMap<int, QList<ZWaveValue>> byInstance;
     foreach (const ZWaveValue &value, node->values()) {
         byInstance[value.instance()].append(value);
     }
@@ -68,9 +68,7 @@ QDebug operator<<(QDebug debug, ZWaveNode *node)
                 debug.nospace().noquote() << instancePrefix << "├ " << genre << "\n";
             }
             QList<ZWaveValue> sorted = byGenre[genre];
-            std::sort(sorted.begin(), sorted.end(), [](const ZWaveValue &left, const ZWaveValue &right){
-                return left.index() < right.index();
-            });
+            std::sort(sorted.begin(), sorted.end(), [](const ZWaveValue &left, const ZWaveValue &right) { return left.index() < right.index(); });
 
             QString genrePrefix = instancePrefix + (isLastGenre ? "  " : "│ ");
 
@@ -87,7 +85,8 @@ QDebug operator<<(QDebug debug, ZWaveNode *node)
                 debug.nospace().noquote() << indexPrefix << "├ Types: " << value.type() << ", " << value.commandClass() << "\n";
                 if (value.type() == ZWaveValue::TypeList) {
                     debug.nospace().noquote() << indexPrefix << "├ Value: " << value.value().toStringList() << "\n";
-                    debug.nospace().noquote() << indexPrefix << "│ └ Selection: " << value.valueListSelection() << " (" << value.value().toList().at(value.valueListSelection()).toString() << ")\n";
+                    debug.nospace().noquote() << indexPrefix << "│ └ Selection: " << value.valueListSelection() << " ("
+                                              << value.value().toList().at(value.valueListSelection()).toString() << ")\n";
                 } else {
                     debug.nospace().noquote() << indexPrefix << "├ Value: " << value.value().toString() << "\n";
                 }

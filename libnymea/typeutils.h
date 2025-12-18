@@ -25,40 +25,58 @@
 #ifndef TYPEUTILS_H
 #define TYPEUTILS_H
 
-#include <QUuid>
 #include <QMetaType>
+#include <QUuid>
 
 #include "libnymea.h"
 
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #include <QAnyStringView>
 
 // Note: do not overload the == operator, we just want a QUuid comparison with QUuid
 //       ISO C++ says that these are ambiguous, even though the worst conversion for
 //       the first is better than the worst conversion for the second
-#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
-{ \
-public: \
-    type##Id(const QUuid &uuid): QUuid(uuid) {} \
-    type##Id(): QUuid() {} \
-    type##Id(const QString &uuidString): QUuid(QAnyStringView(uuidString)) {} \
-    static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
-}; \
-Q_DECLARE_METATYPE(type##Id);
-#else
-#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
-{ \
+#define DECLARE_TYPE_ID(type) \
+    class type##Id : public QUuid \
+    { \
     public: \
-    type##Id(const QUuid &uuid): QUuid(uuid) {} \
-    type##Id(): QUuid() {} \
-    static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
-    bool operator==(const type##Id &other) const { \
-        return toString() == other.toString(); \
-    } \
-}; \
-Q_DECLARE_METATYPE(type##Id);
+        type##Id(const QUuid &uuid) \
+            : QUuid(uuid) \
+        {} \
+        type##Id() \
+            : QUuid() \
+        {} \
+        type##Id(const QString &uuidString) \
+            : QUuid(QAnyStringView(uuidString)) \
+        {} \
+        static type##Id create##type##Id() \
+        { \
+            return type##Id(QUuid::createUuid()); \
+        } \
+    }; \
+    Q_DECLARE_METATYPE(type##Id);
+#else
+#define DECLARE_TYPE_ID(type) \
+    class type##Id : public QUuid \
+    { \
+    public: \
+        type##Id(const QUuid &uuid) \
+            : QUuid(uuid) \
+        {} \
+        type##Id() \
+            : QUuid() \
+        {} \
+        static type##Id create##type##Id() \
+        { \
+            return type##Id(QUuid::createUuid()); \
+        } \
+        bool operator==(const type##Id &other) const \
+        { \
+            return toString() == other.toString(); \
+        } \
+    }; \
+    Q_DECLARE_METATYPE(type##Id);
 #endif
 
 DECLARE_TYPE_ID(Vendor)
@@ -162,20 +180,10 @@ public:
     };
     Q_ENUM(Unit)
 
-    enum ValueOperator {
-        ValueOperatorEquals,
-        ValueOperatorNotEquals,
-        ValueOperatorLess,
-        ValueOperatorGreater,
-        ValueOperatorLessOrEqual,
-        ValueOperatorGreaterOrEqual
-    };
+    enum ValueOperator { ValueOperatorEquals, ValueOperatorNotEquals, ValueOperatorLess, ValueOperatorGreater, ValueOperatorLessOrEqual, ValueOperatorGreaterOrEqual };
     Q_ENUM(ValueOperator)
 
-    enum StateOperator {
-        StateOperatorAnd,
-        StateOperatorOr
-    };
+    enum StateOperator { StateOperatorAnd, StateOperatorOr };
     Q_ENUM(StateOperator)
 
     enum BrowserType {
@@ -183,28 +191,19 @@ public:
     };
     Q_ENUM(BrowserType)
 
-    enum IOType {
-        IOTypeNone,
-        IOTypeDigitalInput,
-        IOTypeDigitalOutput,
-        IOTypeAnalogInput,
-        IOTypeAnalogOutput
-    };
+    enum IOType { IOTypeNone, IOTypeDigitalInput, IOTypeDigitalOutput, IOTypeAnalogInput, IOTypeAnalogOutput };
     Q_ENUM(IOType)
 
-    enum StateValueFilter {
-        StateValueFilterNone,
-        StateValueFilterAdaptive
-    };
+    enum StateValueFilter { StateValueFilterNone, StateValueFilterAdaptive };
     Q_ENUM(StateValueFilter)
 
     enum PermissionScope {
-        PermissionScopeNone             = 0x0000,
-        PermissionScopeControlThings    = 0x0001,
-        PermissionScopeConfigureThings  = 0x0003,
-        PermissionScopeExecuteRules     = 0x0010,
-        PermissionScopeConfigureRules   = 0x0030,
-        PermissionScopeAdmin            = 0xFFFF,
+        PermissionScopeNone = 0x0000,
+        PermissionScopeControlThings = 0x0001,
+        PermissionScopeConfigureThings = 0x0003,
+        PermissionScopeExecuteRules = 0x0010,
+        PermissionScopeConfigureRules = 0x0030,
+        PermissionScopeAdmin = 0xFFFF,
     };
     Q_ENUM(PermissionScope)
     Q_DECLARE_FLAGS(PermissionScopes, PermissionScope)
@@ -233,7 +232,6 @@ public:
         SampleRate1Year = 525600
     };
     Q_ENUM(SampleRate)
-
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

@@ -37,11 +37,10 @@
 #include <QDebug>
 
 /*! Constructs a \l Param with the given \a paramTypeId and \a value of the parameter. */
-Param::Param(const ParamTypeId &paramTypeId, const QVariant &value):
-    m_paramTypeId(paramTypeId),
-    m_value(value)
-{
-}
+Param::Param(const ParamTypeId &paramTypeId, const QVariant &value)
+    : m_paramTypeId(paramTypeId)
+    , m_value(value)
+{}
 
 /*! Returns the paramTypeId of this \l Param. */
 ParamTypeId Param::paramTypeId() const
@@ -88,7 +87,7 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     if (params.count() == 0) {
         dbg.nospace() << '\n';
     }
-    for (int i = 0; i < params.count(); i++ ) {
+    for (int i = 0; i < params.count(); i++) {
         dbg.nospace() << '\n' << "     " << i << ": " << params.at(i);
     }
 
@@ -106,16 +105,12 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
 */
 
 /*! Constructs an empty ParamList. */
-ParamList::ParamList()
-{
-
-}
+ParamList::ParamList() {}
 
 /*! Constructs a ParamList from a QList<Param>. */
-ParamList::ParamList(const QList<Param> &other): QList<Param>(other)
-{
-
-}
+ParamList::ParamList(const QList<Param> &other)
+    : QList<Param>(other)
+{}
 
 QVariant ParamList::get(int index)
 {
@@ -144,7 +139,6 @@ QVariant ParamList::paramValue(const ParamTypeId &paramTypeId) const
     foreach (const Param &param, *this) {
         if (param.paramTypeId() == paramTypeId)
             return param.value();
-
     }
 
     return QVariant();
@@ -154,8 +148,8 @@ QVariant ParamList::paramValue(const ParamTypeId &paramTypeId) const
 bool ParamList::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
-        if (this->operator [](i).paramTypeId() == paramTypeId) {
-            this->operator [](i).setValue(value);
+        if (this->operator[](i).paramTypeId() == paramTypeId) {
+            this->operator[](i).setValue(value);
             return true;
         }
     }

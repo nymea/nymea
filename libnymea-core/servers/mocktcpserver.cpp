@@ -25,26 +25,22 @@
 #include "mocktcpserver.h"
 #include "loggingcategories.h"
 
-#include <QUuid>
 #include <QHash>
 #include <QJsonDocument>
+#include <QUuid>
 
 using namespace nymeaserver;
 
-QList<MockTcpServer*> MockTcpServer::s_allServers;
+QList<MockTcpServer *> MockTcpServer::s_allServers;
 
-MockTcpServer::MockTcpServer(QObject *parent):
-    TransportInterface(ServerConfiguration(), parent)
+MockTcpServer::MockTcpServer(QObject *parent)
+    : TransportInterface(ServerConfiguration(), parent)
 {
     s_allServers.append(this);
 
-    connect(this, &TransportInterface::clientConnected, this, [this](const QUuid &clientId){
-        m_connectedClients.append(clientId);
-    });
+    connect(this, &TransportInterface::clientConnected, this, [this](const QUuid &clientId) { m_connectedClients.append(clientId); });
 
-    connect(this, &TransportInterface::clientDisconnected, this, [this](const QUuid &clientId){
-        m_connectedClients.removeAll(clientId);
-    });
+    connect(this, &TransportInterface::clientDisconnected, this, [this](const QUuid &clientId) { m_connectedClients.removeAll(clientId); });
 }
 
 MockTcpServer::~MockTcpServer()

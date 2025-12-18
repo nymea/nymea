@@ -68,15 +68,15 @@
 #include "nymeasettings.h"
 #include "unistd.h"
 
-#include <QSettings>
 #include <QCoreApplication>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
+#include <QSettings>
 
 /*! Constructs a \l{NymeaSettings} instance with the given \a role and \a parent. */
-NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
-    QObject(parent),
-    m_role(role)
+NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent)
+    : QObject(parent)
+    , m_role(role)
 {
     QString settingsPrefix = QCoreApplication::instance()->organizationName() + "/";
 
@@ -320,4 +320,3 @@ QVariant NymeaSettings::value(const QString &key, const QVariant &defaultValue) 
 {
     return m_settings->value(key, defaultValue);
 }
-

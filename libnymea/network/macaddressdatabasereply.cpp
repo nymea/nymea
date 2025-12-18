@@ -24,7 +24,6 @@
 
 #include "macaddressdatabasereply.h"
 
-MacAddressDatabaseReply::MacAddressDatabaseReply(QObject *parent) : QObject(parent)
-{
-
-}
+MacAddressDatabaseReply::MacAddressDatabaseReply(QObject *parent)
+    : QObject(parent)
+{}

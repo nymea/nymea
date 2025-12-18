@@ -100,8 +100,8 @@
     \tt devicepluginexample.h
 
     \code
-    #include "network/mqtt/mqttprovider.h"
     #include "<nymea-mqtt/mqttclient.h>
+    #include "network/mqtt/mqttprovider.h"
 
     class DevicePluginExample : public DevicePlugin
     {
@@ -230,11 +230,9 @@
     delete the client at any point. The policy attached to it will be removed from the MQTT broker.
 */
 
-
-#include "mqttprovider.h"
 #include "mqttchannel.h"
+#include "mqttprovider.h"
 
-MqttProvider::MqttProvider(QObject *parent) : HardwareResource("MQTT", parent)
-{
-
-}
+MqttProvider::MqttProvider(QObject *parent)
+    : HardwareResource("MQTT", parent)
+{}

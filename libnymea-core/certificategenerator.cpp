@@ -26,13 +26,13 @@
 
 #include "openssl/ssl.h"
 
-#include <QRegularExpression>
-#include <QFileInfo>
-#include <QSaveFile>
-#include <QDir>
-#include <QUuid>
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QLoggingCategory>
+#include <QRegularExpression>
+#include <QSaveFile>
+#include <QUuid>
 
 Q_DECLARE_LOGGING_CATEGORY(dcServerManager)
 
@@ -40,14 +40,14 @@ namespace nymeaserver {
 
 void CertificateGenerator::generate(const QString &certificateFilename, const QString &keyFilename)
 {
-    EVP_PKEY * pkey = nullptr;
-    BIGNUM          *bne = NULL;
-    RSA * rsa = nullptr;
-    X509 * x509 = nullptr;
-    X509_NAME * name = nullptr;
-    BIO * bp_public = nullptr, * bp_private = nullptr;
-    const char * keyBuffer = nullptr;
-    const char * certBuffer = nullptr;
+    EVP_PKEY *pkey = nullptr;
+    BIGNUM *bne = NULL;
+    RSA *rsa = nullptr;
+    X509 *x509 = nullptr;
+    X509_NAME *name = nullptr;
+    BIO *bp_public = nullptr, *bp_private = nullptr;
+    const char *keyBuffer = nullptr;
+    const char *certBuffer = nullptr;
 
     QFileInfo certFi(certificateFilename);
     QFileInfo keyFi(keyFilename);
@@ -83,23 +83,22 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     // completely rejects reused serial numbers and doesn't even allow to bypass it by an exception)
     std::srand(QUuid::createUuid().toString().remove(QRegularExpression("[a-zA-Z{}-]")).left(5).toInt());
     ASN1_INTEGER_set(X509_get_serialNumber(x509), std::rand());
-    X509_gmtime_adj(X509_get_notBefore(x509), 0); // not before current time
-    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L*10); // not after 10 years from this point
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);             // not before current time
+    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L * 10); // not after 10 years from this point
     X509_set_pubkey(x509, pkey);
     name = X509_get_subject_name(x509);
     q_check_ptr(name);
-    X509_NAME_add_entry_by_txt(name, "E", MBSTRING_ASC, (unsigned char *)"nymea", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)"nymea.io", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char *)"home", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)"nymea GmbH", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "L", MBSTRING_ASC, (unsigned char *)"Vienna", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char *)"AT", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "E", MBSTRING_ASC, (unsigned char *) "nymea", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *) "nymea.io", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char *) "home", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *) "nymea GmbH", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "L", MBSTRING_ASC, (unsigned char *) "Vienna", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char *) "AT", -1, -1, 0);
     X509_set_issuer_name(x509, name);
     X509_sign(x509, pkey, EVP_sha256());
     bp_private = BIO_new(BIO_s_mem());
     q_check_ptr(bp_private);
-    if(PEM_write_bio_PrivateKey(bp_private, pkey, nullptr, nullptr, 0, nullptr, nullptr) != 1)
-    {
+    if (PEM_write_bio_PrivateKey(bp_private, pkey, nullptr, nullptr, 0, nullptr, nullptr) != 1) {
         BN_free(bne);
         EVP_PKEY_free(pkey);
         X509_free(x509);
@@ -109,9 +108,7 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     }
     bp_public = BIO_new(BIO_s_mem());
     q_check_ptr(bp_public);
-    if(PEM_write_bio_X509(bp_public, x509) != 1)
-    {
-
+    if (PEM_write_bio_X509(bp_public, x509) != 1) {
         BN_free(bne);
         EVP_PKEY_free(pkey);
         X509_free(x509);
@@ -140,8 +137,6 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     X509_free(x509);
     BIO_free_all(bp_public);
     BIO_free_all(bp_private);
-
 }
 
-}
-
+} // namespace nymeaserver

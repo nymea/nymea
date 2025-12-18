@@ -25,19 +25,20 @@
 #include "macaddressdatabase.h"
 #include "loggingcategories.h"
 
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QFileInfo>
-#include <QTimer>
 #include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
 #include <QStandardPaths>
+#include <QTimer>
 #include <QtConcurrent/QtConcurrent>
 
 NYMEA_LOGGING_CATEGORY(dcMacAddressDatabase, "MacAddressDatabase")
 
 namespace nymeaserver {
 
-MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
+MacAddressDatabase::MacAddressDatabase(QObject *parent)
+    : QObject(parent)
 {
     // Find database in system data locations
     QString databaseFileName;
@@ -52,11 +53,11 @@ MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
     }
 
     if (databaseFileName.isEmpty()) {
-        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths"
+                                          << QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
         qCWarning(dcMacAddressDatabase()) << "The mac address database lookup feature will not be available.";
         return;
     }
-
 
     m_databaseName = databaseFileName;
 
@@ -67,9 +68,9 @@ MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
     }
 }
 
-MacAddressDatabase::MacAddressDatabase(const QString &databaseName, QObject *parent) :
-    QObject(parent),
-    m_databaseName(databaseName)
+MacAddressDatabase::MacAddressDatabase(const QString &databaseName, QObject *parent)
+    : QObject(parent)
+    , m_databaseName(databaseName)
 {
     m_available = initDatabase();
     if (m_available) {
@@ -97,7 +98,7 @@ MacAddressDatabaseReply *MacAddressDatabase::lookupMacAddress(const QString &mac
     reply->m_macAddress = macAddress;
 
     if (!m_available) {
-        QTimer::singleShot(0, this, [=](){ emit reply->finished(); });
+        QTimer::singleShot(0, this, [=]() { emit reply->finished(); });
         return reply;
     }
 
@@ -162,7 +163,8 @@ void MacAddressDatabase::onLookupFinished()
 {
     if (m_currentReply) {
         QString manufacturer = m_futureWatcher->future().result();
-        qCInfo(dcMacAddressDatabase()) << "Manufacturer lookup for" << m_currentReply->macAddress() << "finished:" << manufacturer << QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp << "ms";
+        qCInfo(dcMacAddressDatabase()) << "Manufacturer lookup for" << m_currentReply->macAddress() << "finished:" << manufacturer
+                                       << QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp << "ms";
         m_currentReply->m_manufacturer = manufacturer;
         emit m_currentReply->finished();
         m_currentReply = nullptr;
@@ -232,4 +234,4 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
     return manufacturer;
 }
 
-}
+} // namespace nymeaserver

@@ -63,7 +63,6 @@
     \sa autoConnectingChanged
 */
 
-
 /*! \fn void BluetoothLowEnergyDevice::setAutoConnecting(const bool &autoConnecting);
     Sets the reconnecting behaviour of this BluetoothLowEnergyDevice. If the \a autoConnecting is true,
     the BluetoothLowEnergyDevice will reconnect by it self on disconnected.
@@ -95,8 +94,6 @@
     in order to provide the full Qt Bluetooth LE functionality.
 */
 
-
-
 /*! \fn void BluetoothLowEnergyDevice::connectedChanged(const bool &connected);
     This signal will be emitted whenever the \a connected state of this BluetoothLowEnergyDevice changed.
 
@@ -126,8 +123,6 @@
 #include "bluetoothlowenergydevice.h"
 
 /*! Constructs a new BluetoothLowEnergyDevice with the given \a parent. */
-BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(QObject *parent) :
-    QObject(parent)
-{
-
-}
+BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(QObject *parent)
+    : QObject(parent)
+{}

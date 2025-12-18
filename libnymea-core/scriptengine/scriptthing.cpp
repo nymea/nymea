@@ -25,9 +25,9 @@
 #include "scriptthing.h"
 
 #include <qqml.h>
-#include <QQmlEngine>
 #include <QJsonDocument>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QRegularExpression>
 
 #include <QLoggingCategory>
@@ -38,9 +38,7 @@ namespace scriptengine {
 
 ScriptThing::ScriptThing(QObject *parent)
     : QObject{parent}
-{
-
-}
+{}
 
 ScriptThing::ScriptThing(ThingManager *thingManager, QObject *parent)
     : QObject{parent}
@@ -50,13 +48,10 @@ ScriptThing::ScriptThing(ThingManager *thingManager, QObject *parent)
 
 void ScriptThing::classBegin()
 {
-    init(reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong()));
+    init(reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong()));
 }
 
-void ScriptThing::componentComplete()
-{
-
-}
+void ScriptThing::componentComplete() {}
 
 QString ScriptThing::thingId() const
 {
@@ -108,7 +103,8 @@ void ScriptThing::executeAction(const QString &actionName, const QVariantMap &pa
         actionType = thing->thingClass().actionTypes().findById(QUuid(actionName));
     }
     if (actionType.id().isNull()) {
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have action" << actionName;
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "Thing" << thing->name() << "does not have action" << actionName;
         return;
     }
 
@@ -130,27 +126,29 @@ void ScriptThing::executeAction(const QString &actionName, const QVariantMap &pa
     action.setParams(paramList);
     qCDebug(dcScriptEngine()) << "Executing action:" << action.thingId().toString() << action.actionTypeId().toString() << action.params();
     m_thingManager->executeAction(action);
-
 }
 
 void ScriptThing::init(ThingManager *thingManager)
 {
     m_thingManager = thingManager;
-    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing){
+    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing) {
         if (newThing->id() == m_thingId) {
             qCDebug(dcScriptEngine()) << "Thing" << newThing->name() << "appeared in system";
             connectToThing();
         }
     });
-    connect(m_thingManager, &ThingManager::thingStateChanged, this, [=](Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue){
-        Q_UNUSED(minValue)
-        Q_UNUSED(maxValue)
-        if (m_thingId != thing->id()) {
-            return;
-        }
-        emit stateValueChanged(thing->thingClass().getStateType(stateTypeId).name(), value);
-    });
-    connect(m_thingManager, &ThingManager::eventTriggered, this, [=](const Event &event){
+    connect(m_thingManager,
+            &ThingManager::thingStateChanged,
+            this,
+            [=](Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue) {
+                Q_UNUSED(minValue)
+                Q_UNUSED(maxValue)
+                if (m_thingId != thing->id()) {
+                    return;
+                }
+                emit stateValueChanged(thing->thingClass().getStateType(stateTypeId).name(), value);
+            });
+    connect(m_thingManager, &ThingManager::eventTriggered, this, [=](const Event &event) {
         if (m_thingId != event.thingId()) {
             return;
         }
@@ -166,7 +164,7 @@ void ScriptThing::init(ThingManager *thingManager)
         // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
         emit eventTriggered(thing->thingClass().eventTypes().findById(event.eventTypeId()).name(), QJsonDocument::fromVariant(params).toVariant().toMap());
     });
-    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status){
+    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status) {
         if (m_thingId != action.thingId()) {
             return;
         }
@@ -180,7 +178,10 @@ void ScriptThing::init(ThingManager *thingManager)
         }
 
         // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
-        emit actionExecuted(thing->thingClass().actionTypes().findById(action.actionTypeId()).name(), QJsonDocument::fromVariant(params).toVariant().toMap(), status, action.triggeredBy());
+        emit actionExecuted(thing->thingClass().actionTypes().findById(action.actionTypeId()).name(),
+                            QJsonDocument::fromVariant(params).toVariant().toMap(),
+                            status,
+                            action.triggeredBy());
     });
 }
 
@@ -194,8 +195,7 @@ void ScriptThing::connectToThing()
         return;
     }
 
-
-    m_nameConnection = connect(thing, &Thing::nameChanged, this, [this, thing](){
+    m_nameConnection = connect(thing, &Thing::nameChanged, this, [this, thing]() {
         if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
             qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "completed";
             emit nameChanged();
@@ -203,5 +203,5 @@ void ScriptThing::connectToThing()
     });
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

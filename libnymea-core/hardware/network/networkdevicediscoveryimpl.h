@@ -25,20 +25,20 @@
 #ifndef NETWORKDEVICEDISCOVERYIMPL_H
 #define NETWORKDEVICEDISCOVERYIMPL_H
 
+#include <QDateTime>
 #include <QHash>
+#include <QLoggingCategory>
 #include <QObject>
 #include <QSettings>
-#include <QDateTime>
-#include <QLoggingCategory>
 
-#include <network/networkdeviceinfo.h>
 #include <network/networkdevicediscovery.h>
+#include <network/networkdeviceinfo.h>
 
 #include "macaddressdatabase.h"
 
-#include "networkdevicemonitorimpl.h"
 #include "macaddressdatabasereplyimpl.h"
 #include "networkdevicediscoveryreplyimpl.h"
+#include "networkdevicemonitorimpl.h"
 
 class Ping;
 class ArpSocket;
@@ -79,7 +79,8 @@ protected:
     void setEnabled(bool enabled) override;
 
 private:
-    typedef struct TargetNetwork {
+    typedef struct TargetNetwork
+    {
         QNetworkInterface networkInterface;
         QNetworkAddressEntry addressEntry;
         QHostAddress address;
@@ -99,8 +100,8 @@ private:
     QDateTime m_lastCacheHousekeeping;
 
     uint m_rediscoveryInterval = 300; // 5 min
-    uint m_monitorInterval = 60; // 1 min
-    uint m_cacheCleanupPeriod = 30; // days
+    uint m_monitorInterval = 60;      // 1 min
+    uint m_cacheCleanupPeriod = 30;   // days
 
     NetworkDeviceDiscoveryReplyImpl *m_currentDiscoveryReply = nullptr;
     QList<NetworkDeviceDiscoveryReplyImpl *> m_pendingDiscoveryReplies;
@@ -147,9 +148,8 @@ private slots:
     void finishDiscovery();
 
     void onPluginMonitorDeleted(QObject *);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NETWORKDEVICEDISCOVERYIMPL_H

@@ -23,16 +23,16 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "usershandler.h"
-#include "usermanager/usermanager.h"
 #include "usermanager/userinfo.h"
+#include "usermanager/usermanager.h"
 
 #include "loggingcategories.h"
 
 namespace nymeaserver {
 
-UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
-    JsonHandler(parent),
-    m_userManager(userManager)
+UsersHandler::UsersHandler(UserManager *userManager, QObject *parent)
+    : JsonHandler(parent)
+    , m_userManager(userManager)
 {
     registerFlag<Types::PermissionScope, Types::PermissionScopes>();
     registerObject<UserInfo, UserInfoList>();
@@ -41,8 +41,10 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     QVariantMap params, returns;
     QString description;
 
-    params.clear(); returns.clear();
-    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
+    params.clear();
+    returns.clear();
+    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user "
+                  "will be an admin user. Call Authenticate after this to obtain a device token for this user.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     params.insert("o:email", enumValueName(String));
@@ -51,50 +53,59 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("CreateUser", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Change the password for the currently logged in user.";
     params.insert("newPassword", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("ChangePassword", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get info about the current token (the currently logged in user).";
     returns.insert("o:userInfo", objectRef<UserInfo>());
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("GetUserInfo", description, params, returns, Types::PermissionScopeNone);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all the tokens for the current user.";
     returns.insert("o:tokenInfoList", objectRef<TokenInfoList>());
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("GetTokens", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Revoke access for a given token.";
     params.insert("tokenId", enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("RemoveToken", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Return a list of all users in the system.";
     returns.insert("users", objectRef<UserInfoList>());
     registerMethod("GetUsers", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove a user from the system.";
     params.insert("username", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("RemoveUser", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Set the permissions (scopes) for a given user.";
     params.insert("username", enumValueName(String));
     params.insert("scopes", flagRef<Types::PermissionScopes>());
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("SetUserScopes", description, params, returns);
 
-    params.clear(); returns.clear();
-    description = "Change user info. If username is given, info for the respective user is changed, otherwise the current user info is edited. Requires admin permissions to edit user info other than the own.";
+    params.clear();
+    returns.clear();
+    description = "Change user info. If username is given, info for the respective user is changed, otherwise the current user info is edited. Requires admin permissions to edit "
+                  "user info other than the own.";
     params.insert("o:username", enumValueName(String));
     params.insert("o:displayName", enumValueName(String));
     params.insert("o:email", enumValueName(String));
@@ -126,22 +137,21 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     params.insert("o:token", enumValueName(String));
     registerNotification("PushButtonAuthFinished", description, params);
 
-    connect(m_userManager, &UserManager::userAdded, this, [this](const QString &username){
+    connect(m_userManager, &UserManager::userAdded, this, [this](const QString &username) {
         QVariantMap params;
         params.insert("userInfo", pack(m_userManager->userInfo(username)));
         emit UserAdded(params);
     });
-    connect(m_userManager, &UserManager::userChanged, this, [this](const QString &username){
+    connect(m_userManager, &UserManager::userChanged, this, [this](const QString &username) {
         QVariantMap params;
         params.insert("userInfo", pack(m_userManager->userInfo(username)));
         emit UserChanged(params);
     });
-    connect(m_userManager, &UserManager::userRemoved, this, [this](const QString &username){
+    connect(m_userManager, &UserManager::userRemoved, this, [this](const QString &username) {
         QVariantMap params;
         params.insert("username", username);
         emit UserRemoved(params);
     });
-
 }
 
 QString UsersHandler::name() const
@@ -351,4 +361,4 @@ JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContex
     return createReply(ret);
 }
 
-}
+} // namespace nymeaserver

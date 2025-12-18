@@ -104,8 +104,8 @@
 #include "zeroconfservicebrowser.h"
 
 /*! Constructs a new \l{ZeroConfServiceBrowser} with the given \a parent. */
-ZeroConfServiceBrowser::ZeroConfServiceBrowser(const QString &serviceType, QObject *parent):
-    QObject(parent)
+ZeroConfServiceBrowser::ZeroConfServiceBrowser(const QString &serviceType, QObject *parent)
+    : QObject(parent)
 {
     Q_UNUSED(serviceType)
 }
@@ -114,5 +114,3 @@ QList<ZeroConfServiceEntry> ZeroConfServiceBrowser::serviceEntries() const
 {
     return {};
 }
-
-

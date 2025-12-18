@@ -27,26 +27,19 @@
 
 #include "libnymea.h"
 
-#include <QString>
 #include <qobjectdefs.h>
+#include <QString>
 
 class LIBNYMEA_EXPORT Electricity
 {
     Q_GADGET
 public:
-    enum Phase {
-        PhaseNone = 0x00,
-        PhaseA = 0x01,
-        PhaseB = 0x02,
-        PhaseC = 0x04,
-        PhaseAll = 0x07,
-        PhaseUnknown = 0xff
-    };
+    enum Phase { PhaseNone = 0x00, PhaseA = 0x01, PhaseB = 0x02, PhaseC = 0x04, PhaseAll = 0x07, PhaseUnknown = 0xff };
     Q_DECLARE_FLAGS(Phases, Phase)
     Q_FLAG(Phases)
 
-    static QString convertPhasesToString(const Phases &phases) {
-
+    static QString convertPhasesToString(const Phases &phases)
+    {
         QString phasesString;
 
         if (phases.testFlag(PhaseA))
@@ -61,7 +54,8 @@ public:
         return phasesString;
     };
 
-    static Phases convertPhasesFromString(const QString &phasesString) {
+    static Phases convertPhasesFromString(const QString &phasesString)
+    {
         Phases phases = PhaseNone;
 
         if (phasesString.contains("A"))
@@ -76,7 +70,8 @@ public:
         return phases;
     };
 
-    static uint getPhaseCount(Phases phases) {
+    static uint getPhaseCount(Phases phases)
+    {
         uint count = 0;
 
         if (phases.testFlag(PhaseA))

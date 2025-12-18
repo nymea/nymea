@@ -52,7 +52,6 @@
     This signal is emitted when \a data from \a socket is available.
 */
 
-
 /*!
     \class nymeaserver::TcpServer
     \brief This class represents the tcp server for nymead.
@@ -78,12 +77,11 @@ namespace nymeaserver {
  *
  *  \sa ServerManager
  */
-TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
-    TransportInterface(configuration, parent),
-    m_server(nullptr),
-    m_sslConfig(sslConfiguration)
-{
-}
+TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent)
+    : TransportInterface(configuration, parent)
+    , m_server(nullptr)
+    , m_sslConfig(sslConfiguration)
+{}
 
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
@@ -151,7 +149,7 @@ void TcpServer::onError(QAbstractSocket::SocketError error)
     stopServer();
 }
 
-void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
+void TcpServer::onDataAvailable(QSslSocket *socket, const QByteArray &data)
 {
     qCDebug(dcTcpServerTraffic()) << "Emitting data available";
     QUuid clientId = m_clientList.key(socket);
@@ -171,7 +169,7 @@ void TcpServer::setServerName(const QString &serverName)
 bool TcpServer::startServer()
 {
     m_server = new SslServer(configuration().sslEnabled, m_sslConfig, this);
-    if(!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
+    if (!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
         qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address << configuration().port;
         delete m_server;
         m_server = nullptr;
@@ -213,10 +211,10 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 
     qCDebug(dcTcpServer()) << "New client socket connection:" << sslSocket;
 
-    connect(sslSocket, &QSslSocket::encrypted, this, [this, sslSocket](){ emit clientConnected(sslSocket); });
+    connect(sslSocket, &QSslSocket::encrypted, this, [this, sslSocket]() { emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
-    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    typedef void (QSslSocket::*sslErrorsSignal)(const QList<QSslError> &);
     connect(sslSocket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, [](const QList<QSslError> &errors) {
         qCWarning(dcTcpServer()) << "SSL Errors happened in the client connections:";
         foreach (const QSslError &error, errors) {
@@ -240,7 +238,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 
 void SslServer::onClientDisconnected()
 {
-    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
     qCDebug(dcTcpServer()) << "Client socket disconnected:" << socket;
     emit clientDisconnected(socket);
     socket->deleteLater();
@@ -248,10 +246,10 @@ void SslServer::onClientDisconnected()
 
 void SslServer::onSocketReadyRead()
 {
-    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
     QByteArray data = socket->readAll();
     qCDebug(dcTcpServerTraffic()) << "Reading socket data:" << data;
     emit dataAvailable(socket, data);
 }
 
-}
+} // namespace nymeaserver

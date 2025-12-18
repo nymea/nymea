@@ -22,9 +22,9 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
+#include <QCoreApplication>
 #include <QDebug>
 
 #include "plugininfocompiler.h"
@@ -56,5 +56,4 @@ int main(int argc, char *argv[])
     int ret = pic.compile(parser.positionalArguments().first(), parser.value("output"), parser.value("extern"), parser.value("translations"), strictMode);
 
     return ret;
-
 }

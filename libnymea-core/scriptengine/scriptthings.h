@@ -27,18 +27,16 @@
 
 #include "integrations/thingmanager.h"
 
-#include <QObject>
 #include <QAbstractListModel>
-#include <QSortFilterProxyModel>
+#include <QObject>
 #include <QQmlParserStatus>
-
+#include <QSortFilterProxyModel>
 
 namespace nymeaserver {
 namespace scriptengine {
 
 class ScriptThing;
 class ThingsModel;
-
 
 class ScriptThings : public QSortFilterProxyModel, public QQmlParserStatus
 {
@@ -74,15 +72,12 @@ private:
     QString m_filterInterface;
 };
 
-class ThingsModel: public QAbstractListModel
+class ThingsModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    enum Roles {
-        RoleId,
-        RoleName
-    };
+    enum Roles { RoleId, RoleName };
     ThingsModel(ThingManager *thingManager, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -97,9 +92,8 @@ signals:
 
 private:
     ThingManager *m_thingManager = nullptr;
-
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 #endif // SCRIPTTHINGS_H

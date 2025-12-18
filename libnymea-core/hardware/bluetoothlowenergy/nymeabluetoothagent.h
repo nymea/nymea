@@ -25,10 +25,10 @@
 #ifndef NYMEABLUETOOTHAGENT_H
 #define NYMEABLUETOOTHAGENT_H
 
-#include <QObject>
-#include <QDBusObjectPath>
-#include <QDBusMessage>
 #include <QBluetoothAddress>
+#include <QDBusMessage>
+#include <QDBusObjectPath>
+#include <QObject>
 
 #include <hardware/bluetoothlowenergy/nymeabluetoothagent.h>
 
@@ -36,7 +36,7 @@ namespace nymeaserver {
 
 class NymeaBluetoothAgent;
 
-class NymeaBluetoothAgentAdapter: public QObject
+class NymeaBluetoothAgentAdapter : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.bluez.Agent1")
@@ -59,7 +59,6 @@ public slots:
 
 private:
     NymeaBluetoothAgent *m_agent = nullptr;
-
 };
 
 class NymeaBluetoothAgent : public QObject
@@ -84,6 +83,6 @@ private:
     QHash<QString, QDBusMessage> m_pendingPairings;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NYMEABLUETOOTHAGENT_H

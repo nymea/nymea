@@ -24,10 +24,10 @@
 
 #include "scriptstate.h"
 
-#include <QColor>
 #include <qqml.h>
-#include <QQmlEngine>
+#include <QColor>
 #include <QQmlContext>
+#include <QQmlEngine>
 
 #include "logging/logengine.h"
 
@@ -37,17 +37,16 @@ Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 namespace nymeaserver {
 namespace scriptengine {
 
-ScriptState::ScriptState(QObject *parent) : QObject(parent)
-{
-
-}
+ScriptState::ScriptState(QObject *parent)
+    : QObject(parent)
+{}
 
 void ScriptState::classBegin()
 {
-    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong());
     connect(m_thingManager, &ThingManager::thingStateChanged, this, &ScriptState::onThingStateChanged);
 
-    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing){
+    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing) {
         if (newThing->id() == ThingId(m_thingId)) {
             qCDebug(dcScriptEngine()) << "Thing" << newThing->name() << "appeared in system";
             connectToThing();
@@ -55,13 +54,10 @@ void ScriptState::classBegin()
     });
 
     m_scriptId = qmlEngine(this)->contextForObject(this)->contextProperty("scriptId").toUuid();
-    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger*>();
+    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger *>();
 }
 
-void ScriptState::componentComplete()
-{
-
-}
+void ScriptState::componentComplete() {}
 
 QString ScriptState::thingId() const
 {
@@ -118,7 +114,7 @@ void ScriptState::setStateName(const QString &stateName)
 
 QVariant ScriptState::value() const
 {
-    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+    Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
         QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found.";
         return QVariant();
@@ -138,7 +134,7 @@ void ScriptState::setValue(const QVariant &value)
         return;
     }
 
-    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+    Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
         m_valueCache = value;
         QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found.";
@@ -147,7 +143,8 @@ void ScriptState::setValue(const QVariant &value)
 
     if (thing->setupStatus() != Thing::ThingSetupStatusComplete) {
         m_valueCache = value;
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "(" << m_thingId << ") is not ready yet";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "Thing" << thing->name() << "(" << m_thingId << ") is not ready yet";
         return;
     }
 
@@ -155,19 +152,22 @@ void ScriptState::setValue(const QVariant &value)
     if (!m_stateTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
         if (actionTypeId.isNull()) {
-            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+                << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
         }
     }
     if (actionTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
         if (actionTypeId.isNull()) {
-            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have a state named" << m_stateName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+                << "Thing" << thing->name() << "does not have a state named" << m_stateName;
         }
     }
 
     if (actionTypeId.isNull()) {
         m_valueCache = value;
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Either stateTypeId or stateName is required to be valid.";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "Either stateTypeId or stateName is required to be valid.";
         return;
     }
 
@@ -179,20 +179,15 @@ void ScriptState::setValue(const QVariant &value)
 
     m_valueCache = QVariant();
     m_pendingActionInfo = m_thingManager->executeAction(action);
-    connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this, thing, actionTypeId](){
-
+    connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this, thing, actionTypeId]() {
         ActionType actionType = thing->thingClass().actionTypes().findById(actionTypeId);
-        m_logger->log({m_scriptId.toString(), "action"}, {
-                          {"thingId", thing->id()},
-                          {"action", actionType.name()},
-                          {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(m_pendingActionInfo->status())}
-                      });
+        m_logger->log({m_scriptId.toString(), "action"},
+                      {{"thingId", thing->id()}, {"action", actionType.name()}, {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(m_pendingActionInfo->status())}});
 
         m_pendingActionInfo = nullptr;
         if (!m_valueCache.isNull()) {
             setValue(m_valueCache);
         }
-
     });
 }
 
@@ -256,7 +251,8 @@ void ScriptState::connectToThing()
     }
     Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found (yet - it may still appear).";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "No thing with Id" << m_thingId << "found (yet - it may still appear).";
         return;
     }
 
@@ -265,12 +261,14 @@ void ScriptState::connectToThing()
             setValue(m_valueCache);
         }
     } else {
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Setup for thing" << thing->name() << "(" << m_thingId << ") is not completed yet.";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "Setup for thing" << thing->name() << "(" << m_thingId << ") is not completed yet.";
     }
 
-    m_connection = connect(thing, &Thing::setupStatusChanged, this, [this, thing](){
+    m_connection = connect(thing, &Thing::setupStatusChanged, this, [this, thing]() {
         if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
-            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Setup for" << thing->name() << "(" << m_thingId << ") completed.";
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+                << "Setup for" << thing->name() << "(" << m_thingId << ") completed.";
             if (!m_valueCache.isNull()) {
                 setValue(m_valueCache);
             }
@@ -278,5 +276,5 @@ void ScriptState::connectToThing()
     });
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

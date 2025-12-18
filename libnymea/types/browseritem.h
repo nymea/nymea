@@ -28,8 +28,8 @@
 #include "libnymea.h"
 #include "typeutils.h"
 
-#include <QList>
 #include <QHash>
+#include <QList>
 #include <QVariant>
 
 class LIBNYMEA_EXPORT BrowserItem
@@ -60,13 +60,9 @@ public:
     };
     Q_ENUM(BrowserIcon)
 
-    enum ExtendedProperties {
-        ExtendedPropertiesNone = 0x00,
-        ExtendedPropertiesMedia = 0x01
-    };
+    enum ExtendedProperties { ExtendedPropertiesNone = 0x00, ExtendedPropertiesMedia = 0x01 };
     Q_ENUM(ExtendedProperties)
     Q_DECLARE_FLAGS(ExtendedPropertiesFlags, ExtendedProperties)
-
 
     BrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false, bool executable = false);
 
@@ -119,13 +115,11 @@ protected:
 Q_DECLARE_METATYPE(BrowserItem)
 Q_DECLARE_OPERATORS_FOR_FLAGS(BrowserItem::ExtendedPropertiesFlags)
 
-
-class LIBNYMEA_EXPORT BrowserItems: public QList<BrowserItem>
+class LIBNYMEA_EXPORT BrowserItems : public QList<BrowserItem>
 {
 public:
     BrowserItems();
     BrowserItems(const QList<BrowserItem> &other);
-
 };
 
 #endif // BROWSERITEM_H

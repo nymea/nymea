@@ -45,7 +45,6 @@ private:
     int m_blockNumber;
     int m_blockSize;
     bool m_moreFlag;
-
 };
 
 #endif // COAPPDUBLOCK_H

@@ -27,8 +27,8 @@
 #include "network/zeroconf/zeroconfservicebrowser.h"
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
-PlatformZeroConfController::PlatformZeroConfController(QObject *parent):
-    HardwareResource("ZeroConf", parent)
+PlatformZeroConfController::PlatformZeroConfController(QObject *parent)
+    : HardwareResource("ZeroConf", parent)
 {
     m_zeroConfPublisherDummy = new ZeroConfServicePublisher(this);
 }

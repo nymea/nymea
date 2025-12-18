@@ -24,10 +24,9 @@
 
 #include "zeroconfservicepublisher.h"
 
-ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(parent)
-{
-
-}
+ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent)
+    : QObject(parent)
+{}
 
 /*!
  * \brief ZeroConfServicePublisher::registerService
@@ -39,7 +38,8 @@ ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(pa
  * \return
  */
 
-bool ZeroConfServicePublisher::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+bool ZeroConfServicePublisher::registerService(
+    const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
 {
     Q_UNUSED(name)
     Q_UNUSED(hostAddress)

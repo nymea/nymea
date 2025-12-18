@@ -38,22 +38,18 @@
 
 #include "ioconnection.h"
 
-IOConnection::IOConnection()
-{
-
-}
+IOConnection::IOConnection() {}
 
 /*! Constructs a new IOConnection object. */
-IOConnection::IOConnection(const IOConnectionId &id, const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted):
-    m_id(id),
-    m_inputThingId(inputThing),
-    m_inputStateTypeId(inputState),
-    m_outputThingId(outputThing),
-    m_outputStateTypeId(outputState),
-    m_inverted(inverted)
-{
-
-}
+IOConnection::IOConnection(
+    const IOConnectionId &id, const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted)
+    : m_id(id)
+    , m_inputThingId(inputThing)
+    , m_inputStateTypeId(inputState)
+    , m_outputThingId(outputThing)
+    , m_outputStateTypeId(outputState)
+    , m_inverted(inverted)
+{}
 
 /*! Returns the ID of this connection object. */
 IOConnectionId IOConnection::id() const

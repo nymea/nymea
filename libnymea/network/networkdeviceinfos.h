@@ -52,7 +52,6 @@ public:
     void sortNetworkDevices();
 
     NetworkDeviceInfos &operator<<(const NetworkDeviceInfo &networkDeviceInfo);
-
 };
 
 #endif // NETWORKDEVICEINFOS_H

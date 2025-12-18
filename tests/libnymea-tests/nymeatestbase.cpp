@@ -23,11 +23,11 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
+#include "logging/logengine.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
 #include "usermanager/usermanager.h"
-#include "logging/logengine.h"
 
 using namespace nymeaserver;
 
@@ -35,11 +35,11 @@ Q_LOGGING_CATEGORY(dcTests, "Tests")
 
 #include "../plugins/mock/plugininfo.h"
 
-NymeaTestBase::NymeaTestBase(QObject *parent) :
-    QObject(parent),
-    m_commandId(0)
+NymeaTestBase::NymeaTestBase(QObject *parent)
+    : QObject(parent)
+    , m_commandId(0)
 {
-    qRegisterMetaType<QNetworkReply*>();
+    qRegisterMetaType<QNetworkReply *>();
     std::srand(QDateTime::currentMSecsSinceEpoch());
     m_mockThing1Port = 1337 + (std::rand() % 10000);
     m_mockThing2Port = 7331 + (std::rand() % 10000);
@@ -125,7 +125,6 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
 void NymeaTestBase::cleanupTestCase()
 {
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonTerm);
-
 }
 
 void NymeaTestBase::cleanup()
@@ -152,7 +151,6 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
     int loop = 0;
 
     while (loop < 10) {
-
         if (spy.count() == 0 || loop > 0) {
             spy.wait();
         }
@@ -205,13 +203,13 @@ QVariant NymeaTestBase::checkNotification(const QSignalSpy &spy, const QString &
 
 QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
 {
-//    qWarning() << "Got" << spy.count() << "notifications while waiting for" << notification;
+    //    qWarning() << "Got" << spy.count() << "notifications while waiting for" << notification;
     QVariantList notificationList;
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string
         QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
-//        qCDebug(dcTests()) << "Got packet:" << qUtf8Printable(jsonDoc.toJson());
+        //        qCDebug(dcTests()) << "Got packet:" << qUtf8Printable(jsonDoc.toJson());
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcTests()) << "JSON parser error" << error.errorString();
             return notificationList;
@@ -228,9 +226,7 @@ QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QStr
 QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkReply *reply = nam.get(request);
@@ -266,9 +262,7 @@ QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &ex
 QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkReply *reply = nam.deleteResource(request);
@@ -301,9 +295,7 @@ QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int 
 QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
@@ -320,8 +312,6 @@ QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVaria
         return QVariant();
     }
 
-
-
     QByteArray data = reply->readAll();
     verifyReply(reply, data, expectedStatus);
 
@@ -337,13 +327,10 @@ QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVaria
     return jsonDoc.toVariant();
 }
 
-
 QVariant NymeaTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
@@ -381,12 +368,12 @@ void NymeaTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, co
     QCOMPARE(statusCode, expectedStatus);
 
     Q_UNUSED(data)
-//    if (!data.isEmpty()) {
-//        QJsonParseError error;
-//        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-//        QCOMPARE(error.error, QJsonParseError::NoError);
-//        Q_UNUSED(jsonDoc);
-//    }
+    //    if (!data.isEmpty()) {
+    //        QJsonParseError error;
+    //        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    //        QCOMPARE(error.error, QJsonParseError::NoError);
+    //        Q_UNUSED(jsonDoc);
+    //    }
 }
 
 void NymeaTestBase::enableNotifications(const QStringList &namespaces)

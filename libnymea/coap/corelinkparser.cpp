@@ -50,9 +50,9 @@
 #include <QDebug>
 
 /*! Constructs a CoRE link parser with the given \a parent. The given \a data should contain a CoRE link list from the discovery. */
-CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent) :
-    QObject(parent),
-    m_data(data)
+CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent)
+    : QObject(parent)
+    , m_data(data)
 {
     QList<QByteArray> linkList = data.split(',');
     foreach (const QByteArray &linkLine, linkList) {

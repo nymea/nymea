@@ -28,13 +28,12 @@
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
 
-class DevicePluginExample: public DevicePlugin
+class DevicePluginExample : public DevicePlugin
 {
     Q_OBJECT
 
     Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "deviceplugintemplate.json")
     Q_INTERFACES(DevicePlugin)
-
 
 public:
     explicit DevicePluginExample();
@@ -48,9 +47,7 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-
 private slots:
-
 };
 
 #endif // DEVICEPLUGINEXAMPLE_H

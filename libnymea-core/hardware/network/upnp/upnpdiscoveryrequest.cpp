@@ -27,10 +27,10 @@
 
 namespace nymeaserver {
 
-UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply):
-    QObject(upnpDiscovery),
-    m_upnpDiscovery(upnpDiscovery),
-    m_reply(reply)
+UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply)
+    : QObject(upnpDiscovery)
+    , m_upnpDiscovery(upnpDiscovery)
+    , m_reply(reply)
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(false);
@@ -40,10 +40,11 @@ UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointe
 void UpnpDiscoveryRequest::discover(int timeout)
 {
     m_ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
-                                              "HOST:239.255.255.250:1900\r\n"
-                                              "MAN:\"ssdp:discover\"\r\n"
-                                              "MX:4\r\n"
-                                              "ST: " + reply()->searchTarget().toUtf8() + "\r\n");
+                                     "HOST:239.255.255.250:1900\r\n"
+                                     "MAN:\"ssdp:discover\"\r\n"
+                                     "MX:4\r\n"
+                                     "ST: "
+                                     + reply()->searchTarget().toUtf8() + "\r\n");
     if (!reply()->userAgent().isEmpty()) {
         m_ssdpSearchMessage.append("USR-AGENT: " + reply()->userAgent().toUtf8() + "\r\n");
     }
@@ -78,8 +79,8 @@ QNetworkRequest UpnpDiscoveryRequest::createNetworkRequest(UpnpDeviceDescriptor 
 {
     QNetworkRequest deviceRequest;
     deviceRequest.setUrl(deviveDescriptor.location());
-    deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
-    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader,QVariant(reply()->userAgent()));
+    deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/xml"));
+    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader, QVariant(reply()->userAgent()));
 
     return deviceRequest;
 }
@@ -107,4 +108,4 @@ void UpnpDiscoveryRequest::onTimeout()
     }
 }
 
-}
+} // namespace nymeaserver

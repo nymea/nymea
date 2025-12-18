@@ -26,8 +26,8 @@
 #define ACTION_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "param.h"
+#include "typeutils.h"
 
 #include <QVariantList>
 
@@ -39,11 +39,7 @@ class LIBNYMEA_EXPORT Action
     Q_PROPERTY(ParamList params READ params WRITE setParams USER true)
 
 public:
-    enum TriggeredBy {
-        TriggeredByUser,
-        TriggeredByRule,
-        TriggeredByScript
-    };
+    enum TriggeredBy { TriggeredByUser, TriggeredByRule, TriggeredByScript };
     Q_ENUM(TriggeredBy)
 
     explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), TriggeredBy triggeredBy = TriggeredByUser);
@@ -64,6 +60,7 @@ public:
     TriggeredBy triggeredBy() const;
 
     void operator=(const Action &other);
+
 private:
     ActionTypeId m_actionTypeId;
     ThingId m_thingId;

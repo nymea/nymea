@@ -24,15 +24,17 @@
 
 #include "interface.h"
 
-Interface::Interface(const QString &name, const InterfaceParamTypes &paramTypes, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes):
-    m_name{name},
-    m_paramTypes{paramTypes},
-    m_actionTypes{actionTypes},
-    m_eventTypes{eventTypes},
-    m_stateTypes{stateTypes}
-{
-
-}
+Interface::Interface(const QString &name,
+                     const InterfaceParamTypes &paramTypes,
+                     const InterfaceActionTypes &actionTypes,
+                     const InterfaceEventTypes &eventTypes,
+                     const InterfaceStateTypes &stateTypes)
+    : m_name{name}
+    , m_paramTypes{paramTypes}
+    , m_actionTypes{actionTypes}
+    , m_eventTypes{eventTypes}
+    , m_stateTypes{stateTypes}
+{}
 
 QString Interface::name() const
 {

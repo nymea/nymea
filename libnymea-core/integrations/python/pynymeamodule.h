@@ -27,28 +27,28 @@
 
 #include <Python.h>
 
-#include "pystdouthandler.h"
-#include "pynymealogginghandler.h"
-#include "pything.h"
-#include "pythingdiscoveryinfo.h"
-#include "pythingsetupinfo.h"
-#include "pyparam.h"
-#include "pythingactioninfo.h"
-#include "pythingpairinginfo.h"
-#include "pypluginstorage.h"
 #include "pyapikeystorage.h"
+#include "pybrowseractioninfo.h"
 #include "pybrowseresult.h"
 #include "pybrowseritem.h"
-#include "pybrowseractioninfo.h"
 #include "pybrowseritemresult.h"
+#include "pynymealogginghandler.h"
+#include "pyparam.h"
+#include "pypluginstorage.h"
 #include "pyplugintimer.h"
+#include "pystdouthandler.h"
+#include "pything.h"
+#include "pythingactioninfo.h"
+#include "pythingdiscoveryinfo.h"
+#include "pythingpairinginfo.h"
+#include "pythingsetupinfo.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-static int nymea_exec(PyObject *m) {
-
+static int nymea_exec(PyObject *m)
+{
     registerStdOutHandler(m);
     registerNymeaLoggingHandler(m);
     registerParamType(m);
@@ -70,21 +70,19 @@ static int nymea_exec(PyObject *m) {
 }
 
 static struct PyModuleDef_Slot nymea_slots[] = {
-    {Py_mod_exec, (void*)nymea_exec},
+    {Py_mod_exec, (void *) nymea_exec},
     {0, NULL},
 };
 
-static struct PyModuleDef nymea_module = {
-    PyModuleDef_HEAD_INIT,
-    "nymea",
-    "The nymea module. Provdes types used in the nymea plugin API.",
-    0,
-    nullptr, // methods
-    nymea_slots, // slots
-    nullptr,
-    nullptr,
-    nullptr
-};
+static struct PyModuleDef nymea_module = {PyModuleDef_HEAD_INIT,
+                                          "nymea",
+                                          "The nymea module. Provdes types used in the nymea plugin API.",
+                                          0,
+                                          nullptr,     // methods
+                                          nymea_slots, // slots
+                                          nullptr,
+                                          nullptr,
+                                          nullptr};
 
 PyMODINIT_FUNC PyInit_nymea(void)
 {

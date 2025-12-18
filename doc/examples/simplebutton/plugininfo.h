@@ -42,21 +42,19 @@ Q_DECLARE_LOGGING_CATEGORY(dcSimpleButton)
 Q_LOGGING_CATEGORY(dcSimpleButton, "SimpleButton")
 
 // Translation strings
-const QString translations[] {
-    //: The name of the plugin SimpleButton (28c7b102-3ac8-41f6-8dc0-f4787222a186)
-    QT_TRANSLATE_NOOP("SimpleButton", "Simple button"), 
+const QString translations[]{//: The name of the plugin SimpleButton (28c7b102-3ac8-41f6-8dc0-f4787222a186)
+                             QT_TRANSLATE_NOOP("SimpleButton", "Simple button"),
 
-    //: The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)
-    QT_TRANSLATE_NOOP("SimpleButton", "nymea"), 
+                             //: The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)
+                             QT_TRANSLATE_NOOP("SimpleButton", "nymea"),
 
-    //: The name of the DeviceClass (c16ba02d-c982-4b45-8ca2-1945d94d8e66)
-    QT_TRANSLATE_NOOP("SimpleButton", "Simple button"), 
+                             //: The name of the DeviceClass (c16ba02d-c982-4b45-8ca2-1945d94d8e66)
+                             QT_TRANSLATE_NOOP("SimpleButton", "Simple button"),
 
-    //: The name of the ActionType 64c4ced5-9a1a-4858-81dd-1b5c94dba495 of deviceClass simplebutton
-    QT_TRANSLATE_NOOP("SimpleButton", "press"), 
+                             //: The name of the ActionType 64c4ced5-9a1a-4858-81dd-1b5c94dba495 of deviceClass simplebutton
+                             QT_TRANSLATE_NOOP("SimpleButton", "press"),
 
-    //: The name of the EventType f9652210-9aed-4f38-8c19-2fd54f703fbe of deviceClass simplebutton
-    QT_TRANSLATE_NOOP("SimpleButton", "button pressed")
-};
+                             //: The name of the EventType f9652210-9aed-4f38-8c19-2fd54f703fbe of deviceClass simplebutton
+                             QT_TRANSLATE_NOOP("SimpleButton", "button pressed")};
 
 #endif // PLUGININFO_H

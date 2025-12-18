@@ -88,12 +88,10 @@
 namespace nymeaserver {
 
 /*! Constructs a \l{TransportInterface} with the given \a config and \a parent. */
-TransportInterface::TransportInterface(const ServerConfiguration &config, QObject *parent) :
-    QObject(parent),
-    m_config(config)
-{
-
-}
+TransportInterface::TransportInterface(const ServerConfiguration &config, QObject *parent)
+    : QObject(parent)
+    , m_config(config)
+{}
 
 /*! Set the ServerConfiguration of this TransportInterface to the given \a config. */
 void TransportInterface::setConfiguration(const ServerConfiguration &config)
@@ -114,8 +112,6 @@ void TransportInterface::setServerName(const QString &serverName)
 }
 
 /*! Virtual destructor for \l{TransportInterface}. */
-TransportInterface::~TransportInterface()
-{
-}
+TransportInterface::~TransportInterface() {}
 
-}
+} // namespace nymeaserver

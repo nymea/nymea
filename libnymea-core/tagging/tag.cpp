@@ -28,29 +28,22 @@
 
 namespace nymeaserver {
 
-Tag::Tag()
-{
+Tag::Tag() {}
 
-}
+Tag::Tag(const ThingId &thingId, const QString &appId, const QString &tagId, const QString &value)
+    : m_thingId(thingId)
+    , m_appId(appId)
+    , m_tagId(tagId)
+    , m_value(value)
+{}
 
-Tag::Tag(const ThingId &thingId, const QString &appId, const QString &tagId, const QString &value):
-    m_thingId(thingId),
-    m_appId(appId),
-    m_tagId(tagId),
-    m_value(value)
-{
+Tag::Tag(const RuleId &ruleId, const QString &appId, const QString &tagId, const QString &value)
+    : m_ruleId(ruleId)
+    , m_appId(appId)
+    , m_tagId(tagId)
+    , m_value(value)
 
-}
-
-Tag::Tag(const RuleId &ruleId, const QString &appId, const QString &tagId, const QString &value):
-    m_ruleId(ruleId),
-    m_appId(appId),
-    m_tagId(tagId),
-    m_value(value)
-
-{
-
-}
+{}
 
 ThingId Tag::thingId() const
 {
@@ -104,10 +97,7 @@ void Tag::setValue(const QString &value)
 
 bool Tag::operator==(const Tag &other) const
 {
-    return m_thingId == other.thingId() &&
-            m_ruleId == other.ruleId() &&
-            m_appId == other.appId() &&
-            m_tagId == other.tagId();
+    return m_thingId == other.thingId() && m_ruleId == other.ruleId() && m_appId == other.appId() && m_tagId == other.tagId();
 }
 
 QDebug operator<<(QDebug dbg, const Tag &tag)
@@ -122,15 +112,11 @@ QDebug operator<<(QDebug dbg, const Tag &tag)
     return dbg;
 }
 
-Tags::Tags()
-{
+Tags::Tags() {}
 
-}
-
-Tags::Tags(const QList<Tag> &other): QList<Tag>(other)
-{
-
-}
+Tags::Tags(const QList<Tag> &other)
+    : QList<Tag>(other)
+{}
 
 QVariant Tags::get(int index) const
 {
@@ -142,4 +128,4 @@ void Tags::put(const QVariant &variant)
     append(variant.value<Tag>());
 }
 
-}
+} // namespace nymeaserver

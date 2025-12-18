@@ -63,26 +63,26 @@
 */
 
 #include "usermanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
-#include "pushbuttondbusservice.h"
 #include "nymeacore.h"
+#include "nymeasettings.h"
+#include "pushbuttondbusservice.h"
 
-#include <QUuid>
 #include <QCryptographicHash>
-#include <QSqlQuery>
-#include <QVariant>
-#include <QSqlError>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QUuid>
+#include <QVariant>
 
 namespace nymeaserver {
 
 /*! Constructs a new UserManager with the given \a dbName and \a parent. */
-UserManager::UserManager(const QString &dbName, QObject *parent):
-    QObject(parent)
+UserManager::UserManager(const QString &dbName, QObject *parent)
+    : QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), "users");
     m_db.setDatabaseName(dbName);
@@ -223,9 +223,9 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(newPassword + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QString updatePasswordQueryString = QString("UPDATE users SET password = \"%1\", salt = \"%2\" WHERE lower(username) = \"%3\";")
-            .arg(QString::fromUtf8(hashedPassword))
-            .arg(QString::fromUtf8(salt))
-            .arg(username.toLower());
+                                            .arg(QString::fromUtf8(hashedPassword))
+                                            .arg(QString::fromUtf8(salt))
+                                            .arg(username.toLower());
 
     QSqlQuery updatePasswordQuery(m_db);
     if (!updatePasswordQuery.exec(updatePasswordQueryString)) {
@@ -291,7 +291,8 @@ UserManager::UserError UserManager::setUserInfo(const QString &username, const Q
     query.addBindValue(username);
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager()) << "Error updating user info for user" << username << query.lastError().databaseText() << query.lastError().driverText() << query.executedQuery();
+        qCWarning(dcUserManager()) << "Error updating user info for user" << username << query.lastError().databaseText() << query.lastError().driverText()
+                                   << query.executedQuery();
         return UserErrorBackendError;
     }
     emit userChanged(username);
@@ -332,11 +333,11 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg(username.toLower())
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(deviceName);
+                                        .arg(QUuid::createUuid().toString())
+                                        .arg(username.toLower())
+                                        .arg(QString::fromUtf8(token))
+                                        .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+                                        .arg(deviceName);
 
     QSqlQuery storeTokenQuery(m_db);
     if (!storeTokenQuery.exec(storeTokenQueryString)) {
@@ -383,7 +384,6 @@ void UserManager::cancelPushButtonAuth(int transactionId)
     qCDebug(dcUserManager()) << "Cancelling PushButton transaction for device:" << m_pushButtonTransaction.second;
     emit pushButtonAuthFinished(m_pushButtonTransaction.first, false, QByteArray());
     m_pushButtonTransaction.first = -1;
-
 }
 
 /*! Request UserInfo.
@@ -391,9 +391,7 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 */
 UserInfo UserManager::userInfo(const QString &username) const
 {
-
-    QString getUserQueryString = QString("SELECT * FROM users WHERE lower(username) = \"%1\";")
-            .arg(username);
+    QString getUserQueryString = QString("SELECT * FROM users WHERE lower(username) = \"%1\";").arg(username);
 
     QSqlQuery getUserQuery(m_db);
     if (!getUserQuery.exec(getUserQueryString)) {
@@ -443,8 +441,7 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
         return TokenInfo();
     }
 
-    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
+    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = \"%1\";").arg(QString::fromUtf8(token));
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -460,14 +457,15 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     if (!getTokenQuery.first())
         return TokenInfo();
 
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+    return TokenInfo(getTokenQuery.value("id").toUuid(),
+                     getTokenQuery.value("username").toString(),
+                     getTokenQuery.value("creationdate").toDateTime(),
+                     getTokenQuery.value("devicename").toString());
 }
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
-
-    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
+    QString getTokenQueryString = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";").arg(tokenId.toString());
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -483,14 +481,16 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
     if (!getTokenQuery.first()) {
         return TokenInfo();
     }
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+    return TokenInfo(getTokenQuery.value("id").toUuid(),
+                     getTokenQuery.value("username").toString(),
+                     getTokenQuery.value("creationdate").toDateTime(),
+                     getTokenQuery.value("devicename").toString());
 }
 
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
-    QString removeTokenQueryString = QString("DELETE FROM tokens WHERE id = \"%1\";")
-            .arg(tokenId.toString());
+    QString removeTokenQueryString = QString("DELETE FROM tokens WHERE id = \"%1\";").arg(tokenId.toString());
 
     QSqlQuery removeTokenQuery(m_db);
     if (!removeTokenQuery.exec(removeTokenQueryString)) {
@@ -518,8 +518,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         qCWarning(dcUserManager) << "Token failed character validation" << token;
         return false;
     }
-    QString getTokenQueryString = QString("SELECT * FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
+    QString getTokenQueryString = QString("SELECT * FROM tokens WHERE token = \"%1\";").arg(QString::fromUtf8(token));
 
     QSqlQuery getTokenQuery(m_db);
     if (!getTokenQuery.exec(getTokenQueryString)) {
@@ -562,7 +561,9 @@ bool UserManager::initDB()
     if (!m_db.tables().contains("users")) {
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);") || m_db.lastError().isValid()) {
+        if (!query.exec(
+                "CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);")
+            || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table users).");
             m_db.close();
             return false;
@@ -615,7 +616,8 @@ bool UserManager::initDB()
     if (!m_db.tables().contains("tokens")) {
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));")
+            || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table tokens).");
             m_db.close();
             return false;
@@ -648,7 +650,6 @@ bool UserManager::initDB()
         qCInfo(dcUserManager()) << "Successfully initialized user database.";
     }
 
-
     // Migration from before 1.0:
     // Push button tokens were given out without an explicit user name
     // If we have push button tokens (userId "") but no explicit user, let's create it as admin
@@ -676,7 +677,6 @@ bool UserManager::initDB()
             }
         }
     }
-
 
     qCDebug(dcUserManager()) << "User database initialized successfully.";
     return true;
@@ -758,11 +758,11 @@ void UserManager::onPushButtonPressed()
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
-            .arg(QUuid::createUuid().toString())
-            .arg("")
-            .arg(QString::fromUtf8(token))
-            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
-            .arg(m_pushButtonTransaction.second);
+                                        .arg(QUuid::createUuid().toString())
+                                        .arg("")
+                                        .arg(QString::fromUtf8(token))
+                                        .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+                                        .arg(m_pushButtonTransaction.second);
 
     QSqlQuery storeTokenQuery(m_db);
     if (!storeTokenQuery.exec(storeTokenQueryString) || m_db.lastError().type() != QSqlError::NoError) {
@@ -777,4 +777,4 @@ void UserManager::onPushButtonPressed()
     m_pushButtonTransaction.first = -1;
 }
 
-}
+} // namespace nymeaserver

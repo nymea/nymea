@@ -34,13 +34,12 @@
 #include "coaprequest.h"
 
 /*! Constructs a CoAP request for the given \a url. */
-CoapRequest::CoapRequest(const QUrl &url) :
-    m_url(url),
-    m_contentType(CoapPdu::TextPlain),
-    m_messageType(CoapPdu::Confirmable),
-    m_reqRspCode(CoapPdu::Empty)
-{
-}
+CoapRequest::CoapRequest(const QUrl &url)
+    : m_url(url)
+    , m_contentType(CoapPdu::TextPlain)
+    , m_messageType(CoapPdu::Confirmable)
+    , m_reqRspCode(CoapPdu::Empty)
+{}
 
 /*! Sets the URL of this CoAP request to the given \a url. */
 void CoapRequest::setUrl(const QUrl &url)

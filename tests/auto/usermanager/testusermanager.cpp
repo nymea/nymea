@@ -26,20 +26,20 @@
 
 #include "logging/logengine.h"
 #include "nymeacore.h"
-#include "nymeatestbase.h"
-#include "usermanager/usermanager.h"
-#include "servers/mocktcpserver.h"
 #include "nymeadbusservice.h"
+#include "nymeatestbase.h"
+#include "servers/mocktcpserver.h"
+#include "usermanager/usermanager.h"
 
 #include "../../utils/pushbuttonagent.h"
 
 using namespace nymeaserver;
 
-class TestUsermanager: public NymeaTestBase
+class TestUsermanager : public NymeaTestBase
 {
     Q_OBJECT
 public:
-    TestUsermanager(QObject* parent = nullptr);
+    TestUsermanager(QObject *parent = nullptr);
 
 private slots:
     void initTestCase();
@@ -107,7 +107,8 @@ private:
     QUuid m_tokenId;
 };
 
-TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
+TestUsermanager::TestUsermanager(QObject *parent)
+    : NymeaTestBase(parent)
 {
     QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
@@ -116,11 +117,11 @@ void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase("*.debug=false\n"
-                                     "Application.debug=true\n"
-                                     "Tests.debug=true\n"
-                                     "UserManager.debug=true\n"
-                                     "PushButtonAgent.debug=true\n"
-                                     "MockDevice.debug=true");
+                                "Application.debug=true\n"
+                                "Tests.debug=true\n"
+                                "UserManager.debug=true\n"
+                                "PushButtonAgent.debug=true\n"
+                                "MockDevice.debug=true");
 }
 
 void TestUsermanager::init()
@@ -133,22 +134,23 @@ void TestUsermanager::init()
     userManager->removeUser("");
 }
 
-void TestUsermanager::loginValidation_data() {
+void TestUsermanager::loginValidation_data()
+{
     QTest::addColumn<QString>("username");
     QTest::addColumn<QString>("password");
     QTest::addColumn<UserManager::UserError>("expectedError");
 
-    QTest::newRow("foo@bar.baz,    Bla1234*, NoError")       << "foo@bar.baz"    << "Bla1234*" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.co.uk,  Bla1234*, NoError")       << "foo@bar.co.uk"  << "Bla1234*" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.com.au, Bla1234*, NoError")       << "foo@bar.com.au" << "Bla1234*" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.baz,    Bla1234*, NoError") << "foo@bar.baz" << "Bla1234*" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.co.uk,  Bla1234*, NoError") << "foo@bar.co.uk" << "Bla1234*" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.com.au, Bla1234*, NoError") << "foo@bar.com.au" << "Bla1234*" << UserManager::UserErrorNoError;
 
-    QTest::newRow("n,              Bla1234*, InvalidUserId") << "n"              << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("@,              Bla1234*, InvalidUserId") << "@"              << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("nymea,          Bla1234*, InvalidUserId") << "nymea"          << "Bla1234*" << UserManager::UserErrorNoError;
+    QTest::newRow("n,              Bla1234*, InvalidUserId") << "n" << "Bla1234*" << UserManager::UserErrorInvalidUserId;
+    QTest::newRow("@,              Bla1234*, InvalidUserId") << "@" << "Bla1234*" << UserManager::UserErrorInvalidUserId;
+    QTest::newRow("nymea,          Bla1234*, InvalidUserId") << "nymea" << "Bla1234*" << UserManager::UserErrorNoError;
 
-    QTest::newRow("foo@bar.baz, a,        BadPassword") << "foo@bar.baz" << "a"        << UserManager::UserErrorBadPassword;
-    QTest::newRow("foo@bar.baz, a1,       BadPassword") << "foo@bar.baz" << "a1"       << UserManager::UserErrorBadPassword;
-    QTest::newRow("foo@bar.baz, a1!,      BadPassword") << "foo@bar.baz" << "a1!"      << UserManager::UserErrorBadPassword;
+    QTest::newRow("foo@bar.baz, a,        BadPassword") << "foo@bar.baz" << "a" << UserManager::UserErrorBadPassword;
+    QTest::newRow("foo@bar.baz, a1,       BadPassword") << "foo@bar.baz" << "a1" << UserManager::UserErrorBadPassword;
+    QTest::newRow("foo@bar.baz, a1!,      BadPassword") << "foo@bar.baz" << "a1!" << UserManager::UserErrorBadPassword;
     QTest::newRow("foo@bar.baz, aaaaaaaa, BadPassword") << "foo@bar.baz" << "aaaaaaaa" << UserManager::UserErrorBadPassword;
     QTest::newRow("foo@bar.baz, aaaaaaa1, BadPassword") << "foo@bar.baz" << "aaaaaaa1" << UserManager::UserErrorBadPassword;
     QTest::newRow("foo@bar.baz, aaaaaaa!, BadPassword") << "foo@bar.baz" << "aaaaaaa!" << UserManager::UserErrorBadPassword;
@@ -156,13 +158,12 @@ void TestUsermanager::loginValidation_data() {
     QTest::newRow("foo@bar.baz, aaaaaa!A, BadPassword") << "foo@bar.baz" << "aaaaaa!A" << UserManager::UserErrorBadPassword;
     QTest::newRow("foo@bar.baz, aaaaaa!1, BadPassword") << "foo@bar.baz" << "aaaaaa!1" << UserManager::UserErrorBadPassword;
 
-    QTest::newRow("foo@bar.baz, aaaaa!1A, NoError")            << "foo@bar.baz" << "aaaaa!1A" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.baz, Bla1234*a, NoError")           << "foo@bar.baz" << "Bla1234*a" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.baz, aaaaa!1A, NoError") << "foo@bar.baz" << "aaaaa!1A" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.baz, Bla1234*a, NoError") << "foo@bar.baz" << "Bla1234*a" << UserManager::UserErrorNoError;
     QTest::newRow("foo@bar.baz, #1-Nymea-is-awesome, NoError") << "foo@bar.baz" << "#1-Nymea-is-awesome" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.baz, Bla1234.a, NoError")           << "foo@bar.baz" << "Bla1234.a" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.baz, Bla1234\\a, NoError")          << "foo@bar.baz" << "Bla1234\\a" << UserManager::UserErrorNoError;
-    QTest::newRow("foo@bar.baz, Bla1234@a, NoError")           << "foo@bar.baz" << "Bla1234@a" << UserManager::UserErrorNoError;
-
+    QTest::newRow("foo@bar.baz, Bla1234.a, NoError") << "foo@bar.baz" << "Bla1234.a" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.baz, Bla1234\\a, NoError") << "foo@bar.baz" << "Bla1234\\a" << UserManager::UserErrorNoError;
+    QTest::newRow("foo@bar.baz, Bla1234@a, NoError") << "foo@bar.baz" << "Bla1234@a" << UserManager::UserErrorNoError;
 }
 
 void TestUsermanager::loginValidation()
@@ -224,7 +225,8 @@ void TestUsermanager::authenticatePushButton()
 
     pushButtonAgent.sendButtonPressed();
 
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     QVariantMap rsp = checkNotification(clientSpy, "JSONRPC.PushButtonAuthFinished").toMap();
 
     for (int i = 0; i < clientSpy.count(); i++) {
@@ -255,7 +257,8 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     m_mockTcpServer->clientConnected(malloryId);
     QSignalSpy responseSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
     m_mockTcpServer->injectData(malloryId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
-    if (responseSpy.count() == 0) responseSpy.wait();
+    if (responseSpy.count() == 0)
+        responseSpy.wait();
 
     // Snoop in on everything the TCP server sends to its clients.
     QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
@@ -266,7 +269,6 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId1 = response.toMap().value("params").toMap().value("transactionId").toInt();
-
 
     // Request push button auth for client 2 (mallory)
     clientSpy.clear();
@@ -284,7 +286,6 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     // spy.at(0) should be the failed notification for alice
     // spy.at(1) shpuld be the OK reply for mallory
 
-
     // alice should have received a failed notification. She knows something's wrong.
     QVariantMap notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.first().first().toUuid(), aliceId);
@@ -296,7 +297,6 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     QVariantMap reply = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.at(1).first().toUuid(), malloryId);
     QCOMPARE(reply.value("params").toMap().value("success").toBool(), true);
-
 
     // Alice tries once more
     clientSpy.clear();
@@ -359,7 +359,8 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     QUuid aliceId = QUuid::createUuid();
     m_mockTcpServer->clientConnected(aliceId);
     m_mockTcpServer->injectData(aliceId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
 
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;
@@ -376,7 +377,8 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     m_mockTcpServer->clientConnected(bobId);
     clientSpy.clear();
     m_mockTcpServer->injectData(bobId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
 
     // request push button auth for client 2 (bob) and check for OK reply
     params.clear();
@@ -402,7 +404,6 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
     QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
-
 }
 
 void TestUsermanager::createDuplicateUser()
@@ -491,13 +492,13 @@ void TestUsermanager::authenticateAfterPasswordChangeFail()
     QCOMPARE(response.toMap().value("params").toMap().value("success").toString(), QString("false"));
 
     // Connection should drop
-    if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
+    if (disconnectedSpy.count() == 0)
+        disconnectedSpy.wait();
     QVERIFY2(disconnectedSpy.count() == 1, "Connection should have dropped");
 
     QTest::qWait(3200);
     m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
-
 }
 
 void TestUsermanager::getUserInfo()
@@ -510,9 +511,7 @@ void TestUsermanager::getUserInfo()
 
     QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
 
-
     QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
-
 }
 
 void TestUsermanager::unauthenticatedCallAfterTokenRemove()

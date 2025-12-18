@@ -24,10 +24,7 @@
 
 #include "interfacestatetype.h"
 
-InterfaceStateType::InterfaceStateType()
-{
-
-}
+InterfaceStateType::InterfaceStateType() {}
 
 bool InterfaceStateType::optional() const
 {
@@ -49,11 +46,9 @@ void InterfaceStateType::setLoggingOverride(bool loggingOverride)
     m_loggingOverride = loggingOverride;
 }
 
-InterfaceStateTypes::InterfaceStateTypes(const QList<InterfaceStateType> &other):
-    QList<InterfaceStateType>(other)
-{
-
-}
+InterfaceStateTypes::InterfaceStateTypes(const QList<InterfaceStateType> &other)
+    : QList<InterfaceStateType>(other)
+{}
 
 InterfaceStateType InterfaceStateTypes::findByName(const QString &name)
 {

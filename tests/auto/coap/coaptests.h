@@ -25,10 +25,10 @@
 #ifndef COAPTESTS_H
 #define COAPTESTS_H
 
-#include <QUrl>
-#include <QObject>
-#include <QHostInfo>
 #include <QHostAddress>
+#include <QHostInfo>
+#include <QObject>
+#include <QUrl>
 
 #include <QSignalSpy>
 #include <QtTest>
@@ -86,7 +86,6 @@ private slots:
 
     void observeResource();
     void observeLargeResource();
-
 };
 
 #endif // COAPTESTS_H

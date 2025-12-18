@@ -27,8 +27,8 @@
 
 #include <QThread>
 
-#include "libnymea.h"
 #include "../gpio.h"
+#include "libnymea.h"
 
 class LIBGUH_EXPORT Radio433Receiver : public QThread
 {
@@ -37,11 +37,7 @@ public:
     explicit Radio433Receiver(QObject *parent = 0, int gpio = 27);
     ~Radio433Receiver();
 
-    enum Protocol{
-        Protocol48,
-        Protocol64,
-        ProtocolNone
-    };
+    enum Protocol { Protocol48, Protocol64, ProtocolNone };
 
     bool startReceiver();
     bool stopReceiver();

@@ -24,7 +24,7 @@
 
 #include "testhelper.h"
 
-TestHelper* TestHelper::s_instance = nullptr;
+TestHelper *TestHelper::s_instance = nullptr;
 
 TestHelper *TestHelper::instance()
 {
@@ -54,7 +54,6 @@ void TestHelper::setTestResult(bool success)
     emit testResult(success);
 }
 
-TestHelper::TestHelper(QObject *parent) : QObject(parent)
-{
-
-}
+TestHelper::TestHelper(QObject *parent)
+    : QObject(parent)
+{}

@@ -24,14 +24,12 @@
 
 #include "zwavehandler.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
-ZWaveHandler::ZWaveHandler(ZWaveManager *zwaveManager, QObject *parent):
-    JsonHandler(parent),
-    m_zwaveManager(zwaveManager)
+ZWaveHandler::ZWaveHandler(ZWaveManager *zwaveManager, QObject *parent)
+    : JsonHandler(parent)
+    , m_zwaveManager(zwaveManager)
 {
-
     registerEnum<ZWave::ZWaveError>();
     registerObject<SerialPort, SerialPorts>();
     registerEnum<ZWaveNetwork::ZWaveNetworkState>();
@@ -79,66 +77,77 @@ ZWaveHandler::ZWaveHandler(ZWaveManager *zwaveManager, QObject *parent):
     QVariantMap params, returns;
     QString description;
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Query if the Z-Wave subsystem is available at all.";
     returns.insert("available", enumValueName(Bool));
     registerMethod("IsZWaveAvailable", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of available serial ports from the host system.";
     returns.insert("serialPorts", objectRef<SerialPorts>());
     registerMethod("GetSerialPorts", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all the Z-Wave networks in the system.";
     returns.insert("networks", QVariantList() << objectRef("ZWaveNetwork"));
     registerMethod("GetNetworks", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Add a new Z-Wave network with the given serial port.";
     params.insert("serialPort", enumValueName(String));
     returns.insert("o:networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("AddNetwork", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove the given Z-Wave network from the system.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("RemoveNetwork", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Start the node inclusion procedure for the given Z-Wave network.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("AddNode", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Start the node removal procedure for the given Z-Wave network.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("RemoveNode", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Cancel any running node inclusion or removal procedure for the given Z-Wave network.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("CancelPendingOperation", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove the given failed node from the given Z-Wave network. This will not work if node is not marked as failed.";
     params.insert("networkUuid", enumValueName(Uuid));
     params.insert("nodeId", enumValueName(Uint));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("RemoveFailedNode", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Factory reset the controller for the given Z-Wave network.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
     registerMethod("FactoryResetNetwork", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of nodes in a network";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zwaveError", enumRef<ZWave::ZWaveError>());
@@ -270,10 +279,7 @@ JsonReply *ZWaveHandler::GetNodes(const QVariantMap &params)
     foreach (ZWaveNode *node, nodes) {
         nodeList.append(packNode(node));
     }
-    return createReply({
-                           {"zwaveError", enumValueName(ZWave::ZWaveErrorNoError)},
-                           {"nodes", nodeList}
-                       });
+    return createReply({{"zwaveError", enumValueName(ZWave::ZWaveErrorNoError)}, {"nodes", nodeList}});
 }
 
 JsonReply *ZWaveHandler::RemoveNode(const QVariantMap &params)
@@ -337,44 +343,40 @@ void ZWaveHandler::onNodeRemoved(ZWaveNode *node)
 
 QVariantMap ZWaveHandler::packNetwork(ZWaveNetwork *network)
 {
-    return {
-        {"networkUuid", network->networkUuid()},
-        {"serialPort", network->serialPort()},
-        {"networkState", enumValueName(network->networkState())},
-        {"homeId", network->homeId()},
-        {"isZWavePlus", network->isZWavePlus()},
-        {"isPrimaryController", network->isPrimaryController()},
-        {"isStaticUpdateController", network->isStaticUpdateController()},
-        {"isBridgeController", network->isBridgeController()},
-        {"waitingForNodeAddition", network->waitingForNodeAddition()},
-        {"waitingForNodeRemoval", network->waitingForNodeRemoval()}
-    };
+    return {{"networkUuid", network->networkUuid()},
+            {"serialPort", network->serialPort()},
+            {"networkState", enumValueName(network->networkState())},
+            {"homeId", network->homeId()},
+            {"isZWavePlus", network->isZWavePlus()},
+            {"isPrimaryController", network->isPrimaryController()},
+            {"isStaticUpdateController", network->isStaticUpdateController()},
+            {"isBridgeController", network->isBridgeController()},
+            {"waitingForNodeAddition", network->waitingForNodeAddition()},
+            {"waitingForNodeRemoval", network->waitingForNodeRemoval()}};
 }
 
 QVariantMap ZWaveHandler::packNode(ZWaveNode *node)
 {
-    return {
-        {"nodeId", node->nodeId()},
-        {"networkUuid", node->networkUuid()},
-        {"initialized", node->initialized()},
-        {"reachable", node->reachable()},
-        {"failed", node->failed()},
-        {"sleeping", node->sleeping()},
-        {"linkQuality", node->linkQuality()},
-        {"securityMode", node->securityMode()},
-        {"nodeType", enumValueName(node->nodeType())},
-        {"role", enumValueName(node->role())},
-        {"deviceType", enumValueName(node->deviceType())},
-        {"productType", node->productType()},
-        {"productId", node->productId()},
-        {"productName", node->productName()},
-        {"manufacturerId", node->manufacturerId()},
-        {"manufacturerName", node->manufacturerName()},
-        {"version", node->version()},
-        {"isZWavePlusDevice", node->isZWavePlusDevice()},
-        {"isSecurityDevice", node->isSecurityDevice()},
-        {"isBeamingDevice", node->isBeamingDevice()}
-    };
+    return {{"nodeId", node->nodeId()},
+            {"networkUuid", node->networkUuid()},
+            {"initialized", node->initialized()},
+            {"reachable", node->reachable()},
+            {"failed", node->failed()},
+            {"sleeping", node->sleeping()},
+            {"linkQuality", node->linkQuality()},
+            {"securityMode", node->securityMode()},
+            {"nodeType", enumValueName(node->nodeType())},
+            {"role", enumValueName(node->role())},
+            {"deviceType", enumValueName(node->deviceType())},
+            {"productType", node->productType()},
+            {"productId", node->productId()},
+            {"productName", node->productName()},
+            {"manufacturerId", node->manufacturerId()},
+            {"manufacturerName", node->manufacturerName()},
+            {"version", node->version()},
+            {"isZWavePlusDevice", node->isZWavePlusDevice()},
+            {"isSecurityDevice", node->isSecurityDevice()},
+            {"isBeamingDevice", node->isBeamingDevice()}};
 }
 
-}
+} // namespace nymeaserver

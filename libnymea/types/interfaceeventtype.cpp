@@ -24,10 +24,7 @@
 
 #include "interfaceeventtype.h"
 
-InterfaceEventType::InterfaceEventType()
-{
-
-}
+InterfaceEventType::InterfaceEventType() {}
 
 bool InterfaceEventType::optional() const
 {
@@ -49,11 +46,9 @@ void InterfaceEventType::setLoggingOverride(bool loggingOverride)
     m_loggingOverride = loggingOverride;
 }
 
-InterfaceEventTypes::InterfaceEventTypes(const QList<InterfaceEventType> &other):
-    QList<InterfaceEventType>(other)
-{
-
-}
+InterfaceEventTypes::InterfaceEventTypes(const QList<InterfaceEventType> &other)
+    : QList<InterfaceEventType>(other)
+{}
 
 InterfaceEventType InterfaceEventTypes::findByName(const QString &name)
 {

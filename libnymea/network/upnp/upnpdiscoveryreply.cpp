@@ -91,8 +91,6 @@
 #include "upnpdiscoveryreply.h"
 
 /*! Construct a new UpnpDiscoveryReply with the given \a parent. */
-UpnpDiscoveryReply::UpnpDiscoveryReply(QObject *parent) :
-    QObject(parent)
-{
-
-}
+UpnpDiscoveryReply::UpnpDiscoveryReply(QObject *parent)
+    : QObject(parent)
+{}

@@ -25,9 +25,9 @@
 #ifndef PLUGINTIMERIMPLEMENTATION_H
 #define PLUGINTIMERIMPLEMENTATION_H
 
-#include <QTimer>
 #include <QObject>
 #include <QPointer>
+#include <QTimer>
 
 #include "plugintimer.h"
 
@@ -65,7 +65,6 @@ public slots:
     void stop() override;
     void pause() override;
     void resume() override;
-
 };
 
 class PluginTimerManagerImplementation : public PluginTimerManager
@@ -97,9 +96,8 @@ public slots:
 private:
     bool m_available = false;
     bool m_enabled = false;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // PLUGINTIMERIMPLEMENTATION_H

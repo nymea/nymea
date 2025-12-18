@@ -26,10 +26,7 @@
 
 namespace nymeaserver {
 
-ZigbeeAdapter::ZigbeeAdapter()
-{
-
-}
+ZigbeeAdapter::ZigbeeAdapter() {}
 
 QString ZigbeeAdapter::name() const
 {
@@ -108,12 +105,8 @@ void ZigbeeAdapter::setBaudRate(qint32 baudRate)
 
 bool ZigbeeAdapter::operator==(const ZigbeeAdapter &other) const
 {
-    return m_serialPort == other.serialPort()
-            && m_name == other.name()
-            && m_description == other.description()
-            && m_hardwareRecognized == other.hardwareRecognized()
-            && m_backendType == other.backendType()
-            && m_baudRate == other.baudRate();
+    return m_serialPort == other.serialPort() && m_name == other.name() && m_description == other.description() && m_hardwareRecognized == other.hardwareRecognized()
+           && m_backendType == other.backendType() && m_baudRate == other.baudRate();
 }
 
 QHash<ZigbeeAdapter::ZigbeeBackendType, QString> ZigbeeAdapter::backendNames()
@@ -141,4 +134,4 @@ QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter)
     return debug;
 }
 
-}
+} // namespace nymeaserver

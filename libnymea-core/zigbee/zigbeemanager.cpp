@@ -23,8 +23,8 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zigbeemanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeasettings.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -38,8 +38,8 @@ NYMEA_LOGGING_CATEGORY(dcZigbeeNetworkLibNymeaZigbee, "ZigbeeNetwork")
 
 namespace nymeaserver {
 
-ZigbeeManager::ZigbeeManager(QObject *parent) :
-    QObject(parent)
+ZigbeeManager::ZigbeeManager(QObject *parent)
+    : QObject(parent)
 {
     // Adapter monitor
     qCDebug(dcZigbee()) << "Initialize the Zigbee manager";
@@ -50,18 +50,16 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
     }
 
     qCDebug(dcZigbee()) << "Loading initial adapter list";
-    foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
+    foreach (const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
         ZigbeeAdapter adapter = convertUartAdapterToAdapter(uartAdapter);
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
     }
 
-    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterAdded, this, [this](const ZigbeeUartAdapter &uartAdapter){
+    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterAdded, this, [this](const ZigbeeUartAdapter &uartAdapter) {
         ZigbeeAdapter adapter = convertUartAdapterToAdapter(uartAdapter);
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
-
-
 
         if (m_autoSetupAdapters) {
             if (networkExistsForAdapter(uartAdapter)) {
@@ -82,7 +80,7 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
         emit availableAdapterAdded(adapter);
     });
 
-    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterRemoved, this, [this](const ZigbeeUartAdapter &uartAdapter){
+    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterRemoved, this, [this](const ZigbeeUartAdapter &uartAdapter) {
         foreach (const ZigbeeAdapter &adapter, m_adapters) {
             if (adapter.serialPort() == uartAdapter.serialPort()) {
                 qCDebug(dcZigbee()) << "Adapter removed" << adapter;
@@ -101,7 +99,7 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
     // Check if auto setup recognized adapters is enabled
     if (m_autoSetupAdapters) {
         qCDebug(dcZigbee()) << "Auto setup enabled. Verify existing networks and adapters...";
-        foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
+        foreach (const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
             if (networkExistsForAdapter(uartAdapter)) {
                 qCDebug(dcZigbee()) << "Network for adapter" << uartAdapter << "already created.";
             } else {
@@ -128,7 +126,7 @@ bool ZigbeeManager::available() const
 
 bool ZigbeeManager::enabled() const
 {
-    return true;//m_zigbeeNetwork && m_zigbeeNetwork->state() != ZigbeeNetwork::StateUninitialized;
+    return true; //m_zigbeeNetwork && m_zigbeeNetwork->state() != ZigbeeNetwork::StateUninitialized;
 }
 
 ZigbeeAdapters ZigbeeManager::availableAdapters() const
@@ -141,7 +139,10 @@ QHash<QUuid, ZigbeeNetwork *> ZigbeeManager::zigbeeNetworks() const
     return m_zigbeeNetworks;
 }
 
-QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort, uint baudRate, ZigbeeAdapter::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask)
+QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort,
+                                                                            uint baudRate,
+                                                                            ZigbeeAdapter::ZigbeeBackendType backendType,
+                                                                            ZigbeeChannelMask channelMask)
 {
     qCDebug(dcZigbee()) << "Creating network for" << serialPort << baudRate << backendType << channelMask;
 
@@ -343,7 +344,6 @@ void ZigbeeManager::loadZigbeeNetworks()
         qCDebug(dcZigbee()) << "There are no zigbee networks configured yet.";
         return;
     }
-
 }
 
 void ZigbeeManager::checkPlatformConfiguration()
@@ -377,12 +377,14 @@ void ZigbeeManager::checkPlatformConfiguration()
         }
 
         if (serialPort.isEmpty()) {
-            qCWarning(dcZigbee()) << "The serial port is not specified correctly in the platform configuration file" << platformConfigurationFileInfo.absoluteFilePath() << "The platform based network will not be created.";
+            qCWarning(dcZigbee()) << "The serial port is not specified correctly in the platform configuration file" << platformConfigurationFileInfo.absoluteFilePath()
+                                  << "The platform based network will not be created.";
             return;
         }
 
         if (!m_adapterMonitor->hasAdapter(serialPort)) {
-            qCWarning(dcZigbee()) << "Could not find platform specific serial port" << serialPort << "on this system. Please check the wiring or the port configuration. The platform based network will not be created.";
+            qCWarning(dcZigbee()) << "Could not find platform specific serial port" << serialPort
+                                  << "on this system. Please check the wiring or the port configuration. The platform based network will not be created.";
             return;
         }
 
@@ -462,64 +464,65 @@ ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeA
 
 void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 {
-    connect(network, &ZigbeeNetwork::stateChanged, this, [this, network](ZigbeeNetwork::State state){
+    connect(network, &ZigbeeNetwork::stateChanged, this, [this, network](ZigbeeNetwork::State state) {
         Q_UNUSED(state)
         qCDebug(dcZigbee()) << "Network state changed" << network;
         evaluateZigbeeAvailable();
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::errorOccured, this, [this, network](ZigbeeNetwork::Error error){
+    connect(network, &ZigbeeNetwork::errorOccured, this, [this, network](ZigbeeNetwork::Error error) {
         qCWarning(dcZigbee()) << "Network error occurred for" << network << error;
         evaluateZigbeeAvailable();
         // TODO: handle error
     });
 
-    connect(network, &ZigbeeNetwork::panIdChanged, this, [this, network](quint16 panId){
+    connect(network, &ZigbeeNetwork::panIdChanged, this, [this, network](quint16 panId) {
         qCDebug(dcZigbee()) << "Network PAN ID changed for" << network << panId;
         saveNetwork(network);
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::channelChanged, this, [this, network](quint8 channel){
+    connect(network, &ZigbeeNetwork::channelChanged, this, [this, network](quint8 channel) {
         qCDebug(dcZigbee()) << "Network channel changed for" << network << channel;
         saveNetwork(network);
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::macAddressChanged, this, [this, network](const ZigbeeAddress &macAddress){
+    connect(network, &ZigbeeNetwork::macAddressChanged, this, [this, network](const ZigbeeAddress &macAddress) {
         qCDebug(dcZigbee()) << "Network MAC address changed for" << network << macAddress.toString();
         saveNetwork(network);
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::securityConfigurationChanged, this, [this, network](const ZigbeeSecurityConfiguration &securityConfiguration){
-        qCDebug(dcZigbee()) << "Network security configuration changed for" << network << securityConfiguration.networkKey().toString() << securityConfiguration.globalTrustCenterLinkKey().toString();
+    connect(network, &ZigbeeNetwork::securityConfigurationChanged, this, [this, network](const ZigbeeSecurityConfiguration &securityConfiguration) {
+        qCDebug(dcZigbee()) << "Network security configuration changed for" << network << securityConfiguration.networkKey().toString()
+                            << securityConfiguration.globalTrustCenterLinkKey().toString();
         saveNetwork(network);
     });
 
-    connect(network, &ZigbeeNetwork::channelMaskChanged, this, [this, network](const ZigbeeChannelMask &channelMask){
+    connect(network, &ZigbeeNetwork::channelMaskChanged, this, [this, network](const ZigbeeChannelMask &channelMask) {
         qCDebug(dcZigbee()) << "Network channel mask changed for" << network << channelMask;
         saveNetwork(network);
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::permitJoiningEnabledChanged, this, [this, network](bool permitJoiningEnabled){
+    connect(network, &ZigbeeNetwork::permitJoiningEnabledChanged, this, [this, network](bool permitJoiningEnabled) {
         qCDebug(dcZigbee()) << "Network permit joining changed" << network->networkUuid().toString() << permitJoiningEnabled;
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::permitJoinDurationChanged, this, [this, network](bool permitJoinDuration){
+    connect(network, &ZigbeeNetwork::permitJoinDurationChanged, this, [this, network](bool permitJoinDuration) {
         qCDebug(dcZigbee()) << "Network permit join duration changed" << network->networkUuid().toString() << permitJoinDuration;
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::permitJoinRemainingChanged, this, [this, network](bool permitJoinRemaining){
+    connect(network, &ZigbeeNetwork::permitJoinRemainingChanged, this, [this, network](bool permitJoinRemaining) {
         qCDebug(dcZigbee()) << "Network permit join remaining changed" << network->networkUuid().toString() << permitJoinRemaining;
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::nodeAdded, this, [this, network](ZigbeeNode *node){
+    connect(network, &ZigbeeNetwork::nodeAdded, this, [this, network](ZigbeeNode *node) {
         qCDebug(dcZigbee()) << "Node added to" << network << node;
         // The plugin don't need to see the coordinator node
         if (node->shortAddress() == 0) {
@@ -541,7 +544,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;
-                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                foreach (const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
                     qCDebug(dcZigbee()) << "       - " << attribute;
                 }
             }
@@ -549,7 +552,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             qCDebug(dcZigbee()) << "    Output clusters (" << endpoint->outputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->outputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;
-                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                foreach (const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
                     qCDebug(dcZigbee()) << "       - " << attribute;
                 }
             }
@@ -558,7 +561,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         emit nodeAdded(network->networkUuid(), node);
     });
 
-    connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node){
+    connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node) {
         qCDebug(dcZigbee()) << "Node removed from" << network->networkUuid().toString() << node;
         // The plugin don't need to see the coordinator node
         if (node->shortAddress() == 0) {
@@ -567,7 +570,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         emit nodeRemoved(network->networkUuid(), node);
     });
 
-    connect(network, &ZigbeeNetwork::nodeJoined, this, [this, network](ZigbeeNode *node){
+    connect(network, &ZigbeeNetwork::nodeJoined, this, [this, network](ZigbeeNode *node) {
         // The node has joined but is still initializing. Once the node has been initialized by the stack, the node added signal will be emitted.
         qCDebug(dcZigbee()) << "Node joined the network" << network->networkUuid().toString() << node;
 
@@ -575,7 +578,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         setupNodeSignals(node);
     });
 
-    connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion){
+    connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion) {
         qCDebug(dcZigbee()) << "Network adapter firmware version changed for" << network << firmwareVersion;
         emit zigbeeNetworkChanged(network);
     });
@@ -600,7 +603,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;
-                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                foreach (const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
                     qCDebug(dcZigbee()) << "       - " << attribute;
                 }
             }
@@ -608,7 +611,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             qCDebug(dcZigbee()) << "    Output clusters (" << endpoint->outputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->outputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;
-                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                foreach (const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
                     qCDebug(dcZigbee()) << "       - " << attribute;
                 }
             }
@@ -669,50 +672,27 @@ void ZigbeeManager::setupNodeSignals(ZigbeeNode *node)
 {
     // Connect signals while joining for initializing
 
-    connect(node, &ZigbeeNode::shortAddressChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::shortAddressChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::stateChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::stateChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::manufacturerNameChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::manufacturerNameChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::modelNameChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::modelNameChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::versionChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::versionChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::lqiChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::lqiChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::lastSeenChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::lastSeenChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::reachableChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::reachableChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::neighborTableRecordsChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::neighborTableRecordsChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::routingTableRecordsChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::routingTableRecordsChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 
-    connect(node, &ZigbeeNode::bindingTableRecordsChanged, this, [=](){
-        emit nodeChanged(node->networkUuid(), node);
-    });
+    connect(node, &ZigbeeNode::bindingTableRecordsChanged, this, [=]() { emit nodeChanged(node->networkUuid(), node); });
 }
 
-
-}
+} // namespace nymeaserver

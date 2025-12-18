@@ -25,27 +25,24 @@
 #include "scriptinterfaceevent.h"
 
 #include <qqml.h>
-#include <QQmlEngine>
 #include <QJsonDocument>
+#include <QQmlEngine>
 #include <QRegularExpression>
 
 namespace nymeaserver {
 namespace scriptengine {
 
-ScriptInterfaceEvent::ScriptInterfaceEvent(QObject *parent) : QObject(parent)
-{
-}
+ScriptInterfaceEvent::ScriptInterfaceEvent(QObject *parent)
+    : QObject(parent)
+{}
 
 void ScriptInterfaceEvent::classBegin()
 {
-    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong());
     connect(m_thingManager, &ThingManager::eventTriggered, this, &ScriptInterfaceEvent::onEventTriggered);
 }
 
-void ScriptInterfaceEvent::componentComplete()
-{
-
-}
+void ScriptInterfaceEvent::componentComplete() {}
 
 QString ScriptInterfaceEvent::interfaceName() const
 {
@@ -95,5 +92,5 @@ void ScriptInterfaceEvent::onEventTriggered(const Event &event)
     emit triggered(event.thingId().toString().remove(QRegularExpression("[{}]")), QJsonDocument::fromVariant(params).toVariant().toMap());
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

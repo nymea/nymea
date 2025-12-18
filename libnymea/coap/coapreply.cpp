@@ -90,7 +90,6 @@
         The package data unit (PDU) could not be parsed successfully.
 */
 
-
 #include "coapreply.h"
 #include "coappdu.h"
 
@@ -184,16 +183,16 @@ CoapPdu::ReqRspCode CoapReply::reqRspCode() const
     return m_reqRspCode;
 }
 
-CoapReply::CoapReply(const CoapRequest &request, QObject *parent) :
-    QObject(parent),
-    m_request(request),
-    m_error(NoError),
-    m_isFinished(false),
-    m_retransmissions(1),
-    m_contentType(CoapPdu::TextPlain),
-    m_messageType(CoapPdu::Acknowledgement),
-    m_reqRspCode(CoapPdu::Empty),
-    m_lockedUp(false)
+CoapReply::CoapReply(const CoapRequest &request, QObject *parent)
+    : QObject(parent)
+    , m_request(request)
+    , m_error(NoError)
+    , m_isFinished(false)
+    , m_retransmissions(1)
+    , m_contentType(CoapPdu::TextPlain)
+    , m_messageType(CoapPdu::Acknowledgement)
+    , m_reqRspCode(CoapPdu::Empty)
+    , m_lockedUp(false)
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(false);

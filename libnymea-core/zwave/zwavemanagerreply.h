@@ -29,8 +29,7 @@
 
 #include "hardware/zwave/zwavereply.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 class ZWaveManagerReply : public ZWaveReply
 {
@@ -44,8 +43,7 @@ private slots:
     void finish(ZWave::ZWaveError status) override;
 
 signals:
-
 };
 
-}
+} // namespace nymeaserver
 #endif // ZWAVEMANAGERREPLY_H

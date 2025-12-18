@@ -35,7 +35,7 @@ class NymeaSettings;
 namespace nymeaserver {
 class StateEvaluator;
 
-class StateEvaluators: public QList<StateEvaluator>
+class StateEvaluators : public QList<StateEvaluator>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -88,10 +88,9 @@ private:
     Types::StateOperator m_operatorType;
 };
 
-
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator);
 
-}
+} // namespace nymeaserver
 Q_DECLARE_METATYPE(nymeaserver::StateEvaluator)
 Q_DECLARE_METATYPE(nymeaserver::StateEvaluators)
 

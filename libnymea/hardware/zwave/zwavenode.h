@@ -136,9 +136,7 @@ public:
     };
     Q_ENUM(ZWaveDeviceType)
 
-    enum ZWavePlusDeviceType {
-        ZWavePlusDeviceTypeUnknown = 0x00
-    };
+    enum ZWavePlusDeviceType { ZWavePlusDeviceTypeUnknown = 0x00 };
     Q_ENUM(ZWavePlusDeviceType)
 
     explicit ZWaveNode(QObject *parent = nullptr);
@@ -206,12 +204,16 @@ signals:
     void valueRemoved(const ZWaveValue &value);
 };
 
-class ZWaveNodes: public QList<ZWaveNode*>
+class ZWaveNodes : public QList<ZWaveNode *>
 {
 public:
     ZWaveNodes() = default;
-    ZWaveNodes(const ZWaveNodes &other): QList<ZWaveNode*>(other) {}
-    ZWaveNodes(const QList<ZWaveNode*> &other): QList<ZWaveNode*>(other) {}
+    ZWaveNodes(const ZWaveNodes &other)
+        : QList<ZWaveNode *>(other)
+    {}
+    ZWaveNodes(const QList<ZWaveNode *> &other)
+        : QList<ZWaveNode *>(other)
+    {}
 };
 
 QDebug operator<<(QDebug debug, ZWaveNode *node);

@@ -25,8 +25,8 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include "typeutils.h"
 #include "types/thingclass.h"
+#include "typeutils.h"
 
 #include <QTranslator>
 
@@ -47,9 +47,10 @@ private:
 private:
     ThingManagerImplementation *m_thingManager = nullptr;
 
-    struct TranslatorContext {
+    struct TranslatorContext
+    {
         PluginId pluginId;
-        QHash<QString, QTranslator*> translators;
+        QHash<QString, QTranslator *> translators;
     };
     QHash<PluginId, TranslatorContext> m_translatorContexts;
 };

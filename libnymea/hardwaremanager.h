@@ -47,7 +47,7 @@ class NetworkDeviceDiscovery;
 class HardwareManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
+    Q_PROPERTY(PluginTimerManager *pluginTimerManager READ pluginTimerManager CONSTANT)
 
 public:
     HardwareManager(QObject *parent = nullptr);
@@ -67,7 +67,7 @@ public:
     virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
 
 protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    void setResourceEnabled(HardwareResource *resource, bool enabled);
 };
 
 #endif // HARDWAREMANAGER_H

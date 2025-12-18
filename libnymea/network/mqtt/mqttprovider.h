@@ -25,11 +25,11 @@
 #ifndef MQTTPROVIDER_H
 #define MQTTPROVIDER_H
 
-#include <QObject>
 #include <QHostAddress>
+#include <QObject>
 
-#include "typeutils.h"
 #include "hardwareresource.h"
+#include "typeutils.h"
 #include <mqttclient.h>
 
 class MqttChannel;
@@ -40,12 +40,14 @@ class MqttProvider : public HardwareResource
 public:
     explicit MqttProvider(QObject *parent = nullptr);
 
-    virtual MqttChannel* createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
-    virtual MqttChannel* createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
-    virtual MqttChannel* createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
+    virtual MqttChannel *createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
+    virtual MqttChannel *createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
+    virtual MqttChannel *createChannel(
+        const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList())
+        = 0;
     virtual void releaseChannel(MqttChannel *channel) = 0;
 
-    virtual MqttClient* createInternalClient(const QString &clientId) = 0;
+    virtual MqttClient *createInternalClient(const QString &clientId) = 0;
 };
 
 #endif // MQTTPROVIDER_H

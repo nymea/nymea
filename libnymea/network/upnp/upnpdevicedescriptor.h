@@ -80,7 +80,6 @@ public:
     void setUpc(const QString &upc);
     QString upc() const;
 
-
 private:
     QUrl m_location;
     QHostAddress m_hostAddress;
@@ -99,6 +98,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(UpnpDeviceDescriptor)
-QDebug operator<< (QDebug debug, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
+QDebug operator<<(QDebug debug, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
 
 #endif // UPNPDEVICEDESCRIPTOR_H

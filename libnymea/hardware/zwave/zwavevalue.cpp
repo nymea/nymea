@@ -26,22 +26,17 @@
 
 #include <QDebug>
 
-ZWaveValue::ZWaveValue()
-{
+ZWaveValue::ZWaveValue() {}
 
-}
-
-ZWaveValue::ZWaveValue(quint64 id, Genre genre, CommandClass commandClass, quint8 instance, quint16 index, Type type, const QString &description):
-    m_id(id),
-    m_genre(genre),
-    m_commandClass(commandClass),
-    m_instance(instance),
-    m_index(index),
-    m_type(type),
-    m_description(description)
-{
-
-}
+ZWaveValue::ZWaveValue(quint64 id, Genre genre, CommandClass commandClass, quint8 instance, quint16 index, Type type, const QString &description)
+    : m_id(id)
+    , m_genre(genre)
+    , m_commandClass(commandClass)
+    , m_instance(instance)
+    , m_index(index)
+    , m_type(type)
+    , m_description(description)
+{}
 
 quint64 ZWaveValue::id() const
 {
@@ -107,13 +102,8 @@ bool ZWaveValue::isValid() const
 QDebug operator<<(QDebug debug, ZWaveValue value)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "Value(ID: " << value.id() << ", "
-                    << "Ins: " << value.instance() << ", "
-                    << value.genre() << ", "
-                    << "Idx: " << value.index() << ", "
-                    << value.type() << ", "
-                    << value.commandClass() << ", "
-                    << "Value: " << value.value()
-                    << (value.type() == ZWaveValue::TypeList ? QString(" Selection: %1").arg(value.valueListSelection()) : "" ) << ")";
+    debug.nospace() << "Value(ID: " << value.id() << ", " << "Ins: " << value.instance() << ", " << value.genre() << ", " << "Idx: " << value.index() << ", " << value.type()
+                    << ", " << value.commandClass() << ", " << "Value: " << value.value()
+                    << (value.type() == ZWaveValue::TypeList ? QString(" Selection: %1").arg(value.valueListSelection()) : "") << ")";
     return debug;
 }

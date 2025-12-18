@@ -25,8 +25,8 @@
 #ifndef PYTHINGACTIONINFO_H
 #define PYTHINGACTIONINFO_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "pything.h"
 
@@ -54,22 +54,22 @@
  *
  */
 
-typedef struct {
-    PyObject_HEAD
-    ThingActionInfo* info;
+typedef struct
+{
+    PyObject_HEAD ThingActionInfo *info;
     PyThing *pyThing;
     PyObject *pyActionTypeId;
     PyObject *pyParams;
 } PyThingActionInfo;
 
-
-static PyObject* PyThingActionInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
-    PyThingActionInfo *self = (PyThingActionInfo*)type->tp_alloc(type, 0);
+static PyObject *PyThingActionInfo_new(PyTypeObject *type, PyObject * /*args*/, PyObject * /*kwds*/)
+{
+    PyThingActionInfo *self = (PyThingActionInfo *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qCDebug(dcPythonIntegrations()) << "+++ PyThingActionInfo";
-    return (PyObject*)self;
+    return (PyObject *) self;
 }
 
 void PyThingActionInfo_setInfo(PyThingActionInfo *self, ThingActionInfo *info, PyThing *pyThing)
@@ -81,8 +81,7 @@ void PyThingActionInfo_setInfo(PyThingActionInfo *self, ThingActionInfo *info, P
     self->pyParams = PyParams_FromParamList(info->action().params());
 }
 
-
-static void PyThingActionInfo_dealloc(PyThingActionInfo * self)
+static void PyThingActionInfo_dealloc(PyThingActionInfo *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyThingActionInfo";
     Py_DECREF(self->pyThing);
@@ -91,7 +90,8 @@ static void PyThingActionInfo_dealloc(PyThingActionInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* args) {
+static PyObject *PyThingActionInfo_finish(PyThingActionInfo *self, PyObject *args)
+{
     int status;
     char *message = nullptr;
 
@@ -110,7 +110,8 @@ static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* ar
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThingActionInfo_paramValue(PyThingActionInfo* self, PyObject* args) {
+static PyObject *PyThingActionInfo_paramValue(PyThingActionInfo *self, PyObject *args)
+{
     char *paramTypeIdStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
@@ -119,7 +120,7 @@ static PyObject * PyThingActionInfo_paramValue(PyThingActionInfo* self, PyObject
 
     ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
     for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
-        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        PyParam *pyParam = reinterpret_cast<PyParam *>(PyTuple_GetItem(self->pyParams, i));
         // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
         ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
         if (ptid == paramTypeId) {
@@ -135,26 +136,25 @@ static PyMemberDef PyThingActionInfo_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyThingActionInfo, pyThing), 0, "Thing this action is for"},
     {"actionTypeId", T_OBJECT_EX, offsetof(PyThingActionInfo, pyActionTypeId), 0, "The action type id for this action"},
     {"params", T_OBJECT_EX, offsetof(PyThingActionInfo, pyParams), 0, "The params for this action"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyMethodDef PyThingActionInfo_methods[] = {
-    { "finish", (PyCFunction)PyThingActionInfo_finish,    METH_VARARGS,       "finish an action" },
-    { "paramValue", (PyCFunction)PyThingActionInfo_paramValue, METH_VARARGS, "Get an actions param value"},
+    {"finish", (PyCFunction) PyThingActionInfo_finish, METH_VARARGS, "finish an action"},
+    {"paramValue", (PyCFunction) PyThingActionInfo_paramValue, METH_VARARGS, "Get an actions param value"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyThingActionInfoType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingActionInfo",    /* tp_name */
-    sizeof(PyThingActionInfo),  /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    (destructor)PyThingActionInfo_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.ThingActionInfo", /* tp_name */
+    sizeof(PyThingActionInfo),                              /* tp_basicsize */
+    0,                                                      /* tp_itemsize */
+    (destructor) PyThingActionInfo_dealloc,                 /* tp_dealloc */
 };
 
 static void registerThingActionInfoType(PyObject *module)
 {
-    PyThingActionInfoType.tp_new = (newfunc)PyThingActionInfo_new;
+    PyThingActionInfoType.tp_new = (newfunc) PyThingActionInfo_new;
     PyThingActionInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingActionInfoType.tp_methods = PyThingActionInfo_methods;
     PyThingActionInfoType.tp_members = PyThingActionInfo_members;
@@ -163,9 +163,8 @@ static void registerThingActionInfoType(PyObject *module)
     if (PyType_Ready(&PyThingActionInfoType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "ThingActionInfo", (PyObject *)&PyThingActionInfoType);
+    PyModule_AddObject(module, "ThingActionInfo", (PyObject *) &PyThingActionInfoType);
 }
-
 
 #pragma GCC diagnostic pop
 

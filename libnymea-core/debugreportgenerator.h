@@ -78,9 +78,8 @@ private slots:
     void onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onCompressProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // DEBUGREPORTGENERATOR_H

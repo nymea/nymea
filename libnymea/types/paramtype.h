@@ -25,8 +25,8 @@
 #ifndef PARAMTYPE_H
 #define PARAMTYPE_H
 
-#include <QVariant>
 #include <QDebug>
+#include <QVariant>
 
 #include "libnymea.h"
 #include "typeutils.h"
@@ -109,7 +109,7 @@ private:
     bool m_readOnly;
 };
 
-class ParamTypes: public QList<ParamType>
+class ParamTypes : public QList<ParamType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -123,7 +123,6 @@ public:
     ParamType findByName(const QString &name) const;
     ParamType findById(const ParamTypeId &id) const;
     ParamType &operator[](const QString &name);
-
 };
 Q_DECLARE_METATYPE(QList<ParamType>)
 Q_DECLARE_METATYPE(ParamTypes)

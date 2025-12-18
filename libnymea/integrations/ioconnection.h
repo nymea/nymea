@@ -25,14 +25,15 @@
 #ifndef IOCONNECTION_H
 #define IOCONNECTION_H
 
-#include <QObject>
 #include <QList>
+#include <QObject>
 #include <QVariant>
 
-#include "typeutils.h"
 #include "thing.h"
+#include "typeutils.h"
 
-struct IOConnectionResult {
+struct IOConnectionResult
+{
     Thing::ThingError error = Thing::ThingErrorNoError;
     IOConnectionId ioConnectionId;
 };
@@ -49,7 +50,12 @@ class IOConnection
 
 public:
     IOConnection();
-    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const StateTypeId &inputStateTypeId, const ThingId &outputThingId, const StateTypeId &outputStateTypeId, bool inverted = false);
+    IOConnection(const IOConnectionId &id,
+                 const ThingId &inputThingId,
+                 const StateTypeId &inputStateTypeId,
+                 const ThingId &outputThingId,
+                 const StateTypeId &outputStateTypeId,
+                 bool inverted = false);
 
     IOConnectionId id() const;
 
@@ -70,20 +76,23 @@ private:
     bool m_inverted = false;
 };
 
-class IOConnections: public QList<IOConnection>
+class IOConnections : public QList<IOConnection>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     IOConnections() {}
-    inline IOConnections(std::initializer_list<IOConnection> args): QList(args) {}
-    IOConnections(const QList<IOConnection> &other): QList<IOConnection>(other) {}
+    inline IOConnections(std::initializer_list<IOConnection> args)
+        : QList(args)
+    {}
+    IOConnections(const QList<IOConnection> &other)
+        : QList<IOConnection>(other)
+    {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
 
 Q_DECLARE_METATYPE(IOConnection)
 Q_DECLARE_METATYPE(IOConnections)
-
 
 #endif // IOCONNECTION_H

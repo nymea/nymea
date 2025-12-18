@@ -34,7 +34,6 @@ public:
     explicit UserAutorizer(QObject *parent = nullptr);
 
 signals:
-
 };
 
 #endif // USERAUTORIZER_H

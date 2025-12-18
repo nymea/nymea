@@ -26,24 +26,17 @@
 
 #include <QDebug>
 
-MacAddressInfo::MacAddressInfo()
-{
-
-}
+MacAddressInfo::MacAddressInfo() {}
 
 MacAddressInfo::MacAddressInfo(const MacAddress &macAddress)
     : m_macAddress{macAddress}
-{
-
-}
+{}
 
 MacAddressInfo::MacAddressInfo(const MacAddress &macAddress, const QString &vendorName)
-    : m_macAddress{macAddress},
-    m_vendorName{vendorName},
-    m_vendorNameSet{true}
-{
-
-}
+    : m_macAddress{macAddress}
+    , m_vendorName{vendorName}
+    , m_vendorNameSet{true}
+{}
 
 MacAddress MacAddressInfo::macAddress() const
 {
@@ -73,9 +66,7 @@ bool MacAddressInfo::isComplete() const
 
 bool MacAddressInfo::operator==(const MacAddressInfo &other) const
 {
-    return m_macAddress == other.macAddress() &&
-           m_vendorName == other.vendorName() &&
-           isComplete() == other.isComplete();
+    return m_macAddress == other.macAddress() && m_vendorName == other.vendorName() && isComplete() == other.isComplete();
 }
 
 bool MacAddressInfo::operator!=(const MacAddressInfo &other) const

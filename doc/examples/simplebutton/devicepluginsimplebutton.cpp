@@ -25,10 +25,7 @@
 #include "devicepluginsimplebutton.h"
 #include "plugininfo.h"
 
-DevicePluginSimpleButton::DevicePluginSimpleButton()
-{
-
-}
+DevicePluginSimpleButton::DevicePluginSimpleButton() {}
 
 void DevicePluginSimpleButton::init()
 {
@@ -67,10 +64,8 @@ DeviceManager::DeviceError DevicePluginSimpleButton::executeAction(Device *devic
 
     // Check the device class
     if (device->deviceClassId() == simplebuttonDeviceClassId) {
-
         // Check the action type
         if (action.actionTypeId() == simplebuttonPressActionTypeId) {
-
             // Emit the pressed event on button press
             qCDebug(dcSimpleButton()) << "Emit event pressed for simple button" << device->name();
             emitEvent(Event(simplebuttonPressedEventTypeId, device->id()));

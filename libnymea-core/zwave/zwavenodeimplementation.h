@@ -27,11 +27,10 @@
 
 #include "hardware/zwave/zwavenode.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 class ZWaveManager;
 
-class ZWaveNodeImplementation: public ZWaveNode
+class ZWaveNodeImplementation : public ZWaveNode
 {
     Q_OBJECT
 
@@ -148,6 +147,6 @@ private:
     QHash<quint64, ZWaveValue> m_values;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZWAVENODEIMPLEMENTATION_H

@@ -26,8 +26,8 @@
 #define TRIGGERTYPE_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "paramtype.h"
+#include "typeutils.h"
 
 #include <QVariantMap>
 
@@ -73,7 +73,7 @@ private:
 };
 Q_DECLARE_METATYPE(EventType)
 
-class EventTypes: public QList<EventType>
+class EventTypes : public QList<EventType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

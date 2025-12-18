@@ -25,15 +25,15 @@
 #ifndef UPNPDISCOVERYREQUEST_H
 #define UPNPDISCOVERYREQUEST_H
 
-#include <QObject>
 #include <QDebug>
-#include <QTimer>
 #include <QMetaObject>
+#include <QObject>
 #include <QPointer>
+#include <QTimer>
 
-#include "upnpdiscoveryreplyimplementation.h"
-#include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdevicedescriptor.h"
+#include "network/upnp/upnpdiscovery.h"
+#include "upnpdiscoveryreplyimplementation.h"
 
 #include "typeutils.h"
 
@@ -69,9 +69,8 @@ signals:
 
 private slots:
     void onTimeout();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // UPNPDISCOVERYREQUEST_H

@@ -25,8 +25,8 @@
 #ifndef JSONCONTEXT_H
 #define JSONCONTEXT_H
 
-#include <QUuid>
 #include <QLocale>
+#include <QUuid>
 
 class JsonContext
 {

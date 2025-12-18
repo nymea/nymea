@@ -25,9 +25,9 @@
 #ifndef NYMEAAPPLICATION_H
 #define NYMEAAPPLICATION_H
 
+#include <QCoreApplication>
 #include <QObject>
 #include <QSocketNotifier>
-#include <QCoreApplication>
 
 namespace nymeaserver {
 
@@ -38,5 +38,5 @@ public:
     ~NymeaApplication() override;
 };
 
-}
+} // namespace nymeaserver
 #endif // NYMEAAPPLICATION_H

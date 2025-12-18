@@ -27,8 +27,8 @@
 
 namespace nymeaserver {
 
-Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
-    QObject(parent)
+Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent)
+    : QObject(parent)
 {
     m_port = 49880;
 
@@ -148,7 +148,7 @@ void Radio433BrennenstuhlGateway::readData()
 void Radio433BrennenstuhlGateway::gatewayError(QAbstractSocket::SocketError error)
 {
     Q_UNUSED(error)
-    QUdpSocket *gateway = static_cast<QUdpSocket*>(sender());
+    QUdpSocket *gateway = static_cast<QUdpSocket *>(sender());
     if (m_available) {
         qCWarning(dcHardware) << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway socket error: " << gateway->errorString();
         m_available = false;
@@ -164,4 +164,4 @@ void Radio433BrennenstuhlGateway::timeout()
     }
 }
 
-}
+} // namespace nymeaserver

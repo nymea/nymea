@@ -29,8 +29,8 @@
 #include <QString>
 #include <QVariant>
 
-#include "types/param.h"
 #include "libnymea.h"
+#include "types/param.h"
 #include "typeutils.h"
 
 class LIBNYMEA_EXPORT RuleActionParam
@@ -94,7 +94,7 @@ private:
 Q_DECLARE_METATYPE(RuleActionParam)
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
 
-class LIBNYMEA_EXPORT RuleActionParams: public QList<RuleActionParam>
+class LIBNYMEA_EXPORT RuleActionParams : public QList<RuleActionParam>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -111,6 +111,5 @@ private:
     QList<ParamTypeId> m_ids;
 };
 QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams);
-
 
 #endif // RULEACTIONPARAM_H

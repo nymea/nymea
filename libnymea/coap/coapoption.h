@@ -25,9 +25,9 @@
 #ifndef COAPOPTION_H
 #define COAPOPTION_H
 
+#include <QByteArray>
 #include <QDebug>
 #include <QObject>
-#include <QByteArray>
 
 #include "libnymea.h"
 
@@ -38,24 +38,24 @@ class LIBNYMEA_EXPORT CoapOption
 public:
     // Options format: https://tools.ietf.org/html/rfc7252#section-3.1
     enum Option {
-        IfMatch       = 1,
-        UriHost       = 3,
-        ETag          = 4,
-        IfNoneMatch   = 5,
-        Observe       = 6, // (Observe) https://tools.ietf.org/html/rfc7641
-        UriPort       = 7,
-        LocationPath  = 8,
-        UriPath       = 11,
+        IfMatch = 1,
+        UriHost = 3,
+        ETag = 4,
+        IfNoneMatch = 5,
+        Observe = 6, // (Observe) https://tools.ietf.org/html/rfc7641
+        UriPort = 7,
+        LocationPath = 8,
+        UriPath = 11,
         ContentFormat = 12,
-        MaxAge        = 14,
-        UriQuery      = 15,
-        Accept        = 17,
+        MaxAge = 14,
+        UriQuery = 15,
+        Accept = 17,
         LocationQuery = 20,
-        Block2        = 23, // (Block) https://tools.ietf.org/html/draft-ietf-core-block-18
-        Block1        = 27, // (Block)
-        ProxyUri      = 35,
-        ProxyScheme   = 39,
-        Size1         = 60
+        Block2 = 23, // (Block) https://tools.ietf.org/html/draft-ietf-core-block-18
+        Block1 = 27, // (Block)
+        ProxyUri = 35,
+        ProxyScheme = 39,
+        Size1 = 60
     };
     Q_ENUM(Option)
 

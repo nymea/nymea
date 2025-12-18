@@ -28,8 +28,8 @@
 #include <QHash>
 #include <QObject>
 
-#include "network/networkdeviceinfo.h"
 #include "network/networkdevicediscoveryreply.h"
+#include "network/networkdeviceinfo.h"
 
 namespace nymeaserver {
 
@@ -68,6 +68,6 @@ private:
     void evaluateMonitorMode();
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NETWORKDEVICEDISCOVERYREPLYIMPL_H

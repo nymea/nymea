@@ -38,11 +38,9 @@
 #include <QDebug>
 
 /*! Construct a invalid \l{CalendarItem}. */
-CalendarItem::CalendarItem():
-    m_duration(0)
-{
-
-}
+CalendarItem::CalendarItem()
+    : m_duration(0)
+{}
 
 /*! Returns the date time of this \l{CalendarItem}. */
 QDateTime CalendarItem::dateTime() const
@@ -110,7 +108,6 @@ bool CalendarItem::isValid() const
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
     if (m_startTime.isValid()) {
-
         switch (m_repeatingOption.mode()) {
         case RepeatingOption::RepeatingModeNone:
             // If there is no repeating option, we assume it is meant daily.
@@ -126,7 +123,6 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
         case RepeatingOption::RepeatingModeYearly:
             return evaluateYearly(dateTime);
         }
-
     }
     if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly)
         return evaluateYearly(dateTime);
@@ -206,7 +202,6 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
                 // Return true if the current time is between start
                 // and end of this calendar item from the previouse week
                 return true;
-
         }
     }
 
@@ -229,7 +224,7 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
         if (startDateTime > dateTime) {
             //...go one month back
             startDateTime = startDateTime.addMonths(-1);
-            endDateTime =  startDateTime.addSecs(duration() * 60);
+            endDateTime = startDateTime.addSecs(duration() * 60);
         }
 
         // Check if dateTime already matches for this month
@@ -237,7 +232,6 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
             // Return true if the current time is between start
             // and end of this calendar item
             return true;
-
     }
 
     return false;
@@ -258,13 +252,12 @@ bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
     // check if this calendaritem overlaps a year
     if (startDateTimeThisYear.date().year() != endDateTimeThisYear.date().year()) {
         // go one year in to the past
-       QDateTime startDateTimePreviousYear = startDateTimeThisYear.addYears(-1);
-       QDateTime endDateTimePreviousYear = startDateTimePreviousYear.addSecs(duration() * 60);
+        QDateTime startDateTimePreviousYear = startDateTimeThisYear.addYears(-1);
+        QDateTime endDateTimePreviousYear = startDateTimePreviousYear.addSecs(duration() * 60);
 
-       // check if we are in the interval of the previous year
-       if (dateTime >= startDateTimePreviousYear && dateTime < endDateTimePreviousYear)
-           return true;
-
+        // check if we are in the interval of the previous year
+        if (dateTime >= startDateTimePreviousYear && dateTime < endDateTimePreviousYear)
+            return true;
     }
 
     return false;
@@ -274,21 +267,16 @@ bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
 QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "CalendarItem (StartTime:" << calendarItem.startTime() << ", DateTime:" << calendarItem.dateTime().toString() << ", " << calendarItem.repeatingOption() << ", Duration:" << calendarItem.duration() << ")";
+    dbg.nospace() << "CalendarItem (StartTime:" << calendarItem.startTime() << ", DateTime:" << calendarItem.dateTime().toString() << ", " << calendarItem.repeatingOption()
+                  << ", Duration:" << calendarItem.duration() << ")";
     return dbg;
 }
 
+CalendarItems::CalendarItems() {}
 
-
-CalendarItems::CalendarItems()
-{
-
-}
-
-CalendarItems::CalendarItems(const QList<CalendarItem> &other): QList<CalendarItem>(other)
-{
-
-}
+CalendarItems::CalendarItems(const QList<CalendarItem> &other)
+    : QList<CalendarItem>(other)
+{}
 
 QVariant CalendarItems::get(int index) const
 {

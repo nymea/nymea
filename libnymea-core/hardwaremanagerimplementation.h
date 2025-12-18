@@ -25,9 +25,9 @@
 #ifndef HARDWAREMANAGERIMPLEMENTATION_H
 #define HARDWAREMANAGERIMPLEMENTATION_H
 
-#include <QObject>
 #include <QDBusConnection>
 #include <QNetworkAccessManager>
+#include <QObject>
 
 #include "hardwaremanager.h"
 
@@ -48,7 +48,8 @@ class HardwareManagerImplementation : public HardwareManager
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(
+        Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;
@@ -84,9 +85,8 @@ private:
     ZWaveHardwareResourceImplementation *m_zwaveResource = nullptr;
     ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
     NetworkDeviceDiscoveryImpl *m_networkDeviceDiscovery = nullptr;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // HARDWAREMANAGERIMPLEMENTATION_H

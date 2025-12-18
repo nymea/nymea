@@ -25,14 +25,14 @@
 #ifndef EVENTDESCRIPTOR_H
 #define EVENTDESCRIPTOR_H
 
-#include "libnymea.h"
-#include "typeutils.h"
-#include "paramdescriptor.h"
 #include "event.h"
+#include "libnymea.h"
+#include "paramdescriptor.h"
+#include "typeutils.h"
 
+#include <QDebug>
 #include <QString>
 #include <QVariantList>
-#include <QDebug>
 
 class LIBNYMEA_EXPORT EventDescriptor
 {
@@ -43,10 +43,7 @@ class LIBNYMEA_EXPORT EventDescriptor
     Q_PROPERTY(QString interfaceEvent READ interfaceEvent WRITE setInterfaceEvent USER true)
     Q_PROPERTY(ParamDescriptors paramDescriptors READ paramDescriptors WRITE setParamDescriptors USER true)
 public:
-    enum Type {
-        TypeThing,
-        TypeInterface
-    };
+    enum Type { TypeThing, TypeInterface };
 
     EventDescriptor();
     EventDescriptor(const EventTypeId &eventTypeId, const ThingId &thingId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
@@ -71,7 +68,7 @@ public:
     void setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors);
     ParamDescriptor paramDescriptor(const ParamTypeId &paramTypeId) const;
 
-    bool operator ==(const EventDescriptor &other) const;
+    bool operator==(const EventDescriptor &other) const;
 
 private:
     EventTypeId m_eventTypeId;
@@ -82,7 +79,7 @@ private:
 };
 Q_DECLARE_METATYPE(EventDescriptor)
 
-class EventDescriptors: public QList<EventDescriptor>
+class EventDescriptors : public QList<EventDescriptor>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -93,7 +90,6 @@ public:
     Q_INVOKABLE void put(const QVariant &variant);
 };
 Q_DECLARE_METATYPE(EventDescriptors)
-
 
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor);
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors);

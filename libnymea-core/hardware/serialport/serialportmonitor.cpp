@@ -29,7 +29,8 @@ namespace nymeaserver {
 
 NYMEA_LOGGING_CATEGORY(dcSerialPortMonitor, "SerialPortMonitor")
 
-SerialPortMonitor::SerialPortMonitor(QObject *parent) : QObject(parent)
+SerialPortMonitor::SerialPortMonitor(QObject *parent)
+    : QObject(parent)
 {
     // Read initially all tty devices
     foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
@@ -76,7 +77,7 @@ SerialPortMonitor::SerialPortMonitor(QObject *parent) : QObject(parent)
     // Create socket notifier for read
     int socketDescriptor = udev_monitor_get_fd(m_monitor);
     m_notifier = new QSocketNotifier(socketDescriptor, QSocketNotifier::Read, this);
-    connect(m_notifier, &QSocketNotifier::activated, this, [this, socketDescriptor](int socket){
+    connect(m_notifier, &QSocketNotifier::activated, this, [this, socketDescriptor](int socket) {
         // Make sure the socket matches
         if (socketDescriptor != socket) {
             qCWarning(dcSerialPortMonitor()) << "Socket handles do not match. socket != socketdescriptor";
@@ -91,9 +92,9 @@ SerialPortMonitor::SerialPortMonitor(QObject *parent) : QObject(parent)
         }
 
         QString actionString = QString::fromLatin1(udev_device_get_action(device));
-        QString systemPath = QString::fromLatin1(udev_device_get_property_value(device,"DEVNAME"));
-        QString manufacturerString = QString::fromLatin1(udev_device_get_property_value(device,"ID_VENDOR_ENC"));
-        QString descriptionString = QString::fromLatin1(udev_device_get_property_value(device,"ID_MODEL_ENC"));
+        QString systemPath = QString::fromLatin1(udev_device_get_property_value(device, "DEVNAME"));
+        QString manufacturerString = QString::fromLatin1(udev_device_get_property_value(device, "ID_VENDOR_ENC"));
+        QString descriptionString = QString::fromLatin1(udev_device_get_property_value(device, "ID_MODEL_ENC"));
         QString serialNumberString = QString::fromLatin1(udev_device_get_property_value(device, "ID_SERIAL_SHORT"));
 
         // Clean udev device
@@ -112,7 +113,6 @@ SerialPortMonitor::SerialPortMonitor(QObject *parent) : QObject(parent)
                         addSerialPortInternally(SerialPort(serialPortInfo));
                     }
                 }
-
             }
         }
 
@@ -135,7 +135,7 @@ SerialPortMonitor::SerialPortMonitor(QObject *parent) : QObject(parent)
     m_timer = new QTimer(this);
     m_timer->setInterval(5000);
     m_timer->setSingleShot(false);
-    connect(m_timer, &QTimer::timeout, this, [=](){
+    connect(m_timer, &QTimer::timeout, this, [=]() {
         QStringList availablePorts;
         // Add a new adapter if not in the list already
         foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
@@ -180,4 +180,4 @@ void SerialPortMonitor::addSerialPortInternally(const SerialPort &serialPort)
     emit serialPortAdded(serialPort);
 }
 
-}
+} // namespace nymeaserver

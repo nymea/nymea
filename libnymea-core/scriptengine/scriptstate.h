@@ -26,11 +26,11 @@
 #define SCRIPTSTATE_H
 
 #include <QObject>
-#include <QQmlParserStatus>
 #include <QPointer>
+#include <QQmlParserStatus>
 
-#include "integrations/thingmanager.h"
 #include "integrations/thingactioninfo.h"
+#include "integrations/thingmanager.h"
 
 class Logger;
 
@@ -92,7 +92,6 @@ private:
     QString m_stateTypeId;
     QString m_stateName;
 
-
     ThingActionInfo *m_pendingActionInfo = nullptr;
     QVariant m_valueCache;
 
@@ -101,7 +100,7 @@ private:
     QMetaObject::Connection m_connection;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTSTATE_H

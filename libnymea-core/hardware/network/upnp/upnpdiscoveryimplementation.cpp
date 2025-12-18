@@ -37,9 +37,8 @@
   \sa UpnpDevice, UpnpDeviceDescriptor
 */
 
-
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeasettings.h"
 #include "version.h"
 
 #include "upnpdiscoveryimplementation.h"
@@ -47,17 +46,17 @@
 
 #include <QMetaObject>
 #include <QNetworkInterface>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 #include <QRegularExpression>
 #include <QStringView>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 namespace nymeaserver {
 
 /*! Construct the hardware resource UpnpDiscoveryImplementation with the given \a parent. */
-UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent) :
-    UpnpDiscovery(parent),
-    m_networkAccessManager(networkAccessManager)
+UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent)
+    : UpnpDiscovery(parent)
+    , m_networkAccessManager(networkAccessManager)
 {
     m_notificationTimer = new QTimer(this);
     m_notificationTimer->setInterval(30000);
@@ -165,7 +164,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
         qCDebug(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
     }
 
-    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
         foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
             // check IPv4
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
@@ -181,18 +180,21 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
                                                                       "CACHE-CONTROL: max-age=1900\r\n"
-                                                                      "DATE: " +
-                                                                      QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() +
-                                                                      " GMT\r\n"
-                                                                      "EXT:\r\n"
-                                                                      "LOCATION: " + locationString.toUtf8() +
-                                                                      "\r\n"
-                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) +
-                                                                      " UPnP/1.1 \r\n"
-                                                                      "ST: upnp:rootdevice\r\n"
-                                                                      "USN: uuid:" + uuid +
-                                                                      "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "\r\n");
+                                                                      "DATE: "
+                                                                      + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8()
+                                                                      + " GMT\r\n"
+                                                                        "EXT:\r\n"
+                                                                        "LOCATION: "
+                                                                      + locationString.toUtf8()
+                                                                      + "\r\n"
+                                                                        "SERVER: nymea/"
+                                                                      + QByteArray(NYMEA_VERSION_STRING)
+                                                                      + " UPnP/1.1 \r\n"
+                                                                        "ST: upnp:rootdevice\r\n"
+                                                                        "USN: uuid:"
+                                                                      + uuid
+                                                                      + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                        "\r\n");
 
                     qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);
                     m_socket->writeDatagram(rootdeviceResponseMessage, host, port);
@@ -235,7 +237,6 @@ void UpnpDiscoveryImplementation::setEnabled(bool enabled)
     } else {
         disable();
     }
-
 }
 
 void UpnpDiscoveryImplementation::error(QAbstractSocket::SocketError error)
@@ -270,10 +271,10 @@ void UpnpDiscoveryImplementation::readData()
     // if the data contains the HTTP OK header...
     if (data.contains("HTTP/1.1 200 OK")) {
         const QStringList lines = QString(data).split("\r\n");
-        foreach (const QString& line, lines) {
+        foreach (const QString &line, lines) {
             int separatorIndex = line.indexOf(':');
             QString key = line.left(separatorIndex).toUpper();
-            QString value = line.mid(separatorIndex+1).trimmed();
+            QString value = line.mid(separatorIndex + 1).trimmed();
 
             // get location
             if (key.contains("LOCATION") || key.contains("location") || key.contains("Location")) {
@@ -299,7 +300,7 @@ void UpnpDiscoveryImplementation::replyFinished()
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
     switch (status) {
-    case(200):{
+    case (200): {
         QByteArray data = reply->readAll();
         UpnpDeviceDescriptor upnpDeviceDescriptor = m_informationRequestList.take(reply);
 
@@ -431,10 +432,9 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
         bool useSsl = globalSettings.value("sslEnabled", true).toBool();
         globalSettings.endGroup();
 
-        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-
                     QString locationString;
                     if (useSsl) {
                         locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
@@ -446,12 +446,18 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
                     QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
                                                           "HOST:239.255.255.250:1900\r\n"
                                                           "CACHE-CONTROL: max-age=1900\r\n"
-                                                          "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                   "NTS: ssdp:byebye\r\n"
-                                                                   "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                                               "\r\n");
+                                                          "LOCATION: "
+                                                          + locationString.toUtf8()
+                                                          + "\r\n"
+                                                            "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                            "USN:uuid:"
+                                                          + uuid
+                                                          + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                            "NTS: ssdp:byebye\r\n"
+                                                            "SERVER: nymea/"
+                                                          + QByteArray(NYMEA_VERSION_STRING)
+                                                          + " UPnP/1.1 \r\n"
+                                                            "\r\n");
 
                     sendToMulticast(byebyeMessage);
                 }
@@ -477,10 +483,9 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
         bool useSsl = globalSettings.value("sslEnabled", true).toBool();
         globalSettings.endGroup();
 
-        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-
                     QString locationString;
                     if (useSsl) {
                         locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
@@ -492,12 +497,18 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
                     QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
                                                          "HOST:239.255.255.250:1900\r\n"
                                                          "CACHE-CONTROL: max-age=1900\r\n"
-                                                         "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                                     "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                                     "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "NTS: ssdp:alive\r\n"
-                                                                  "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                                              "\r\n");
+                                                         "LOCATION: "
+                                                         + locationString.toUtf8()
+                                                         + "\r\n"
+                                                           "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                           "USN:uuid:"
+                                                         + uuid
+                                                         + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                           "NTS: ssdp:alive\r\n"
+                                                           "SERVER: nymea/"
+                                                         + QByteArray(NYMEA_VERSION_STRING)
+                                                         + " UPnP/1.1 \r\n"
+                                                           "\r\n");
 
                     sendToMulticast(aliveMessage);
                 }
@@ -509,12 +520,12 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
 
 void UpnpDiscoveryImplementation::discoverTimeout()
 {
-    UpnpDiscoveryRequest *discoveryRequest = static_cast<UpnpDiscoveryRequest*>(sender());
+    UpnpDiscoveryRequest *discoveryRequest = static_cast<UpnpDiscoveryRequest *>(sender());
     QPointer<UpnpDiscoveryReplyImplementation> reply = discoveryRequest->reply();
 
     if (reply.isNull()) {
         qCWarning(dcUpnp()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
-    }  else {
+    } else {
         qCDebug(dcUpnp()) << "Descovery finished. Found devices:";
         qCDebug(dcUpnp()) << discoveryRequest->deviceList();
         reply->setDeviceDescriptors(discoveryRequest->deviceList());
@@ -548,10 +559,10 @@ bool UpnpDiscoveryImplementation::enable()
     m_port = 1900;
     m_host = QHostAddress("239.255.255.250");
 
-    m_socket->setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
-    m_socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
+    m_socket->setSocketOption(QAbstractSocket::MulticastTtlOption, QVariant(1));
+    m_socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
 
-    if(!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
+    if (!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)) {
         qCWarning(dcUpnp()) << name() << "could not bind to port" << m_port;
         m_available = false;
         emit availableChanged(false);
@@ -560,7 +571,7 @@ bool UpnpDiscoveryImplementation::enable()
         return false;
     }
 
-    if(!m_socket->joinMulticastGroup(m_host)){
+    if (!m_socket->joinMulticastGroup(m_host)) {
         qCWarning(dcUpnp()) << name() << "could not join multicast group" << m_host;
         m_available = false;
         emit availableChanged(false);
@@ -608,4 +619,4 @@ bool UpnpDiscoveryImplementation::disable()
     return true;
 }
 
-}
+} // namespace nymeaserver

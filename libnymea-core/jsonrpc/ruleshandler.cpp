@@ -56,8 +56,8 @@
 */
 
 #include "ruleshandler.h"
-#include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
+#include "ruleengine/ruleengine.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -65,9 +65,9 @@
 namespace nymeaserver {
 
 /*! Constructs a new \l{RulesHandler} with the given \a parent. */
-RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent) :
-    JsonHandler(parent),
-    m_ruleEngine(ruleEngine)
+RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent)
+    : JsonHandler(parent)
+    , m_ruleEngine(ruleEngine)
 {
     // Enums
     registerEnum<RuleEngine::RuleError>();
@@ -97,31 +97,35 @@ RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent) :
     registerObject<Rule, Rules>();
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
-                   "method Rules.GetRuleDetails.";
+                  "method Rules.GetRuleDetails.";
     returns.insert("ruleDescriptions", QVariantList() << objectRef("RuleDescription"));
     registerMethod("GetRules", description, params, returns, Types::PermissionScopeExecuteRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get details for the rule identified by ruleId";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("o:rule", objectRef("Rule"));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("GetRuleDetails", description, params, returns, Types::PermissionScopeExecuteRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. "
-                              "Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. "
-                              "A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. "
-                              "If not given, enabled defaults to true. A rule can have a list of actions and exitActions. "
-                              "It must have at least one Action. For state based rules, actions will be executed when the system "
-                              "enters a state matching the stateDescriptor. The exitActions will be executed when the system leaves "
-                              "the described state again. For event based rules, actions will be executed when a matching event "
-                              "happens and if the stateEvaluator matches the system's state. ExitActions for such rules will be "
-                              "executed when a matching event happens and the stateEvaluator is not matching the system's state. "
-                              "A rule marked as executable can be executed via the API using Rules.ExecuteRule, that means, its "
-                              "actions will be executed regardless of the eventDescriptor and stateEvaluators.";
+                  "Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. "
+                  "A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. "
+                  "If not given, enabled defaults to true. A rule can have a list of actions and exitActions. "
+                  "It must have at least one Action. For state based rules, actions will be executed when the system "
+                  "enters a state matching the stateDescriptor. The exitActions will be executed when the system leaves "
+                  "the described state again. For event based rules, actions will be executed when a matching event "
+                  "happens and if the stateEvaluator matches the system's state. ExitActions for such rules will be "
+                  "executed when a matching event happens and the stateEvaluator is not matching the system's state. "
+                  "A rule marked as executable can be executed via the API using Rules.ExecuteRule, that means, its "
+                  "actions will be executed regardless of the eventDescriptor and stateEvaluators.";
     params.insert("name", enumValueName(String));
     params.insert("actions", QVariantList() << objectRef("RuleAction"));
     params.insert("o:timeDescriptor", objectRef("TimeDescriptor"));
@@ -134,11 +138,12 @@ RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent) :
     returns.insert("o:ruleId", enumValueName(Uuid));
     registerMethod("AddRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
-                   "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
-                   "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" "
-                   "will be emitted.";
+                  "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
+                  "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" "
+                  "will be emitted.";
     params.insert("ruleId", enumValueName(Uuid));
     params.insert("name", enumValueName(String));
     params.insert("actions", QVariantList() << objectRef("RuleAction"));
@@ -152,62 +157,72 @@ RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent) :
     returns.insert("o:rule", objectRef("Rule"));
     registerMethod("EditRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove a rule";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("RemoveRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Find a list of rules containing any of the given parameters.";
     params.insert("thingId", enumValueName(Uuid));
     returns.insert("ruleIds", QVariantList() << enumValueName(Uuid));
     registerMethod("FindRules", description, params, returns, Types::PermissionScopeExecuteRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Enabled a rule that has previously been disabled."
-                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
+                  "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("EnableRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
-                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
+                  "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("DisableRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Execute the action list of the rule with the given ruleId.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("ExecuteActions", description, params, returns, Types::PermissionScopeExecuteRules);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Execute the exit action list of the rule with the given ruleId.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     registerMethod("ExecuteExitActions", description, params, returns, Types::PermissionScopeExecuteRules);
 
     // Notifications
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a Rule was removed.";
     params.insert("ruleId", enumValueName(Uuid));
     registerNotification("RuleRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a Rule was added.";
     params.insert("rule", objectRef("Rule"));
     registerNotification("RuleAdded", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the active state of a Rule changed.";
     params.insert("ruleId", enumValueName(Uuid));
     params.insert("active", enumValueName(Bool));
     registerNotification("RuleActiveChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the configuration of a Rule changed.";
     params.insert("rule", objectRef("Rule"));
     registerNotification("RuleConfigurationChanged", description, params);
@@ -224,7 +239,7 @@ QString RulesHandler::name() const
     return "Rules";
 }
 
-JsonReply* RulesHandler::GetRules(const QVariantMap &params)
+JsonReply *RulesHandler::GetRules(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
@@ -253,14 +268,14 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
     return createReply(returns);
 }
 
-JsonReply* RulesHandler::AddRule(const QVariantMap &params)
+JsonReply *RulesHandler::AddRule(const QVariantMap &params)
 {
     Rule rule = unpack<Rule>(params);
     rule.setId(RuleId::createRuleId());
 
     RuleEngine::RuleError status = m_ruleEngine->addRule(rule);
     QVariantMap returns;
-    if (status ==  RuleEngine::RuleErrorNoError) {
+    if (status == RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", rule.id().toString());
     }
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
@@ -276,14 +291,14 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
 
     RuleEngine::RuleError status = m_ruleEngine->editRule(rule);
     QVariantMap returns;
-    if (status ==  RuleEngine::RuleErrorNoError) {
+    if (status == RuleEngine::RuleErrorNoError) {
         returns.insert("rule", pack(m_ruleEngine->findRule(rule.id())));
     }
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
-JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
+JsonReply *RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
@@ -385,4 +400,4 @@ QVariantMap RulesHandler::packRuleDescription(const Rule &rule)
     return ruleDescriptionMap;
 }
 
-}
+} // namespace nymeaserver

@@ -25,10 +25,10 @@
 #ifndef MODBUSRTUMASTER_H
 #define MODBUSRTUMASTER_H
 
-#include <QUuid>
+#include <QDebug>
 #include <QObject>
 #include <QSerialPort>
-#include <QDebug>
+#include <QUuid>
 
 #include "modbusrtureply.h"
 
@@ -60,7 +60,8 @@ public:
     virtual ModbusRtuReply *writeHoldingRegisters(int slaveAddress, int registerAddress, const QVector<quint16> &values) = 0;
 
 protected:
-    explicit ModbusRtuMaster(QObject *parent = nullptr) : QObject(parent) { };
+    explicit ModbusRtuMaster(QObject *parent = nullptr)
+        : QObject(parent){};
     virtual ~ModbusRtuMaster() = default;
 
 signals:
@@ -72,10 +73,10 @@ signals:
     void stopBitsChanged(QSerialPort::StopBits stopBits);
     void numberOfRetriesChanged(int numberOfRetries);
     void timeoutChanged(int timeout);
-
 };
 
-inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
+inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster)
+{
     debug.nospace() << "ModbusRtuMaster(" << modbusRtuMaster->modbusUuid().toString();
     debug.nospace() << ", " << modbusRtuMaster->serialPort();
     debug.nospace() << ", BaudRate: " << modbusRtuMaster->baudrate();
@@ -86,6 +87,5 @@ inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
     debug.nospace() << ", Timeout: " << modbusRtuMaster->timeout() << "ms)";
     return debug.space();
 };
-
 
 #endif // MODBUSRTUMASTER_H

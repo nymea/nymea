@@ -51,5 +51,4 @@ private:
 
 QDebug operator<<(QDebug debug, const I2CDevice *i2cDevice);
 
-
 #endif // I2CDEVICE_H

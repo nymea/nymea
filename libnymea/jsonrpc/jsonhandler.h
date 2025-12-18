@@ -25,15 +25,15 @@
 #ifndef JSONHANDLER_H
 #define JSONHANDLER_H
 
-#include <QObject>
-#include <QVariantMap>
-#include <QMetaMethod>
-#include <QDebug>
-#include <QVariant>
 #include <QDateTime>
+#include <QDebug>
+#include <QMetaMethod>
+#include <QObject>
+#include <QVariant>
+#include <QVariantMap>
 
-#include "jsonreply.h"
 #include "jsoncontext.h"
+#include "jsonreply.h"
 #include "typeutils.h"
 
 class JsonHandler : public QObject
@@ -69,45 +69,67 @@ public:
     QVariantMap jsonMethods() const;
     QVariantMap jsonNotifications() const;
 
-
-    template<typename T> static QString enumRef();
-    template<typename T> static QString flagRef();
-    template<typename T> static QString objectRef();
+    template<typename T>
+    static QString enumRef();
+    template<typename T>
+    static QString flagRef();
+    template<typename T>
+    static QString objectRef();
     static QString objectRef(const QString &objectName);
 
-    template<typename T> static QString enumValueName(T value);
-    template<typename T> static T enumNameToValue(const QString &name);
+    template<typename T>
+    static QString enumValueName(T value);
+    template<typename T>
+    static T enumNameToValue(const QString &name);
 
-    template<typename T> static QStringList flagValueNames(T value);
-    template<typename T> static T flagNamesToValue(const QStringList &names);
+    template<typename T>
+    static QStringList flagValueNames(T value);
+    template<typename T>
+    static T flagNamesToValue(const QStringList &names);
 
     static BasicType variantTypeToBasicType(QMetaType::Type variantType);
     static QMetaType::Type basicTypeToMetaType(BasicType basicType);
 
-    template<typename T> QVariant pack(const T &value) const;
-    template<typename T> QVariant pack(T *value) const;
-    template <typename T> T unpack(const QVariant &value) const;
+    template<typename T>
+    QVariant pack(const T &value) const;
+    template<typename T>
+    QVariant pack(T *value) const;
+    template<typename T>
+    T unpack(const QVariant &value) const;
 
 protected:
-    template <typename Enum> void registerEnum();
-    template <typename Enum, typename Flags> void registerFlag();
+    template<typename Enum>
+    void registerEnum();
+    template<typename Enum, typename Flags>
+    void registerFlag();
 
     // Registers the given object
-    template <typename ObjectType> void registerObject();
+    template<typename ObjectType>
+    void registerObject();
     // Registers the given list type object as a container for the given object type, without registering the object type itself
-    template <typename ListType, typename ObjectType> void registerList();
+    template<typename ListType, typename ObjectType>
+    void registerList();
     // Registers an object and its list type object
-    template <typename ObjectType, typename ListType> void registerObject();
+    template<typename ObjectType, typename ListType>
+    void registerObject();
 
-    template <typename ObjectType> void registerUncreatableObject();
-    template <typename ObjectType, typename ListType> void registerUncreatableObject();
+    template<typename ObjectType>
+    void registerUncreatableObject();
+    template<typename ObjectType, typename ListType>
+    void registerUncreatableObject();
 
-    template<typename ListType, typename BasicTypeName> void registerList(BasicTypeName typeName);
+    template<typename ListType, typename BasicTypeName>
+    void registerList(BasicTypeName typeName);
 
     // Deprecated QString based registerObject
     void registerObject(const QString &name, const QVariantMap &object);
 
-    void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, Types::PermissionScope permissionScope = Types::PermissionScopeAdmin, const QString &deprecationInfo = QString());
+    void registerMethod(const QString &name,
+                        const QString &description,
+                        const QVariantMap &params,
+                        const QVariantMap &returns,
+                        Types::PermissionScope permissionScope = Types::PermissionScopeAdmin,
+                        const QString &deprecationInfo = QString());
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo = QString());
 
     JsonReply *createReply(const QVariantMap &data) const;
@@ -193,7 +215,7 @@ void JsonHandler::registerUncreatableObject()
     registerObject(metaObject);
 }
 
-template<typename ObjectType, typename ListType >
+template<typename ObjectType, typename ListType>
 void JsonHandler::registerUncreatableObject()
 {
     QMetaObject metaObject = ObjectType::staticMetaObject;
@@ -211,8 +233,12 @@ void JsonHandler::registerList(BasicTypeName typeName)
     m_objects.insert(listTypeName, QVariant(QString("$ref:%1").arg(typeName)));
 
     Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0,
+               "JsonHandler",
+               QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0,
+               "JsonHandler",
+               QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
 }
 
 template<typename T>
@@ -284,14 +310,14 @@ template<typename T>
 QVariant JsonHandler::pack(const T &value) const
 {
     QMetaObject metaObject = T::staticMetaObject;
-    return pack(metaObject, static_cast<const void*>(&value));
+    return pack(metaObject, static_cast<const void *>(&value));
 }
 
 template<typename T>
 QVariant JsonHandler::pack(T *value) const
 {
     QMetaObject metaObject = T::staticMetaObject;
-    return pack(metaObject, static_cast<const void*>(value));
+    return pack(metaObject, static_cast<const void *>(value));
 }
 
 template<typename T>
@@ -301,6 +327,5 @@ T JsonHandler::unpack(const QVariant &value) const
     QVariant ret = unpack(metaObject, value);
     return ret.value<T>();
 }
-
 
 #endif // JSONHANDLER_H

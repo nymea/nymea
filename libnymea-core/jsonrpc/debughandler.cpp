@@ -24,9 +24,9 @@
 
 #include "debughandler.h"
 
+#include "loggingcategories.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
-#include "loggingcategories.h"
 
 namespace nymeaserver {
 
@@ -48,12 +48,14 @@ DebugHandler::DebugHandler(QObject *parent)
     QString description;
 
     // Methods
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all available logging categories.";
     returns.insert("loggingCategories", QVariantList() << objectRef("LoggingCategory"));
     registerMethod("GetLoggingCategories", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Set the logging category with the given name to the given logging level.";
     params.insert("name", enumValueName(String));
     params.insert("level", enumRef<DebugHandler::LoggingLevel>());
@@ -61,7 +63,8 @@ DebugHandler::DebugHandler(QObject *parent)
     registerMethod("SetLoggingCategoryLevel", description, params, returns);
 
     // Notifications
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a logging category has changed the logging level.";
     params.insert("name", enumValueName(String));
     params.insert("level", enumRef<DebugHandler::LoggingLevel>());
@@ -129,7 +132,7 @@ JsonReply *DebugHandler::GetLoggingCategories(const QVariantMap &params)
 
     // Now create all categories, which are not nymea system related
     foreach (const QString &categoryFilter, settings.childGroups()) {
-        QStringList categoryParts =  categoryFilter.split(".");
+        QStringList categoryParts = categoryFilter.split(".");
         if (categoryParts.isEmpty())
             continue;
 
@@ -210,6 +213,6 @@ JsonReply *DebugHandler::SetLoggingCategoryLevel(const QVariantMap &params)
     QVariantMap returns;
     returns.insert("debugError", enumValueName(DebugErrorNoError));
     return createReply(returns);
- }
-
 }
+
+} // namespace nymeaserver

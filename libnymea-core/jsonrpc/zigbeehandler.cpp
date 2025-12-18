@@ -23,17 +23,17 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zigbeehandler.h"
-#include "zigbee/zigbeemanager.h"
-#include "zigbee/zigbeeadapters.h"
 #include "loggingcategories.h"
+#include "zigbee/zigbeeadapters.h"
+#include "zigbee/zigbeemanager.h"
 
 #include <zigbeeuartadapter.h>
 
 namespace nymeaserver {
 
-ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
-    JsonHandler(parent),
-    m_zigbeeManager(zigbeeManager)
+ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent)
+    : JsonHandler(parent)
+    , m_zigbeeManager(zigbeeManager)
 {
     qRegisterMetaType<nymeaserver::ZigbeeAdapter>();
     registerEnum<ZigbeeManager::ZigbeeNetworkState>();
@@ -88,7 +88,6 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeRoutingTableRecordDescription.insert("memoryConstrained", enumValueName(Bool));
     registerObject("ZigbeeRoutingTableRecord", zigbeeRoutingTableRecordDescription);
 
-
     QVariantMap zigbeeClusterDescription;
     zigbeeClusterDescription.insert("clusterId", enumValueName(Uint));
     zigbeeClusterDescription.insert("direction", enumRef<ZigbeeClusterDirection>());
@@ -99,7 +98,6 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNodeEndpointDescription.insert("inputClusters", QVariantList() << objectRef("ZigbeeCluster"));
     zigbeeNodeEndpointDescription.insert("outputClusters", QVariantList() << objectRef("ZigbeeCluster"));
     registerObject("ZigbeeNodeEndpoint", zigbeeNodeEndpointDescription);
-
 
     // Zigbee node description
     QVariantMap zigbeeNodeDescription;
@@ -125,13 +123,15 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     QString description;
 
     // GetAvailableBackends
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of available ZigBee backends.";
     returns.insert("backends", QVariantList() << enumValueName(String));
     registerMethod("GetAvailableBackends", description, params, returns);
 
     // GetAdapters
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of available ZigBee adapters and serial ports in order to set up the ZigBee network "
                   "on the desired interface. The \'serialPort\' property can be used as unique identifier for an adapter. "
                   "If an adapter hardware has been recognized as a well known ZigBee adapter, "
@@ -154,13 +154,15 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerNotification("AdapterRemoved", description, params);
 
     // GetNetworks
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Returns the list of configured ZigBee networks in the system.";
     returns.insert("zigbeeNetworks", QVariantList() << objectRef("ZigbeeNetwork"));
     registerMethod("GetNetworks", description, params, returns);
 
     // AddNetwork
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Create a new ZigBee network for the given \'serialPort\', \'baudRate\' and \'backend\'. "
                   "The serial ports can be fetched from the available adapters. See \'GetAdapters\' for more information. "
                   "The available backends can be fetched using the \'GetAvailableBackends\' method.";
@@ -173,7 +175,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("AddNetwork", description, params, returns);
 
     // RemoveNetwork
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove the ZigBee network with the given network uuid.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
@@ -198,7 +201,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerNotification("NetworkChanged", description, params);
 
     // FactoryResetNetwork
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Factory reset the network with the given \'networkUuid\'. The network does not have "
                   "to be online for this procedure, and all associated nodes and things will be removed permanently.";
     params.insert("networkUuid", enumValueName(Uuid));
@@ -206,7 +210,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("FactoryResetNetwork", description, params, returns);
 
     // SetPermitJoin
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Allow or deny nodes to join the network with the given \'networkUuid\' for a specific \'duration\' in seconds. "
                   "The duration value has to be between 0 and 255 seconds. The \'permitJoinDuration\' property of ZigBee network "
                   "object indicates how long permit has been enabled and the \'permitJoiningRemaining\' indicates the rest of the time. "
@@ -221,14 +226,16 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("SetPermitJoin", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Refresh the neighbor table for all nodes. Note that calling this may cause a lot of traffic in the ZigBee network.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("RefreshNeighborTables", description, params, returns);
 
     // GetNodes
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Returns the list of ZigBee nodes from the network the given \'networkUuid\' in the system.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
@@ -236,7 +243,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("GetNodes", description, params, returns);
 
     // RefreshBindings
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Refresh the binding table for the given node.";
     params.insert("networkUuid", enumValueName(Uuid));
     params.insert("ieeeAddress", enumValueName(String));
@@ -244,7 +252,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("RefreshBindings", description, params, returns);
 
     // CreateBinding
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Create a binding. Use destinationAddress and destinationEndpointId to create a node to node binding, or use destinationGroupAddress to create a group binding.";
     params.insert("networkUuid", enumValueName(Uuid));
     params.insert("sourceAddress", enumValueName(String));
@@ -256,9 +265,9 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("CreateBinding", description, params, returns);
 
-
     // RemoveBinding
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove a binding.";
     params.insert("networkUuid", enumValueName(Uuid));
     params.insert("sourceAddress", enumValueName(String));
@@ -271,7 +280,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("RemoveBinding", description, params, returns);
 
     // RemoveNode
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove a ZigBee node with the given \'ieeeAddress\' from the network with the given \'networkUuid\'. "
                   "If there is a thing configured for this node, also the thing will be removed from the system. "
                   "The coordinator node cannot be removed.";
@@ -301,31 +311,31 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     params.insert("zigbeeNode", objectRef("ZigbeeNode"));
     registerNotification("NodeChanged", description, params);
 
-    connect(m_zigbeeManager, &ZigbeeManager::availableAdapterAdded, this, [this](const ZigbeeAdapter &adapter){
+    connect(m_zigbeeManager, &ZigbeeManager::availableAdapterAdded, this, [this](const ZigbeeAdapter &adapter) {
         QVariantMap params;
         params.insert("adapter", pack(adapter));
         emit AdapterAdded(params);
     });
 
-    connect(m_zigbeeManager, &ZigbeeManager::availableAdapterRemoved, this, [this](const ZigbeeAdapter &adapter){
+    connect(m_zigbeeManager, &ZigbeeManager::availableAdapterRemoved, this, [this](const ZigbeeAdapter &adapter) {
         QVariantMap params;
         params.insert("adapter", pack(adapter));
         emit AdapterRemoved(params);
     });
 
-    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkAdded, this, [this](ZigbeeNetwork *network){
+    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkAdded, this, [this](ZigbeeNetwork *network) {
         QVariantMap params;
         params.insert("zigbeeNetwork", packNetwork(network));
         emit NetworkAdded(params);
     });
 
-    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkChanged, this, [this](ZigbeeNetwork *network){
+    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkChanged, this, [this](ZigbeeNetwork *network) {
         QVariantMap params;
         params.insert("zigbeeNetwork", packNetwork(network));
         emit NetworkChanged(params);
     });
 
-    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkRemoved, this, [this](const QUuid &networkUuid){
+    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkRemoved, this, [this](const QUuid &networkUuid) {
         QVariantMap params;
         params.insert("networkUuid", networkUuid);
         emit NetworkRemoved(params);
@@ -335,7 +345,6 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHandler::onNodeAdded);
     connect(m_zigbeeManager, &ZigbeeManager::nodeChanged, this, &ZigbeeHandler::onNodeChanged);
     connect(m_zigbeeManager, &ZigbeeManager::nodeRemoved, this, &ZigbeeHandler::onNodeRemoved);
-
 }
 
 QString ZigbeeHandler::name() const
@@ -497,7 +506,7 @@ JsonReply *ZigbeeHandler::RefreshBindings(const QVariantMap &params)
     }
     JsonReply *jsonReply = createAsyncReply("RefreshBindings");
     ZigbeeReply *reply = node->readBindingTableEntries();
-    connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply](){
+    connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply]() {
         jsonReply->setData({{"zigbeeError", enumValueName(reply->error())}});
         jsonReply->finished();
     });
@@ -525,7 +534,7 @@ JsonReply *ZigbeeHandler::CreateBinding(const QVariantMap &params)
         quint8 destinationEndpointId = params.value("destinationEndpointId").toUInt();
         ZigbeeReply *reply = node->addBinding(sourceEndpointId, clusterId, ZigbeeAddress(destinationAddress), destinationEndpointId);
         JsonReply *jsonReply = createAsyncReply("CreateBinding");
-        connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply](){
+        connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply]() {
             ZigbeeManager::ZigbeeError error = ZigbeeManager::ZigbeeErrorNoError;
             switch (reply->error()) {
             case ZigbeeReply::ErrorNoError:
@@ -546,7 +555,7 @@ JsonReply *ZigbeeHandler::CreateBinding(const QVariantMap &params)
         quint16 destinationGroupAddress = params.value("destinationGroupAddress").toUInt();
         ZigbeeReply *reply = node->addBinding(sourceEndpointId, clusterId, destinationGroupAddress);
         JsonReply *jsonReply = createAsyncReply("CreateBinding");
-        connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply](){
+        connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply]() {
             ZigbeeManager::ZigbeeError error = ZigbeeManager::ZigbeeErrorNoError;
             switch (reply->error()) {
             case ZigbeeReply::ErrorNoError:
@@ -590,18 +599,13 @@ JsonReply *ZigbeeHandler::RemoveBinding(const QVariantMap &params)
     foreach (const ZigbeeDeviceProfile::BindingTableListRecord &binding, node->bindingTableRecords()) {
         bool found = false;
         if (isGroup) {
-            if (binding.sourceAddress == sourceAddress
-                    && binding.sourceEndpoint == sourceEndpointId
-                    && binding.clusterId == clusterId
-                    && binding.destinationShortAddress == destinationGroupAddress) {
+            if (binding.sourceAddress == sourceAddress && binding.sourceEndpoint == sourceEndpointId && binding.clusterId == clusterId
+                && binding.destinationShortAddress == destinationGroupAddress) {
                 found = true;
             }
         } else {
-            if (binding.sourceAddress == sourceAddress
-                    && binding.sourceEndpoint == sourceEndpointId
-                    && binding.clusterId == clusterId
-                    && binding.destinationIeeeAddress == destinationAddress
-                    && binding.destinationEndpoint == destinationEndpointId) {
+            if (binding.sourceAddress == sourceAddress && binding.sourceEndpoint == sourceEndpointId && binding.clusterId == clusterId
+                && binding.destinationIeeeAddress == destinationAddress && binding.destinationEndpoint == destinationEndpointId) {
                 found = true;
             }
         }
@@ -609,7 +613,7 @@ JsonReply *ZigbeeHandler::RemoveBinding(const QVariantMap &params)
         if (found) {
             ZigbeeReply *reply = node->removeBinding(binding);
             JsonReply *jsonReply = createAsyncReply("RemoveBinding");
-            connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply](){
+            connect(reply, &ZigbeeReply::finished, jsonReply, [reply, jsonReply]() {
                 ZigbeeManager::ZigbeeError error = ZigbeeManager::ZigbeeErrorNoError;
                 switch (reply->error()) {
                 case ZigbeeReply::ErrorNoError:
@@ -825,4 +829,4 @@ void ZigbeeHandler::onNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node)
     emit NodeRemoved(params);
 }
 
-}
+} // namespace nymeaserver

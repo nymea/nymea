@@ -43,7 +43,6 @@ public:
 signals:
     void serviceEntryAdded(const ZeroConfServiceEntry &entry);
     void serviceEntryRemoved(const ZeroConfServiceEntry &entry);
-
 };
 
 #endif // ZEROCONFSERVICEBROWSER_H

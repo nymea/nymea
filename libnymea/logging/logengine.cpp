@@ -28,10 +28,9 @@
 #include "loggingcategories.h"
 NYMEA_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
 
-LogFetchJob::LogFetchJob(QObject *parent): QObject(parent)
-{
-
-}
+LogFetchJob::LogFetchJob(QObject *parent)
+    : QObject(parent)
+{}
 
 LogEntries LogFetchJob::entries() const
 {
@@ -60,6 +59,3 @@ void LogEngine::finishFetchJob(LogFetchJob *job, const LogEntries &entries)
 {
     job->finish(entries);
 }
-
-
-

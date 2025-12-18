@@ -25,9 +25,9 @@
 #ifndef MACADDRESS_H
 #define MACADDRESS_H
 
+#include <QByteArray>
 #include <QHash>
 #include <QString>
-#include <QByteArray>
 
 #include "libnymea.h"
 
@@ -61,9 +61,7 @@ public:
 
 private:
     QByteArray m_rawData = 0;
-
 };
-
 
 #if QT_VERSION < 0x0600000
 using qhash_result_t = uint;

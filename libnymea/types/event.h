@@ -26,12 +26,12 @@
 #define EVENT_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "types/param.h"
+#include "typeutils.h"
 
+#include <QDebug>
 #include <QString>
 #include <QVariantList>
-#include <QDebug>
 
 class LIBNYMEA_EXPORT Event
 {
@@ -54,7 +54,7 @@ public:
     Param param(const ParamTypeId &paramTypeId) const;
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
 
-    bool operator ==(const Event &other) const;
+    bool operator==(const Event &other) const;
 
 private:
     EventTypeId m_eventTypeId;

@@ -25,8 +25,8 @@
 #ifndef SCRIPTALARM_H
 #define SCRIPTALARM_H
 
-#include <QObject>
 #include <QDateTime>
+#include <QObject>
 #include <QTimer>
 namespace nymeaserver {
 namespace scriptengine {
@@ -41,16 +41,7 @@ class ScriptAlarm : public QObject
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
 
 public:
-    enum WeekDay {
-        Monday    = 0x01,
-        Tuesday   = 0x02,
-        Wednesday = 0x04,
-        Thursday  = 0x08,
-        Friday    = 0x10,
-        Saturday  = 0x20,
-        Sunday    = 0x40,
-        AllDays   = 0xFF
-    };
+    enum WeekDay { Monday = 0x01, Tuesday = 0x02, Wednesday = 0x04, Thursday = 0x08, Friday = 0x10, Saturday = 0x20, Sunday = 0x40, AllDays = 0xFF };
     Q_ENUM(WeekDay)
     Q_DECLARE_FLAGS(WeekDays, WeekDay)
     Q_FLAG(WeekDays)
@@ -93,7 +84,7 @@ private:
     int m_timerId = 0;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTALARM_H

@@ -26,9 +26,9 @@
 #define RULEACTION_H
 
 #include "libnymea.h"
+#include "ruleactionparam.h"
 #include "types/action.h"
 #include "types/browseritemaction.h"
-#include "ruleactionparam.h"
 
 class LIBNYMEA_EXPORT RuleAction
 {
@@ -41,11 +41,7 @@ class LIBNYMEA_EXPORT RuleAction
     Q_PROPERTY(RuleActionParams ruleActionParams READ ruleActionParams WRITE setRuleActionParams USER true)
 
 public:
-    enum Type {
-        TypeThing,
-        TypeInterface,
-        TypeBrowser
-    };
+    enum Type { TypeThing, TypeInterface, TypeBrowser };
     explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), const RuleActionParams &params = RuleActionParams());
     explicit RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params = RuleActionParams());
     explicit RuleAction(const ThingId &thingId, const QString &browserItemId);
@@ -93,7 +89,7 @@ private:
 };
 Q_DECLARE_METATYPE(RuleAction)
 
-class RuleActions: public QList<RuleAction>
+class RuleActions : public QList<RuleAction>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

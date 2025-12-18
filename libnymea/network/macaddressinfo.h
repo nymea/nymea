@@ -54,5 +54,4 @@ private:
 
 QDebug operator<<(QDebug debug, const MacAddressInfo &addressInfo);
 
-
 #endif // MACADDRESSINFO_H

@@ -29,15 +29,16 @@
 #include "loggingcategories.h"
 
 #include <QCoreApplication>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
 #include <QPluginLoader>
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
-    m_thingManager(thingManager),
-    m_jsonRpcServer(jsonRpcServer)
+ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent)
+    : QObject(parent)
+    , m_thingManager(thingManager)
+    , m_jsonRpcServer(jsonRpcServer)
 {
     staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
 }
@@ -60,7 +61,7 @@ void ExperienceManager::loadPlugins()
                 }
             } else if (fi.isDir()) {
                 if (QFileInfo::exists(path + "/" + entry + "/libnymea_experienceplugin" + entry + ".so")) {
-                    loadExperiencePlugin(path + "/" +  entry + "/libnymea_experienceplugin" + entry + ".so");
+                    loadExperiencePlugin(path + "/" + entry + "/libnymea_experienceplugin" + entry + ".so");
                 }
             }
         }
@@ -111,7 +112,7 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
         qCWarning(dcExperiences()) << loader.errorString();
         return;
     }
-    ExperiencePlugin *plugin = qobject_cast<ExperiencePlugin*>(loader.instance());
+    ExperiencePlugin *plugin = qobject_cast<ExperiencePlugin *>(loader.instance());
     if (!plugin) {
         qCWarning(dcExperiences()) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
@@ -121,7 +122,6 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     m_plugins.append(plugin);
     plugin->setParent(this);
     plugin->initPlugin(m_thingManager, m_jsonRpcServer);
-
 }
 
 void ExperienceManager::loadExperiencePlugin(ExperiencePlugin *experiencePlugin)
@@ -132,4 +132,4 @@ void ExperienceManager::loadExperiencePlugin(ExperiencePlugin *experiencePlugin)
     experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer);
 }
 
-}
+} // namespace nymeaserver

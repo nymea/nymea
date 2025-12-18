@@ -27,8 +27,8 @@
 
 #include <QObject>
 
-#include "zigbee/zigbeemanager.h"
 #include "hardware/zigbee/zigbeehardwareresource.h"
+#include "zigbee/zigbeemanager.h"
 
 namespace nymeaserver {
 
@@ -44,7 +44,7 @@ public:
 
     void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) override;
 
-    ZigbeeNode* claimNode(ZigbeeHandler *handler, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) override;
+    ZigbeeNode *claimNode(ZigbeeHandler *handler, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) override;
     void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) override;
 
     ZigbeeNetwork::State networkState(const QUuid &networkUuid) override;
@@ -70,13 +70,12 @@ private:
     bool m_enabled = false;
     ZigbeeManager *m_zigbeeManager = nullptr;
 
-    QMultiMap<ZigbeeHardwareResource::HandlerType, ZigbeeHandler*> m_handlers;
+    QMultiMap<ZigbeeHardwareResource::HandlerType, ZigbeeHandler *> m_handlers;
 
     bool m_thingsLoaded = false;
-    QHash<ZigbeeNode*, ZigbeeHandler*> m_nodeHandlers;
-
+    QHash<ZigbeeNode *, ZigbeeHandler *> m_nodeHandlers;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZIGBEEHARDWARERESOURCEIMPLEMENTATION_H

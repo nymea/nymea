@@ -24,18 +24,15 @@
 
 #include "zwavemanagerreply.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 ZWaveManagerReply::ZWaveManagerReply(QObject *parent)
     : ZWaveReply{parent}
-{
-
-}
+{}
 
 void ZWaveManagerReply::finish(ZWave::ZWaveError status)
 {
     ZWaveReply::finish(status);
 }
 
-}
+} // namespace nymeaserver

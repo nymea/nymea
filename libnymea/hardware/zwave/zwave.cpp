@@ -27,7 +27,4 @@
 #include "loggingcategories.h"
 NYMEA_LOGGING_CATEGORY(dcZWave, "ZWave")
 
-ZWave::ZWave()
-{
-
-}
+ZWave::ZWave() {}

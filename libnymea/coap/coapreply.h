@@ -28,10 +28,10 @@
 #include <QObject>
 #include <QTimer>
 
-#include "libnymea.h"
-#include "coappdu.h"
 #include "coapoption.h"
+#include "coappdu.h"
 #include "coaprequest.h"
+#include "libnymea.h"
 
 class LIBNYMEA_EXPORT CoapReply : public QObject
 {
@@ -41,13 +41,7 @@ class LIBNYMEA_EXPORT CoapReply : public QObject
     Q_ENUMS(Error)
 
 public:
-    enum Error {
-        NoError,
-        HostNotFoundError,
-        TimeoutError,
-        InvalidUrlSchemeError,
-        InvalidPduError
-    };
+    enum Error { NoError, HostNotFoundError, TimeoutError, InvalidUrlSchemeError, InvalidPduError };
 
     CoapRequest request() const;
     QByteArray payload() const;

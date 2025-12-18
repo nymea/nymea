@@ -25,11 +25,11 @@
 #ifndef RULE_H
 #define RULE_H
 
-#include "types/state.h"
-#include "types/eventdescriptor.h"
-#include "time/timedescriptor.h"
 #include "ruleaction.h"
 #include "stateevaluator.h"
+#include "time/timedescriptor.h"
+#include "types/eventdescriptor.h"
+#include "types/state.h"
 
 #include <QUuid>
 
@@ -109,7 +109,7 @@ private:
     bool m_executable;
 };
 
-class Rules: QList<Rule>
+class Rules : QList<Rule>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -122,7 +122,7 @@ public:
 
 QDebug operator<<(QDebug dbg, const Rule &rule);
 
-}
+} // namespace nymeaserver
 Q_DECLARE_METATYPE(nymeaserver::Rules)
 
 #endif // RULE_H

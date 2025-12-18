@@ -34,7 +34,8 @@ class LIBNYMEA_EXPORT NetworkDeviceDiscoveryReply : public QObject
 {
     Q_OBJECT
 public:
-    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr) : QObject(parent) { };
+    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr)
+        : QObject(parent){};
     virtual ~NetworkDeviceDiscoveryReply() = default;
 
     virtual NetworkDeviceInfos networkDeviceInfos() const = 0;
@@ -44,7 +45,6 @@ public:
 signals:
     void hostAddressDiscovered(const QHostAddress &address);
     void finished();
-
 };
 
 #endif // NETWORKDEVICEDISCOVERYREPLY_H

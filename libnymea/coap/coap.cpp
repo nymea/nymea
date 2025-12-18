@@ -75,15 +75,15 @@
 */
 
 #include "coap.h"
-#include "coappdu.h"
 #include "coapoption.h"
+#include "coappdu.h"
 
 Q_LOGGING_CATEGORY(dcCoap, "Coap")
 
 /*! Constructs a Coap access manager with the given \a parent and \a port. */
-Coap::Coap(QObject *parent, const quint16 &port) :
-    QObject(parent),
-    m_reply(nullptr)
+Coap::Coap(QObject *parent, const quint16 &port)
+    : QObject(parent)
+    , m_reply(nullptr)
 {
     m_socket = new QUdpSocket(this);
 
@@ -234,7 +234,6 @@ bool Coap::leaveMulticastGroup(const QHostAddress &address)
     return m_socket->leaveMulticastGroup(address);
 }
 
-
 void Coap::lookupHost()
 {
     int lookupId = QHostInfo::lookupHost(m_reply->request().url().host(), this, SLOT(hostLookupFinished(QHostInfo)));
@@ -286,7 +285,7 @@ void Coap::sendRequest(CoapReply *reply, const bool &lookedUp)
 
     // Option number 12
     if (reply->requestMethod() == CoapPdu::Post || reply->requestMethod() == CoapPdu::Put) {
-        pdu.addOption(CoapOption::ContentFormat, QByteArray(1, ((quint8)reply->request().contentType())));
+        pdu.addOption(CoapOption::ContentFormat, QByteArray(1, ((quint8) reply->request().contentType())));
 
         // check if we have to block the payload
         if (reply->requestPayload().size() > 64) {
@@ -358,7 +357,6 @@ void Coap::processResponse(const CoapPdu &pdu, const QHostAddress &address, cons
         }
     }
 
-
     if (m_observerReply) {
         processBlock2Notification(m_observerReply, pdu);
         return;
@@ -426,7 +424,6 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
     // check if it is a blockwise notification
     if (pdu.hasOption(CoapOption::Block2)) {
         if (!m_observeReplyResource.values().contains(resource)) {
-
             qCDebug(dcCoap) << "Got first part of blocked notification";
 
             // First part of the blocked notification
@@ -712,7 +709,8 @@ void Coap::processBlock2Notification(CoapReply *reply, const CoapPdu &pdu)
 
 void Coap::hostLookupFinished(const QHostInfo &hostInfo)
 {
-    CoapReply *reply = m_runningHostLookups.take(hostInfo.lookupId());;
+    CoapReply *reply = m_runningHostLookups.take(hostInfo.lookupId());
+    ;
     reply->setPort(reply->request().url().port(5683));
 
     if (hostInfo.error() != QHostInfo::NoError) {

@@ -25,9 +25,9 @@
 #ifndef HTTPREPLY_H
 #define HTTPREPLY_H
 
-#include <QObject>
 #include <QByteArray>
 #include <QHash>
+#include <QObject>
 #include <QTimer>
 #include <QUuid>
 
@@ -35,55 +35,41 @@
 
 namespace nymeaserver {
 
-class HttpReply: public QObject
+class HttpReply : public QObject
 {
     Q_OBJECT
 public:
-
     enum HttpStatusCode {
-        Ok                      = 200,
-        Created                 = 201,
-        Accepted                = 202,
-        NoContent               = 204,
-        Found                   = 302,
-        PermanentRedirect       = 308,
-        BadRequest              = 400,
-        Forbidden               = 403,
-        NotFound                = 404,
-        MethodNotAllowed        = 405,
-        RequestTimeout          = 408,
-        Conflict                = 409,
-        InternalServerError     = 500,
-        NotImplemented          = 501,
-        BadGateway              = 502,
-        ServiceUnavailable      = 503,
-        GatewayTimeout          = 504,
+        Ok = 200,
+        Created = 201,
+        Accepted = 202,
+        NoContent = 204,
+        Found = 302,
+        PermanentRedirect = 308,
+        BadRequest = 400,
+        Forbidden = 403,
+        NotFound = 404,
+        MethodNotAllowed = 405,
+        RequestTimeout = 408,
+        Conflict = 409,
+        InternalServerError = 500,
+        NotImplemented = 501,
+        BadGateway = 502,
+        ServiceUnavailable = 503,
+        GatewayTimeout = 504,
         HttpVersionNotSupported = 505
     };
 
-    enum HttpHeaderType {
-        ContentTypeHeader,
-        ContentLenghtHeader,
-        ConnectionHeader,
-        LocationHeader,
-        UserAgentHeader,
-        CacheControlHeader,
-        AllowHeader,
-        DateHeader,
-        ServerHeader
-    };
+    enum HttpHeaderType { ContentTypeHeader, ContentLenghtHeader, ConnectionHeader, LocationHeader, UserAgentHeader, CacheControlHeader, AllowHeader, DateHeader, ServerHeader };
 
-    enum Type {
-        TypeSync,
-        TypeAsync
-    };
+    enum Type { TypeSync, TypeAsync };
 
     HttpReply(QObject *parent = nullptr);
     HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok, const Type &type = TypeSync, QObject *parent = nullptr);
 
-    static HttpReply* createSuccessReply();
-    static HttpReply* createErrorReply(const HttpReply::HttpStatusCode &statusCode);
-    static HttpReply* createAsyncReply();
+    static HttpReply *createSuccessReply();
+    static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
+    static HttpReply *createAsyncReply();
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;
@@ -144,11 +130,10 @@ public slots:
 
 signals:
     void finished();
-
 };
 
 QDebug operator<<(QDebug debug, HttpReply *httpReply);
 
-}
+} // namespace nymeaserver
 
 #endif // HTTPREPLY_H

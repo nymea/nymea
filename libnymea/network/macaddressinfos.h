@@ -25,8 +25,8 @@
 #ifndef MACADDRESSINFOS_H
 #define MACADDRESSINFOS_H
 
-#include <QVector>
 #include "macaddressinfo.h"
+#include <QVector>
 
 class MacAddressInfos : public QVector<MacAddressInfo>
 {

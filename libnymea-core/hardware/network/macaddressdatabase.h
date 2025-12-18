@@ -25,10 +25,10 @@
 #ifndef MACADDRESSDATABASE_H
 #define MACADDRESSDATABASE_H
 
-#include <QQueue>
-#include <QObject>
-#include <QSqlDatabase>
 #include <QFutureWatcher>
+#include <QObject>
+#include <QQueue>
+#include <QSqlDatabase>
 
 #include "macaddressdatabasereplyimpl.h"
 
@@ -62,9 +62,8 @@ private:
 private slots:
     void onLookupFinished();
     QString lookupMacAddressVendorInternal(const QString &macAddress);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MACADDRESSDATABASE_H

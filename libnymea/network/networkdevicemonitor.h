@@ -25,8 +25,8 @@
 #ifndef NETWORKDEVICEMONITOR_H
 #define NETWORKDEVICEMONITOR_H
 
-#include <QObject>
 #include <QDateTime>
+#include <QObject>
 
 #include "libnymea.h"
 #include "networkdeviceinfo.h"

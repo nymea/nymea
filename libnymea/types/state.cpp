@@ -37,18 +37,14 @@
 
 #include "state.h"
 
-State::State()
-{
-
-}
+State::State() {}
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
-State::State(const StateTypeId &stateTypeId, const ThingId &thingId):
-    m_stateTypeId(stateTypeId),
-    m_thingId(thingId)
-{
-}
+State::State(const StateTypeId &stateTypeId, const ThingId &thingId)
+    : m_stateTypeId(stateTypeId)
+    , m_thingId(thingId)
+{}
 
 /*! Returns the id of the StateType describing this State. */
 StateTypeId State::stateTypeId() const
@@ -127,22 +123,18 @@ QDebug operator<<(QDebug dbg, const QList<State> &states)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "StateList (count:" << states.count() << ")";
-    for (int i = 0; i < states.count(); i++ ) {
+    for (int i = 0; i < states.count(); i++) {
         dbg.nospace() << "     " << i << ": " << states.at(i);
     }
 
     return dbg;
 }
 
-States::States()
-{
+States::States() {}
 
-}
-
-States::States(const QList<State> &other): QList<State>(other)
-{
-
-}
+States::States(const QList<State> &other)
+    : QList<State>(other)
+{}
 
 QVariant States::get(int index) const
 {
@@ -156,7 +148,7 @@ void States::put(const QVariant &variant)
 
 QVariant States::stateValue(const StateTypeId &stateTypeId)
 {
-    foreach (const State & state, *this) {
+    foreach (const State &state, *this) {
         if (state.stateTypeId() == stateTypeId) {
             return state.value();
         }

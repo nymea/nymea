@@ -25,16 +25,16 @@
 #include "scriptaction.h"
 
 #include "integrations/thingmanager.h"
-#include "types/action.h"
 #include "logging/logengine.h"
+#include "types/action.h"
 
-#include <QQmlEngine>
 #include <qqml.h>
-#include <QQmlContext>
 #include <QJsonDocument>
+#include <QQmlContext>
+#include <QQmlEngine>
 
-#include <QMessageLogger>
 #include <QLoggingCategory>
+#include <QMessageLogger>
 #include <QRegularExpression>
 
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -42,20 +42,18 @@ Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 namespace nymeaserver {
 namespace scriptengine {
 
-
-ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
-{
-
-}
+ScriptAction::ScriptAction(QObject *parent)
+    : QObject(parent)
+{}
 
 void ScriptAction::classBegin()
 {
-    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong());
 
     m_scriptId = qmlEngine(this)->contextForObject(this)->contextProperty("scriptId").toUuid();
-    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger*>();
+    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger *>();
 
-    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status){
+    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status) {
         if (ThingId(m_thingId) != action.thingId()) {
             return;
         }
@@ -85,10 +83,7 @@ void ScriptAction::classBegin()
     });
 }
 
-void ScriptAction::componentComplete()
-{
-
-}
+void ScriptAction::componentComplete() {}
 
 QString ScriptAction::thingId() const
 {
@@ -157,7 +152,8 @@ void ScriptAction::execute(const QVariantMap &params)
         things.append(thing);
     }
     if (things.isEmpty()) {
-        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No things matching id" << m_thingId << "or interface" << m_interfaceName;
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+            << "No things matching id" << m_thingId << "or interface" << m_interfaceName;
         return;
     }
 
@@ -169,7 +165,8 @@ void ScriptAction::execute(const QVariantMap &params)
             actionType = thing->thingClass().actionTypes().findByName(m_actionName);
         }
         if (actionType.id().isNull()) {
-            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have actionTypeId" << m_actionTypeId << "or actionName" << m_actionName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+                << "Thing" << thing->name() << "does not have actionTypeId" << m_actionTypeId << "or actionName" << m_actionName;
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);
@@ -190,17 +187,13 @@ void ScriptAction::execute(const QVariantMap &params)
         action.setParams(paramList);
         qCDebug(dcScriptEngine()) << "Executing action:" << action.thingId() << action.actionTypeId() << action.params();
         ThingActionInfo *actionInfo = m_thingManager->executeAction(action);
-        connect(actionInfo, &ThingActionInfo::finished, this, [this, actionInfo, thing, action](){
+        connect(actionInfo, &ThingActionInfo::finished, this, [this, actionInfo, thing, action]() {
             ActionType actionType = thing->thingClass().actionTypes().findById(action.actionTypeId());
-            m_logger->log({m_scriptId.toString(), "action"}, {
-                              {"thingId", thing->id()},
-                              {"action", actionType.name()},
-                              {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(actionInfo->status())}
-                          });
-
+            m_logger->log({m_scriptId.toString(), "action"},
+                          {{"thingId", thing->id()}, {"action", actionType.name()}, {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(actionInfo->status())}});
         });
     }
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

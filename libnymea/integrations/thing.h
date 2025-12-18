@@ -25,14 +25,14 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include "typeutils.h"
 #include "libnymea.h"
+#include "typeutils.h"
 
-#include "types/thingclass.h"
-#include "types/state.h"
-#include "types/param.h"
-#include "types/event.h"
 #include "types/browseritem.h"
+#include "types/event.h"
+#include "types/param.h"
+#include "types/state.h"
+#include "types/thingclass.h"
 
 #include <QObject>
 #include <QUuid>
@@ -41,7 +41,7 @@
 class IntegrationPlugin;
 class StateValueFilter;
 
-class LIBNYMEA_EXPORT Thing: public QObject
+class LIBNYMEA_EXPORT Thing : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QUuid id READ id)
@@ -204,20 +204,20 @@ private:
     QList<StateTypeId> m_loggedStateTypeIds;
     QList<EventTypeId> m_loggedEventTypeIds;
     QList<ActionTypeId> m_loggedActionTypeIds;
-    QHash<StateTypeId, StateValueFilter*> m_stateValueFilters;
+    QHash<StateTypeId, StateValueFilter *> m_stateValueFilters;
 };
 
 QDebug operator<<(QDebug debug, Thing *device);
 
-class LIBNYMEA_EXPORT Things: public QList<Thing*>
+class LIBNYMEA_EXPORT Things : public QList<Thing *>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     Things() = default;
     Things(const QList<Thing *> &other);
-    Thing* findById(const ThingId &id);
-    Thing* findByParams(const ParamList &params) const;
+    Thing *findById(const ThingId &id);
+    Thing *findByParams(const ParamList &params) const;
     Things filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Things filterByThingClassId(const ThingClassId &thingClassId);
     Things filterByParentId(const ThingId &thingId);

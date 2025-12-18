@@ -65,8 +65,6 @@
         stopReading() will be called implicitly.
  */
 
-I2CManager::I2CManager(QObject *parent):
-    QObject(parent)
-{
-
-}
+I2CManager::I2CManager(QObject *parent)
+    : QObject(parent)
+{}

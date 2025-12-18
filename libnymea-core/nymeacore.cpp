@@ -23,37 +23,36 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
-#include "loggingcategories.h"
-#include "platform/platform.h"
-#include "jsonrpc/jsonrpcserverimplementation.h"
-#include "ruleengine/ruleengine.h"
-#include "nymeasettings.h"
-#include "tagging/tagsstorage.h"
-#include "platform/platform.h"
 #include "experiences/experiencemanager.h"
-#include "platform/platformsystemcontroller.h"
-#include "logging/logengineinfluxdb.h"
-#include "scriptengine/scriptengine.h"
-#include "jsonrpc/scriptshandler.h"
 #include "jsonrpc/debughandler.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
+#include "jsonrpc/scriptshandler.h"
+#include "logging/logengineinfluxdb.h"
+#include "loggingcategories.h"
+#include "nymeasettings.h"
+#include "platform/platform.h"
+#include "platform/platformsystemcontroller.h"
+#include "ruleengine/ruleengine.h"
+#include "scriptengine/scriptengine.h"
+#include "tagging/tagsstorage.h"
 #include "version.h"
 
-#include "integrations/thingmanagerimplementation.h"
-#include "integrations/thing.h"
-#include "integrations/thingactioninfo.h"
 #include "integrations/browseractioninfo.h"
 #include "integrations/browseritemactioninfo.h"
+#include "integrations/thing.h"
+#include "integrations/thingactioninfo.h"
+#include "integrations/thingmanagerimplementation.h"
 
 #include "zigbee/zigbeemanager.h"
 
-#include "zwave/zwavemanager.h"
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
+#include "zwave/zwavemanager.h"
 
 #include <networkmanager.h>
 
-#include <QDir>
 #include <QCoreApplication>
+#include <QDir>
 
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
@@ -63,7 +62,7 @@ NYMEA_LOGGING_CATEGORY(dcCore, "Core")
 
 namespace nymeaserver {
 
-NymeaCore* NymeaCore::s_instance = nullptr;
+NymeaCore *NymeaCore::s_instance = nullptr;
 NymeaCore::ShutdownReason NymeaCore::s_shutdownReason = NymeaCore::ShutdownReasonTerm;
 
 /*! Returns a pointer to the single \l{NymeaCore} instance. */
@@ -77,12 +76,12 @@ NymeaCore *NymeaCore::instance()
 
 /*! Constructs NymeaCore with the given \a parent. This is private.
     Use \l{NymeaCore::instance()} to access the single instance.*/
-NymeaCore::NymeaCore(QObject *parent) :
-    QObject(parent)
-{
-}
+NymeaCore::NymeaCore(QObject *parent)
+    : QObject(parent)
+{}
 
-void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine) {
+void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
+{
     qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
@@ -176,10 +175,7 @@ NymeaCore::~NymeaCore()
 #endif
 
     qCDebug(dcCore()) << "Shutting down NymeaCore";
-    m_logger->log({"stopped"}, {
-                      {"version", NYMEA_VERSION_STRING},
-                      {"shutdownReason", QMetaEnum::fromType<ShutdownReason>().valueToKey(s_shutdownReason)}
-                  });
+    m_logger->log({"stopped"}, {{"version", NYMEA_VERSION_STRING}, {"shutdownReason", QMetaEnum::fromType<ShutdownReason>().valueToKey(s_shutdownReason)}});
 
     // Disconnect all signals/slots, we're going down now
     m_timeManager->stopTimer();
@@ -367,7 +363,6 @@ JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 
 void NymeaCore::thingManagerLoaded()
 {
-
     // Tell hardare resources we're done with loading stuff...
     m_hardwareManager->thingsLoaded();
 
@@ -395,7 +390,6 @@ void NymeaCore::thingManagerLoaded()
             m_tagsStorage->removeTag(tag);
         }
     }
-
 }
 
-}
+} // namespace nymeaserver

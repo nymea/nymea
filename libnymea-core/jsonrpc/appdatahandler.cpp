@@ -27,13 +27,16 @@
 
 #include "nymeasettings.h"
 
-#include <QSettings>
 #include <QDir>
+#include <QSettings>
 
-AppDataHandler::AppDataHandler(QObject *parent) : JsonHandler(parent)
+AppDataHandler::AppDataHandler(QObject *parent)
+    : JsonHandler(parent)
 {
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Store an app data entry to the server. App data can be used by the client application "
                   "to store configuration values. The app data storage is a key-value pair storage. Each "
                   "entry value is identified by an appId, a key and optionally a group. The value data is "
@@ -52,7 +55,9 @@ AppDataHandler::AppDataHandler(QObject *parent) : JsonHandler(parent)
     params.insert("value", enumValueName(String));
     registerMethod("Store", description, params, returns, Types::PermissionScopeConfigureThings);
 
-    description.clear(); params.clear(); returns.clear();
+    description.clear();
+    params.clear();
+    returns.clear();
     description = "Retrieve an app data storage value that has previously been set with Store(). If no value "
                   "had been set for this appId/key combination before, an empty value will be returned.";
     params.insert("appId", enumValueName(String));
@@ -62,7 +67,8 @@ AppDataHandler::AppDataHandler(QObject *parent) : JsonHandler(parent)
     registerMethod("Load", description, params, returns, Types::PermissionScopeControlThings);
 
     // Notifications
-    description.clear(); params.clear();
+    description.clear();
+    params.clear();
     description = "Emitted whenever the app data is changed on the server.";
     params.insert("appId", enumValueName(String));
     params.insert("o:group", enumValueName(String));
@@ -76,7 +82,7 @@ QString AppDataHandler::name() const
     return "AppData";
 }
 
-JsonReply* AppDataHandler::Store(const QVariantMap &params)
+JsonReply *AppDataHandler::Store(const QVariantMap &params)
 {
     QString appId = params.value("appId").toString();
     QString group = params.value("group").toString();
@@ -101,7 +107,7 @@ JsonReply* AppDataHandler::Store(const QVariantMap &params)
     return createReply(QVariantMap());
 }
 
-JsonReply* AppDataHandler::Load(const QVariantMap &params)
+JsonReply *AppDataHandler::Load(const QVariantMap &params)
 {
     QString appId = params.value("appId").toString();
     QString group = params.value("group").toString();

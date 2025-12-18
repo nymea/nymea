@@ -25,10 +25,10 @@
 #ifndef WEBSOCKETSERVER_H
 #define WEBSOCKETSERVER_H
 
+#include <QList>
 #include <QObject>
 #include <QUuid>
 #include <QVariant>
-#include <QList>
 #include <QWebSocket>
 #include <QWebSocketServer>
 
@@ -68,7 +68,7 @@ private slots:
     void onTextMessageReceived(const QString &message);
     void onClientError(QAbstractSocket::SocketError error);
     void onServerError(QAbstractSocket::SocketError error);
-    void onPing(quint64 elapsedTime, const QByteArray & payload);
+    void onPing(quint64 elapsedTime, const QByteArray &payload);
 
 public slots:
     void setServerName(const QString &serverName) override;
@@ -76,6 +76,6 @@ public slots:
     bool stopServer() override;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // WEBSOCKETSERVER_H

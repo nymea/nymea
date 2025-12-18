@@ -25,12 +25,12 @@
 #ifndef DEBUGSERVERHANDLER_H
 #define DEBUGSERVERHANDLER_H
 
-#include <QTimer>
+#include <QMutex>
 #include <QObject>
 #include <QProcess>
+#include <QTimer>
 #include <QUrlQuery>
 #include <QWebSocketServer>
-#include <QMutex>
 
 #include "debugreportgenerator.h"
 #include "servers/httpreply.h"
@@ -46,7 +46,7 @@ public:
     HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
 
 private:
-    static QList<QWebSocket*> s_websocketClients;
+    static QList<QWebSocket *> s_websocketClients;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
     static QMutex s_loggingMutex;
 
@@ -86,6 +86,6 @@ private slots:
     void onDebugReportGeneratorTimeout();
 };
 
-}
+} // namespace nymeaserver
 
 #endif // DEBUGSERVERHANDLER_H

@@ -55,9 +55,8 @@ private slots:
 
 private:
     QVariantMap statusToReply(TagsStorage::TagError status) const;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TAGSHANDLER_H

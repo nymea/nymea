@@ -36,9 +36,9 @@ class BrowserActionInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit BrowserActionInfo(Thing* thing, ThingManager *thingManager, const BrowserAction &browserAction, QObject *parent, quint32 timeout = 0);
+    explicit BrowserActionInfo(Thing *thing, ThingManager *thingManager, const BrowserAction &browserAction, QObject *parent, quint32 timeout = 0);
 
-    Thing* thing() const;
+    Thing *thing() const;
     BrowserAction browserAction() const;
 
     bool isFinished() const;

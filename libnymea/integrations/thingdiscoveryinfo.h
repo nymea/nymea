@@ -27,10 +27,10 @@
 
 #include <QObject>
 
-#include "types/thingclass.h"
-#include "types/param.h"
 #include "thing.h"
 #include "thingdescriptor.h"
+#include "types/param.h"
+#include "types/thingclass.h"
 
 class ThingManager;
 

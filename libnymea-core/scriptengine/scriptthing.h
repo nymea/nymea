@@ -25,10 +25,10 @@
 #ifndef SCRIPTTHING_H
 #define SCRIPTTHING_H
 
+#include "integrations/thingmanager.h"
 #include <QObject>
 #include <QQmlParserStatus>
 #include <QUuid>
-#include "integrations/thingmanager.h"
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -77,7 +77,7 @@ private:
     QMetaObject::Connection m_nameConnection;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTTHING_H

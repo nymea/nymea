@@ -25,8 +25,8 @@
 #ifndef INTEGRATIONPLUGINMOCK_H
 #define INTEGRATIONPLUGINMOCK_H
 
-#include "integrations/integrationplugin.h"
 #include "extern-plugininfo.h"
+#include "integrations/integrationplugin.h"
 #include <QProcess>
 
 class HttpDaemon;
@@ -77,30 +77,40 @@ private:
     void generateBrowseItems();
 
 private:
-    class VirtualFsNode {
+    class VirtualFsNode
+    {
     public:
-        VirtualFsNode(const BrowserItem &item):item(item) {}
-        ~VirtualFsNode() { while (!childs.isEmpty()) delete childs.takeFirst(); }
+        VirtualFsNode(const BrowserItem &item)
+            : item(item)
+        {}
+        ~VirtualFsNode()
+        {
+            while (!childs.isEmpty())
+                delete childs.takeFirst();
+        }
         BrowserItem item;
-        QList<VirtualFsNode*> childs;
-        void addChild(VirtualFsNode* child) {childs.append(child); }
-        VirtualFsNode *findNode(const QString &id) {
-            if (item.id() == id) return this;
+        QList<VirtualFsNode *> childs;
+        void addChild(VirtualFsNode *child) { childs.append(child); }
+        VirtualFsNode *findNode(const QString &id)
+        {
+            if (item.id() == id)
+                return this;
             foreach (VirtualFsNode *child, childs) {
                 VirtualFsNode *node = child->findNode(id);
-                if (node) return node;
+                if (node)
+                    return node;
             }
             return nullptr;
         }
     };
 
-    QHash<Thing*, HttpDaemon*> m_daemons;
-    QList<QPair<Action, Thing*> > m_asyncActions;
+    QHash<Thing *, HttpDaemon *> m_daemons;
+    QList<QPair<Action, Thing *> > m_asyncActions;
 
     int m_discoveredDeviceCount;
     bool m_pushbuttonPressed;
 
-    VirtualFsNode* m_virtualFs = nullptr;
+    VirtualFsNode *m_virtualFs = nullptr;
 };
 
 #endif // INTEGRATIONPLUGINMOCK_H

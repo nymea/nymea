@@ -25,9 +25,9 @@
 #ifndef TOKENINFO_H
 #define TOKENINFO_H
 
-#include <QUuid>
 #include <QDateTime>
 #include <QMetaType>
+#include <QUuid>
 #include <QVariant>
 
 namespace nymeaserver {
@@ -56,8 +56,7 @@ private:
     QString m_deviceName;
 };
 
-
-class TokenInfoList: public QList<TokenInfo>
+class TokenInfoList : public QList<TokenInfo>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -65,7 +64,7 @@ public:
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::TokenInfo)
 Q_DECLARE_METATYPE(nymeaserver::TokenInfoList)

@@ -25,10 +25,10 @@
 #ifndef PWM_H
 #define PWM_H
 
-#include <QObject>
 #include <QDebug>
-#include <QFile>
 #include <QDir>
+#include <QFile>
+#include <QObject>
 
 #include "libnymea.h"
 
@@ -63,11 +63,7 @@ class LIBNYMEA_EXPORT Pwm : public QObject
 {
     Q_OBJECT
 public:
-    enum Polarity {
-        PolarityNormal,
-        PolarityInversed,
-        PolarityInvalid
-    };
+    enum Polarity { PolarityNormal, PolarityInversed, PolarityInvalid };
 
     explicit Pwm(int chipNumber, QObject *parent = nullptr);
     ~Pwm();
@@ -107,6 +103,6 @@ private:
     bool unexportPwm();
 };
 
-QDebug operator<< (QDebug d, Pwm *pwm);
+QDebug operator<<(QDebug d, Pwm *pwm);
 
 #endif // PWM_H

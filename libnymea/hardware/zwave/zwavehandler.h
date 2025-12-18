@@ -36,7 +36,6 @@ public:
     virtual QString name() const = 0;
     virtual bool handleNode(ZWaveNode *node) = 0;
     virtual void handleRemoveNode(ZWaveNode *node) = 0;
-
 };
 
 #endif // ZWAVEHANDLER_H

@@ -29,14 +29,12 @@ Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
 namespace nymeaserver {
 
-NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress, const QString &hostName, const QHostAddress &address, QObject *parent) :
-    NetworkDeviceMonitor{parent},
-    m_macAddress{macAddress},
-    m_hostName{hostName},
-    m_address{address}
-{
-
-}
+NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress, const QString &hostName, const QHostAddress &address, QObject *parent)
+    : NetworkDeviceMonitor{parent}
+    , m_macAddress{macAddress}
+    , m_hostName{hostName}
+    , m_address{address}
+{}
 
 NetworkDeviceMonitorImpl::~NetworkDeviceMonitorImpl()
 {
@@ -180,9 +178,7 @@ bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &ne
 
 bool NetworkDeviceMonitorImpl::operator==(const NetworkDeviceMonitorImpl &other) const
 {
-    return m_macAddress == other.macAddress()
-            && m_hostName == other.hostName()
-            && m_address == other.address();
+    return m_macAddress == other.macAddress() && m_hostName == other.hostName() && m_address == other.address();
 }
 
 bool NetworkDeviceMonitorImpl::operator!=(const NetworkDeviceMonitorImpl &other) const
@@ -190,4 +186,4 @@ bool NetworkDeviceMonitorImpl::operator!=(const NetworkDeviceMonitorImpl &other)
     return !operator==(other);
 }
 
-}
+} // namespace nymeaserver

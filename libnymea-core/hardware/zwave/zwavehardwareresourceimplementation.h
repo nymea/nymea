@@ -25,16 +25,15 @@
 #ifndef ZWAVEHARDWARERESOURCEIMPLEMENTATION_H
 #define ZWAVEHARDWARERESOURCEIMPLEMENTATION_H
 
-#include <QObject>
 #include <QHash>
 #include <QMultiMap>
+#include <QObject>
 
 #include "hardware/zwave/zwavehardwareresource.h"
 
 class ZWaveNetwork;
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 class ZWaveManager;
 
@@ -68,13 +67,12 @@ private:
     bool m_enabled = false;
     ZWaveManager *m_zwaveManager = nullptr;
 
-    QMultiMap<ZWaveHardwareResource::HandlerType, ZWaveHandler*> m_handlers;
+    QMultiMap<ZWaveHardwareResource::HandlerType, ZWaveHandler *> m_handlers;
 
     bool m_thingsLoaded = false;
-    QHash<ZWaveNode*, ZWaveHandler*> m_nodeHandlers;
-
+    QHash<ZWaveNode *, ZWaveHandler *> m_nodeHandlers;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZWAVEHARDWARERESOURCEIMPLEMENTATION_H

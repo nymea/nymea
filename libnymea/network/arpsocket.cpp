@@ -26,26 +26,26 @@
 #include "loggingcategories.h"
 #include "networkutils.h"
 
+#include <arpa/inet.h>
 #include <fcntl.h>
+#include <net/ethernet.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#include <netinet/if_ether.h>
+#include <netinet/in.h>
+#include <netpacket/packet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#include <netpacket/packet.h>
-#include <net/if_arp.h>
-#include <net/ethernet.h>
-#include <netinet/if_ether.h>
+#include <unistd.h>
 
-#include <QHostInfo>
+#include <QDataStream>
 #include <QFile>
 #include <QFileInfo>
+#include <QHostInfo>
 #include <QTextStream>
-#include <QDataStream>
 
 NYMEA_LOGGING_CATEGORY(dcArpSocket, "ArpSocket")
 NYMEA_LOGGING_CATEGORY(dcArpSocketTraffic, "ArpSocketTraffic")
@@ -55,10 +55,9 @@ NYMEA_LOGGING_CATEGORY(dcArpSocketTraffic, "ArpSocketTraffic")
 #define ETHER_ARP_LEN sizeof(struct ether_arp)
 #define ETHER_ARP_PACKET_LEN ETHER_HEADER_LEN + ETHER_ARP_LEN
 
-ArpSocket::ArpSocket(QObject *parent) : QObject(parent)
-{
-
-}
+ArpSocket::ArpSocket(QObject *parent)
+    : QObject(parent)
+{}
 
 bool ArpSocket::sendRequest()
 {
@@ -118,7 +117,8 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
 
     // Verify we have a hardware address (virtual network interfaces like tunnels)
     if (networkInterface.hardwareAddress().isEmpty()) {
-        qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name() << "because there is no hardware address which is required for ARP.";
+        qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name()
+                               << "because there is no hardware address which is required for ARP.";
         return false;
     }
 
@@ -177,7 +177,8 @@ bool ArpSocket::sendRequest(const QHostAddress &targetAddress)
             if (targetAddress.isInSubnet(entry.ip(), entry.prefixLength())) {
                 return sendRequestInternally(networkInterface.index(), MacAddress(networkInterface.hardwareAddress()), entry.ip(), MacAddress::broadcast(), targetAddress);
             } else {
-                qCDebug(dcArpSocket()) << targetAddress << "is not part of subnet" << entry.ip() << "netmask" << entry.netmask() << "netmask int" << entry.netmask().toIPv4Address();
+                qCDebug(dcArpSocket()) << targetAddress << "is not part of subnet" << entry.ip() << "netmask" << entry.netmask() << "netmask int"
+                                       << entry.netmask().toIPv4Address();
             }
         }
     }
@@ -216,7 +217,7 @@ bool ArpSocket::openSocket()
 
     m_socketNotifier = new QSocketNotifier(m_socketDescriptor, QSocketNotifier::Read, this);
     m_socketNotifier->setEnabled(false);
-    connect(m_socketNotifier, &QSocketNotifier::activated, this, [=](int socket){
+    connect(m_socketNotifier, &QSocketNotifier::activated, this, [=](int socket) {
         if (socket != m_socketDescriptor)
             return;
 
@@ -262,13 +263,14 @@ void ArpSocket::closeSocket()
     qCDebug(dcArpSocket()) << "ARP disabled successfully";
 }
 
-bool ArpSocket::sendRequestInternally(int networkInterfaceIndex, const MacAddress &senderMacAddress, const QHostAddress &senderHostAddress, const MacAddress &targetMacAddress, const QHostAddress &targetHostAddress)
+bool ArpSocket::sendRequestInternally(
+    int networkInterfaceIndex, const MacAddress &senderMacAddress, const QHostAddress &senderHostAddress, const MacAddress &targetMacAddress, const QHostAddress &targetHostAddress)
 {
     // Set up data structures
     unsigned char sendingBuffer[ETHER_ARP_PACKET_LEN];
     memset(sendingBuffer, 0, ETHER_ARP_PACKET_LEN);
-    struct ether_header *etherHeader = (struct ether_header *)sendingBuffer;
-    struct ether_arp *arpPacket = (struct ether_arp *)(sendingBuffer + sizeof(struct ether_header));
+    struct ether_header *etherHeader = (struct ether_header *) sendingBuffer;
+    struct ether_arp *arpPacket = (struct ether_arp *) (sendingBuffer + sizeof(struct ether_header));
 
     // Build the ethernet header
     fillMacAddress(etherHeader->ether_dhost, targetMacAddress);
@@ -293,13 +295,13 @@ bool ArpSocket::sendRequestInternally(int networkInterfaceIndex, const MacAddres
     socketAddress.sll_family = AF_PACKET;
     socketAddress.sll_protocol = htons(ETH_P_ARP);
     socketAddress.sll_ifindex = networkInterfaceIndex;
-    socketAddress.sll_hatype =  htons(ARPHRD_ETHER);
+    socketAddress.sll_hatype = htons(ARPHRD_ETHER);
     socketAddress.sll_pkttype = PACKET_BROADCAST;
     socketAddress.sll_halen = ETH_ALEN;
     memset(socketAddress.sll_addr, 0x00, 6);
 
     //qCDebug(dcArpSocket()) << "Send ARP request to" << targetHostAddress.toString();
-    int bytesSent = sendto(m_socketDescriptor, sendingBuffer, ETHER_ARP_PACKET_LEN, 0, (struct sockaddr *)&socketAddress, sizeof(socketAddress));
+    int bytesSent = sendto(m_socketDescriptor, sendingBuffer, ETHER_ARP_PACKET_LEN, 0, (struct sockaddr *) &socketAddress, sizeof(socketAddress));
     if (bytesSent < 0) {
         qCWarning(dcArpSocket()) << "Failed to send ARP packet data to" << targetHostAddress.toString() << strerror(errno);
         return false;
@@ -316,8 +318,8 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
         receivedBufferBytes.append(receiveBuffer[i]);
     }
 
-    struct ether_header *etherHeader = (struct ether_header *)(receiveBuffer);
-    struct ether_arp *arpPacket = (struct ether_arp *)(receiveBuffer + ETHER_HEADER_LEN);
+    struct ether_header *etherHeader = (struct ether_header *) (receiveBuffer);
+    struct ether_arp *arpPacket = (struct ether_arp *) (receiveBuffer + ETHER_HEADER_LEN);
     MacAddress ethernetSourceMacAddress = MacAddress(etherHeader->ether_shost);
     MacAddress ethernetDestinationMacAddress = MacAddress(etherHeader->ether_dhost);
 
@@ -353,7 +355,8 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
 
         /* Use only replies from hosts which are requesting for them self. */
         if (senderMacAddress == ethernetSourceMacAddress) {
-            qCDebug(dcArpSocket()) << "ARP request" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+            qCDebug(dcArpSocket()) << "ARP request" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->"
+                                   << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
             emit arpRequestReceived(networkInterface, senderHostAddress, senderMacAddress);
         }
 
@@ -369,30 +372,38 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
         /* Use only replies from hosts which are responding for them self. In some cases where we have 2 network interfaces connected to the
          * same network that one interface is reposning for the other and we end up with 2 ip addresses for one mac address. */
         if (senderMacAddress == ethernetSourceMacAddress) {
-            qCDebug(dcArpSocket()) << "ARP reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+            qCDebug(dcArpSocket()) << "ARP reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                   << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
             emit arpResponse(networkInterface, senderHostAddress, senderMacAddress);
         } else {
-            qCDebug(dcArpSocket()) << "ARP proxy reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+            qCDebug(dcArpSocket()) << "ARP proxy reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                   << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
         }
         break;
     }
     case ARPOP_RREQUEST:
-        qCDebug(dcArpSocketTraffic()) << "RARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "RARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                      << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_RREPLY:
-        qCDebug(dcArpSocketTraffic()) << "PARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "PARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                      << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_InREQUEST:
-        qCDebug(dcArpSocketTraffic()) << "InARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "InARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                      << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_InREPLY:
-        qCDebug(dcArpSocketTraffic()) << "InARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "InARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                      << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_NAK:
-        qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString()
+                                      << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     default:
-        qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString();
+        qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << ethernetSourceMacAddress.toString()
+                                        << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString();
         break;
     }
 }
@@ -489,4 +500,3 @@ void ArpSocket::fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAd
         targetArray[i] = hostData.at(i);
     }
 }
-

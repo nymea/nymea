@@ -34,12 +34,7 @@ class UpnpDiscoveryReply : public QObject
     Q_OBJECT
 
 public:
-    enum UpnpDiscoveryReplyError {
-        UpnpDiscoveryReplyErrorNoError,
-        UpnpDiscoveryReplyErrorNotAvailable,
-        UpnpDiscoveryReplyErrorNotEnabled,
-        UpnpDiscoveryReplyErrorResourceBusy
-    };
+    enum UpnpDiscoveryReplyError { UpnpDiscoveryReplyErrorNoError, UpnpDiscoveryReplyErrorNotAvailable, UpnpDiscoveryReplyErrorNotEnabled, UpnpDiscoveryReplyErrorResourceBusy };
     Q_ENUM(UpnpDiscoveryReplyError)
 
     explicit UpnpDiscoveryReply(QObject *parent = nullptr);
@@ -56,7 +51,6 @@ public:
 signals:
     void finished();
     void errorOccurred(const UpnpDiscoveryReplyError &error);
-
 };
 
 #endif // UPNPDISCOVERYREPLY_H

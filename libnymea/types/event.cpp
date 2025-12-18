@@ -40,20 +40,17 @@
 #include "event.h"
 
 /*! Constructs an Event. */
-Event::Event()
-{
-}
+Event::Event() {}
 
 /*! Constructs an Event reflecting the \l{Event} given by \a eventTypeId, associated with
  *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameter \a isStateChangeEvent
  *  specifies if the \l{Event} will be autogeneratet or not. The parameters must
  *  match the description in the reflecting \l{Event}.  */
-Event::Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params):
-    m_eventTypeId(eventTypeId),
-    m_thingId(thingId),
-    m_params(params)
-{
-}
+Event::Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params)
+    : m_eventTypeId(eventTypeId)
+    , m_thingId(thingId)
+    , m_params(params)
+{}
 
 /*! Returns the id of the \l{EventType} which describes this Event. */
 EventTypeId Event::eventTypeId() const
@@ -115,7 +112,7 @@ QVariant Event::paramValue(const ParamTypeId &paramTypeId) const
 
 /*! Compare this Event to the Event given by \a other.
  *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
-bool Event::operator ==(const Event &other) const
+bool Event::operator==(const Event &other) const
 {
     bool paramsMatch = true;
     foreach (const Param &otherParam, other.params()) {
@@ -126,9 +123,7 @@ bool Event::operator ==(const Event &other) const
         }
     }
 
-    return m_eventTypeId == other.eventTypeId()
-            && m_thingId == other.thingId()
-            && paramsMatch;
+    return m_eventTypeId == other.eventTypeId() && m_thingId == other.thingId() && paramsMatch;
 }
 
 /*! Writes the eventTypeId and the deviceId of the given \a event to \a dbg. */
@@ -144,7 +139,7 @@ QDebug operator<<(QDebug dbg, const QList<Event> &events)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "EventList (count:" << events.count() << ")";
-    for (int i = 0; i < events.count(); i++ ) {
+    for (int i = 0; i < events.count(); i++) {
         dbg.nospace() << "     " << i << ": " << events.at(i);
     }
 

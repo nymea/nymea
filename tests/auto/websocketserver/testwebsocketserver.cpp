@@ -22,15 +22,15 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "nymeatestbase.h"
 #include "version.h"
 
 #include <QWebSocket>
 
 using namespace nymeaserver;
 
-class TestWebSocketServer: public NymeaTestBase
+class TestWebSocketServer : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -47,8 +47,9 @@ private slots:
     void introspect();
 
 public slots:
-    void sslErrors(const QList<QSslError> &) {
-        QWebSocket *socket = static_cast<QWebSocket*>(sender());
+    void sslErrors(const QList<QSslError> &)
+    {
+        QWebSocket *socket = static_cast<QWebSocket *>(sender());
         socket->ignoreSslErrors();
     }
 
@@ -58,7 +59,6 @@ private:
     QVariant injectSocketAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     QVariant injectSocketData(const QByteArray &data);
 };
-
 
 void TestWebSocketServer::initTestCase()
 {
@@ -79,7 +79,6 @@ void TestWebSocketServer::initTestCase()
     config.sslEnabled = true;
     config.authenticationEnabled = false;
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
-
 }
 
 void TestWebSocketServer::testHandshake()
@@ -132,9 +131,9 @@ void TestWebSocketServer::testBasicCall_data()
     QTest::addColumn<bool>("valid");
 
     QTest::newRow("valid call") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}") << true;
-    QTest::newRow("missing id") << QByteArray("{\"method\":\"JSONRPC.Introspect\"}")<< false;
+    QTest::newRow("missing id") << QByteArray("{\"method\":\"JSONRPC.Introspect\"}") << false;
     QTest::newRow("missing method") << QByteArray("{\"id\":42}") << false;
-    QTest::newRow("borked") << QByteArray("{\"id\":42, \"method\":\"JSO")<< false;
+    QTest::newRow("borked") << QByteArray("{\"id\":42, \"method\":\"JSO") << false;
     QTest::newRow("invalid function") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Foobar\"}") << false;
     QTest::newRow("invalid namespace") << QByteArray("{\"id\":42, \"method\":\"FOO.Introspect\"}") << false;
     QTest::newRow("missing dot") << QByteArray("{\"id\":42, \"method\":\"JSONRPCIntrospect\"}") << false;
@@ -151,7 +150,6 @@ void TestWebSocketServer::testBasicCall()
         QVERIFY2(response.toMap().value("status").toString() == "success", "Call wasn't parsed correctly by nymea.");
 }
 
-
 void TestWebSocketServer::introspect()
 {
     QVariant response = injectSocketAndWait("JSONRPC.Introspect");
@@ -163,7 +161,6 @@ void TestWebSocketServer::introspect()
     QVERIFY2(methods.count() > 0, "No methods in Introspect response!");
     QVERIFY2(notifications.count() > 0, "No notifications in Introspect response!");
     QVERIFY2(types.count() > 0, "No types in Introspect response!");
-
 }
 
 QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const QVariantMap &params)

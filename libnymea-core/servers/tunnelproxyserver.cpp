@@ -29,11 +29,11 @@ NYMEA_LOGGING_CATEGORY(dcTunnelProxyServer, "TunnelProxyServer")
 
 namespace nymeaserver {
 
-TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const TunnelProxyServerConfiguration &configuration, QObject *parent) :
-    TransportInterface(configuration, parent),
-    m_tunnelProxyConfig(configuration),
-    m_serverName(serverName),
-    m_serverUuid(serverUuid)
+TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const TunnelProxyServerConfiguration &configuration, QObject *parent)
+    : TransportInterface(configuration, parent)
+    , m_tunnelProxyConfig(configuration)
+    , m_serverName(serverName)
+    , m_serverUuid(serverUuid)
 {
     if (!configuration.authenticationEnabled) {
         qCWarning(dcTunnelProxyServer()) << "=====================================================================================================================";
@@ -51,7 +51,6 @@ TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &ser
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::sslErrors, this, &TunnelProxyServer::onSslErrors);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::clientConnected, this, &TunnelProxyServer::onClientConnected);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::clientDisconnected, this, &TunnelProxyServer::onClientDisconnected);
-
 }
 
 TunnelProxyServer::~TunnelProxyServer()
@@ -115,10 +114,8 @@ bool TunnelProxyServer::stopServer()
 void TunnelProxyServer::onStateChanged(TunnelProxySocketServer::State state)
 {
     if (state == TunnelProxySocketServer::StateRegister) {
-        qCDebug(dcTunnelProxyServer()) << "Connected with" << m_tunnelProxySocketServer->remoteProxyServer()
-                                       << m_tunnelProxySocketServer->remoteProxyServerName()
-                                       << m_tunnelProxySocketServer->remoteProxyServerVersion()
-                                       << "API:" << m_tunnelProxySocketServer->remoteProxyApiVersion();
+        qCDebug(dcTunnelProxyServer()) << "Connected with" << m_tunnelProxySocketServer->remoteProxyServer() << m_tunnelProxySocketServer->remoteProxyServerName()
+                                       << m_tunnelProxySocketServer->remoteProxyServerVersion() << "API:" << m_tunnelProxySocketServer->remoteProxyApiVersion();
     }
 }
 
@@ -152,12 +149,11 @@ void TunnelProxyServer::onSslErrors(const QList<QSslError> &errors)
 void TunnelProxyServer::onClientConnected(TunnelProxySocket *tunnelProxySocket)
 {
     QUuid clientId = QUuid::createUuid();
-    qCDebug(dcTunnelProxyServer()) << "Client connected:" << clientId.toString() << tunnelProxySocket->clientName() << "(Remote address:" << tunnelProxySocket->clientPeerAddress().toString() << ")";
+    qCDebug(dcTunnelProxyServer()) << "Client connected:" << clientId.toString() << tunnelProxySocket->clientName()
+                                   << "(Remote address:" << tunnelProxySocket->clientPeerAddress().toString() << ")";
     m_clients.insert(clientId, tunnelProxySocket);
 
-    connect(tunnelProxySocket, &TunnelProxySocket::dataReceived, this, [this, clientId](const QByteArray &data){
-        emit dataAvailable(clientId, data);
-    });
+    connect(tunnelProxySocket, &TunnelProxySocket::dataReceived, this, [this, clientId](const QByteArray &data) { emit dataAvailable(clientId, data); });
 
     emit clientConnected(clientId);
 }
@@ -165,7 +161,8 @@ void TunnelProxyServer::onClientConnected(TunnelProxySocket *tunnelProxySocket)
 void TunnelProxyServer::onClientDisconnected(TunnelProxySocket *tunnelProxySocket)
 {
     QUuid clientId = m_clients.key(tunnelProxySocket);
-    qCDebug(dcTunnelProxyServer()) << "Client disconnected:" << clientId.toString() << tunnelProxySocket->clientName() << "(Remote address:" << tunnelProxySocket->clientPeerAddress().toString() << ")";
+    qCDebug(dcTunnelProxyServer()) << "Client disconnected:" << clientId.toString() << tunnelProxySocket->clientName()
+                                   << "(Remote address:" << tunnelProxySocket->clientPeerAddress().toString() << ")";
     m_clients.remove(clientId);
     emit clientDisconnected(clientId);
 }
@@ -179,4 +176,4 @@ void TunnelProxyServer::initConfiguration()
     qCDebug(dcTunnelProxyServer()) << "Using server URL" << m_serverUrl.toString();
 }
 
-}
+} // namespace nymeaserver

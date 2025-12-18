@@ -24,15 +24,12 @@
 
 #include "browseritem.h"
 
-
-BrowserItem::BrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable):
-    m_id(id),
-    m_displayName(displayName),
-    m_browsable(browsable),
-  m_executable(executable)
-{
-
-}
+BrowserItem::BrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable)
+    : m_id(id)
+    , m_displayName(displayName)
+    , m_browsable(browsable)
+    , m_executable(executable)
+{}
 
 QString BrowserItem::id() const
 {
@@ -134,12 +131,8 @@ QVariant BrowserItem::extendedProperty(const QString &propertyName) const
     return m_extendedProperties[propertyName];
 }
 
-BrowserItems::BrowserItems()
-{
+BrowserItems::BrowserItems() {}
 
-}
-
-BrowserItems::BrowserItems(const QList<BrowserItem> &other): QList<BrowserItem>(other)
-{
-
-}
+BrowserItems::BrowserItems(const QList<BrowserItem> &other)
+    : QList<BrowserItem>(other)
+{}

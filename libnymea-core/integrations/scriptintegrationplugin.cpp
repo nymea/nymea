@@ -24,21 +24,19 @@
 
 #include "scriptintegrationplugin.h"
 
-#include <QQmlEngine>
 #include <QDir>
 #include <QJsonDocument>
+#include <QQmlEngine>
 
 #include "loggingcategories.h"
 #include <plugintimer.h>
 
-ScriptIntegrationPlugin::ScriptIntegrationPlugin(QObject *parent) : IntegrationPlugin(parent)
-{
-
-}
+ScriptIntegrationPlugin::ScriptIntegrationPlugin(QObject *parent)
+    : IntegrationPlugin(parent)
+{}
 
 bool ScriptIntegrationPlugin::loadScript(const QString &fileName)
 {
-
     QFileInfo fi(fileName);
     QString metaDataFileName = fi.absoluteDir().path() + '/' + fi.baseName() + ".json";
 
@@ -189,9 +187,7 @@ void ScriptIntegrationPlugin::setupThing(ThingSetupInfo *info)
     Thing *thing = info->thing();
     ScriptThing *scriptThing = new ScriptThing(thing);
     m_things.insert(thing, scriptThing);
-    connect(thing, &Thing::destroyed, this, [this, thing](){
-        m_things.remove(thing);
-    });
+    connect(thing, &Thing::destroyed, this, [this, thing]() { m_things.remove(thing); });
 
     ScriptThingSetupInfo *scriptInfo = new ScriptThingSetupInfo(info, scriptThing);
 

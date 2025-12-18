@@ -25,9 +25,9 @@
 #ifndef NYMEADBUSSERVICE_H
 #define NYMEADBUSSERVICE_H
 
-#include <QObject>
 #include <QDBusConnection>
 #include <QDBusContext>
+#include <QObject>
 
 /*! Helper to expose QObject subclasses on D-Bus under the nymea namespace.
  *  The legacy io.guh.nymead interface remains registered for backwards
@@ -51,8 +51,6 @@ private:
     static QDBusConnection::BusType s_busType;
     QDBusConnection m_connection;
     bool m_isValid = false;
-
 };
-
 
 #endif // NYMEADBUSSERVICE_H

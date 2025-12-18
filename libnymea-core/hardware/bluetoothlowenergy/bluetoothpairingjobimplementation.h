@@ -25,8 +25,8 @@
 #ifndef BLUETOOTHPAIRINGJOBIMPLEMENTATION_H
 #define BLUETOOTHPAIRINGJOBIMPLEMENTATION_H
 
-#include <QObject>
 #include <hardware/bluetoothlowenergy/bluetoothlowenergymanager.h>
+#include <QObject>
 
 namespace nymeaserver {
 
@@ -54,9 +54,8 @@ private:
 
     NymeaBluetoothAgent *m_agent = nullptr;
     QBluetoothAddress m_address;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // BLUETOOTHPAIRINGJOBIMPLEMENTATION_H

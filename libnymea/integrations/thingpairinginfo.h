@@ -32,11 +32,19 @@
 
 class ThingManager;
 
-class LIBNYMEA_EXPORT ThingPairingInfo: public QObject
+class LIBNYMEA_EXPORT ThingPairingInfo : public QObject
 {
     Q_OBJECT
 public:
-    ThingPairingInfo(const PairingTransactionId &pairingTransactionId, const ThingClassId &thingClassId, const ThingId &thingId, const QString &thingName, const ParamList &params, const ThingId &parentId, ThingManager *parent, bool reconfigure, quint32 timeout = 0);
+    ThingPairingInfo(const PairingTransactionId &pairingTransactionId,
+                     const ThingClassId &thingClassId,
+                     const ThingId &thingId,
+                     const QString &thingName,
+                     const ParamList &params,
+                     const ThingId &parentId,
+                     ThingManager *parent,
+                     bool reconfigure,
+                     quint32 timeout = 0);
 
     PairingTransactionId transactionId() const;
 

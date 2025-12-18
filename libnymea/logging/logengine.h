@@ -26,18 +26,17 @@
 #define LOGENGINE_H
 
 #include "logentry.h"
+#include "logger.h"
 #include "types/param.h"
 #include "typeutils.h"
-#include "logger.h"
-#include "logentry.h"
 
-#include <QObject>
 #include <QDateTime>
 #include <QLoggingCategory>
+#include <QObject>
 
 Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
 
-class LogFetchJob: public QObject
+class LogFetchJob : public QObject
 {
     Q_OBJECT
 public:
@@ -54,7 +53,6 @@ private:
     LogEntries m_entries;
 };
 
-
 class LogEngine : public QObject
 {
     Q_OBJECT
@@ -68,13 +66,26 @@ public:
     //   Values for tagged columns must be non-null.
     // * loggingType defines wheter a source will log discrete values or should be resampled
     // * sampleColumn is required for LoggingTypeSampled. Values in the given column will be sampled
-    virtual Logger *registerLogSource(const QString &name, const QStringList &tags = QStringList(), Types::LoggingType loggingType = Types::LoggingTypeDiscrete, const QString &sampleColumn = QString()) = 0;
+    virtual Logger *registerLogSource(const QString &name,
+                                      const QStringList &tags = QStringList(),
+                                      Types::LoggingType loggingType = Types::LoggingTypeDiscrete,
+                                      const QString &sampleColumn = QString())
+        = 0;
 
     // Unregistering will discard all related entries from the log database.
     // It is not required to unregister or clean up a log source on application shutdown as the engine keeps ownership.
     virtual void unregisterLogSource(const QString &name) = 0;
 
-    virtual LogFetchJob *fetchLogEntries(const QStringList &sources, const QStringList &columns = QStringList(), const QDateTime &from = QDateTime(), const QDateTime &to = QDateTime(), const QVariantMap &filer = QVariantMap(), Types::SampleRate sampleRate = Types::SampleRateAny, Qt::SortOrder sortOrder = Qt::AscendingOrder, int offset = 0, int limit = 0) = 0;
+    virtual LogFetchJob *fetchLogEntries(const QStringList &sources,
+                                         const QStringList &columns = QStringList(),
+                                         const QDateTime &from = QDateTime(),
+                                         const QDateTime &to = QDateTime(),
+                                         const QVariantMap &filer = QVariantMap(),
+                                         Types::SampleRate sampleRate = Types::SampleRateAny,
+                                         Qt::SortOrder sortOrder = Qt::AscendingOrder,
+                                         int offset = 0,
+                                         int limit = 0)
+        = 0;
 
     virtual bool jobsRunning() const = 0;
     virtual void clear(const QString &source) = 0;
@@ -93,7 +104,6 @@ protected:
 private:
     friend class Logger;
     virtual void logEvent(Logger *logger, const QStringList &tags, const QVariantMap &values) = 0;
-
 };
 
 #endif // LOGENGINE_H

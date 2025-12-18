@@ -26,14 +26,12 @@
 #include "logengine.h"
 #include <QLoggingCategory>
 
-Logger::Logger(LogEngine *engine, const QString &name, const QStringList &tagNames, Types::LoggingType loggingType):
-    m_engine(engine),
-    m_name(name),
-    m_tagNames(tagNames),
-    m_loggingType(loggingType)
-{
-
-}
+Logger::Logger(LogEngine *engine, const QString &name, const QStringList &tagNames, Types::LoggingType loggingType)
+    : m_engine(engine)
+    , m_name(name)
+    , m_tagNames(tagNames)
+    , m_loggingType(loggingType)
+{}
 
 QString Logger::name() const
 {

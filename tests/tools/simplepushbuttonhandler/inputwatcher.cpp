@@ -24,13 +24,14 @@
 
 #include "inputwatcher.h"
 
-#include <QTextStream>
 #include <QDebug>
 #include <QSocketNotifier>
+#include <QTextStream>
 
 #include <stdio.h>
 
-InputWatcher::InputWatcher(QObject *parent) : QObject(parent)
+InputWatcher::InputWatcher(QObject *parent)
+    : QObject(parent)
 {
     m_notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
     connect(m_notifier, &QSocketNotifier::activated, this, &InputWatcher::readyRead);

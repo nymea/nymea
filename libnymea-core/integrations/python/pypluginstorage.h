@@ -25,9 +25,9 @@
 #ifndef PYPLUGINSTORAGE_H
 #define PYPLUGINSTORAGE_H
 
-#include <Python.h>
-#include "structmember.h"
 #include "pyutils.h"
+#include "structmember.h"
+#include <Python.h>
 
 #include "loggingcategories.h"
 #include "nymeasettings.h"
@@ -50,29 +50,30 @@
  *
  */
 
-typedef struct {
-    PyObject_HEAD
-    QSettings *pluginStorage;
+typedef struct
+{
+    PyObject_HEAD QSettings *pluginStorage;
 } PyPluginStorage;
 
-static int PyPluginStorage_init(PyPluginStorage */*self*/, PyObject */*args*/, PyObject */*kwds*/)
+static int PyPluginStorage_init(PyPluginStorage * /*self*/, PyObject * /*args*/, PyObject * /*kwds*/)
 {
     qCDebug(dcPythonIntegrations()) << "+++ PyPluginStorage";
     return 0;
 }
 
-void PyPluginStorage_setPluginStorage(PyPluginStorage *self, QSettings* pluginStorage)
+void PyPluginStorage_setPluginStorage(PyPluginStorage *self, QSettings *pluginStorage)
 {
     self->pluginStorage = pluginStorage;
 }
 
-static void PyPluginStorage_dealloc(PyPluginStorage * self)
+static void PyPluginStorage_dealloc(PyPluginStorage *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyPluginStorage";
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyPluginStorage_value(PyPluginStorage* self, PyObject* args) {
+static PyObject *PyPluginStorage_value(PyPluginStorage *self, PyObject *args)
+{
     char *keyStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &keyStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in value call. Expected: value(key)");
@@ -83,7 +84,8 @@ static PyObject * PyPluginStorage_value(PyPluginStorage* self, PyObject* args) {
     return QVariantToPyObject(value);
 };
 
-static PyObject * PyPluginStorage_setValue(PyPluginStorage* self, PyObject* args) {
+static PyObject *PyPluginStorage_setValue(PyPluginStorage *self, PyObject *args)
+{
     char *keyStr = nullptr;
     PyObject *value = nullptr;
     if (!PyArg_ParseTuple(args, "sO", &keyStr, &value)) {
@@ -95,7 +97,8 @@ static PyObject * PyPluginStorage_setValue(PyPluginStorage* self, PyObject* args
     Py_RETURN_NONE;
 };
 
-static PyObject * PyPluginStorage_beginGroup(PyPluginStorage* self, PyObject* args) {
+static PyObject *PyPluginStorage_beginGroup(PyPluginStorage *self, PyObject *args)
+{
     char *groupStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &groupStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in beginGroup call. Expected: beginGroup(group)");
@@ -106,13 +109,15 @@ static PyObject * PyPluginStorage_beginGroup(PyPluginStorage* self, PyObject* ar
     Py_RETURN_NONE;
 };
 
-static PyObject * PyPluginStorage_endGroup(PyPluginStorage* self, PyObject* args) {
+static PyObject *PyPluginStorage_endGroup(PyPluginStorage *self, PyObject *args)
+{
     Q_UNUSED(args)
     self->pluginStorage->endGroup();
     Py_RETURN_NONE;
 };
 
-static PyObject * PyPluginStorage_remove(PyPluginStorage *self, PyObject* args) {
+static PyObject *PyPluginStorage_remove(PyPluginStorage *self, PyObject *args)
+{
     char *keyStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &keyStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in remove call. Expected: remove(key)");
@@ -122,32 +127,29 @@ static PyObject * PyPluginStorage_remove(PyPluginStorage *self, PyObject* args) 
     Py_RETURN_NONE;
 };
 
-static PyObject * PyPluginStorage_childKeys(PyPluginStorage* self, PyObject* args) {
+static PyObject *PyPluginStorage_childKeys(PyPluginStorage *self, PyObject *args)
+{
     Q_UNUSED(args)
     QStringList keys = self->pluginStorage->childKeys();
     return QVariantToPyObject(keys);
 };
 
 static PyMethodDef PyPluginStorage_methods[] = {
-    { "value", (PyCFunction)PyPluginStorage_value, METH_VARARGS, "Get a value from the plugin storage" },
-    { "setValue", (PyCFunction)PyPluginStorage_setValue, METH_VARARGS, "Set a value to the plugin storage"},
-    { "beginGroup", (PyCFunction)PyPluginStorage_beginGroup, METH_VARARGS, "Begin a group in the plugin storage."},
-    { "endGroup", (PyCFunction)PyPluginStorage_endGroup, METH_VARARGS, "End a group in the plugin storage."},
-    { "remove", (PyCFunction)PyPluginStorage_remove, METH_VARARGS, "Remove an entry/group from the plugin storage."},
-    { "childKeys", (PyCFunction)PyPluginStorage_childKeys, METH_VARARGS, "List all keys (including subgroups) of the current group."},
+    {"value", (PyCFunction) PyPluginStorage_value, METH_VARARGS, "Get a value from the plugin storage"},
+    {"setValue", (PyCFunction) PyPluginStorage_setValue, METH_VARARGS, "Set a value to the plugin storage"},
+    {"beginGroup", (PyCFunction) PyPluginStorage_beginGroup, METH_VARARGS, "Begin a group in the plugin storage."},
+    {"endGroup", (PyCFunction) PyPluginStorage_endGroup, METH_VARARGS, "End a group in the plugin storage."},
+    {"remove", (PyCFunction) PyPluginStorage_remove, METH_VARARGS, "Remove an entry/group from the plugin storage."},
+    {"childKeys", (PyCFunction) PyPluginStorage_childKeys, METH_VARARGS, "List all keys (including subgroups) of the current group."},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
-
 static PyTypeObject PyPluginStorageType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.PluginStorage",   /* tp_name */
-    sizeof(PyPluginStorage), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)PyPluginStorage_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.PluginStorage", /* tp_name */
+    sizeof(PyPluginStorage),                              /* tp_basicsize */
+    0,                                                    /* tp_itemsize */
+    (destructor) PyPluginStorage_dealloc,                 /* tp_dealloc */
 };
-
-
 
 static void registerPluginStorageType(PyObject *module)
 {
@@ -160,7 +162,7 @@ static void registerPluginStorageType(PyObject *module)
     if (PyType_Ready(&PyPluginStorageType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "PluginStorage", reinterpret_cast<PyObject*>(&PyPluginStorageType));
+    PyModule_AddObject(module, "PluginStorage", reinterpret_cast<PyObject *>(&PyPluginStorageType));
 }
 
 #pragma GCC diagnostic pop

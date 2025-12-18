@@ -25,18 +25,18 @@
 #ifndef BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H
 #define BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H
 
-#include <QTimer>
-#include <QObject>
-#include <QPointer>
+#include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothLocalDevice>
-#include <QBluetoothDeviceDiscoveryAgent>
+#include <QObject>
+#include <QPointer>
+#include <QTimer>
 
 #include "plugintimer.h"
 
-#include "hardware/bluetoothlowenergy/bluetoothlowenergymanager.h"
 #include "hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.h"
 #include "hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.h"
+#include "hardware/bluetoothlowenergy/bluetoothlowenergymanager.h"
 
 namespace nymeaserver {
 
@@ -56,7 +56,8 @@ public:
     // Bluetooth device registration methods
     BluetoothPairingJob *pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
     void unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
-    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) override;
+    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo,
+                                             const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) override;
     void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) override;
 
     bool available() const override;
@@ -64,7 +65,6 @@ public:
 
 protected:
     void setEnabled(bool enabled) override;
-
 
 private slots:
     void onReconnectTimeout();
@@ -76,10 +76,8 @@ private:
     bool m_available = false;
     bool m_enabled = false;
     NymeaBluetoothAgent *m_agent = nullptr;
-
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H

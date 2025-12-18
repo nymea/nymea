@@ -28,7 +28,7 @@
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
 
-class DevicePluginSimpleButton: public DevicePlugin
+class DevicePluginSimpleButton : public DevicePlugin
 {
     Q_OBJECT
 
@@ -47,9 +47,7 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-
 private slots:
-
 };
 
 #endif // DEVICEPLUGINSIMPLEBUTTON_H

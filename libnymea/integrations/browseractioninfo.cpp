@@ -29,11 +29,11 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-BrowserActionInfo::BrowserActionInfo(Thing *thing, ThingManager *thingManager, const BrowserAction &browserAction, QObject *parent, quint32 timeout):
-    QObject (parent),
-    m_thing(thing),
-    m_browserAction(browserAction),
-    m_thingManager(thingManager)
+BrowserActionInfo::BrowserActionInfo(Thing *thing, ThingManager *thingManager, const BrowserAction &browserAction, QObject *parent, quint32 timeout)
+    : QObject(parent)
+    , m_thing(thing)
+    , m_browserAction(browserAction)
+    , m_thingManager(thingManager)
 {
     connect(this, &BrowserActionInfo::finished, this, &BrowserActionInfo::deleteLater, Qt::QueuedConnection);
 

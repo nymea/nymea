@@ -24,7 +24,4 @@
 
 #include "zigbeehandler.h"
 
-ZigbeeHandler::ZigbeeHandler()
-{
-
-}
+ZigbeeHandler::ZigbeeHandler() {}

@@ -27,10 +27,7 @@
 #include "loggingcategories.h"
 NYMEA_LOGGING_CATEGORY(dcApiKeys, "ApiKeys")
 
-ApiKey::ApiKey()
-{
-
-}
+ApiKey::ApiKey() {}
 
 /*!
  * \brief ApiKey::data

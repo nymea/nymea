@@ -23,15 +23,16 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonhandler.h"
-#include "typeutils.h"
 #include "loggingcategories.h"
+#include "typeutils.h"
 
-#include <QDebug>
 #include <QDateTime>
+#include <QDebug>
 
 #include "types/param.h"
 
-JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
+JsonHandler::JsonHandler(QObject *parent)
+    : QObject(parent)
 {
     qRegisterMetaType<QMetaType::Type>();
     registerEnum<BasicType>();
@@ -143,7 +144,8 @@ void JsonHandler::registerObject(const QString &name, const QVariantMap &object)
     m_objects.insert(name, object);
 }
 
-void JsonHandler::registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, Types::PermissionScope permissionScope, const QString &deprecationInfo)
+void JsonHandler::registerMethod(
+    const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, Types::PermissionScope permissionScope, const QString &deprecationInfo)
 {
     QVariantMap methodData;
     methodData.insert("description", description);
@@ -171,12 +173,12 @@ void JsonHandler::registerNotification(const QString &name, const QString &descr
 
 JsonReply *JsonHandler::createReply(const QVariantMap &data) const
 {
-    return JsonReply::createReply(const_cast<JsonHandler*>(this), data);
+    return JsonReply::createReply(const_cast<JsonHandler *>(this), data);
 }
 
 JsonReply *JsonHandler::createAsyncReply(const QString &method) const
 {
-    return JsonReply::createAsyncReply(const_cast<JsonHandler*>(this), method);
+    return JsonReply::createAsyncReply(const_cast<JsonHandler *>(this), method);
 }
 
 void JsonHandler::registerObject(const QMetaObject &metaObject)
@@ -200,7 +202,7 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
             name.prepend("d:");
         }
         QVariant typeName;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         int typeId = metaProperty.typeId();
         if (typeId >= QMetaType::User) {
             if (metaProperty.typeName() == QStringLiteral("QMetaType::Type")) {
@@ -279,8 +281,12 @@ void JsonHandler::registerList(const QMetaObject &listMetaObject, const QMetaObj
     m_listMetaObjects.insert(listTypeName, listMetaObject);
     m_listEntryTypes.insert(listTypeName, objectTypeName);
     Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0,
+               "JsonHandler",
+               QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0,
+               "JsonHandler",
+               QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
 }
 
 void JsonHandler::registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject)
@@ -300,7 +306,7 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
         QMetaMethod getMethod = metaObject.method(metaObject.indexOfMethod("get(int)"));
         for (int i = 0; i < count; i++) {
             QVariant entry;
-            getMethod.invokeOnGadget(const_cast<void*>(value), Q_RETURN_ARG(QVariant, entry), Q_ARG(int, i));
+            getMethod.invokeOnGadget(const_cast<void *>(value), Q_RETURN_ARG(QVariant, entry), Q_ARG(int, i));
             ret.append(pack(entryMetaObject, entry.data()));
         }
         return ret;
@@ -321,9 +327,8 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             //                      << "value:" << propertyValue << "valid:" << propertyValue.isValid() << "null:" << propertyValue.isNull();
 
             // If it's optional and empty, we may skip it
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             if (metaProperty.isUser()) {
-
                 bool isEmpty = false;
 
                 switch (propertyValue.typeId()) {
@@ -349,13 +354,15 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             }
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             // Pack flags
             if (metaProperty.isFlagType()) {
                 QString enumName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
                 QString flagName = m_flagsEnums.key(enumName);
                 QMetaEnum metaFlag = m_metaFlags.value(flagName);
-                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
+                Q_ASSERT_X(m_metaFlags.contains(flagName),
+                           this->metaObject()->className(),
+                           QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
                 int flagValue = propertyValue.toInt();
                 QStringList flags;
                 for (int i = 0; i < metaFlag.keyCount(); i++) {
@@ -371,7 +378,9 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             // Pack enums
             if (metaProperty.isEnumType()) {
                 QString enumName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
-                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
+                Q_ASSERT_X(m_metaEnums.contains(enumName),
+                           this->metaObject()->className(),
+                           QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
                 QMetaEnum metaEnum = m_metaEnums.value(enumName);
                 ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
                 continue;
@@ -381,7 +390,9 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             if (metaProperty.isFlagType()) {
                 QString flagName = QString(metaProperty.typeName()).split("::").last();
                 QMetaEnum metaFlag = m_metaFlags.value(flagName);
-                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
+                Q_ASSERT_X(m_metaFlags.contains(flagName),
+                           this->metaObject()->className(),
+                           QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
                 int flagValue = propertyValue.toInt();
                 QStringList flags;
                 for (int i = 0; i < metaFlag.keyCount(); i++) {
@@ -397,7 +408,9 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             // Pack enums
             if (metaProperty.isEnumType()) {
                 QString enumName = QString(metaProperty.typeName()).split("::").last();
-                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
+                Q_ASSERT_X(m_metaEnums.contains(enumName),
+                           this->metaObject()->className(),
+                           QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
                 QMetaEnum metaEnum = m_metaEnums.value(enumName);
                 ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
                 continue;
@@ -410,10 +423,9 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 continue;
             }
 
-
             // Our own objects
             QString propertyTypeName = QString(metaProperty.typeName()).split("::").last();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             int typeId = metaProperty.typeId();
 #else
             int typeId = metaProperty.type();
@@ -533,7 +545,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
         QVariantList list;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QMetaType::Type valueType = static_cast<QMetaType::Type>(value.typeId());
 #else
         QMetaType::Type valueType = static_cast<QMetaType::Type>(value.type());
@@ -548,7 +560,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
         }
 
         int typeId = QMetaType::type(metaObject.className());
-        void* ptr = QMetaType::create(typeId);
+        void *ptr = QMetaType::create(typeId);
         Q_ASSERT_X(typeId != 0, this->metaObject()->className(), QString("Cannot handle unregistered meta type %1").arg(metaObject.className()).toUtf8());
 
         QMetaObject entryMetaObject = m_metaObjects.value(m_listEntryTypes.value(typeName));
@@ -558,7 +570,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
             QVariant value = unpack(entryMetaObject, variant);
             putMethod.invokeOnGadget(ptr, Q_ARG(QVariant, value));
         }
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QVariant ret = QVariant(QMetaType(typeId), ptr);
 #else
         QVariant ret = QVariant(static_cast<QVariant::Type>(typeId), ptr);
@@ -573,7 +585,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
         int typeId = QMetaType::type(metaObject.className());
         QMetaType metaType(typeId);
         Q_ASSERT_X(typeId != 0, this->metaObject()->className(), QString("Cannot handle unregistered meta type %1").arg(typeName).toUtf8());
-        void* ptr = QMetaType::create(typeId);
+        void *ptr = QMetaType::create(typeId);
         for (int i = 0; i < metaObject.propertyCount(); i++) {
             QMetaProperty metaProperty = metaObject.property(i);
             if (metaProperty.name() == QStringLiteral("objectName")) {
@@ -587,7 +599,6 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
             }
 
             if (map.contains(metaProperty.name())) {
-
                 QString propertyTypeName = QString(metaProperty.typeName()).split("::").last();
                 QVariant variant = map.value(metaProperty.name());
 
@@ -646,7 +657,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                     continue;
                 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 int typeId = metaProperty.typeId();
 #else
                 int typeId = metaProperty.type();
@@ -662,9 +673,8 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                 // For basic properties just write the veriant as is
                 metaProperty.writeOnGadget(ptr, variant);
             }
-
         }
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QVariant ret = QVariant(QMetaType(typeId), ptr);
 #else
         QVariant ret = QVariant(typeId, ptr);

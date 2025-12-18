@@ -26,10 +26,10 @@
 #define SCRIPT_H
 
 #include <QMetaObject>
-#include <QUuid>
-#include <QQmlContext>
-#include <QQmlComponent>
 #include <QObject>
+#include <QQmlComponent>
+#include <QQmlContext>
+#include <QUuid>
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -60,7 +60,7 @@ private:
     QObject *object = nullptr;
 };
 
-class Scripts: public QList<Script>
+class Scripts : public QList<Script>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -70,8 +70,8 @@ public:
     Q_INVOKABLE QVariant get(int index);
     Q_INVOKABLE void put(const QVariant &value);
 };
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 Q_DECLARE_METATYPE(nymeaserver::scriptengine::Script)
 Q_DECLARE_METATYPE(nymeaserver::scriptengine::Scripts)
 

@@ -25,11 +25,11 @@
 #ifndef BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
 #define BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
 
-#include <QObject>
-#include <QBluetoothDeviceInfo>
 #include <QBluetoothAddress>
+#include <QBluetoothDeviceInfo>
 #include <QBluetoothServiceInfo>
 #include <QLowEnergyController>
+#include <QObject>
 
 #include "hardware/bluetoothlowenergy/bluetoothlowenergydevice.h"
 
@@ -42,7 +42,9 @@ class BluetoothLowEnergyDeviceImplementation : public BluetoothLowEnergyDevice
     friend class BluetoothLowEnergyManagerImplementation;
 
 public:
-    explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = nullptr);
+    explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo,
+                                                    const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress,
+                                                    QObject *parent = nullptr);
 
     QString name() const override;
     QBluetoothAddress address() const override;
@@ -79,6 +81,6 @@ private slots:
     void onDeviceError(const QLowEnergyController::Error &error);
 };
 
-}
+} // namespace nymeaserver
 
 #endif // BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H

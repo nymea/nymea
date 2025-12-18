@@ -25,14 +25,14 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include <QDebug>
+#include <QNetworkInterface>
 #include <QObject>
+#include <QSslConfiguration>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QNetworkInterface>
-#include <QUuid>
 #include <QTimer>
-#include <QSslConfiguration>
-#include <QDebug>
+#include <QUuid>
 
 #include "transportinterface.h"
 
@@ -40,17 +40,15 @@
 
 namespace nymeaserver {
 
-class SslServer: public QTcpServer
+class SslServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    SslServer(bool sslEnabled, const QSslConfiguration &config, QObject *parent = nullptr):
-        QTcpServer(parent),
-        m_sslEnabled(sslEnabled),
-        m_config(config)
-    {
-
-    }
+    SslServer(bool sslEnabled, const QSslConfiguration &config, QObject *parent = nullptr)
+        : QTcpServer(parent)
+        , m_sslEnabled(sslEnabled)
+        , m_config(config)
+    {}
 
 signals:
     void clientConnected(QSslSocket *socket);
@@ -103,6 +101,6 @@ public slots:
     bool stopServer() override;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TCPSERVER_H

@@ -24,8 +24,6 @@
 
 #include "zigbeehardwareresource.h"
 
-ZigbeeHardwareResource::ZigbeeHardwareResource(QObject *parent) :
-    HardwareResource("Zigbee hardware resource", parent)
-{
-
-}
+ZigbeeHardwareResource::ZigbeeHardwareResource(QObject *parent)
+    : HardwareResource("Zigbee hardware resource", parent)
+{}

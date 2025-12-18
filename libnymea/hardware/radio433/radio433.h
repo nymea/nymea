@@ -27,8 +27,8 @@
 
 #include <QObject>
 
-#include "libnymea.h"
 #include "hardwareresource.h"
+#include "libnymea.h"
 
 class LIBNYMEA_EXPORT Radio433 : public HardwareResource
 {
@@ -40,8 +40,6 @@ public:
 
 public slots:
     virtual bool sendData(int delay, QList<int> rawData, int repetitions) = 0;
-
 };
 
 #endif // RADIO433_H
-

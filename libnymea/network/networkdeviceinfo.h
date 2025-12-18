@@ -25,12 +25,12 @@
 #ifndef NETWORKDEVICEINFO_H
 #define NETWORKDEVICEINFO_H
 
-#include <QDebug>
-#include <QObject>
 #include <QDateTime>
+#include <QDebug>
 #include <QHostAddress>
-#include <QNetworkInterface>
 #include <QMetaType>
+#include <QNetworkInterface>
+#include <QObject>
 
 #include "libnymea.h"
 #include "macaddressinfos.h"
@@ -39,11 +39,10 @@ class LIBNYMEA_EXPORT NetworkDeviceInfo
 {
     Q_GADGET
 public:
-
     enum MonitorMode {
-        MonitorModeMac      = 0x01, // Unique MAC address within the network
+        MonitorModeMac = 0x01,      // Unique MAC address within the network
         MonitorModeHostName = 0x02, // DNS hostname available, but no MAC address or not unique MAC available
-        MonitorModeIp       = 0x03  // Only the IP can be used to monitor, simple ping on reachable
+        MonitorModeIp = 0x03        // Only the IP can be used to monitor, simple ping on reachable
     };
     Q_ENUM(MonitorMode)
 

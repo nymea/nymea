@@ -39,6 +39,7 @@ public:
     QString itemId() const;
 
     void operator=(const BrowserAction &other);
+
 private:
     ThingId m_thingId;
     QString m_itemId;

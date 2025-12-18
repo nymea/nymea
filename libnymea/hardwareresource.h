@@ -51,7 +51,6 @@ protected:
 signals:
     void enabledChanged(bool enabled);
     void availableChanged(bool available);
-
 };
 
 #endif // HARDWARERESOURCE_H

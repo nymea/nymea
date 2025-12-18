@@ -25,15 +25,15 @@
 #ifndef LOGENTRY_H
 #define LOGENTRY_H
 
-#include <QVariant>
 #include <QDateTime>
 #include <QMetaType>
+#include <QVariant>
 
 class LogEntry
 {
     Q_GADGET
     Q_PROPERTY(QDateTime timestamp READ timestamp)
-    Q_PROPERTY(QString source READ source )
+    Q_PROPERTY(QString source READ source)
     Q_PROPERTY(QVariantMap values READ values)
 
 public:
@@ -51,15 +51,16 @@ private:
 };
 Q_DECLARE_METATYPE(LogEntry)
 
-
-class LogEntries: public QList<LogEntry>
+class LogEntries : public QList<LogEntry>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     LogEntries();
     LogEntries(const QList<LogEntry> &other);
-    LogEntries(std::initializer_list<LogEntry> args):QList(args) {}
+    LogEntries(std::initializer_list<LogEntry> args)
+        : QList(args)
+    {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };

@@ -34,13 +34,13 @@ const QString kNymeaNamespace = QStringLiteral("/io/nymea/");
 const QString kLegacyNamespace = QStringLiteral("/io/guh/");
 bool gLegacyServiceWarningLogged = false;
 bool gLegacyObjectWarningLogged = false;
-}
+} // namespace
 
 QDBusConnection::BusType NymeaDBusService::s_busType = QDBusConnection::SystemBus;
 
-NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent):
-    QObject(parent),
-    m_connection(s_busType == QDBusConnection::SystemBus ? QDBusConnection::systemBus() : QDBusConnection::sessionBus())
+NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent)
+    : QObject(parent)
+    , m_connection(s_busType == QDBusConnection::SystemBus ? QDBusConnection::systemBus() : QDBusConnection::sessionBus())
 {
     bool status = m_connection.registerService(kNymeaInterface);
     if (!status) {

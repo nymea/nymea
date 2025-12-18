@@ -40,21 +40,19 @@
 #include "action.h"
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId. */
-Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId, TriggeredBy triggeredBy) :
-    m_actionTypeId(actionTypeId),
-    m_thingId(thingId),
-    m_triggeredBy(triggeredBy)
-{
-}
+Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId, TriggeredBy triggeredBy)
+    : m_actionTypeId(actionTypeId)
+    , m_thingId(thingId)
+    , m_triggeredBy(triggeredBy)
+{}
 
 /*! Construct a copy of an \a other Action. */
-Action::Action(const Action &other):
-    m_actionTypeId(other.actionTypeId()),
-    m_thingId(other.thingId()),
-    m_params(other.params()),
-    m_triggeredBy(other.triggeredBy())
-{
-}
+Action::Action(const Action &other)
+    : m_actionTypeId(other.actionTypeId())
+    , m_thingId(other.thingId())
+    , m_params(other.params())
+    , m_triggeredBy(other.triggeredBy())
+{}
 
 /*! An Action is valid if actionTypeId and deviceId are valid uuids. Returns true if valid, false if not. */
 bool Action::isValid() const
@@ -138,7 +136,7 @@ Action::TriggeredBy Action::triggeredBy() const
 }
 
 /*! Copy the data to an \l{Action} from an \a other action. */
-void Action::operator =(const Action &other)
+void Action::operator=(const Action &other)
 {
     m_actionTypeId = other.actionTypeId();
     m_params = other.params();

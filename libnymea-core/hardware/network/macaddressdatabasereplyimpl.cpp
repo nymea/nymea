@@ -26,11 +26,9 @@
 
 namespace nymeaserver {
 
-MacAddressDatabaseReplyImpl::MacAddressDatabaseReplyImpl(QObject *parent) :
-    MacAddressDatabaseReply(parent)
-{
-
-}
+MacAddressDatabaseReplyImpl::MacAddressDatabaseReplyImpl(QObject *parent)
+    : MacAddressDatabaseReply(parent)
+{}
 
 QString MacAddressDatabaseReplyImpl::macAddress() const
 {
@@ -42,4 +40,4 @@ QString MacAddressDatabaseReplyImpl::manufacturer() const
     return m_manufacturer;
 }
 
-}
+} // namespace nymeaserver

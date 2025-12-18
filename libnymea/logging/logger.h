@@ -25,16 +25,15 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "typeutils.h"
 #include <QStringList>
 #include <QVariant>
-#include "typeutils.h"
 
 class LogEngine;
 
 class Logger
 {
 public:
-
     QString name() const;
     QStringList tagNames() const;
     Types::LoggingType loggingType() const;
@@ -50,6 +49,6 @@ private:
     Types::LoggingType m_loggingType = Types::LoggingTypeDiscrete;
 };
 
-Q_DECLARE_METATYPE(Logger*)
+Q_DECLARE_METATYPE(Logger *)
 
 #endif // LOGGER_H

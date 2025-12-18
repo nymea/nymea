@@ -26,10 +26,9 @@
 
 namespace nymeaserver {
 
-MqttChannelImplementation::MqttChannelImplementation() : MqttChannel()
-{
-
-}
+MqttChannelImplementation::MqttChannelImplementation()
+    : MqttChannel()
+{}
 
 QString MqttChannelImplementation::clientId() const
 {
@@ -81,4 +80,4 @@ void MqttChannelImplementation::setConnected(bool connected)
     }
 }
 
-}
+} // namespace nymeaserver

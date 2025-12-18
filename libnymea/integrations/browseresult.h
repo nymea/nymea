@@ -25,8 +25,8 @@
 #ifndef BROWSERESULT_H
 #define BROWSERESULT_H
 
-#include <QObject>
 #include <QLocale>
+#include <QObject>
 
 #include "thing.h"
 
@@ -38,7 +38,7 @@ class BrowseResult : public QObject
 public:
     explicit BrowseResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
 
-    Thing* thing() const;
+    Thing *thing() const;
     QString itemId() const;
     QLocale locale() const;
 

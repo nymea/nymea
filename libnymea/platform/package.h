@@ -25,9 +25,9 @@
 #ifndef PACKAGE_H
 #define PACKAGE_H
 
-#include <QString>
-#include <QMetaObject>
 #include <QList>
+#include <QMetaObject>
+#include <QString>
 #include <QVariant>
 
 class Package
@@ -44,7 +44,11 @@ class Package
     Q_PROPERTY(bool canRemove READ canRemove)
 
 public:
-    explicit Package(const QString &packageId = QString(), const QString &displayName = QString(), const QString &installedVersion = QString(), const QString &candidateVersion = QString(), const QString &changelog = QString());
+    explicit Package(const QString &packageId = QString(),
+                     const QString &displayName = QString(),
+                     const QString &installedVersion = QString(),
+                     const QString &candidateVersion = QString(),
+                     const QString &changelog = QString());
 
     QString packageId() const;
     QString displayName() const;
@@ -87,7 +91,7 @@ private:
 };
 Q_DECLARE_METATYPE(Package)
 
-class Packages: public QList<Package>
+class Packages : public QList<Package>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

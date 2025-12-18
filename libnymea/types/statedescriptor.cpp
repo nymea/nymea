@@ -48,31 +48,25 @@
 #include "statedescriptor.h"
 
 /*! Constructs an StateDescriptor describing an \l{State}.*/
-StateDescriptor::StateDescriptor():
-    m_operatorType(Types::ValueOperatorEquals)
-{
-
-}
+StateDescriptor::StateDescriptor()
+    : m_operatorType(Types::ValueOperatorEquals)
+{}
 
 /*! Constructs an StateDescriptor describing an \l{State} with the given \a stateTypeId, \a deviceId, \a stateValue and \a operatorType.*/
-StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const ThingId &thingId, const QVariant &stateValue, Types::ValueOperator operatorType):
-    m_stateTypeId(stateTypeId),
-    m_thingId(thingId),
-    m_stateValue(stateValue),
-    m_operatorType(operatorType)
-{
-
-}
+StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const ThingId &thingId, const QVariant &stateValue, Types::ValueOperator operatorType)
+    : m_stateTypeId(stateTypeId)
+    , m_thingId(thingId)
+    , m_stateValue(stateValue)
+    , m_operatorType(operatorType)
+{}
 
 /*! Constructs an StateDescriptor describing an \l{State} with the given \a interface, \a interfaceState, \a stateValue and \a operatorType.*/
-StateDescriptor::StateDescriptor(const QString &interface, const QString &interfaceState, const QVariant &stateValue, Types::ValueOperator operatorType):
-    m_interface(interface),
-    m_interfaceState(interfaceState),
-    m_stateValue(stateValue),
-    m_operatorType(operatorType)
-{
-
-}
+StateDescriptor::StateDescriptor(const QString &interface, const QString &interfaceState, const QVariant &stateValue, Types::ValueOperator operatorType)
+    : m_interface(interface)
+    , m_interfaceState(interfaceState)
+    , m_stateValue(stateValue)
+    , m_operatorType(operatorType)
+{}
 
 /*! Returns true \l{StateDescriptor::Type}{Type} of this descriptor. */
 StateDescriptor::Type StateDescriptor::type() const
@@ -168,14 +162,10 @@ void StateDescriptor::setOperatorType(Types::ValueOperator opertatorType)
 
 /*! Compare this StateDescriptor to \a other.
  *  StateDescriptors are equal (returns true) if stateTypeId, stateValue and operatorType match. */
-bool StateDescriptor::operator ==(const StateDescriptor &other) const
+bool StateDescriptor::operator==(const StateDescriptor &other) const
 {
-    return m_stateTypeId == other.stateTypeId() &&
-            m_thingId == other.thingId() &&
-            m_interface == other.interface() &&
-            m_interfaceState == other.interfaceState() &&
-            m_stateValue == other.stateValue() &&
-            m_operatorType == other.operatorType();
+    return m_stateTypeId == other.stateTypeId() && m_thingId == other.thingId() && m_interface == other.interface() && m_interfaceState == other.interfaceState()
+           && m_stateValue == other.stateValue() && m_operatorType == other.operatorType();
 }
 
 /*! Returns the true if this \l{StateDescriptor} is valid. A valid \l{StateDescriptor} must
@@ -185,16 +175,16 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
 bool StateDescriptor::isValid() const
 {
     return ((!m_thingId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull()))
-            && (m_stateValue.isValid() || (!m_valueThingId.isNull() && !m_valueStateTypeId.isNull()));
+           && (m_stateValue.isValid() || (!m_valueThingId.isNull() && !m_valueStateTypeId.isNull()));
 }
 
 /*! Print a StateDescriptor with all its contents to QDebug. */
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "StateDescriptor(ThingId:" << stateDescriptor.thingId().toString() << ", StateTypeId:"
-                  << stateDescriptor.stateTypeId().toString() << ", Interface:" << stateDescriptor.interface()
-                  << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue()
-                  << ", ValueThing:" << stateDescriptor.valueThingId().toString() << ", ValueStateTypeId:" << stateDescriptor.valueStateTypeId().toString();
+    dbg.nospace() << "StateDescriptor(ThingId:" << stateDescriptor.thingId().toString() << ", StateTypeId:" << stateDescriptor.stateTypeId().toString()
+                  << ", Interface:" << stateDescriptor.interface() << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType()
+                  << ", Value:" << stateDescriptor.stateValue() << ", ValueThing:" << stateDescriptor.valueThingId().toString()
+                  << ", ValueStateTypeId:" << stateDescriptor.valueStateTypeId().toString();
     return dbg;
 }

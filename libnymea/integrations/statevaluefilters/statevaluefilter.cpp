@@ -28,12 +28,6 @@
 
 NYMEA_LOGGING_CATEGORY(dcStateValueFilter, "StateValueFilter")
 
-StateValueFilter::StateValueFilter()
-{
+StateValueFilter::StateValueFilter() {}
 
-}
-
-StateValueFilter::~StateValueFilter()
-{
-
-}
+StateValueFilter::~StateValueFilter() {}

@@ -29,11 +29,11 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-ThingDiscoveryInfo::ThingDiscoveryInfo(const ThingClassId &thingClassId, const ParamList &params, ThingManager *thingManager, quint32 timeout):
-    QObject(thingManager),
-    m_thingClassId(thingClassId),
-    m_params(params),
-    m_thingManager(thingManager)
+ThingDiscoveryInfo::ThingDiscoveryInfo(const ThingClassId &thingClassId, const ParamList &params, ThingManager *thingManager, quint32 timeout)
+    : QObject(thingManager)
+    , m_thingClassId(thingClassId)
+    , m_params(params)
+    , m_thingManager(thingManager)
 {
     connect(this, &ThingDiscoveryInfo::finished, this, &ThingDiscoveryInfo::deleteLater, Qt::QueuedConnection);
 

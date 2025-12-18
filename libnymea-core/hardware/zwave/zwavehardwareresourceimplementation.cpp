@@ -30,19 +30,16 @@
 #include "loggingcategories.h"
 Q_DECLARE_LOGGING_CATEGORY(dcZWave)
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
-
-ZWaveHardwareResourceImplementation::ZWaveHardwareResourceImplementation(ZWaveManager *zwaveManager, QObject *parent):
-    ZWaveHardwareResource(parent),
-    m_zwaveManager(zwaveManager)
+ZWaveHardwareResourceImplementation::ZWaveHardwareResourceImplementation(ZWaveManager *zwaveManager, QObject *parent)
+    : ZWaveHardwareResource(parent)
+    , m_zwaveManager(zwaveManager)
 {
     connect(m_zwaveManager, &ZWaveManager::networkStateChanged, this, &ZWaveHardwareResourceImplementation::onNetworkStateChanged);
     connect(m_zwaveManager, &ZWaveManager::nodeInitialized, this, &ZWaveHardwareResourceImplementation::onNodeInitialized);
     connect(m_zwaveManager, &ZWaveManager::nodeRemoved, this, &ZWaveHardwareResourceImplementation::onNodeRemoved);
-//    connect(m_zigbeeManager, &ZigbeeManager::availableChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged);
-
+    //    connect(m_zigbeeManager, &ZigbeeManager::availableChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged);
 }
 
 bool ZWaveHardwareResourceImplementation::available() const
@@ -86,7 +83,8 @@ ZWaveNode *ZWaveHardwareResourceImplementation::claimNode(ZWaveHandler *handler,
     }
 
     if (m_nodeHandlers.contains(node) && m_nodeHandlers.value(node) != handler) {
-        qCWarning(dcZWave()) << "Node with ID" << nodeId << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name() << "). Not allowing node to be reclaimed.";
+        qCWarning(dcZWave()) << "Node with ID" << nodeId << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name()
+                             << "). Not allowing node to be reclaimed.";
         return nullptr;
     }
 
@@ -121,7 +119,7 @@ void ZWaveHardwareResourceImplementation::onNetworkStateChanged(ZWaveNetwork *ne
     // unclaimed nodes that might be handled now. This might happen if a node joins the network
     // but no appropriate plugin had been installed at the time. If additional plugins have
     // been installed now, such nodes might be handled by them now.
-    if (network->networkState() == ZWaveNetwork::ZWaveNetworkStateOnline && m_thingsLoaded) {        
+    if (network->networkState() == ZWaveNetwork::ZWaveNetworkStateOnline && m_thingsLoaded) {
         foreach (ZWaveNode *node, network->nodes()) {
             // Ignore the controller node
             if (node->nodeId() == network->controllerNodeId())
@@ -174,4 +172,4 @@ void ZWaveHardwareResourceImplementation::handleNewNode(ZWaveNode *node)
     }
 }
 
-}
+} // namespace nymeaserver

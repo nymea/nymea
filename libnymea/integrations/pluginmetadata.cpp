@@ -27,26 +27,23 @@
 
 #include "types/interface.h"
 
-#include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QMetaObject>
+#include <QJsonObject>
 #include <QMetaEnum>
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#include <QMetaObject>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QColor>
 #endif
 
-PluginMetadata::PluginMetadata()
-{
+PluginMetadata::PluginMetadata() {}
 
-}
-
-PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn, bool strict):
-    m_jsonObject(jsonObject),
-    m_isBuiltIn(isBuiltIn),
-    m_strictRun(strict)
+PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn, bool strict)
+    : m_jsonObject(jsonObject)
+    , m_isBuiltIn(isBuiltIn)
+    , m_strictRun(strict)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qRegisterMetaType<QColor>("QColor");
 #endif
 
@@ -165,7 +162,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
         // Check mandatory fields
         if (!verificationResult.first.isEmpty()) {
-            m_validationErrors.append("Vendor metadata has missing fields: " + verificationResult.first.join(", ") + "\n" + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
+            m_validationErrors.append("Vendor metadata has missing fields: " + verificationResult.first.join(", ") + "\n"
+                                      + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
             hasError = true;
             // Not continuing parsing vendor as we rely on mandatory fields being around.
             break;
@@ -176,7 +174,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
         // Check if there are any unknown fields
         if (!verificationResult.second.isEmpty()) {
-            m_validationErrors.append("Vendor \"" + vendorName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
+            m_validationErrors.append("Vendor \"" + vendorName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n"
+                                      + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
             hasError = true;
         }
 
@@ -194,23 +193,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
         // Load thing classes of this vendor
         foreach (const QJsonValue &thingClassJson, vendorJson.toObject().value("thingClasses").toArray()) {
-
             // FIXME: Drop this when possible, see .h for context
             m_currentScopUuids.clear();
 
             QJsonObject thingClassObject = thingClassJson.toObject();
             /*! Returns a list of all valid JSON properties a ThingClass JSON definition can have. */
-            QStringList thingClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                                                             << "interfaces" << "providedInterfaces" << "browsable" << "discoveryParamTypes"
-                                                             << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes"
-                                                             << "discoveryType";
+            QStringList thingClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod" << "interfaces" << "providedInterfaces"
+                                                             << "browsable" << "discoveryParamTypes" << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes"
+                                                             << "eventTypes" << "browserItemActionTypes" << "discoveryType";
             QStringList mandatoryThingClassProperties = QStringList() << "id" << "name" << "displayName";
 
             QPair<QStringList, QStringList> verificationResult = verifyFields(thingClassProperties, mandatoryThingClassProperties, thingClassObject);
 
             // Check mandatory fields
             if (!verificationResult.first.isEmpty()) {
-                m_validationErrors.append("Thing class has missing fields: \"" + verificationResult.first.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
+                m_validationErrors.append("Thing class has missing fields: \"" + verificationResult.first.join("\", \"") + "\"\n"
+                                          + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
                 hasError = true;
                 // Stop parsing this thingClass as we rely on mandatory fields being around.
                 continue;
@@ -221,7 +219,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
             // Check if there are any unknown fields
             if (!verificationResult.second.isEmpty()) {
-                m_validationErrors.append("Thing class \"" + thingClassName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
+                m_validationErrors.append("Thing class \"" + thingClassName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n"
+                                          + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
                 hasError = true;
             }
 
@@ -253,7 +252,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     } else if (createMethodValue.toString().toLower() == "user") {
                         createMethods |= ThingClass::CreateMethodUser;
                     } else {
-                        m_validationErrors.append("Unknown createMehtod \"" + createMethodValue.toString() + "\" in thingClass \"" + thingClass.name() +  "\".");
+                        m_validationErrors.append("Unknown createMehtod \"" + createMethodValue.toString() + "\" in thingClass \"" + thingClass.name() + "\".");
                         hasError = true;
                     }
                 }
@@ -267,7 +266,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 } else if (discoveryTypeString == "weak") {
                     thingClass.setDiscoveryType(ThingClass::DiscoveryTypeWeak);
                 } else {
-                    m_validationErrors.append("Unknown discoveryType \"" + discoveryTypeString + "\" in thingClass \"" + thingClass.name() +  "\".");
+                    m_validationErrors.append("Unknown discoveryType \"" + discoveryTypeString + "\" in thingClass \"" + thingClass.name() + "\".");
                     hasError = true;
                 }
             } else {
@@ -333,15 +332,29 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 bool writableState = false;
 
                 // TODO: DEPRECATED 1.2: Remove displayNameEvent eventually (requires updating all plugins)
-                QStringList stateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue", "cached",
-                                                   "unit", "minValue", "maxValue", "possibleValues", "writable", "displayNameAction",
-                                                   "ioType", "suggestLogging", "filter"};
+                QStringList stateTypeProperties = {"id",
+                                                   "name",
+                                                   "displayName",
+                                                   "displayNameEvent",
+                                                   "type",
+                                                   "defaultValue",
+                                                   "cached",
+                                                   "unit",
+                                                   "minValue",
+                                                   "maxValue",
+                                                   "possibleValues",
+                                                   "writable",
+                                                   "displayNameAction",
+                                                   "ioType",
+                                                   "suggestLogging",
+                                                   "filter"};
                 QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "type", "defaultValue"};
                 QPair<QStringList, QStringList> verificationResult = verifyFields(stateTypeProperties, mandatoryStateTypeProperties, st);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing properties \"" + verificationResult.first.join("\", \"") + "\" in stateType definition\n" + qUtf8Printable(QJsonDocument::fromVariant(st.toVariantMap()).toJson(QJsonDocument::Indented)));
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing properties \"" + verificationResult.first.join("\", \"")
+                                              + "\" in stateType definition\n" + qUtf8Printable(QJsonDocument::fromVariant(st.toVariantMap()).toJson(QJsonDocument::Indented)));
                     hasError = true;
                     // Not processing further as mandatory fields are expected to be here
                     continue;
@@ -352,7 +365,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has unknown properties \"" + verificationResult.second.join("\", \"") + "\"");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has unknown properties \""
+                                              + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
                 // Print warning on deprecated fields
@@ -365,17 +379,19 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (st.contains("writable") && st.value("writable").toBool()) {
                     writableState = true;
                     if (!st.contains("displayNameAction")) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has writable state but does not define the displayNameAction property");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                  + "\" has writable state but does not define the displayNameAction property");
                         hasError = true;
                     }
                 }
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 QMetaType::Type t = static_cast<QMetaType::Type>(QMetaType::fromName(QByteArray(st.value("type").toString().toUtf8())).id());
 #else
                 QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(st.value("type").toString().toLatin1().data()));
 #endif
                 if (t == QMetaType::UnknownType) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid type: \"" + st.value("type").toString() + "\"");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid type: \"" + st.value("type").toString()
+                                              + "\"");
                     hasError = true;
                 }
 
@@ -427,7 +443,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                         if (possibleValueJson.isObject()) {
                             if (!possibleValue.toMap().contains("value") || !possibleValue.toMap().contains("displayName")) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid possible value \"" + possibleValueJson.toString() + "\" which is of object type but does not have \"value\" and \"displayName\" properties.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid possible value \""
+                                                          + possibleValueJson.toString() + "\" which is of object type but does not have \"value\" and \"displayName\" properties.");
                                 hasError = true;
                                 break;
                             }
@@ -445,7 +462,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     stateType.setPossibleValuesDisplayNames(possibleValuesDisplayNames);
 
                     if (!stateType.possibleValues().contains(stateType.defaultValue())) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid default value \"" + stateType.defaultValue().toString() + "\" which is not in the list of possible values.");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid default value \""
+                                                  + stateType.defaultValue().toString() + "\" which is not in the list of possible values.");
                         hasError = true;
                         break;
                     }
@@ -463,54 +481,64 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     Types::IOType ioType = Types::IOTypeNone;
                     if (ioTypeString == "digitalInput") {
                         if (stateType.type() != QMetaType::Bool) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital input but type is not \"bool\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as digital input but type is not \"bool\"");
                             hasError = true;
                             break;
                         }
                         ioType = Types::IOTypeDigitalInput;
                     } else if (ioTypeString == "digitalOutput") {
                         if (stateType.type() != QMetaType::Bool) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital output but type is not \"bool\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as digital output but type is not \"bool\"");
                             hasError = true;
                             break;
                         }
                         if (!stateType.writable()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital output but is not writable");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as digital output but is not writable");
                             hasError = true;
                             break;
                         }
                         ioType = Types::IOTypeDigitalOutput;
                     } else if (ioTypeString == "analogInput") {
                         if (stateType.type() != QMetaType::Double && stateType.type() != QMetaType::Int && stateType.type() != QMetaType::UInt) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but type is not \"double\", \"int\" or \"uint\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as analog input but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
                         }
                         if (stateType.minValue().isNull() || stateType.maxValue().isNull()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but it does not define \"minValue\" and \"maxValue\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as analog input but it does not define \"minValue\" and \"maxValue\"");
                             hasError = true;
                             break;
                         }
                         ioType = Types::IOTypeAnalogInput;
                     } else if (ioTypeString == "analogOutput") {
                         if (stateType.type() != QMetaType::Double && stateType.type() != QMetaType::Int && stateType.type() != QMetaType::UInt) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but type is not \"double\", \"int\" or \"uint\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as analog output but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
                         }
                         if (!stateType.writable()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but is not writable");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as analog output but is not writable");
                             hasError = true;
                             break;
                         }
                         if (stateType.minValue().isNull() || stateType.maxValue().isNull()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but it does not define \"minValue\" and \"maxValue\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                                                      + "\" is marked as analog output but it does not define \"minValue\" and \"maxValue\"");
                             hasError = true;
                             break;
                         }
                         ioType = Types::IOTypeAnalogOutput;
                     } else {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid ioType value \"IOTypeNone\" which is not any of \"digitalInput\", \"digitalOutput\", \"analogInput\" or \"analogOutput\"");
+                        m_validationErrors.append(
+                            "Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName
+                            + "\" has invalid ioType value \"IOTypeNone\" which is not any of \"digitalInput\", \"digitalOutput\", \"analogInput\" or \"analogOutput\"");
                         hasError = true;
                         break;
                     }
@@ -524,7 +552,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     if (filter == "adaptive") {
                         stateType.setFilter(Types::StateValueFilterAdaptive);
                     } else if (!filter.isEmpty()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid filter value \"" + filter + "\". Supported filters are: \"adaptive\"");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid filter value \"" + filter
+                                                  + "\". Supported filters are: \"adaptive\"");
                         hasError = true;
                     }
                 }
@@ -560,7 +589,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in action type definition.");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"")
+                                              + "\" in action type definition.");
                     hasError = true;
                     continue;
                 }
@@ -570,7 +600,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" action type \"" + actionTypeName + "\" has unknown fields \"" + verificationResult.second.join("\", \"") + "\"");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" action type \"" + actionTypeName + "\" has unknown fields \""
+                                              + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
 
@@ -610,7 +641,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in event type defintion");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"")
+                                              + "\" in event type defintion");
                     hasError = true;
                     continue;
                 }
@@ -620,7 +652,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" event type \"" + eventTypeName + "\" has unknown fields \"" + verificationResult.second.join("\", \"") + "\"");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" event type \"" + eventTypeName + "\" has unknown fields \""
+                                              + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
 
@@ -657,7 +690,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in browser item action type definition");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"")
+                                              + "\" in browser item action type definition");
                     hasError = true;
                     continue;
                 }
@@ -667,16 +701,19 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName + "\" has unknown fields \"" + verificationResult.first.join("\", \"") + "\"");
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName + "\" has unknown fields \""
+                                              + verificationResult.first.join("\", \"") + "\"");
                     hasError = true;
                 }
 
                 if (actionTypeId.isNull()) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName + "\" has invalid UUID: " + at.value("id").toString());
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName
+                                              + "\" has invalid UUID: " + at.value("id").toString());
                     hasError = true;
                 }
                 if (!verifyDuplicateUuid(actionTypeId)) {
-                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName + "\" has duplicate UUID: " + actionTypeId.toString());
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" browser action type \"" + actionTypeName
+                                              + "\" has duplicate UUID: " + actionTypeId.toString());
                     hasError = true;
                 }
                 ActionType actionType(actionTypeId);
@@ -708,105 +745,117 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const InterfaceParamType &ifaceParamType, iface.paramTypes()) {
                     if (!thingClass.paramTypes().contains(ifaceParamType.name())) {
                         if (!ifaceParamType.optional()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                      "\" but doesn't implement param \"" + ifaceParamType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString()
+                                                      + "\" but doesn't implement param \"" + ifaceParamType.name() + "\"");
                             hasError = true;
                         }
                         continue;
                     }
                     ParamType &paramType = thingClass.paramTypes()[ifaceParamType.name()];
                     if (ifaceParamType.type() != paramType.type()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                  "\" but param \"" + paramType.name() + "\" has not matching type: \"" +
-                                                  QVariant::typeToName(paramType.type()) + "\" != \"" + QVariant::typeToName(ifaceParamType.type()) + "\"");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                  + paramType.name() + "\" has not matching type: \"" + QVariant::typeToName(paramType.type()) + "\" != \""
+                                                  + QVariant::typeToName(ifaceParamType.type()) + "\"");
                         hasError = true;
                     }
                     if (ifaceParamType.minValue().isValid() && !ifaceParamType.minValue().isNull()) {
                         if (ifaceParamType.minValue().toString() == "any") {
                             if (paramType.minValue().isNull()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                          "\" but param \"" + paramType.name() + "\" has no minimum value defined.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                          + paramType.name() + "\" has no minimum value defined.");
                                 hasError = true;
                             }
                         } else if (ifaceParamType.minValue() != paramType.minValue()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                      "\" but param \"" + paramType.name() + "\" has not matching minimum value: \"" +
-                                                      ifaceParamType.minValue().toString() + "\" != \"" + paramType.minValue().toString() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                      + paramType.name() + "\" has not matching minimum value: \"" + ifaceParamType.minValue().toString() + "\" != \""
+                                                      + paramType.minValue().toString() + "\"");
                             hasError = true;
                         }
                     }
                     if (ifaceParamType.maxValue().isValid() && !ifaceParamType.maxValue().isNull()) {
                         if (ifaceParamType.maxValue().toString() == "any") {
                             if (paramType.maxValue().isNull()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                          "\" but param \"" + paramType.name() + "\" has no maximum value defined.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                          + paramType.name() + "\" has no maximum value defined.");
                                 hasError = true;
                             }
                         } else if (ifaceParamType.maxValue() != paramType.maxValue()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
-                                                      "\" but param \"" + paramType.name() + "\" has not matching maximum value: \"" +
-                                                      ifaceParamType.maxValue().toString() + "\" != \"" + paramType.minValue().toString() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                      + paramType.name() + "\" has not matching maximum value: \"" + ifaceParamType.maxValue().toString() + "\" != \""
+                                                      + paramType.minValue().toString() + "\"");
                             hasError = true;
                         }
                     }
                     if (!ifaceParamType.allowedValues().isEmpty() && ifaceParamType.allowedValues() != paramType.allowedValues()) {
                         qCritical() << ifaceParamType.allowedValues();
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \"" +
-                                                  paramType.name() + "\" has not matching allowed values.");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                  + paramType.name() + "\" has not matching allowed values.");
                         hasError = true;
                     }
                     if (ifaceParamType.unit() != Types::UnitNone && ifaceParamType.unit() != paramType.unit()) {
                         QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \"" +
-                                                  paramType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceParamType.unit()) + "\" != \"" + unitEnum.valueToKey(paramType.unit()));
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \""
+                                                  + paramType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceParamType.unit()) + "\" != \""
+                                                  + unitEnum.valueToKey(paramType.unit()));
                         hasError = true;
                     }
                 }
 
-
                 foreach (const InterfaceStateType &ifaceStateType, iface.stateTypes()) {
                     if (!stateTypes.contains(ifaceStateType.name())) {
                         if (!ifaceStateType.optional()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString()
+                                                      + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
                             hasError = true;
                         }
                         continue;
                     }
                     StateType &stateType = stateTypes[ifaceStateType.name()];
                     if (ifaceStateType.type() != stateType.type()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching type: \"" + QVariant::typeToName(stateType.type()) + "\" != \"" + QVariant::typeToName(ifaceStateType.type()) + "\"");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                  + stateType.name() + "\" has not matching type: \"" + QVariant::typeToName(stateType.type()) + "\" != \""
+                                                  + QVariant::typeToName(ifaceStateType.type()) + "\"");
                         hasError = true;
                     }
                     if (ifaceStateType.minValue().isValid() && !ifaceStateType.minValue().isNull()) {
                         if (ifaceStateType.minValue().toString() == "any") {
                             if (stateType.minValue().isNull()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no minimum value defined.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                          + stateType.name() + "\" has no minimum value defined.");
                                 hasError = true;
                             }
                         } else if (ifaceStateType.minValue() != stateType.minValue()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching minimum value: \"" + ifaceStateType.minValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                      + stateType.name() + "\" has not matching minimum value: \"" + ifaceStateType.minValue().toString() + "\" != \""
+                                                      + stateType.minValue().toString() + "\"");
                             hasError = true;
                         }
                     }
                     if (ifaceStateType.maxValue().isValid() && !ifaceStateType.maxValue().isNull()) {
                         if (ifaceStateType.maxValue().toString() == "any") {
                             if (stateType.maxValue().isNull()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no maximum value defined.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                          + stateType.name() + "\" has no maximum value defined.");
                                 hasError = true;
                             }
                         } else if (ifaceStateType.maxValue() != stateType.maxValue()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching maximum value: \"" + ifaceStateType.maxValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                      + stateType.name() + "\" has not matching maximum value: \"" + ifaceStateType.maxValue().toString() + "\" != \""
+                                                      + stateType.minValue().toString() + "\"");
                             hasError = true;
                         }
                     }
                     if (!ifaceStateType.possibleValues().isEmpty() && ifaceStateType.possibleValues() != stateType.possibleValues()) {
                         qCritical() << ifaceStateType.possibleValues();
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching allowed values.");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                  + stateType.name() + "\" has not matching allowed values.");
                         hasError = true;
                     }
                     if (ifaceStateType.unit() != Types::UnitNone && ifaceStateType.unit() != stateType.unit()) {
                         QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceStateType.unit()) + "\" != \"" + unitEnum.valueToKey(stateType.unit()));
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \""
+                                                  + stateType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceStateType.unit()) + "\" != \""
+                                                  + unitEnum.valueToKey(stateType.unit()));
                         hasError = true;
                     }
 
@@ -819,7 +868,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const InterfaceActionType &ifaceActionType, iface.actionTypes()) {
                     if (!actionTypes.contains(ifaceActionType.name())) {
                         if (!ifaceActionType.optional()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString()
+                                                      + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
                             hasError = true;
                         }
                         continue;
@@ -829,49 +879,63 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
                         ParamType paramType = actionType.paramTypes().findByName(ifaceActionParamType.name());
                         if (!paramType.isValid()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" doesn't implement action param \"" + ifaceActionParamType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                      + actionType.name() + "\" doesn't implement action param \"" + ifaceActionParamType.name() + "\"");
                             hasError = true;
                         } else {
                             if (paramType.type() != ifaceActionParamType.type()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceActionParamType.type()) + "\"");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                          + actionType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \""
+                                                          + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceActionParamType.type()) + "\"");
                                 hasError = true;
                             }
                             foreach (const QVariant &allowedValue, ifaceActionParamType.allowedValues()) {
                                 if (!paramType.allowedValues().contains(allowedValue)) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString()
+                                                              + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceActionParamType.minValue() == "any") {
                                 if (paramType.minValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
                                     hasError = true;
                                 }
                             } else if (!ifaceActionParamType.minValue().isNull()) {
                                 if (paramType.minValue() != ifaceActionParamType.minValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \"" + paramType.minValue().toString() + "\" != \"" + ifaceActionParamType.minValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \""
+                                                              + paramType.minValue().toString() + "\" != \"" + ifaceActionParamType.minValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceActionParamType.maxValue() == "any") {
                                 if (paramType.maxValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
                                     hasError = true;
                                 }
                             } else if (!ifaceActionParamType.maxValue().isNull()) {
                                 if (paramType.maxValue() != ifaceActionParamType.maxValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \"" + paramType.maxValue().toString() + "\" != \"" + ifaceActionParamType.maxValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \""
+                                                              + paramType.maxValue().toString() + "\" != \"" + ifaceActionParamType.maxValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceActionParamType.defaultValue() == "any") {
                                 if (paramType.defaultValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
                                     hasError = true;
                                 }
                             } else if (!ifaceActionParamType.defaultValue().isNull()) {
                                 if (paramType.defaultValue() != ifaceActionParamType.defaultValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \"" + paramType.defaultValue().toString() + "\" != \"" + ifaceActionParamType.defaultValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                              + actionType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \""
+                                                              + paramType.defaultValue().toString() + "\" != \"" + ifaceActionParamType.defaultValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
@@ -887,7 +951,9 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         // name is set or not.
                         if (ifaceActionType.paramTypes().findByName(paramType.name()).name().isEmpty()) {
                             if (paramType.defaultValue().isNull()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a default value as the interface requires this action to be executable without params.");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \""
+                                                          + actionType.name() + "\" param \"" + paramType.name()
+                                                          + "\" is missing a default value as the interface requires this action to be executable without params.");
                                 hasError = true;
                             }
                         }
@@ -897,7 +963,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const InterfaceEventType &ifaceEventType, iface.eventTypes()) {
                     if (!eventTypes.contains(ifaceEventType.name())) {
                         if (!ifaceEventType.optional()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString()
+                                                      + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
                             hasError = true;
                         }
                         continue;
@@ -908,49 +975,63 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     foreach (const ParamType &ifaceEventParamType, ifaceEventType.paramTypes()) {
                         ParamType paramType = eventType.paramTypes().findByName(ifaceEventParamType.name());
                         if (!paramType.isValid()) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" doesn't implement event param \"" + ifaceEventParamType.name() + "\"");
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                      + eventType.name() + "\" doesn't implement event param \"" + ifaceEventParamType.name() + "\"");
                             hasError = true;
                         } else {
                             if (paramType.type() != ifaceEventParamType.type()) {
-                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceEventParamType.type()) + "\"");
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                          + eventType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type())
+                                                          + "\" expected: \"" + QVariant::typeToName(ifaceEventParamType.type()) + "\"");
                                 hasError = true;
                             }
                             foreach (const QVariant &allowedValue, ifaceEventParamType.allowedValues()) {
                                 if (!paramType.allowedValues().contains(allowedValue)) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString()
+                                                              + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceEventParamType.minValue() == "any") {
                                 if (paramType.minValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
                                     hasError = true;
                                 }
                             } else if (!ifaceEventParamType.minValue().isNull()) {
                                 if (paramType.minValue() != ifaceEventParamType.minValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \"" + paramType.minValue().toString() + "\" != \"" + ifaceEventParamType.minValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \""
+                                                              + paramType.minValue().toString() + "\" != \"" + ifaceEventParamType.minValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceEventParamType.maxValue() == "any") {
                                 if (paramType.maxValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
                                     hasError = true;
                                 }
                             } else if (!ifaceEventParamType.maxValue().isNull()) {
                                 if (paramType.maxValue() != ifaceEventParamType.maxValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \"" + paramType.maxValue().toString() + "\" != \"" + ifaceEventParamType.maxValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \""
+                                                              + paramType.maxValue().toString() + "\" != \"" + ifaceEventParamType.maxValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
                             if (ifaceEventParamType.defaultValue().toString() == "any") {
                                 if (paramType.defaultValue().isNull()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
                                     hasError = true;
                                 }
                             } else if (!ifaceEventParamType.defaultValue().isNull()) {
                                 if (paramType.defaultValue() != ifaceEventParamType.defaultValue()) {
-                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \"" + paramType.defaultValue().toString() + "\" != \"" + ifaceEventParamType.defaultValue().toString() + "\"");
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \""
+                                                              + eventType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \""
+                                                              + paramType.defaultValue().toString() + "\" != \"" + ifaceEventParamType.defaultValue().toString() + "\"");
                                     hasError = true;
                                 }
                             }
@@ -1019,7 +1100,7 @@ QPair<bool, Types::Unit> PluginMetadata::loadAndVerifyUnit(const QString &unitSt
         return QPair<bool, Types::Unit>(false, Types::UnitNone);
     }
 
-    return QPair<bool, Types::Unit>(true, (Types::Unit)enumValue);
+    return QPair<bool, Types::Unit>(true, (Types::Unit) enumValue);
 }
 
 QPair<QStringList, QStringList> PluginMetadata::verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value)
@@ -1071,7 +1152,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         }
 
         // Check type
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QMetaType::Type t = static_cast<QMetaType::Type>(QMetaType::fromName(pt.value("type").toString().toUtf8()).id());
 #else
         QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(pt.value("type").toString().toLatin1().data()));
@@ -1097,7 +1178,6 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         }
         ParamType paramType(paramTypeId, paramName, t, defaultValue);
         paramType.setDisplayName(pt.value("displayName").toString());
-
 
         // Set allowed values
         QVariantList allowedValues;
@@ -1174,7 +1254,7 @@ QPair<bool, Types::InputType> PluginMetadata::loadAndVerifyInputType(const QStri
         return QPair<bool, Types::InputType>(false, Types::InputTypeNone);
     }
 
-    return QPair<bool, Types::InputType>(true, (Types::InputType)enumValue);
+    return QPair<bool, Types::InputType>(true, (Types::InputType) enumValue);
 }
 
 bool PluginMetadata::verifyDuplicateUuid(const QUuid &uuid)

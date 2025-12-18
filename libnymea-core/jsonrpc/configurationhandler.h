@@ -102,9 +102,8 @@ private slots:
 private:
     static QVariantMap packBasicConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // CONFIGURATIONHANDLER_H

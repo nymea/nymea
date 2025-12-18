@@ -25,32 +25,30 @@
 #ifndef PYBROWSERITEM_H
 #define PYBROWSERITEM_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include <QMetaEnum>
 
-#include "types/browseritem.h"
 #include "loggingcategories.h"
+#include "types/browseritem.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-
-typedef struct {
-    PyObject_HEAD
-    PyObject* pyId;
-    PyObject* pyDisplayName;
-    PyObject* pyDescription;
-    PyObject* pyThumbnail;
+typedef struct
+{
+    PyObject_HEAD PyObject *pyId;
+    PyObject *pyDisplayName;
+    PyObject *pyDescription;
+    PyObject *pyThumbnail;
     bool browsable = false;
     bool executable = false;
     bool disabled = false;
-    int icon = (int)BrowserItem::BrowserIconNone;
+    int icon = (int) BrowserItem::BrowserIconNone;
 } PyBrowserItem;
-
 
 static PyMemberDef PyBrowserItem_members[] = {
     {"id", T_OBJECT_EX, offsetof(PyBrowserItem, pyId), 0, "BrowserItem id"},
@@ -61,7 +59,7 @@ static PyMemberDef PyBrowserItem_members[] = {
     {"executable", T_OBJECT_EX, offsetof(PyBrowserItem, executable), 0, "A boolean if this item can be launched"},
     {"disabled", T_OBJECT_EX, offsetof(PyBrowserItem, disabled), 0, "A boolean if this item is disabled"},
     {"icon", T_OBJECT_EX, offsetof(PyBrowserItem, icon), 0, "The icon to be used"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static int PyBrowserItem_init(PyBrowserItem *self, PyObject *args, PyObject *kwds)
@@ -69,7 +67,7 @@ static int PyBrowserItem_init(PyBrowserItem *self, PyObject *args, PyObject *kwd
     static char *kwlist[] = {"id", "displayName", "description", "thumbnail", "browsable", "executable", "disabled", "icon", nullptr};
     PyObject *id = nullptr, *displayName = nullptr, *description = nullptr, *thumbnail = nullptr;
     bool browsable = false, executable = false, disabled = false;
-    int icon = (int)BrowserItem::BrowserIconNone;
+    int icon = (int) BrowserItem::BrowserIconNone;
 
     qCDebug(dcPythonIntegrations()) << "+++ PyBrowserItem";
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOObbbi", kwlist, &id, &displayName, &description, &thumbnail, &browsable, &executable, &disabled, &icon))
@@ -98,7 +96,7 @@ static int PyBrowserItem_init(PyBrowserItem *self, PyObject *args, PyObject *kwd
     return 0;
 }
 
-static void PyBrowserItem_dealloc(PyBrowserItem* self)
+static void PyBrowserItem_dealloc(PyBrowserItem *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyBrowserItem";
     Py_XDECREF(self->pyId);
@@ -109,14 +107,11 @@ static void PyBrowserItem_dealloc(PyBrowserItem* self)
 }
 
 static PyTypeObject PyBrowserItemType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.BrowserItem",       /* tp_name */
-    sizeof(PyBrowserItem),     /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)PyBrowserItem_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.BrowserItem", /* tp_name */
+    sizeof(PyBrowserItem),                              /* tp_basicsize */
+    0,                                                  /* tp_itemsize */
+    (destructor) PyBrowserItem_dealloc,                 /* tp_dealloc */
 };
-
-
 
 static void registerBrowserItemType(PyObject *module)
 {
@@ -129,7 +124,7 @@ static void registerBrowserItemType(PyObject *module)
     if (PyType_Ready(&PyBrowserItemType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "BrowserItem", reinterpret_cast<PyObject*>(&PyBrowserItemType));
+    PyModule_AddObject(module, "BrowserItem", reinterpret_cast<PyObject *>(&PyBrowserItemType));
 
     QMetaEnum browserIconEnum = QMetaEnum::fromType<BrowserItem::BrowserIcon>();
     for (int i = 0; i < browserIconEnum.keyCount(); i++) {

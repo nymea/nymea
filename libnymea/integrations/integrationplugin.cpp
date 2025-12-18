@@ -35,7 +35,6 @@
 
 */
 
-
 /*! \fn void IntegrationPlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Thing} configuration changed the \a value.
 */
@@ -65,32 +64,32 @@
 */
 
 #include "integrationplugin.h"
-#include "thingmanager.h"
-#include "thingutils.h"
-#include "loggingcategories.h"
-#include "thingdiscoveryinfo.h"
-#include "thingsetupinfo.h"
-#include "thingpairinginfo.h"
-#include "thingactioninfo.h"
-#include "browseresult.h"
-#include "browseritemresult.h"
 #include "browseractioninfo.h"
+#include "browseresult.h"
 #include "browseritemactioninfo.h"
+#include "browseritemresult.h"
+#include "loggingcategories.h"
+#include "thingactioninfo.h"
+#include "thingdiscoveryinfo.h"
+#include "thingmanager.h"
+#include "thingpairinginfo.h"
+#include "thingsetupinfo.h"
+#include "thingutils.h"
 
 #include "nymeasettings.h"
 
 #include "hardware/radio433/radio433.h"
 #include "network/upnp/upnpdiscovery.h"
 
-#include <QDebug>
-#include <QFileInfo>
-#include <QFile>
-#include <QDir>
 #include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QStandardPaths>
 #include <QRegularExpression>
+#include <QStandardPaths>
 
 /*! IntegrationPlugin constructor. IntegrationPlugins will be instantiated by the system.
     This should never be called manually by a plugin implementation.
@@ -98,15 +97,11 @@
 
 NYMEA_LOGGING_CATEGORY(dcIntegrations, "Integrations")
 
-IntegrationPlugin::IntegrationPlugin(QObject *parent):
-    QObject(parent)
-{
-}
+IntegrationPlugin::IntegrationPlugin(QObject *parent)
+    : QObject(parent)
+{}
 
-IntegrationPlugin::~IntegrationPlugin()
-{
-
-}
+IntegrationPlugin::~IntegrationPlugin() {}
 
 PluginMetadata IntegrationPlugin::metadata()
 {
@@ -165,10 +160,7 @@ ThingClass IntegrationPlugin::thingClass(const ThingClassId &thingClassId) const
     If you are building the things based on a static list, you may emit
     autoThingsAppeard() in here.
 */
-void IntegrationPlugin::startMonitoringAutoThings()
-{
-
-}
+void IntegrationPlugin::startMonitoringAutoThings() {}
 
 /*! A plugin must reimplement this if it supports a ThingClass with createMethod \l{Thing}{CreateMethodDiscovery}.
     When the nymea system needs to discover available things, this will be called on the plugin. The plugin implementation
@@ -432,7 +424,6 @@ Thing::ThingError IntegrationPlugin::setConfiguration(const ParamList &configura
         Thing::ThingError result = setConfigValue(param.paramTypeId(), param.value());
         if (result != Thing::ThingErrorNoError)
             return result;
-
     }
     return Thing::ThingErrorNoError;
 }
@@ -479,7 +470,7 @@ bool IntegrationPlugin::isBuiltIn() const
 /*! Returns a list of all configured things belonging to this plugin. */
 Things IntegrationPlugin::myThings() const
 {
-    QList<Thing*> ret;
+    QList<Thing *> ret;
     foreach (Thing *thing, m_thingManager->configuredThings()) {
         if (thing->pluginId() == pluginId()) {
             ret.append(thing);
@@ -487,7 +478,6 @@ Things IntegrationPlugin::myThings() const
     }
     return ret;
 }
-
 
 /*! Returns the pointer to the main \l{HardwareManager} of this server. */
 HardwareManager *IntegrationPlugin::hardwareManager() const
@@ -498,7 +488,7 @@ HardwareManager *IntegrationPlugin::hardwareManager() const
 /*! Returns a pointer to a QSettings object which is reserved for this plugin.
     The plugin can store arbitrary data in this.
     */
-QSettings* IntegrationPlugin::pluginStorage() const
+QSettings *IntegrationPlugin::pluginStorage() const
 {
     return m_storage;
 }
@@ -525,15 +515,11 @@ QDebug operator<<(QDebug debug, IntegrationPlugin *plugin)
     return debug;
 }
 
-IntegrationPlugins::IntegrationPlugins()
-{
+IntegrationPlugins::IntegrationPlugins() {}
 
-}
-
-IntegrationPlugins::IntegrationPlugins(const QList<IntegrationPlugin *> &other): QList<IntegrationPlugin *>(other)
-{
-
-}
+IntegrationPlugins::IntegrationPlugins(const QList<IntegrationPlugin *> &other)
+    : QList<IntegrationPlugin *>(other)
+{}
 
 IntegrationPlugin *IntegrationPlugins::findById(const PluginId &id) const
 {
@@ -552,5 +538,5 @@ QVariant IntegrationPlugins::get(int index) const
 
 void IntegrationPlugins::put(const QVariant &variant)
 {
-    append(variant.value<IntegrationPlugin*>());
+    append(variant.value<IntegrationPlugin *>());
 }

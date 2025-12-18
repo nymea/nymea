@@ -67,15 +67,13 @@
     Returns the Zigbee \l{HardwareResource}.
 */
 
-
 #include "hardwaremanager.h"
 #include "hardwareresource.h"
 
 /*! Constructs a new HardwareManager with the given \a parent.*/
-HardwareManager::HardwareManager(QObject *parent) :
-    QObject(parent)
-{
-}
+HardwareManager::HardwareManager(QObject *parent)
+    : QObject(parent)
+{}
 
 /*! Sets the given \a resource to \a enabled. This allows to enable/disable individual \l{HardwareResource}{HardwareResources}. */
 void HardwareManager::setResourceEnabled(HardwareResource *resource, bool enabled)

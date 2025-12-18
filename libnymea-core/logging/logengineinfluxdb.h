@@ -25,18 +25,18 @@
 #ifndef LOGENGINEINFLUXDB_H
 #define LOGENGINEINFLUXDB_H
 
-#include <QObject>
-#include <QTimer>
-#include <QQueue>
 #include <QHostAddress>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QQueue>
+#include <QTimer>
 
-#include "logging/logentry.h"
 #include "logging/logengine.h"
+#include "logging/logentry.h"
 
-class QueryJob: public QObject
+class QueryJob : public QObject
 {
     Q_OBJECT
 public:
@@ -59,25 +59,30 @@ class LogEngineInfluxDB : public LogEngine
 {
     Q_OBJECT
 public:
-    enum InitStatus {
-        InitStatusNone,
-        InitStatusStarting,
-        InitStatusOK,
-        InitStatusFailure,
-        InitStatusDisabled
-    };
+    enum InitStatus { InitStatusNone, InitStatusStarting, InitStatusOK, InitStatusFailure, InitStatusDisabled };
     Q_ENUM(InitStatus)
 
     explicit LogEngineInfluxDB(const QString &host, const QString &dbName, const QString &username = QString(), const QString &password = QString(), QObject *parent = nullptr);
     ~LogEngineInfluxDB();
 
-    Logger *registerLogSource(const QString &name, const QStringList &tagNames, Types::LoggingType loggingType = Types::LoggingTypeDiscrete, const QString &sampleColumn = QString()) override;
+    Logger *registerLogSource(const QString &name,
+                              const QStringList &tagNames,
+                              Types::LoggingType loggingType = Types::LoggingTypeDiscrete,
+                              const QString &sampleColumn = QString()) override;
 
     void unregisterLogSource(const QString &name) override;
 
     void logEvent(Logger *logger, const QStringList &tags, const QVariantMap &values) override;
 
-    LogFetchJob *fetchLogEntries(const QStringList &sources, const QStringList &columns, const QDateTime &startTime = QDateTime(), const QDateTime &endTime = QDateTime(), const QVariantMap &filter = QVariantMap(), Types::SampleRate sampleRate = Types::SampleRateAny, Qt::SortOrder sortOrder = Qt::AscendingOrder, int offset = 0, int limit = 0) override;
+    LogFetchJob *fetchLogEntries(const QStringList &sources,
+                                 const QStringList &columns,
+                                 const QDateTime &startTime = QDateTime(),
+                                 const QDateTime &endTime = QDateTime(),
+                                 const QVariantMap &filter = QVariantMap(),
+                                 Types::SampleRate sampleRate = Types::SampleRateAny,
+                                 Qt::SortOrder sortOrder = Qt::AscendingOrder,
+                                 int offset = 0,
+                                 int limit = 0) override;
 
     bool jobsRunning() const override;
     void clear(const QString &source) override;
@@ -99,7 +104,8 @@ private slots:
     void processQueues();
 
 private:
-    struct QueueEntry {
+    struct QueueEntry
+    {
         QNetworkRequest request;
         QByteArray data;
         LogEntry entry;
@@ -115,7 +121,7 @@ private:
     QString m_username;
     QString m_password;
 
-    QHash<QString, Logger*> m_loggers;
+    QHash<QString, Logger *> m_loggers;
 
     QQueue<QueryJob *> m_initQueryQueue;
     QueryJob *m_currentInitQuery = nullptr;
@@ -124,6 +130,5 @@ private:
     QQueue<QueueEntry> m_writeQueue;
     QNetworkReply *m_currentWriteReply = nullptr;
 };
-
 
 #endif // LOGENGINEINFLUXDB_H

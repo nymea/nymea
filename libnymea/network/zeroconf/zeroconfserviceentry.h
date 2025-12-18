@@ -25,11 +25,11 @@
 #ifndef ZEROCONFSERVICEENTRY_H
 #define ZEROCONFSERVICEENTRY_H
 
+#include <QAbstractSocket>
 #include <QDebug>
+#include <QHostAddress>
 #include <QObject>
 #include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
 
 #include "libnymea.h"
 
@@ -37,7 +37,19 @@ class LIBNYMEA_EXPORT ZeroConfServiceEntry
 {
 public:
     ZeroConfServiceEntry();
-    ZeroConfServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, bool cached, bool isWideArea, bool isMulticase, bool isLocal, bool isOurOwn);
+    ZeroConfServiceEntry(QString name,
+                         QString serviceType,
+                         QHostAddress hostAddress,
+                         QString domain,
+                         QString hostName,
+                         quint16 port,
+                         QAbstractSocket::NetworkLayerProtocol protocol,
+                         QStringList txt,
+                         bool cached,
+                         bool isWideArea,
+                         bool isMulticase,
+                         bool isLocal,
+                         bool isOurOwn);
 
     QString name() const;
     QString serviceType() const;
@@ -57,8 +69,8 @@ public:
     bool isLocal() const;
     bool isOurOwn() const;
 
-    bool operator ==(const ZeroConfServiceEntry &other) const;
-    bool operator !=(const ZeroConfServiceEntry &other) const;
+    bool operator==(const ZeroConfServiceEntry &other) const;
+    bool operator!=(const ZeroConfServiceEntry &other) const;
 
 private:
     QString m_name;
@@ -77,7 +89,7 @@ private:
     bool m_isOurOwn = false;
 };
 
-QDebug operator <<(QDebug dbg, const ZeroConfServiceEntry &entry);
+QDebug operator<<(QDebug dbg, const ZeroConfServiceEntry &entry);
 Q_DECLARE_METATYPE(ZeroConfServiceEntry)
 
 #endif // ZEROCONFSERVICEENTRY_H

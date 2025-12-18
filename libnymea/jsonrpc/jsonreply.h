@@ -26,20 +26,17 @@
 #define JSONREPLY_H
 
 #include <QObject>
-#include <QVariantMap>
-#include <QUuid>
 #include <QTimer>
+#include <QUuid>
+#include <QVariantMap>
 
 class JsonHandler;
 
-class JsonReply: public QObject
+class JsonReply : public QObject
 {
     Q_OBJECT
 public:
-    enum Type {
-        TypeSync,
-        TypeAsync
-    };
+    enum Type { TypeSync, TypeAsync };
 
     static JsonReply *createReply(JsonHandler *handler, const QVariantMap &data);
     static JsonReply *createAsyncReply(JsonHandler *handler, const QString &method);
@@ -80,7 +77,6 @@ private:
     bool m_timedOut;
 
     QTimer m_timeout;
-
 };
 
 #endif // JSONREPLY_H

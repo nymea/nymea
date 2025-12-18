@@ -70,7 +70,7 @@ private:
     QString m_value;
 };
 
-class Tags: public QList<Tag>
+class Tags : public QList<Tag>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -82,7 +82,7 @@ public:
 };
 
 QDebug operator<<(QDebug dbg, const Tag &tag);
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::Tag)
 Q_DECLARE_METATYPE(nymeaserver::Tags)

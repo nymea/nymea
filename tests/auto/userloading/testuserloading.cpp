@@ -30,23 +30,22 @@
 
 using namespace nymeaserver;
 
-class TestUserLoading: public QObject
+class TestUserLoading : public QObject
 {
     Q_OBJECT
 public:
-    TestUserLoading(QObject* parent = nullptr);
+    TestUserLoading(QObject *parent = nullptr);
 
 protected slots:
     void initTestCase();
 
 private slots:
     void testLogfileRotation();
-
 };
 
-TestUserLoading::TestUserLoading(QObject *parent): QObject(parent)
+TestUserLoading::TestUserLoading(QObject *parent)
+    : QObject(parent)
 {
-
     Q_INIT_RESOURCE(userloading);
 }
 

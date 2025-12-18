@@ -32,7 +32,6 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-
 namespace nymeaserver {
 
 class Platform;
@@ -56,7 +55,7 @@ public:
     // Interfaces
     JsonRPCServerImplementation *jsonServer() const;
 
-    BluetoothServer* bluetoothServer() const;
+    BluetoothServer *bluetoothServer() const;
 
     MockTcpServer *mockTcpServer() const;
 
@@ -94,9 +93,9 @@ private:
     JsonRPCServerImplementation *m_jsonServer;
 
     BluetoothServer *m_bluetoothServer;
-    QHash<QString, TcpServer*> m_tcpServers;
-    QHash<QString, WebSocketServer*> m_webSocketServers;
-    QHash<QString, WebServer*> m_webServers;
+    QHash<QString, TcpServer *> m_tcpServers;
+    QHash<QString, WebSocketServer *> m_webSocketServers;
+    QHash<QString, WebServer *> m_webServers;
     QHash<QString, TunnelProxyServer *> m_tunnelProxyServers;
     MockTcpServer *m_mockTcpServer;
 
@@ -108,6 +107,6 @@ private:
     QSslCertificate m_certificate;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // SERVERMANAGER_H

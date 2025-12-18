@@ -23,12 +23,13 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "loggingcategories.h"
-#include <QFileInfo>
-#include <QDir>
 #include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
 #include <QMutex>
 
-QStringList& nymeaLoggingCategories() {
+QStringList &nymeaLoggingCategories()
+{
     static QStringList _nymeaLoggingCategories;
     return _nymeaLoggingCategories;
 }
@@ -68,7 +69,6 @@ NYMEA_LOGGING_CATEGORY(dcBluetoothServerTraffic, "BluetoothServerTraffic")
 NYMEA_LOGGING_CATEGORY(dcMqtt, "Mqtt")
 NYMEA_LOGGING_CATEGORY(dcTranslations, "Translations")
 NYMEA_LOGGING_CATEGORY(dcI2C, "I2C")
-
 
 static QFile s_logFile;
 static bool s_useColors;
@@ -119,7 +119,7 @@ void nymeaLogMessageHandler(QtMsgType type, const QMessageLogContext &context, c
         break;
     case QtFatalMsg:
         messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "%s F | %s: %s%s\n", s_useColors ? error : "", context.category, message.toUtf8().data(), s_useColors ? error: "");
+        fprintf(stdout, "%s F | %s: %s%s\n", s_useColors ? error : "", context.category, message.toUtf8().data(), s_useColors ? error : "");
         break;
     }
     fflush(stdout);

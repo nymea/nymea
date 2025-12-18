@@ -45,19 +45,19 @@
 #include <QStringList>
 
 #if defined(Q_OS_WIN)
-#  if !defined(QT_QTSERVICE_EXPORT) && !defined(QT_QTSERVICE_IMPORT)
-#    define QT_QTSERVICE_EXPORT
-#  elif defined(QT_QTSERVICE_IMPORT)
-#    if defined(QT_QTSERVICE_EXPORT)
-#      undef QT_QTSERVICE_EXPORT
-#    endif
-#    define QT_QTSERVICE_EXPORT __declspec(dllimport)
-#  elif defined(QT_QTSERVICE_EXPORT)
-#    undef QT_QTSERVICE_EXPORT
-#    define QT_QTSERVICE_EXPORT __declspec(dllexport)
-#  endif
+#if !defined(QT_QTSERVICE_EXPORT) && !defined(QT_QTSERVICE_IMPORT)
+#define QT_QTSERVICE_EXPORT
+#elif defined(QT_QTSERVICE_IMPORT)
+#if defined(QT_QTSERVICE_EXPORT)
+#undef QT_QTSERVICE_EXPORT
+#endif
+#define QT_QTSERVICE_EXPORT __declspec(dllimport)
+#elif defined(QT_QTSERVICE_EXPORT)
+#undef QT_QTSERVICE_EXPORT
+#define QT_QTSERVICE_EXPORT __declspec(dllexport)
+#endif
 #else
-#  define QT_QTSERVICE_EXPORT
+#define QT_QTSERVICE_EXPORT
 #endif
 
 class QtServiceControllerPrivate;
@@ -66,10 +66,7 @@ class QT_QTSERVICE_EXPORT QtServiceController
 {
     Q_DECLARE_PRIVATE(QtServiceController)
 public:
-    enum StartupType
-    {
-	    AutoStartup = 0, ManualStartup
-    };
+    enum StartupType { AutoStartup = 0, ManualStartup };
 
     QtServiceController(const QString &name);
     virtual ~QtServiceController();
@@ -82,8 +79,7 @@ public:
     StartupType startupType() const;
     QString serviceFilePath() const;
 
-    static bool install(const QString &serviceFilePath, const QString &account = QString(),
-                const QString &password = QString());
+    static bool install(const QString &serviceFilePath, const QString &account = QString(), const QString &password = QString());
     bool uninstall();
 
     bool start(const QStringList &arguments);
@@ -103,19 +99,9 @@ class QT_QTSERVICE_EXPORT QtServiceBase
 {
     Q_DECLARE_PRIVATE(QtServiceBase)
 public:
+    enum MessageType { Success = 0, Error, Warning, Information };
 
-    enum MessageType
-    {
-	Success = 0, Error, Warning, Information
-    };
-
-    enum ServiceFlag
-    {
-        Default = 0x00,
-        CanBeSuspended = 0x01,
-        CannotBeStopped = 0x02,
-        NeedsStopOnShutdown = 0x04
-    };
+    enum ServiceFlag { Default = 0x00, CanBeSuspended = 0x01, CannotBeStopped = 0x02, NeedsStopOnShutdown = 0x04 };
 
     Q_DECLARE_FLAGS(ServiceFlags, ServiceFlag)
 
@@ -135,13 +121,11 @@ public:
 
     int exec();
 
-    void logMessage(const QString &message, MessageType type = Success,
-                int id = 0, uint category = 0, const QByteArray &data = QByteArray());
+    void logMessage(const QString &message, MessageType type = Success, int id = 0, uint category = 0, const QByteArray &data = QByteArray());
 
     static QtServiceBase *instance();
 
 protected:
-
     virtual void start() = 0;
     virtual void stop();
     virtual void pause();
@@ -153,24 +137,22 @@ protected:
     virtual int executeApplication() = 0;
 
 private:
-
     friend class QtServiceSysPrivate;
     QtServiceBasePrivate *d_ptr;
 };
 
-template <typename Application>
+template<typename Application>
 class QtService : public QtServiceBase
 {
 public:
     QtService(int argc, char **argv, const QString &name)
-        : QtServiceBase(argc, argv, name), app(0)
-    {  }
-    ~QtService()
-    {
-    }
+        : QtServiceBase(argc, argv, name)
+        , app(0)
+    {}
+    ~QtService() {}
+
 protected:
-    Application *application() const
-    { return app; }
+    Application *application() const { return app; }
 
     virtual void createApplication(int &argc, char **argv)
     {
@@ -179,8 +161,7 @@ protected:
         Q_UNUSED(a);
     }
 
-    virtual int executeApplication()
-    { return Application::exec(); }
+    virtual int executeApplication() { return Application::exec(); }
 
 private:
     Application *app;

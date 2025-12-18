@@ -28,9 +28,9 @@
 #include <QDebug>
 #include <QObject>
 
-#include "libnymea.h"
 #include "coapoption.h"
 #include "coappdublock.h"
+#include "libnymea.h"
 
 // PDU = Protocol Data Unit
 
@@ -55,68 +55,48 @@ class LIBNYMEA_EXPORT CoapPdu : public QObject
     Q_ENUMS(ContentType)
 
 public:
-
-    enum MessageType {
-        Confirmable     = 0x00,
-        NonConfirmable  = 0x01,
-        Acknowledgement = 0x02,
-        Reset           = 0x03
-    };
+    enum MessageType { Confirmable = 0x00, NonConfirmable = 0x01, Acknowledgement = 0x02, Reset = 0x03 };
     Q_ENUM(MessageType)
 
     // Methods:       https://tools.ietf.org/html/rfc7252#section-5.8
     // Respond codes: https://tools.ietf.org/html/rfc7252#section-12.1.2
     enum ReqRspCode {
-        Empty                    = 0x00,  // Empty message (ping)
-        Get                      = 0x01,  // Method GET
-        Post                     = 0x02,  // Method POST
-        Put                      = 0x03,  // Method PUT
-        Delete                   = 0x04,  // Method DELETE
-        Created                  = 0x41,  // 2.01
-        Deleted                  = 0x42,  // 2.02
-        Valid                    = 0x43,  // 2.03
-        Changed                  = 0x44,  // 2.04
-        Content                  = 0x45,  // 2.05
-        Continue                 = 0x5f,  // 2.31 (Block)
-        BadRequest               = 0x80,  // 4.00
-        Unauthorized             = 0x81,  // 4.01
-        BadOption                = 0x82,  // 4.02
-        Forbidden                = 0x83,  // 4.03
-        NotFound                 = 0x84,  // 4.04
-        MethodNotAllowed         = 0x85,  // 4.05
-        NotAcceptable            = 0x86,  // 4.06
-        RequestEntityIncomplete  = 0x88,  // 4.08 (Block)
-        PreconditionFailed       = 0x8c,  // 4.12
-        RequestEntityTooLarge    = 0x8d,  // 4.13 (Block)
-        UnsupportedContentFormat = 0x8f,  // 4.15
-        InternalServerError      = 0xa0,  // 5.00
-        NotImplemented           = 0xa1,  // 5.01
-        BadGateway               = 0xa2,  // 5.02
-        ServiceUnavailabl        = 0xa3,  // 5.03
-        GatewayTimeout           = 0xa4,  // 5.04
-        ProxyingNotSupported     = 0xa5   // 5.05
+        Empty = 0x00,                    // Empty message (ping)
+        Get = 0x01,                      // Method GET
+        Post = 0x02,                     // Method POST
+        Put = 0x03,                      // Method PUT
+        Delete = 0x04,                   // Method DELETE
+        Created = 0x41,                  // 2.01
+        Deleted = 0x42,                  // 2.02
+        Valid = 0x43,                    // 2.03
+        Changed = 0x44,                  // 2.04
+        Content = 0x45,                  // 2.05
+        Continue = 0x5f,                 // 2.31 (Block)
+        BadRequest = 0x80,               // 4.00
+        Unauthorized = 0x81,             // 4.01
+        BadOption = 0x82,                // 4.02
+        Forbidden = 0x83,                // 4.03
+        NotFound = 0x84,                 // 4.04
+        MethodNotAllowed = 0x85,         // 4.05
+        NotAcceptable = 0x86,            // 4.06
+        RequestEntityIncomplete = 0x88,  // 4.08 (Block)
+        PreconditionFailed = 0x8c,       // 4.12
+        RequestEntityTooLarge = 0x8d,    // 4.13 (Block)
+        UnsupportedContentFormat = 0x8f, // 4.15
+        InternalServerError = 0xa0,      // 5.00
+        NotImplemented = 0xa1,           // 5.01
+        BadGateway = 0xa2,               // 5.02
+        ServiceUnavailabl = 0xa3,        // 5.03
+        GatewayTimeout = 0xa4,           // 5.04
+        ProxyingNotSupported = 0xa5      // 5.05
     };
     Q_ENUM(ReqRspCode)
 
     // https://tools.ietf.org/html/rfc7252#section-12.3
-    enum ContentType {
-        TextPlain        = 0,
-        ApplicationLink  = 40,
-        ApplicationXml   = 41,
-        ApplicationOctet = 42,
-        ApplicationExi   = 47,
-        ApplicationJson  = 50
-    };
+    enum ContentType { TextPlain = 0, ApplicationLink = 40, ApplicationXml = 41, ApplicationOctet = 42, ApplicationExi = 47, ApplicationJson = 50 };
     Q_ENUM(ContentType)
 
-    enum Error {
-        NoError,
-        InvalidTokenError,
-        InvalidPduSizeError,
-        InvalidOptionDeltaError,
-        InvalidOptionLengthError,
-        UnknownOptionError
-    };
+    enum Error { NoError, InvalidTokenError, InvalidPduSizeError, InvalidOptionDeltaError, InvalidOptionLengthError, UnknownOptionError };
     Q_ENUM(Error)
 
     CoapPdu(QObject *parent = 0);

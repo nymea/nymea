@@ -44,8 +44,8 @@
 namespace nymeaserver {
 
 /*! Constructs a new \l{TimeManager} with the given \a timeZone and \a parent. */
-TimeManager::TimeManager(QObject *parent) :
-    QObject(parent)
+TimeManager::TimeManager(QObject *parent)
+    : QObject(parent)
 {
     m_timerId = startTimer(1000, Qt::VeryCoarseTimer);
 }
@@ -92,4 +92,4 @@ void TimeManager::timerEvent(QTimerEvent *event)
     }
 }
 
-}
+} // namespace nymeaserver

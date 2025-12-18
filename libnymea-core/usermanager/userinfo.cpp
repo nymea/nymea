@@ -28,16 +28,11 @@
 
 namespace nymeaserver {
 
-UserInfo::UserInfo()
-{
+UserInfo::UserInfo() {}
 
-}
-
-UserInfo::UserInfo(const QString &username):
-    m_username(username)
-{
-
-}
+UserInfo::UserInfo(const QString &username)
+    : m_username(username)
+{}
 
 QString UserInfo::username() const
 {
@@ -89,4 +84,4 @@ void UserInfoList::put(const QVariant &variant)
     append(variant.value<UserInfo>());
 }
 
-}
+} // namespace nymeaserver

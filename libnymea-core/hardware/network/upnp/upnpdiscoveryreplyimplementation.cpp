@@ -28,13 +28,11 @@
 
 namespace nymeaserver {
 
-UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent) :
-    UpnpDiscoveryReply(parent),
-    m_searchTarget(searchTarget),
-    m_userAgent(userAgent)
-{
-
-}
+UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent)
+    : UpnpDiscoveryReply(parent)
+    , m_searchTarget(searchTarget)
+    , m_userAgent(userAgent)
+{}
 
 QString UpnpDiscoveryReplyImplementation::searchTarget() const
 {
@@ -61,7 +59,6 @@ QList<UpnpDeviceDescriptor> UpnpDiscoveryReplyImplementation::deviceDescriptors(
     return m_deviceDescriptors;
 }
 
-
 void UpnpDiscoveryReplyImplementation::setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors)
 {
     m_deviceDescriptors = deviceDescriptors;
@@ -82,4 +79,4 @@ void UpnpDiscoveryReplyImplementation::setFinished()
     QTimer::singleShot(0, this, &UpnpDiscoveryReplyImplementation::finished);
 }
 
-}
+} // namespace nymeaserver

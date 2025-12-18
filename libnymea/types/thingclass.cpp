@@ -63,20 +63,17 @@
         During the setup, a button has to be pushed in order to pair the \l{Device}.
 */
 
-
 #include "thingclass.h"
 
 /*! Constructs a DeviceClass with the give \a pluginId ,\a vendorId and \a id .
     When implementing a plugin, create a DeviceClass for each device you support.
     Generate a new uuid (e.g. uuidgen) and hardode it into the plugin. The id
     should never change or it will appear as a new DeviceClass in the system. */
-ThingClass::ThingClass(const PluginId &pluginId, const VendorId &vendorId, const ThingClassId &id):
-    m_id(id),
-    m_vendorId(vendorId),
-    m_pluginId(pluginId)
-{
-
-}
+ThingClass::ThingClass(const PluginId &pluginId, const VendorId &vendorId, const ThingClassId &id)
+    : m_id(id)
+    , m_vendorId(vendorId)
+    , m_pluginId(pluginId)
+{}
 
 /*! Returns the id of this \l{DeviceClass}. */
 ThingClassId ThingClass::id() const
@@ -401,14 +398,11 @@ QDebug operator<<(QDebug dbg, const ThingClass &thingClass)
     return dbg;
 }
 
-ThingClasses::ThingClasses()
-{
+ThingClasses::ThingClasses() {}
 
-}
-
-ThingClasses::ThingClasses(const QList<ThingClass> &other): QList<ThingClass> (other)
-{
-}
+ThingClasses::ThingClasses(const QList<ThingClass> &other)
+    : QList<ThingClass>(other)
+{}
 
 ThingClass ThingClasses::findById(const ThingClassId &id) const
 {

@@ -35,24 +35,13 @@ class DebugHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    enum DebugError {
-        DebugErrorNoError
-    };
+    enum DebugError { DebugErrorNoError };
     Q_ENUM(DebugError)
 
-    enum LoggingCategoryType {
-        LoggingCategoryTypeSystem,
-        LoggingCategoryTypePlugin,
-        LoggingCategoryTypeCustom
-    };
+    enum LoggingCategoryType { LoggingCategoryTypeSystem, LoggingCategoryTypePlugin, LoggingCategoryTypeCustom };
     Q_ENUM(LoggingCategoryType)
 
-    enum LoggingLevel {
-        LoggingLevelCritical,
-        LoggingLevelWarning,
-        LoggingLevelInfo,
-        LoggingLevelDebug
-    };
+    enum LoggingLevel { LoggingLevelCritical, LoggingLevelWarning, LoggingLevelInfo, LoggingLevelDebug };
     Q_ENUM(LoggingLevel)
 
     explicit DebugHandler(QObject *parent = nullptr);
@@ -60,14 +49,13 @@ public:
     QString name() const override;
 
 public slots:
-    JsonReply* GetLoggingCategories(const QVariantMap &params);
-    JsonReply* SetLoggingCategoryLevel(const QVariantMap &params);
+    JsonReply *GetLoggingCategories(const QVariantMap &params);
+    JsonReply *SetLoggingCategoryLevel(const QVariantMap &params);
 
 signals:
     void LoggingCategoryLevelChanged(const QVariantMap &params);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // DEBUGHANDLER_H

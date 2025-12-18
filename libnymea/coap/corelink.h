@@ -25,11 +25,11 @@
 #ifndef CORELINK_H
 #define CORELINK_H
 
-#include <QObject>
 #include <QDebug>
+#include <QObject>
 
-#include "libnymea.h"
 #include "coappdu.h"
+#include "libnymea.h"
 
 class LIBNYMEA_EXPORT CoreLink
 {
@@ -67,7 +67,6 @@ private:
     CoapPdu::ContentType m_contentType;
     int m_maximumSize;
     bool m_observable;
-
 };
 
 QDebug operator<<(QDebug debug, const CoreLink &link);

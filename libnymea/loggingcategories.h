@@ -25,15 +25,18 @@
 #ifndef LOGGINGCATEGORYS_H
 #define LOGGINGCATEGORYS_H
 
-#include <QLoggingCategory>
 #include <QDebug>
+#include <QLoggingCategory>
 
-QStringList& nymeaLoggingCategories();
+QStringList &nymeaLoggingCategories();
 
 #define NYMEA_LOGGING_CATEGORY(name, string) \
-    class NymeaLoggingCategory##name: public QLoggingCategory { \
+    class NymeaLoggingCategory##name : public QLoggingCategory \
+    { \
     public: \
-        NymeaLoggingCategory##name(): QLoggingCategory(string) { \
+        NymeaLoggingCategory##name() \
+            : QLoggingCategory(string) \
+        { \
             if (!nymeaLoggingCategories().contains(string)) { \
                 nymeaLoggingCategories().append(string); \
             } \
@@ -43,8 +46,7 @@ QStringList& nymeaLoggingCategories();
     const QLoggingCategory &name() \
     { \
         return s_##name; \
-    } \
-
+    }
 
 // FIXME: Those should eventually disappear from here
 Q_DECLARE_LOGGING_CATEGORY(dcThing)
@@ -83,7 +85,6 @@ Q_DECLARE_LOGGING_CATEGORY(dcTranslations)
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 Q_DECLARE_LOGGING_CATEGORY(dcI2C)
 Q_DECLARE_LOGGING_CATEGORY(dcJsIntegrations)
-
 
 /*
   Installs a nymea log message handler in the system.

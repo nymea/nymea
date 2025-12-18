@@ -25,10 +25,10 @@
 #ifndef RADIO433BRENNENSTUHLGATEWAY_H
 #define RADIO433BRENNENSTUHLGATEWAY_H
 
-#include <QObject>
-#include <QUdpSocket>
 #include <QHostAddress>
+#include <QObject>
 #include <QTimer>
+#include <QUdpSocket>
 
 #include <libnymea.h>
 
@@ -65,6 +65,6 @@ private slots:
     void timeout();
 };
 
-}
+} // namespace nymeaserver
 
 #endif // RADIO433BRENNENSTUHLGATEWAY_H

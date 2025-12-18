@@ -26,23 +26,16 @@
 #define HTTPREQUEST_H
 
 #include <QByteArray>
-#include <QUrlQuery>
-#include <QString>
 #include <QHash>
+#include <QString>
+#include <QUrlQuery>
 
 namespace nymeaserver {
 
 class HttpRequest
 {
 public:
-    enum RequestMethod {
-        Get,
-        Post,
-        Put,
-        Delete,
-        Options,
-        Unhandled
-    };
+    enum RequestMethod { Get, Post, Put, Delete, Options, Unhandled };
 
     HttpRequest();
     HttpRequest(QByteArray rawData);
@@ -86,7 +79,7 @@ private:
     RequestMethod getRequestMethodType(const QString &methodString);
 };
 
-QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
+QDebug operator<<(QDebug debug, const HttpRequest &httpRequest);
 
-}
+} // namespace nymeaserver
 #endif // HTTPREQUEST_H

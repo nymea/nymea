@@ -25,8 +25,8 @@
 #ifndef ZIGBEEADAPTER_H
 #define ZIGBEEADAPTER_H
 
-#include <QObject>
 #include <QDebug>
+#include <QObject>
 
 #include "zigbee.h"
 
@@ -93,10 +93,9 @@ private:
 
 QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter);
 
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapter)
 Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapter::ZigbeeBackendType)
 
 #endif // ZIGBEEADAPTER_H
-

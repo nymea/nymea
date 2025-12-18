@@ -29,11 +29,11 @@
 #include <QTimer>
 
 #include "hardware/zwave/zwave.h"
+#include "hardware/zwave/zwavenode.h"
 #include "hardware/zwave/zwavereply.h"
 #include "zwaveadapter.h"
-#include "zwavenetwork.h"
 #include "zwavedevicedatabase.h"
-#include "hardware/zwave/zwavenode.h"
+#include "zwavenetwork.h"
 
 #include "hardware/serialport/serialportmonitor.h"
 
@@ -42,16 +42,13 @@ Q_DECLARE_LOGGING_CATEGORY(dcZWave)
 
 class ZWaveBackend;
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 class ZWaveNodeImplementation;
 
 class ZWaveManager : public QObject
 {
     Q_OBJECT
-public:    
-
-
+public:
     explicit ZWaveManager(SerialPortMonitor *serialPortMonitor, QObject *parent = nullptr);
     ~ZWaveManager();
 
@@ -61,13 +58,13 @@ public:
 
     SerialPorts serialPorts() const;
     ZWaveNetworks networks() const;
-    ZWaveNetwork* network(const QUuid &networkUuid) const;
+    ZWaveNetwork *network(const QUuid &networkUuid) const;
 
     QPair<ZWave::ZWaveError, QUuid> createNetwork(const QString &serialPort);
     ZWave::ZWaveError removeNetwork(const QUuid &networkUuid);
     ZWave::ZWaveError factoryResetNetwork(const QUuid &networkUuid);
 
-    ZWaveReply* addNode(const QUuid &networkUuid);
+    ZWaveReply *addNode(const QUuid &networkUuid);
     ZWaveReply *removeNode(const QUuid &networkUuid);
     ZWaveReply *removeFailedNode(const QUuid &networkUuid, quint8 nodeId);
     ZWaveReply *cancelPendingOperation(const QUuid &networkUuid);
@@ -112,20 +109,19 @@ private slots:
     void onValueChanged(const QUuid &networkUuid, quint8 nodeId, const ZWaveValue &value);
     void onValueRemoved(const QUuid &networkUuid, quint8 nodeId, quint64 valueId);
 
-
 private:
     SerialPortMonitor *m_serialPortMonitor = nullptr;
 
     ZWaveBackend *m_backend = nullptr;
 
-    QHash<QUuid, ZWaveNetwork*> m_networks;
+    QHash<QUuid, ZWaveNetwork *> m_networks;
     ZWaveAdapters m_adapters;
 
-    QHash<QUuid, ZWaveDeviceDatabase*> m_dbs;
+    QHash<QUuid, ZWaveDeviceDatabase *> m_dbs;
 
     QTimer m_statsTimer;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZWAVEMANAGER_H

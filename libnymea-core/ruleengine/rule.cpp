@@ -35,7 +35,6 @@
     \sa EventDescriptor, State, RuleAction
 */
 
-
 #include "rule.h"
 #include "loggingcategories.h"
 
@@ -44,22 +43,20 @@
 namespace nymeaserver {
 
 /*! Constructs an empty, invalid \l{Rule}. */
-Rule::Rule():
-    m_id(RuleId()),
-    m_name(QString()),
-    m_timeDescriptor(TimeDescriptor()),
-    m_stateEvaluator(StateEvaluator()),
-    m_eventDescriptors(QList<EventDescriptor>()),
-    m_actions(QList<RuleAction>()),
-    m_exitActions(QList<RuleAction>()),
-    m_enabled(true),
-    m_active(false),
-    m_statesActive(false),
-    m_timeActive(false),
-    m_executable(false)
-{
-
-}
+Rule::Rule()
+    : m_id(RuleId())
+    , m_name(QString())
+    , m_timeDescriptor(TimeDescriptor())
+    , m_stateEvaluator(StateEvaluator())
+    , m_eventDescriptors(QList<EventDescriptor>())
+    , m_actions(QList<RuleAction>())
+    , m_exitActions(QList<RuleAction>())
+    , m_enabled(true)
+    , m_active(false)
+    , m_statesActive(false)
+    , m_timeActive(false)
+    , m_executable(false)
+{}
 
 /*! Returns the id of this \l{Rule}. */
 RuleId Rule::id() const
@@ -167,7 +164,8 @@ void Rule::setExitActions(const RuleActions exitActions)
 }
 
 /*! Returns true if the rule is enabled. */
-bool Rule::enabled() const {
+bool Rule::enabled() const
+{
     return m_enabled;
 }
 
@@ -251,15 +249,11 @@ QDebug operator<<(QDebug dbg, const Rule &rule)
     return dbg;
 }
 
-Rules::Rules()
-{
+Rules::Rules() {}
 
-}
-
-Rules::Rules(const QList<Rule> &other): QList<Rule>(other)
-{
-
-}
+Rules::Rules(const QList<Rule> &other)
+    : QList<Rule>(other)
+{}
 
 QVariant Rules::get(int index) const
 {
@@ -271,4 +265,4 @@ void Rules::put(const QVariant &variant)
     append(variant.value<Rule>());
 }
 
-}
+} // namespace nymeaserver

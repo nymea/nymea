@@ -35,7 +35,6 @@ public:
     explicit ScriptThingsFilter(QObject *parent = nullptr);
 
 signals:
-
 };
 
 #endif // SCRIPTTHINGSFILTER_H

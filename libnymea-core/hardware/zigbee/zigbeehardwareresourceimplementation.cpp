@@ -23,9 +23,9 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zigbeehardwareresourceimplementation.h"
+#include "hardware/zigbee/zigbeehandler.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
-#include "hardware/zigbee/zigbeehandler.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -36,9 +36,9 @@ NYMEA_LOGGING_CATEGORY(dcZigbeeResource, "ZigbeeResource")
 
 namespace nymeaserver {
 
-ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(ZigbeeManager *zigbeeManager, QObject *parent) :
-    ZigbeeHardwareResource(parent),
-    m_zigbeeManager(zigbeeManager)
+ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(ZigbeeManager *zigbeeManager, QObject *parent)
+    : ZigbeeHardwareResource(parent)
+    , m_zigbeeManager(zigbeeManager)
 {
     connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeNetworkChanged);
     connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded);
@@ -55,7 +55,6 @@ bool ZigbeeHardwareResourceImplementation::enabled() const
 {
     return m_enabled;
 }
-
 
 void ZigbeeHardwareResourceImplementation::registerHandler(ZigbeeHandler *handler, HandlerType type)
 {
@@ -83,7 +82,8 @@ ZigbeeNode *ZigbeeHardwareResourceImplementation::claimNode(ZigbeeHandler *handl
     }
 
     if (m_nodeHandlers.contains(node) && m_nodeHandlers.value(node) != handler) {
-        qCWarning(dcZigbeeResource()) << "Node with address" << extendedAddress << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name() << "). Not allowing node to be reclaimed.";
+        qCWarning(dcZigbeeResource()) << "Node with address" << extendedAddress << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name()
+                                      << "). Not allowing node to be reclaimed.";
         return nullptr;
     }
 
@@ -246,4 +246,4 @@ void ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved(const QUuid &netw
     }
 }
 
-}
+} // namespace nymeaserver

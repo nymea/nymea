@@ -22,16 +22,16 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
+#include "nymeatestbase.h"
 
 #include "integrations/thingdiscoveryinfo.h"
 #include "integrations/thingsetupinfo.h"
 
-#include "servers/mocktcpserver.h"
-#include "jsonrpc/integrationshandler.h"
 #include "../plugins/mock/extern-plugininfo.h"
+#include "jsonrpc/integrationshandler.h"
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 
@@ -42,9 +42,7 @@ class TestIntegrations : public NymeaTestBase
 private:
     ThingId m_mockThingAsyncId;
 
-    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
-        verifyError(response, "thingError", enumValueName(error));
-    }
+    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) { verifyError(response, "thingError", enumValueName(error)); }
 
 private slots:
     void initTestCase();
@@ -160,8 +158,7 @@ void TestIntegrations::initTestCase()
                                      "Mock.debug=true\n"
                                      "Translations.debug=true\n"
                                      "PythonIntegrations.debug=true\n"
-                                     "LogEngine.debug=true\n"
-                                     );
+                                     "LogEngine.debug=true\n");
 
     // Adding an async mock to be used in tests below
     QVariantMap params;
@@ -233,7 +230,7 @@ void TestIntegrations::setPluginConfig_data()
     QTest::addColumn<Thing::ThingError>("error");
 
     QTest::newRow("valid") << mockPluginId << QVariant(13) << Thing::ThingErrorNoError;
-    QTest::newRow("invalid plugin") << PluginId::createPluginId() << QVariant(13) <<  Thing::ThingErrorPluginNotFound;
+    QTest::newRow("invalid plugin") << PluginId::createPluginId() << QVariant(13) << Thing::ThingErrorPluginNotFound;
     QTest::newRow("too big") << mockPluginId << QVariant(130) << Thing::ThingErrorInvalidParameter;
     QTest::newRow("too small") << mockPluginId << QVariant(-13) << Thing::ThingErrorInvalidParameter;
     QTest::newRow("wrong type") << mockPluginId << QVariant("wrontType") << Thing::ThingErrorInvalidParameter;
@@ -263,7 +260,9 @@ void TestIntegrations::setPluginConfig()
         response = injectAndWait("Integrations.GetPluginConfiguration", params);
         verifyThingError(response);
         qDebug() << value << response.toMap().value("params").toMap().value("configuration").toList().first();
-        QVERIFY2(ParamTypeId(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("paramTypeId").toString()) == mockPluginConfigParamIntParamTypeId, "Value not set correctly");
+        QVERIFY2(ParamTypeId(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("paramTypeId").toString())
+                     == mockPluginConfigParamIntParamTypeId,
+                 "Value not set correctly");
         QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("value") == value, "Value not set correctly");
     }
 }
@@ -367,14 +366,18 @@ void TestIntegrations::addThing_data()
 
     QVariantList thingParams;
 
-    thingParams.clear(); thingParams << httpportParam;
+    thingParams.clear();
+    thingParams << httpportParam;
     QTest::newRow("User, JustAdd") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
-    thingParams.clear(); thingParams << httpportParam << asyncParam;
+    thingParams.clear();
+    thingParams << httpportParam << asyncParam;
     QTest::newRow("User, JustAdd, Async") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
     QTest::newRow("Invalid ThingClassId") << ThingClassId::createThingClassId() << thingParams << true << Thing::ThingErrorThingClassNotFound;
-    thingParams.clear(); thingParams << httpportParam << brokenParam;
+    thingParams.clear();
+    thingParams << httpportParam << brokenParam;
     QTest::newRow("Setup failure") << mockThingClassId << thingParams << true << Thing::ThingErrorSetupFailed;
-    thingParams.clear(); thingParams << httpportParam << asyncParam << brokenParam;
+    thingParams.clear();
+    thingParams << httpportParam << asyncParam << brokenParam;
     QTest::newRow("Setup failure, Async") << mockThingClassId << thingParams << true << Thing::ThingErrorSetupFailed;
 
     QVariantList invalidThingParams;
@@ -392,12 +395,13 @@ void TestIntegrations::addThing_data()
     invalidThingParams.append(fakeparam2);
     QTest::newRow("User, JustAdd, wrong param") << mockThingClassId << invalidThingParams << true << Thing::ThingErrorInvalidParameter;
 
-    thingParams.clear(); thingParams << httpportParam << fakeparam;
+    thingParams.clear();
+    thingParams << httpportParam << fakeparam;
     QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << thingParams << false << Thing::ThingErrorInvalidParameter;
 
-    thingParams.clear(); thingParams << httpportParam << fakeparam2;
+    thingParams.clear();
+    thingParams << httpportParam << fakeparam2;
     QTest::newRow("USer, JustAdd, duplicate param") << mockThingClassId << thingParams << true << Thing::ThingErrorInvalidParameter;
-
 }
 
 void TestIntegrations::addThing()
@@ -442,12 +446,14 @@ void TestIntegrations::thingAddedRemovedNotifications()
     httpportParam.insert("value", 5678);
     thingParams.append(httpportParam);
 
-    QVariantMap params; clientSpy.clear();
+    QVariantMap params;
+    clientSpy.clear();
     params.insert("thingClassId", mockThingClassId);
     params.insert("name", "Mocked thing");
     params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     QVariantMap notificationThingMap = checkNotification(clientSpy, "Integrations.ThingAdded").toMap().value("params").toMap().value("thing").toMap();
 
@@ -464,10 +470,13 @@ void TestIntegrations::thingAddedRemovedNotifications()
     }
 
     // now remove the thong and check the thing removed notification
-    params.clear(); response.clear(); clientSpy.clear();
+    params.clear();
+    response.clear();
+    clientSpy.clear();
     params.insert("thingId", thingId);
     response = injectAndWait("Integrations.RemoveThing", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     checkNotification(clientSpy, "Integrations.ThingRemoved");
 
@@ -497,7 +506,8 @@ void TestIntegrations::thingChangedNotifications()
     QVariant response = injectAndWait("Integrations.AddThing", params);
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     QVariantMap notificationThingMap = checkNotification(clientSpy, "Integrations.ThingAdded").toMap().value("params").toMap().value("thing").toMap();
 
@@ -517,11 +527,14 @@ void TestIntegrations::thingChangedNotifications()
     newHttpportParam.insert("value", 45473);
     newThingParams.append(newHttpportParam);
 
-    params.clear(); response.clear(); clientSpy.clear();
+    params.clear();
+    response.clear();
+    clientSpy.clear();
     params.insert("thingId", thingId);
     params.insert("thingParams", newThingParams);
     response = injectAndWait("Integrations.ReconfigureThing", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     QVariantMap reconfigureThingNotificationMap = checkNotification(clientSpy, "Integrations.ThingChanged").toMap().value("params").toMap().value("thing").toMap();
     QCOMPARE(reconfigureThingNotificationMap.value("thingClassId").toUuid(), QUuid(mockThingClassId));
@@ -534,11 +547,14 @@ void TestIntegrations::thingChangedNotifications()
 
     // EDIT thing name
     QString thingName = "Test thing 1234";
-    params.clear(); response.clear(); clientSpy.clear();
+    params.clear();
+    response.clear();
+    clientSpy.clear();
     params.insert("thingId", thingId);
     params.insert("name", thingName);
     response = injectAndWait("Integrations.EditThing", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     QVariantMap editThingNotificationMap = checkNotification(clientSpy, "Integrations.ThingChanged").toMap().value("params").toMap().value("thing").toMap();
     QCOMPARE(editThingNotificationMap.value("thingClassId").toUuid(), QUuid(mockThingClassId));
@@ -547,10 +563,13 @@ void TestIntegrations::thingChangedNotifications()
 
     // REMOVE
     // now remove the thing and check the thing removed notification
-    params.clear(); response.clear(); clientSpy.clear();
+    params.clear();
+    response.clear();
+    clientSpy.clear();
     params.insert("thingId", thingId);
     response = injectAndWait("Integrations.RemoveThing", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
+    if (clientSpy.count() == 0)
+        clientSpy.wait();
     verifyThingError(response);
     checkNotification(clientSpy, "Integrations.ThingRemoved");
     checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
@@ -642,7 +661,8 @@ void TestIntegrations::storedThings()
     response = injectAndWait("Logging.GetLogEntries", params);
     QVERIFY2(response.toMap().value("params").toMap().contains("logEntries"), "Huh? GetLogEntries failed!");
     qCDebug(dcTests()) << "log response:" << response.toMap().value("params").toMap().value("logEntries");
-    QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().isEmpty(), "There are state changed events after a core restart even though states did not change!");
+    QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().isEmpty(),
+             "There are state changed events after a core restart even though states did not change!");
 
     params.clear();
     params.insert("thingId", addedThingId);
@@ -657,11 +677,10 @@ void TestIntegrations::stateCache()
     QVERIFY2(mockThingClass.getStateType(mockIntStateTypeId).cached(), "Mock int state is not cached (required to be true for this test)");
     QVERIFY2(!mockThingClass.getStateType(mockBoolStateTypeId).cached(), "Mock bool state is cached (required to be false for this test)");
 
-    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
+    Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
     int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, &QNetworkAccessManager::finished);
-
 
     // First set the state values to something that is *not* the default
     int oldIntValue = mockThingClass.getStateType(mockIntStateTypeId).defaultValue().toInt();
@@ -804,7 +823,6 @@ void TestIntegrations::addPushButtonThings()
     verifyThingError(response, Thing::ThingErrorNoError);
     QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
 
-
     // Pair thing
     ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
@@ -935,10 +953,8 @@ void TestIntegrations::parentChildThings()
             }
         }
     }
-    QVERIFY2(!childId.isNull(), QString("Could not find child:\nParent ID:%1\nResponse:%2")
-                                    .arg(parentId.toString())
-                                    .arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson()))
-                                    .toUtf8());
+    QVERIFY2(!childId.isNull(),
+             QString("Could not find child:\nParent ID:%1\nResponse:%2").arg(parentId.toString()).arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson())).toUtf8());
 
     // Try to remove the child
     params.clear();
@@ -986,10 +1002,13 @@ void TestIntegrations::parentChildThings()
 void TestIntegrations::getActionTypes_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
-    QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
+    QTest::addColumn<QList<ActionTypeId>>("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                      << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId << mockPressButtonActionTypeId);
+                                      << (QList<ActionTypeId>()
+                                          << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId
+                                          << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId
+                                          << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId << mockPressButtonActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -1268,7 +1287,6 @@ void TestIntegrations::testThingSettings()
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not persisting restart");
-
 }
 
 void TestIntegrations::reconfigureThings_data()
@@ -1295,7 +1313,6 @@ void TestIntegrations::reconfigureThings_data()
     asyncAndPortChangeThingParams.append(asyncParamDifferent);
     asyncAndPortChangeThingParams.append(httpportParamDifferent);
 
-
     QVariantList changeAllWritableThingParams;
     changeAllWritableThingParams.append(asyncParamDifferent);
     changeAllWritableThingParams.append(httpportParamDifferent);
@@ -1305,7 +1322,7 @@ void TestIntegrations::reconfigureThings_data()
     QTest::addColumn<Thing::ThingError>("thingError");
 
     QTest::newRow("valid - change async param") << false << asyncChangeThingParams << Thing::ThingErrorParameterNotWritable;
-    QTest::newRow("valid - change httpport param") << false <<  httpportChangeThingParams << Thing::ThingErrorNoError;
+    QTest::newRow("valid - change httpport param") << false << httpportChangeThingParams << Thing::ThingErrorNoError;
     QTest::newRow("invalid - change httpport and async param") << false << asyncAndPortChangeThingParams << Thing::ThingErrorParameterNotWritable;
     QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableThingParams << Thing::ThingErrorParameterNotWritable;
 }
@@ -1435,7 +1452,6 @@ void TestIntegrations::reconfigureThings()
     verifyThingError(response);
 }
 
-
 void TestIntegrations::reconfigureByDiscovery_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
@@ -1521,7 +1537,8 @@ void TestIntegrations::reconfigureByDiscovery()
             break;
         }
     }
-    QVERIFY2(!descriptorId.isNull(), QString("Tjhing %1 not found in discovery results: %2").arg(thingId.toString()).arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson())).toUtf8());
+    QVERIFY2(!descriptorId.isNull(),
+             QString("Tjhing %1 not found in discovery results: %2").arg(thingId.toString()).arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson())).toUtf8());
 
     qCDebug(dcTests()) << "Reconfiguring...";
 
@@ -1673,7 +1690,6 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
     pairingTransactionId = PairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
     qCDebug(dcTests()) << "PairThing result:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
 
-
     qCDebug(dcTests()) << "Confirming pairing for transaction ID" << pairingTransactionId;
     params.clear();
     response.clear();
@@ -1684,7 +1700,6 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
 
     thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
-
 }
 
 void TestIntegrations::reconfigureAutoThing()
@@ -1692,7 +1707,7 @@ void TestIntegrations::reconfigureAutoThing()
     qCDebug(dcTests()) << "Reconfigure auto thing";
 
     // Get the auto mock
-    QList<Thing*> things  = NymeaCore::instance()->thingManager()->findConfiguredThings(autoMockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(autoMockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one auto-created Mock for this test");
 
     // Get current auto mock infos
@@ -1714,7 +1729,6 @@ void TestIntegrations::reconfigureAutoThing()
     // Note: reconfigure auto mock increases the http port by 1
     QCOMPARE(newPort, currentPort + 1);
 }
-
 
 void TestIntegrations::removeThing_data()
 {
@@ -1760,7 +1774,7 @@ void TestIntegrations::removeAutoThing()
 
     // First try to make a manually created device disappear. It must not go away
 
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     int oldCount = things.count();
     QVERIFY2(oldCount > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
@@ -1820,7 +1834,6 @@ void TestIntegrations::testBrowsing()
     QVERIFY2(ThingClassId(mockThingClass.value("id").toString()) == mockThingClassId, "Could not find mock device");
     QCOMPARE(mockThingClass.value("browsable").toBool(), true);
 
-
     // Browse it
     QVariantMap params;
     params.insert("thingId", thingId);
@@ -1842,8 +1855,6 @@ void TestIntegrations::testBrowsing()
     browserEntries = response.toMap().value("params").toMap().value("items").toList();
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), QString("ThingErrorItemNotFound"));
     QCOMPARE(browserEntries.count(), 0);
-
-
 }
 
 void TestIntegrations::discoverThingsParenting()
@@ -1855,7 +1866,6 @@ void TestIntegrations::discoverThingsParenting()
         spy.wait();
     }
     QVERIFY(discoveryInfo->thingDescriptors().count() == 0);
-
 
     // Now create a mock parent by discovering...
     discoveryInfo = NymeaCore::instance()->thingManager()->discoverThings(parentMockThingClassId, ParamList());
@@ -1877,10 +1887,9 @@ void TestIntegrations::discoverThingsParenting()
     addSpy.wait();
     QCOMPARE(addSpy.count(), 2); // Mock parent will also auto-create a child instantly
 
-    Thing *parentThing = addSpy.at(0).first().value<Thing*>();
+    Thing *parentThing = addSpy.at(0).first().value<Thing *>();
     qCDebug(dcTests()) << "Added parent:" << parentThing->name();
     QVERIFY(parentThing->thingClassId() == parentMockThingClassId);
-
 
     // Ok we have our parent device, let's discover for childs again
     discoveryInfo = NymeaCore::instance()->thingManager()->discoverThings(childMockThingClassId, ParamList());
@@ -1902,7 +1911,7 @@ void TestIntegrations::discoverThingsParenting()
 
     QCOMPARE(addSpy.count(), 1);
 
-    Thing *childThing = addSpy.at(0).first().value<Thing*>();
+    Thing *childThing = addSpy.at(0).first().value<Thing *>();
     qCDebug(dcTests()) << "Added child:" << childThing->name();
     QVERIFY(childThing->thingClassId() == childMockThingClassId);
 
@@ -1911,7 +1920,6 @@ void TestIntegrations::discoverThingsParenting()
     Thing::ThingError ret = NymeaCore::instance()->thingManager()->removeConfiguredThing(parentThing->id());
     QCOMPARE(ret, Thing::ThingErrorNoError);
     QCOMPARE(removeSpy.count(), 3); // The parent, the auto-mock and the discovered mock
-
 }
 
 void TestIntegrations::testExecuteBrowserItem_data()
@@ -1969,8 +1977,8 @@ void TestIntegrations::testExecuteBrowserItemAction()
     }
     QVERIFY2(item002.value("id").toString() == QString("002"), "Item with context actions not found");
     QVERIFY2(item002.value("actionTypeIds").toList().count() > 0, "Item doesn't have actionTypeIds");
-    QVERIFY2(ActionTypeId(item002.value("actionTypeIds").toList().first().toString()) == mockAddToFavoritesBrowserItemActionTypeId, "AddToFavorites action type id not found in item");
-
+    QVERIFY2(ActionTypeId(item002.value("actionTypeIds").toList().first().toString()) == mockAddToFavoritesBrowserItemActionTypeId,
+             "AddToFavorites action type id not found in item");
 
     // Browse favorites
     // ID is "favorites" in mock
@@ -2016,7 +2024,6 @@ void TestIntegrations::testExecuteBrowserItemAction()
 
     browserEntries = response.toMap().value("params").toMap().value("items").toList();
     QCOMPARE(browserEntries.count(), 0);
-
 }
 
 void TestIntegrations::executeAction_data()
@@ -2072,8 +2079,8 @@ void TestIntegrations::executeAction()
     QByteArray data = reply->readAll();
 
     if (error == Thing::ThingErrorNoError) {
-        QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
-                     .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
+        QVERIFY2(actionTypeId == ActionTypeId(data),
+                 QString("ActionTypeId mismatch. Got %1, Expected: %2").arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
     } else {
         QVERIFY2(data.length() == 0, QString("Data is %1, should be empty.").arg(QString(data)).toLatin1().data());
     }
@@ -2094,13 +2101,12 @@ void TestIntegrations::executeAction()
     reply->deleteLater();
     data = reply->readAll();
     qDebug() << "cleared data:" << data;
-
 }
 
 void TestIntegrations::triggerEvent()
 {
     enableNotifications({"Integrations"});
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
 
@@ -2119,7 +2125,7 @@ void TestIntegrations::triggerEvent()
     // Lets wait for the notification
     spy.wait();
     QVERIFY(spy.count() > 0);
-    for (int i = 0; i < spy.count(); i++ ){
+    for (int i = 0; i < spy.count(); i++) {
         Event event = spy.at(i).at(0).value<Event>();
         if (event.thingId() == thing->id()) {
             // Make sure the event contains all the stuff we expect
@@ -2141,7 +2147,7 @@ void TestIntegrations::triggerStateChangeSignal()
 {
     enableNotifications({"Integrations"});
 
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
     Thing *thing = things.first();
 
@@ -2160,7 +2166,7 @@ void TestIntegrations::triggerStateChangeSignal()
     // Lets wait for the notification
     spy.wait();
     QVERIFY(spy.count() == 1);
-    Thing *t = spy.at(0).at(0).value<Thing*>();
+    Thing *t = spy.at(0).at(0).value<Thing *>();
     QCOMPARE(t->id(), thing->id());
     StateTypeId stId = spy.at(0).at(1).value<StateTypeId>();
     QCOMPARE(stId, mockIntStateTypeId);
@@ -2195,7 +2201,7 @@ void TestIntegrations::dynamicMinMax()
 {
     enableNotifications({"Integrations"});
 
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
     Thing *thing = things.first();
 
@@ -2263,7 +2269,6 @@ void TestIntegrations::dynamicMinMax()
     actionParams.insert("params", QVariantList() << valueParam);
     response = injectAndWait("Integrations.ExecuteAction", actionParams);
     verifyThingError(response, Thing::ThingErrorNoError);
-
 }
 
 void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()
@@ -2344,7 +2349,6 @@ void TestIntegrations::testTranslations()
             }
             QVERIFY2(ptFound, "ParamType not found in mock thing class.");
 
-
             // Verify settings are translated
             bool sFound = false;
             foreach (const QVariant &sVariant, tcMap.value("settingsTypes").toList()) {
@@ -2391,9 +2395,7 @@ void TestIntegrations::testTranslations()
         }
     }
     QVERIFY2(found, "Mock thing class not found.");
-
 }
 
 #include "testintegrations.moc"
 QTEST_MAIN(TestIntegrations)
-

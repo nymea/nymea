@@ -28,26 +28,27 @@
 
 #include "platform/platformzeroconfcontroller.h"
 
-#include "hardwaremanagerimplementation.h"
-#include "hardware/plugintimermanagerimplementation.h"
-#include "hardware/network/upnp/upnpdiscoveryimplementation.h"
-#include "hardware/network/networkaccessmanagerimpl.h"
-#include "hardware/radio433/radio433brennenstuhl.h"
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
-#include "hardware/network/mqtt/mqttproviderimplementation.h"
 #include "hardware/i2c/i2cmanagerimplementation.h"
+#include "hardware/network/mqtt/mqttproviderimplementation.h"
+#include "hardware/network/networkaccessmanagerimpl.h"
+#include "hardware/network/upnp/upnpdiscoveryimplementation.h"
+#include "hardware/plugintimermanagerimplementation.h"
+#include "hardware/radio433/radio433brennenstuhl.h"
 #include "hardware/zigbee/zigbeehardwareresourceimplementation.h"
 #include "hardware/zwave/zwavehardwareresourceimplementation.h"
+#include "hardwaremanagerimplementation.h"
 
-#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
+#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/network/networkdevicediscoveryimpl.h"
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
-    HardwareManager(parent),
-    m_platform(platform)
+HardwareManagerImplementation::HardwareManagerImplementation(
+    Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent)
+    : HardwareManager(parent)
+    , m_platform(platform)
 {
     // Create network access manager for all resources, centralized
     // Note: configuration and proxy settings could be implemented here
@@ -98,10 +99,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 }
 
-HardwareManagerImplementation::~HardwareManagerImplementation()
-{
-
-}
+HardwareManagerImplementation::~HardwareManagerImplementation() {}
 
 Radio433 *HardwareManagerImplementation::radio433()
 {
@@ -169,4 +167,4 @@ void HardwareManagerImplementation::thingsLoaded()
     m_zwaveResource->thingsLoaded();
 }
 
-}
+} // namespace nymeaserver

@@ -22,33 +22,30 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeacore.h"
-#include "servers/httpreply.h"
-#include "nymeasettings.h"
-#include "loggingcategories.h"
 #include "debugserverhandler.h"
+#include "loggingcategories.h"
 #include "nymeaconfiguration.h"
+#include "nymeacore.h"
+#include "nymeasettings.h"
+#include "servers/httpreply.h"
 #include "version.h"
 
-#include <QXmlStreamWriter>
-#include <QCoreApplication>
-#include <QMessageLogger>
-#include <QJsonDocument>
-#include <QXmlStreamWriter>
 #include <QCoreApplication>
 #include <QFileInfo>
-#include <QWebSocket>
-#include <QPair>
 #include <QHostInfo>
-
+#include <QJsonDocument>
+#include <QMessageLogger>
+#include <QPair>
+#include <QWebSocket>
+#include <QXmlStreamWriter>
 
 namespace nymeaserver {
 
-QList<QWebSocket*> DebugServerHandler::s_websocketClients;
+QList<QWebSocket *> DebugServerHandler::s_websocketClients;
 QMutex DebugServerHandler::s_loggingMutex;
 
-DebugServerHandler::DebugServerHandler(QObject *parent) :
-    QObject(parent)
+DebugServerHandler::DebugServerHandler(QObject *parent)
+    : QObject(parent)
 {
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &DebugServerHandler::onDebugServerEnabledChanged);
     onDebugServerEnabledChanged(NymeaCore::instance()->configuration()->debugServerEnabled());
@@ -187,7 +184,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             return reply;
         }
 
-
         if (requestPath.startsWith("/debug/settings/plugins")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName();
             qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
@@ -314,17 +310,15 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         m_pingProcess = new QProcess(this);
         m_pingProcess->setProcessChannelMode(QProcess::MergedChannels);
 
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
         connect(m_pingProcess, &QProcess::finished, this, &DebugServerHandler::onPingProcessFinished);
 #else
-        connect(m_pingProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+        connect(m_pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int, QProcess::ExitStatus)));
 #endif
-        m_pingProcess->start("ping", { "-c", "4", "nymea.io" } );
+        m_pingProcess->start("ping", {"-c", "4", "nymea.io"});
 
         m_pingReply = HttpReply::createAsyncReply();
-        connect(m_pingReply, &HttpReply::finished, this, [this](){
-            m_pingReply = nullptr;
-        });
+        connect(m_pingReply, &HttpReply::finished, this, [this]() { m_pingReply = nullptr; });
         return m_pingReply;
     }
 
@@ -336,17 +330,15 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         qCDebug(dcDebugServer()) << "Start dig nymea.io process";
         m_digProcess = new QProcess(this);
         m_digProcess->setProcessChannelMode(QProcess::MergedChannels);
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
         connect(m_digProcess, &QProcess::finished, this, &DebugServerHandler::onDigProcessFinished);
 #else
-        connect(m_digProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+        connect(m_digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int, QProcess::ExitStatus)));
 #endif
-        m_digProcess->start("dig", { "nymea.io" } );
+        m_digProcess->start("dig", {"nymea.io"});
 
         m_digReply = HttpReply::createAsyncReply();
-        connect(m_digReply, &HttpReply::finished, this, [this](){
-            m_digReply = nullptr;
-        });
+        connect(m_digReply, &HttpReply::finished, this, [this]() { m_digReply = nullptr; });
         return m_digReply;
     }
 
@@ -358,22 +350,19 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         qCDebug(dcDebugServer()) << "Start tracepath nymea.io process";
         m_tracePathProcess = new QProcess(this);
         m_tracePathProcess->setProcessChannelMode(QProcess::MergedChannels);
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
         connect(m_tracePathProcess, &QProcess::finished, this, &DebugServerHandler::onTracePathProcessFinished);
 #else
-        connect(m_tracePathProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+        connect(m_tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int, QProcess::ExitStatus)));
 #endif
-        m_tracePathProcess->start("tracepath", { "nymea.io" } );
+        m_tracePathProcess->start("tracepath", {"nymea.io"});
 
         m_tracePathReply = HttpReply::createAsyncReply();
-        connect(m_tracePathReply, &HttpReply::finished, this, [this](){
-            m_tracePathReply = nullptr;
-        });
+        connect(m_tracePathReply, &HttpReply::finished, this, [this]() { m_tracePathReply = nullptr; });
         return m_tracePathReply;
     }
 
     if (requestPath.startsWith("/debug/logging-categories")) {
-
         if (requestQuery.isEmpty()) {
             // Return the list of debug category settings
             NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
@@ -437,7 +426,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                     settings.setValue(QString("%1.debug").arg(category), false);
                     settings.setValue(QString("%1.info").arg(category), true);
                     settings.setValue(QString("%1.warning").arg(category), true);
-                } else if (level == "warning"){
+                } else if (level == "warning") {
                     settings.setValue(QString("%1.debug").arg(category), false);
                     settings.setValue(QString("%1.info").arg(category), false);
                     settings.setValue(QString("%1.warning").arg(category), true);
@@ -463,7 +452,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
     }
 
     if (requestPath.startsWith("/debug/report")) {
-
         // The client can poll this url in order to get information about the current report generating process.
         // If there is currently no report generated, start generating it and inform client that there is a report on the way (204)
         // If there is already a report generation in progress, inform the client that it's not ready yet (204)
@@ -480,9 +468,9 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             }
 
             if (m_debugReportGenerator->reportFileName() != fileName) {
-                qCWarning(dcDebugServer()) << "The requested file is not the file from the current debug report generator" << m_debugReportGenerator->reportFileName() << "!=" << fileName;
+                qCWarning(dcDebugServer()) << "The requested file is not the file from the current debug report generator" << m_debugReportGenerator->reportFileName()
+                                           << "!=" << fileName;
                 return HttpReply::createErrorReply(HttpReply::NotFound);
-
             }
 
             // Everything looks good, send the requested debug report
@@ -514,7 +502,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                         reportInformation.insert("fileSize", m_debugReportGenerator->reportFileData().size());
                         reportInformation.insert("md5sum", m_debugReportGenerator->md5Sum());
 
-                        HttpReply * httpReply = HttpReply::createSuccessReply();
+                        HttpReply *httpReply = HttpReply::createSuccessReply();
                         httpReply->setHttpStatusCode(HttpReply::Ok);
                         httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
                         httpReply->setPayload(QJsonDocument::fromVariant(reportInformation).toJson(QJsonDocument::Indented));
@@ -957,10 +945,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "warning-message");
     //: The warning message of the debug interface
-    writer.writeCharacters(tr("Please note that this debug interface may allow accessing sensitive data about the nymea system and connected devices and services. It is recommended to disable it again when not needed any more."));
+    writer.writeCharacters(tr("Please note that this debug interface may allow accessing sensitive data about the nymea system and connected devices and services. It is "
+                              "recommended to disable it again when not needed any more."));
     writer.writeEndElement(); // div warning message
     writer.writeEndElement(); // div warning
-
 
     // Server information section
     writer.writeEmptyElement("hr");
@@ -992,10 +980,14 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     //: The language description in the server infromation section of the debug interface
     writer.writeTextElement("th", tr("Language"));
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeTerritoryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    writer.writeTextElement("td",
+                            NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeTerritoryName() + " - "
+                                + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
 #else
-    writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeCountryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
+    writer.writeTextElement("td",
+                            NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeCountryName() + " - "
+                                + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
 #endif
     writer.writeEndElement(); // tr
 
@@ -1089,7 +1081,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // table
 
-
     // System information section
     writer.writeEmptyElement("hr");
     //: The system information section of the debug interface
@@ -1147,8 +1138,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h2", tr("Generate report"));
     writer.writeEmptyElement("hr");
 
-    writer.writeTextElement("p", tr("If you want to provide all the debug information to a developer, you can generate a report file, "
-                                    "which contains all information needed for reproducing a system and get information about possible problems."));
+    writer.writeTextElement("p",
+                            tr("If you want to provide all the debug information to a developer, you can generate a report file, "
+                               "which contains all information needed for reproducing a system and get information about possible problems."));
 
     // Warning
     writer.writeStartElement("div");
@@ -1248,7 +1240,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div download-row
 
-
     // Settings download section global
     writer.writeEmptyElement("hr");
     //: The settings download section title of the debug interface
@@ -1304,7 +1295,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div download-row
 
-
     // Download row things
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
@@ -1353,7 +1343,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div show-button-column
 
     writer.writeEndElement(); // div download-row
-
 
     // Download row rules
     writer.writeStartElement("div");
@@ -1404,7 +1393,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div download-row
 
-
     // Download row plugins
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
@@ -1452,8 +1440,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div show-button-column
     writer.writeEndElement(); // div download-row
-
-
 
     // Download row tags
     writer.writeStartElement("div");
@@ -1503,7 +1489,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div show-button-column
     writer.writeEndElement(); // div download-row
 
-
     // Download row MQTT policies
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
@@ -1552,7 +1537,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div show-button-column
 
     writer.writeEndElement(); // div download-row
-
 
     // Download row IO connections
     writer.writeStartElement("div");
@@ -1605,7 +1589,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // downloads-section
 
-
     // ---------------------------------------------------------------------------
     writer.writeStartElement("div");
     writer.writeAttribute("class", "tabcontent");
@@ -1619,8 +1602,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h2", tr("Network"));
 
     //: The network section description of the debug interface
-    writer.writeTextElement("p", tr("This section allows you to perform different network connectivity tests in order "
-                                    "to find out if the device where nymea is running has full network connectivity."));
+    writer.writeTextElement("p",
+                            tr("This section allows you to perform different network connectivity tests in order "
+                               "to find out if the device where nymea is running has full network connectivity."));
 
     // Ping section
     writer.writeEmptyElement("hr");
@@ -1649,7 +1633,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
-
     // Dig section
     writer.writeEmptyElement("hr");
     //: The DNS lookup section of the debug interface
@@ -1657,7 +1640,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEmptyElement("hr");
 
     writer.writeTextElement("p", tr("This test makes a dynamic name server lookup for nymea.io."));
-
 
     // Start dig button
     writer.writeStartElement("button");
@@ -1708,7 +1690,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div network
 
     writer.writeEndElement(); // network-section
-
 
     // ---------------------------------------------------------------------------
     writer.writeStartElement("div");
@@ -1762,7 +1743,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div log-buttons
 
-
     // Logs output
     writer.writeStartElement("textarea");
     writer.writeAttribute("class", "console-textarea");
@@ -1783,12 +1763,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     QStringList loggingCategories = NymeaCore::loggingFilters();
     loggingCategories.sort();
 
-    QHash<QString, QString> categoryMap = {
-        {"debug", "🐞 Debug"},
-        {"info", "ℹ️ Info"},
-        {"warning", "⚠️ Warning"},
-        {"critical", "🔥 Critical"}
-    };
+    QHash<QString, QString> categoryMap = {{"debug", "🐞 Debug"}, {"info", "ℹ️ Info"}, {"warning", "⚠️ Warning"}, {"critical", "🔥 Critical"}};
     foreach (const QString &loggingCategory, loggingCategories) {
         writer.writeStartElement("div");
         writer.writeAttribute("class", "debug-category");
@@ -1935,4 +1910,4 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     return data;
 }
 
-}
+} // namespace nymeaserver

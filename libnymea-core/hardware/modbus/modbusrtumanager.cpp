@@ -23,11 +23,11 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "modbusrtumanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeasettings.h"
 
-#include "modbusrtumasterimpl.h"
 #include "hardware/serialport/serialportmonitor.h"
+#include "modbusrtumasterimpl.h"
 #include "qglobal.h"
 
 #include <QFile>
@@ -39,9 +39,9 @@ NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
 
 namespace nymeaserver {
 
-ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent) :
-    QObject(parent),
-    m_serialPortMonitor(serialPortMonitor)
+ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent)
+    : QObject(parent)
+    , m_serialPortMonitor(serialPortMonitor)
 {
     if (!supported())
         return;
@@ -158,7 +158,8 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
     return nullptr;
 }
 
-QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
+QPair<ModbusRtuManager::ModbusRtuError, QUuid> ModbusRtuManager::addNewModbusRtuMaster(
+    const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -190,7 +191,14 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
     return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorNoError, modbusUuid);
 }
 
-ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
+ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid,
+                                                                              const QString &serialPort,
+                                                                              qint32 baudrate,
+                                                                              QSerialPort::Parity parity,
+                                                                              QSerialPort::DataBits dataBits,
+                                                                              QSerialPort::StopBits stopBits,
+                                                                              int numberOfRetries,
+                                                                              int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot reconfigure modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -270,8 +278,7 @@ void ModbusRtuManager::loadPlatformConfiguration()
         qCDebug(dcModbusRtu()) << "Loading modbus RTU platform configuration from" << platformConfigurationFileInfo.absoluteFilePath();
         QFile platformConfigurationFile(platformConfigurationFileInfo.absoluteFilePath());
         if (!platformConfigurationFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file"
-                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
+            qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file" << platformConfigurationFileInfo.absoluteFilePath() << ":"
                                      << platformConfigurationFile.errorString();
             return;
         }
@@ -282,8 +289,7 @@ void ModbusRtuManager::loadPlatformConfiguration()
         QJsonParseError jsonError;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &jsonError);
         if (jsonError.error != QJsonParseError::NoError) {
-            qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file"
-                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
+            qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file" << platformConfigurationFileInfo.absoluteFilePath() << ":"
                                      << jsonError.errorString();
             return;
         }
@@ -306,9 +312,9 @@ void ModbusRtuManager::loadPlatformConfiguration()
             qCDebug(dcModbusRtu()) << "No platform configurations available";
         } else {
             qCDebug(dcModbusRtu()) << "Loaded successfully" << m_platformConfigurations.count() << "platform configurations";
-            foreach(const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
-                qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") "
-                                                 << "Serial port: " << config.serialPort << " usable: " << config.usable;
+            foreach (const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
+                qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") " << "Serial port: " << config.serialPort
+                                                 << " usable: " << config.usable;
             }
         }
     }
@@ -362,7 +368,7 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     qCDebug(dcModbusRtu()) << "Adding" << modbusMaster;
     m_modbusRtuMasters.insert(modbusMaster->modbusUuid(), modbusMaster);
 
-    connect(modbusMaster, &ModbusRtuMaster::connectedChanged, this, [=](bool connected){
+    connect(modbusMaster, &ModbusRtuMaster::connectedChanged, this, [=](bool connected) {
         qCDebug(dcModbusRtu()) << modbusMaster << (connected ? "connected" : "disconnected");
         emit modbusRtuMasterChanged(modbusMaster);
     });
@@ -370,4 +376,4 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     emit modbusRtuMasterAdded(modbusMaster);
 }
 
-}
+} // namespace nymeaserver

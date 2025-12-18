@@ -40,20 +40,15 @@
 
 namespace nymeaserver {
 
-TokenInfo::TokenInfo()
-{
-
-}
+TokenInfo::TokenInfo() {}
 
 /*! Constructs a new token info with the given \a id, \a username, \a creationTime and \a deviceName. */
-TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
-    m_id(id),
-    m_username(username),
-    m_creationTime(creationTime),
-    m_deviceName(deviceName)
-{
-
-}
+TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName)
+    : m_id(id)
+    , m_username(username)
+    , m_creationTime(creationTime)
+    , m_deviceName(deviceName)
+{}
 
 /*! Returns the id of this TokenInfo. */
 QUuid TokenInfo::id() const
@@ -89,4 +84,4 @@ void TokenInfoList::put(const QVariant &variant)
     append(variant.value<TokenInfo>());
 }
 
-}
+} // namespace nymeaserver

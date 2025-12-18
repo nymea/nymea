@@ -52,7 +52,7 @@ private:
 };
 Q_DECLARE_METATYPE(ParamDescriptor)
 
-class LIBNYMEA_EXPORT ParamDescriptors: public QList<ParamDescriptor>
+class LIBNYMEA_EXPORT ParamDescriptors : public QList<ParamDescriptor>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

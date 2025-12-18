@@ -40,6 +40,7 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
+#include <cxxabi.h>
 #include <execinfo.h>
 #include <signal.h>
 #include <stdio.h>
@@ -47,7 +48,6 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cxxabi.h>
 
 Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 
@@ -55,10 +55,9 @@ namespace nymeaserver {
 
 static int s_shutdownCounter = 0;
 
-static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vector<int>& ignoreSignals = std::vector<int>())
+static void catchUnixSignals(const std::vector<int> &quitSignals, const std::vector<int> &ignoreSignals = std::vector<int>())
 {
-    auto handler = [](int sig) ->void {
-
+    auto handler = [](int sig) -> void {
         // forecefully exit() if repeated signals come in.
         if (s_shutdownCounter > 0) {
             if (s_shutdownCounter < 4) {
@@ -125,10 +124,9 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         signal(sig, handler);
 }
 
-
 /*! Constructs a NymeaApplication with the given argument count \a argc and argument vector \a argv. */
-NymeaApplication::NymeaApplication(int &argc, char **argv) :
-    QCoreApplication(argc, argv)
+NymeaApplication::NymeaApplication(int &argc, char **argv)
+    : QCoreApplication(argc, argv)
 {
     // Catching SIGSEGV messes too much with various tools...
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGKILL, /*SIGSEGV,*/ SIGFPE});
@@ -139,4 +137,4 @@ NymeaApplication::~NymeaApplication()
     quit();
 }
 
-}
+} // namespace nymeaserver

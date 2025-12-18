@@ -26,6 +26,4 @@
 
 ScriptThingsFilter::ScriptThingsFilter(QObject *parent)
     : QObject{parent}
-{
-
-}
+{}

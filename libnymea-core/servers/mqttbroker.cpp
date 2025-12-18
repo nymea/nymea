@@ -29,12 +29,15 @@
 
 namespace nymeaserver {
 
-class NymeaMqttAuthorizer: public MqttAuthorizer
+class NymeaMqttAuthorizer : public MqttAuthorizer
 {
 public:
-    NymeaMqttAuthorizer(MqttBroker* broker) : m_broker(broker) {}
+    NymeaMqttAuthorizer(MqttBroker *broker)
+        : m_broker(broker)
+    {}
 
-    Mqtt::ConnectReturnCode authorizeConnect(int serverAddressId, const QString &clientId, const QString &username, const QString &password, const QHostAddress &peerAddress) override {
+    Mqtt::ConnectReturnCode authorizeConnect(int serverAddressId, const QString &clientId, const QString &username, const QString &password, const QHostAddress &peerAddress) override
+    {
         Q_UNUSED(peerAddress)
         if (!m_broker->m_configs.value(serverAddressId).authenticationEnabled) {
             qCDebug(dcMqtt) << "Accepting client" << clientId << ". Server configuration does not require authentication.";
@@ -53,7 +56,8 @@ public:
         return Mqtt::ConnectReturnCodeAccepted;
     }
 
-    bool authorizeSubscribe(int serverAddressId, const QString &clientId, const QString &topicFilter) override {
+    bool authorizeSubscribe(int serverAddressId, const QString &clientId, const QString &topicFilter) override
+    {
         if (!m_broker->m_configs.value(serverAddressId).authenticationEnabled) {
             return true;
         }
@@ -64,7 +68,8 @@ public:
         return matchPolicy(policy.allowedSubscribeTopicFilters, topicFilter);
     }
 
-    bool authorizePublish(int serverAddressId, const QString &clientId, const QString &topic) override {
+    bool authorizePublish(int serverAddressId, const QString &clientId, const QString &topic) override
+    {
         if (!m_broker->m_configs.value(serverAddressId).authenticationEnabled) {
             return true;
         }
@@ -75,7 +80,8 @@ public:
         return matchPolicy(policy.allowedPublishTopicFilters, topic);
     }
 
-    bool matchPolicy(const QStringList &policies, const QString &topic) {
+    bool matchPolicy(const QStringList &policies, const QString &topic)
+    {
         foreach (const QString &policyFilter, policies) {
             QStringList policyParts = policyFilter.split('/');
             QStringList topicParts = topic.split('/');
@@ -113,7 +119,8 @@ private:
     MqttBroker *m_broker;
 };
 
-MqttBroker::MqttBroker(QObject *parent) : QObject(parent)
+MqttBroker::MqttBroker(QObject *parent)
+    : QObject(parent)
 {
     m_server = new MqttServer(this);
     m_authorizer = new NymeaMqttAuthorizer(this);
@@ -146,7 +153,7 @@ bool MqttBroker::startServer(const ServerConfiguration &config, const QSslConfig
 
 bool MqttBroker::isRunning(const QString &configId) const
 {
-    foreach (const ServerConfiguration &config, m_configs){
+    foreach (const ServerConfiguration &config, m_configs) {
         if (config.id == configId) {
             return true;
         }
@@ -264,4 +271,4 @@ void MqttBroker::onClientUnsubscribed(const QString &clientId, const QString &to
     emit clientUnsubscribed(clientId, topicFilter);
 }
 
-}
+} // namespace nymeaserver

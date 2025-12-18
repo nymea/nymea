@@ -26,8 +26,8 @@
 #define ZWAVEBACKEND_H
 
 #include "zwave.h"
-#include "zwavereply.h"
 #include "zwavenode.h"
+#include "zwavereply.h"
 #include "zwavevalue.h"
 
 #include <QObject>
@@ -51,10 +51,10 @@ public:
 
     virtual bool factoryResetNetwork(const QUuid &networkUuid) = 0;
 
-    virtual ZWaveReply* addNode(const QUuid &networkUuid, bool useSecurity) = 0;
-    virtual ZWaveReply* removeNode(const QUuid &networkUuid) = 0;
-    virtual ZWaveReply* removeFailedNode(const QUuid &networkUuid, quint8 nodeId) = 0;
-    virtual ZWaveReply* cancelPendingOperation(const QUuid &networkUuid) = 0;
+    virtual ZWaveReply *addNode(const QUuid &networkUuid, bool useSecurity) = 0;
+    virtual ZWaveReply *removeNode(const QUuid &networkUuid) = 0;
+    virtual ZWaveReply *removeFailedNode(const QUuid &networkUuid, quint8 nodeId) = 0;
+    virtual ZWaveReply *cancelPendingOperation(const QUuid &networkUuid) = 0;
 
     virtual bool isNodeAwake(const QUuid &networkUuid, quint8 nodeId) = 0;
     virtual bool isNodeFailed(const QUuid &networkUuid, quint8 nodeId) = 0;

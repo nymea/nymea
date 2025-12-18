@@ -41,10 +41,7 @@
 #include <QDebug>
 
 /*! Constructs an invalid \l{TimeDescriptor}.*/
-TimeDescriptor::TimeDescriptor()
-{
-
-}
+TimeDescriptor::TimeDescriptor() {}
 
 /*! Returns the list of \l{TimeEventItem}{TimeEventItems} of this \l{TimeDescriptor}.*/
 TimeEventItems TimeDescriptor::timeEventItems() const

@@ -37,25 +37,22 @@
     \sa TransportInterface
 */
 
-
 #include "bluetoothserver.h"
 #include "loggingcategories.h"
 
-#include <QJsonDocument>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusReply>
+#include <QJsonDocument>
 
 namespace nymeaserver {
 
 static const QBluetoothUuid nymeaServiceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
 
 /*! Constructs a \l{BluetoothServer} with the given \a parent. */
-BluetoothServer::BluetoothServer(QObject *parent) :
-    TransportInterface(ServerConfiguration(), parent)
-{
-
-}
+BluetoothServer::BluetoothServer(QObject *parent)
+    : TransportInterface(ServerConfiguration(), parent)
+{}
 
 /*! Destructs this \l{BluetoothServer}. */
 BluetoothServer::~BluetoothServer()
@@ -213,7 +210,7 @@ bool BluetoothServer::startServer()
     QBluetoothUuid serialPortUuid;
     QBluetoothUuid rfCommUuid;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     publicBrowseGroupUuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::PublicBrowseGroup);
     serialPortUuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort);
     rfCommUuid = QBluetoothUuid(QBluetoothUuid::ProtocolUuid::Rfcomm);
@@ -242,8 +239,7 @@ bool BluetoothServer::startServer()
     // Define protocol
     QBluetoothServiceInfo::Sequence protocolDescriptorList;
     QBluetoothServiceInfo::Sequence protocol;
-    protocol << QVariant::fromValue(rfCommUuid)
-             << QVariant::fromValue(quint8(m_server->serverPort()));
+    protocol << QVariant::fromValue(rfCommUuid) << QVariant::fromValue(quint8(m_server->serverPort()));
     protocolDescriptorList.append(QVariant::fromValue(protocol));
     m_serviceInfo->setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);
 
@@ -260,7 +256,8 @@ bool BluetoothServer::startServer()
         m_server = nullptr;
         return false;
     }
-    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo->serviceName() << nymeaServiceUuid.toString();
+    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo->serviceName()
+                                 << nymeaServiceUuid.toString();
 
     return true;
 }
@@ -291,5 +288,4 @@ bool BluetoothServer::stopServer()
     return true;
 }
 
-
-}
+} // namespace nymeaserver

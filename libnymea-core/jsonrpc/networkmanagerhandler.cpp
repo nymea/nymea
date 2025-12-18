@@ -70,15 +70,15 @@
     The \a params contains the map for the notification.
 */
 
-#include "loggingcategories.h"
 #include "networkmanagerhandler.h"
+#include "loggingcategories.h"
 
 namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkManagerHandler} with the given \a parent. */
-NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QObject *parent) :
-    JsonHandler(parent),
-    m_networkManager(networkManager)
+NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QObject *parent)
+    : JsonHandler(parent)
+    , m_networkManager(networkManager)
 {
     // Enums
     registerEnum<NetworkManager::NetworkManagerError>();
@@ -96,7 +96,6 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     wirelessAccessPoint.insert("r:signalStrength", enumValueName(Int));
     wirelessAccessPoint.insert("r:protected", enumValueName(Bool));
     registerObject("WirelessAccessPoint", wirelessAccessPoint);
-
 
     QVariantMap wiredNetworkDevice;
     wiredNetworkDevice.insert("r:interface", enumValueName(String));
@@ -121,7 +120,9 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     registerObject("WirelessNetworkDevice", wirelessNetworkDevice);
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the current network manager status.";
     QVariantMap status;
     status.insert("networkingEnabled", enumValueName(Bool));
@@ -131,45 +132,52 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("GetNetworkStatus", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Enable or disable networking in the NetworkManager.";
     params.insert("enable", enumValueName(Bool));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("EnableNetworking", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Enable or disable wireless networking in the NetworkManager.";
     params.insert("enable", enumValueName(Bool));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("EnableWirelessNetworking", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the current list of wireless network access points for the given interface. The interface has to be a WirelessNetworkDevice.";
     params.insert("interface", enumValueName(String));
     returns.insert("o:wirelessAccessPoints", QVariantList() << objectRef("WirelessAccessPoint"));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("GetWirelessAccessPoints", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Disconnect the given network interface. The interface will remain disconnected until the user connect it again.";
     params.insert("interface", enumValueName(String));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("DisconnectInterface", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of current network devices.";
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
-    returns.insert("o:wiredNetworkDevices",  QVariantList() << objectRef("WiredNetworkDevice"));
-    returns.insert("o:wirelessNetworkDevices",  QVariantList() << objectRef("WirelessNetworkDevice"));
+    returns.insert("o:wiredNetworkDevices", QVariantList() << objectRef("WiredNetworkDevice"));
+    returns.insert("o:wirelessNetworkDevices", QVariantList() << objectRef("WirelessNetworkDevice"));
     registerMethod("GetNetworkDevices", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Start a wifi scan for searching new networks.";
     params.insert("interface", enumValueName(String));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("ScanWifiNetworks", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Create a wired connection.";
     params.insert("interface", enumValueName(String));
     params.insert("type", enumRef<WiredNetworkConnectionType>());
@@ -180,7 +188,8 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("CreateWiredConnection", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Connect to the wifi network with the given ssid and password.";
     params.insert("interface", enumValueName(String));
     params.insert("ssid", enumValueName(String));
@@ -188,7 +197,8 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("ConnectWifiNetwork", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Start a WiFi Access point on the given interface with the given SSID and "
                   "password. Use DisconnectInterface to stop it again.";
     params.insert("interface", enumValueName(String));
@@ -198,37 +208,44 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     registerMethod("StartAccessPoint", description, params, returns);
 
     // Notifications
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a status of a NetworkManager changes.";
     params.insert("status", status);
     registerNotification("NetworkStatusChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a new WirelessNetworkDevice was added.";
     params.insert("wirelessNetworkDevice", objectRef("WirelessNetworkDevice"));
     registerNotification("WirelessNetworkDeviceAdded", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a WirelessNetworkDevice was removed.";
     params.insert("interface", enumValueName(String));
     registerNotification("WirelessNetworkDeviceRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the given WirelessNetworkDevice has changed.";
     params.insert("wirelessNetworkDevice", objectRef("WirelessNetworkDevice"));
     registerNotification("WirelessNetworkDeviceChanged", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a new WiredNetworkDevice was added.";
     params.insert("wiredNetworkDevice", objectRef("WiredNetworkDevice"));
     registerNotification("WiredNetworkDeviceAdded", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever a WiredNetworkDevice was removed.";
     params.insert("interface", enumValueName(String));
     registerNotification("WiredNetworkDeviceRemoved", description, params);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the given WiredNetworkDevice has changed.";
     params.insert("wiredNetworkDevice", objectRef("WiredNetworkDevice"));
     registerNotification("WiredNetworkDeviceChanged", description, params);
@@ -321,7 +338,6 @@ JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &par
             QVariantMap returns = statusToReply(NetworkManager::NetworkManagerErrorNoError);
             returns.insert("wirelessAccessPoints", wirelessAccessPoints);
             return createReply(returns);
-
         }
     }
 
@@ -397,7 +413,6 @@ JsonReply *NetworkManagerHandler::ScanWifiNetworks(const QVariantMap &params)
     if (!m_networkManager->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
-
     QString interface = params.value("interface").toString();
 
     if (!m_networkManager->getNetworkDevice(interface))
@@ -426,7 +441,6 @@ JsonReply *NetworkManagerHandler::ConnectWifiNetwork(const QVariantMap &params)
 
     if (!m_networkManager->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
-
 
     QString ssid = params.value("ssid").toString();
     QString password = params.value("password").toString();
@@ -568,4 +582,4 @@ QVariantMap NetworkManagerHandler::statusToReply(NetworkManager::NetworkManagerE
     return returns;
 }
 
-}
+} // namespace nymeaserver

@@ -24,9 +24,6 @@
 
 #include "networkdevicediscovery.h"
 
-NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
-    HardwareResource("Network device discovery", parent)
-{
-
-}
-
+NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent)
+    : HardwareResource("Network device discovery", parent)
+{}

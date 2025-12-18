@@ -52,8 +52,6 @@ private:
     // Stats for debugging
     quint64 m_inputValueCount = 0;
     quint64 m_outputValueCount = 0;
-
-
 };
 
 #endif // STATEVALUEFILTERADAPTIVE_H

@@ -34,18 +34,16 @@
 
 */
 
-
 #include "corelink.h"
 
 #include <QMetaEnum>
 
 /*! Constructs a \l{CoreLink}. */
-CoreLink::CoreLink() :
-    m_contentType(CoapPdu::TextPlain),
-    m_maximumSize(-1),
-    m_observable(false)
-{
-}
+CoreLink::CoreLink()
+    : m_contentType(CoapPdu::TextPlain)
+    , m_maximumSize(-1)
+    , m_observable(false)
+{}
 
 /*! Returns the path of this \l{CoreLink}. */
 QString CoreLink::path() const

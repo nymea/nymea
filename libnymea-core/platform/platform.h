@@ -56,6 +56,6 @@ private:
     PlatformZeroConfController *m_platformZeroConfController = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // PLATFORM_H

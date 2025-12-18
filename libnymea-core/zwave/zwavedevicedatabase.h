@@ -54,6 +54,6 @@ private:
     QSqlDatabase m_db;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZWAVEDEVICEDATABASE_H

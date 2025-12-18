@@ -34,7 +34,7 @@ class ThingManager;
 class LIBNYMEA_EXPORT ThingSetupInfo : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Thing* thing READ thing CONSTANT)
+    Q_PROPERTY(Thing *thing READ thing CONSTANT)
 public:
     explicit ThingSetupInfo(QObject *parent);
     explicit ThingSetupInfo(Thing *thing, ThingManager *thingManager, bool initialSetup, bool reconfigure, quint32 timeout = 0);

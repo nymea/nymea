@@ -26,9 +26,7 @@
 
 ZWaveBackend::ZWaveBackend(QObject *parent)
     : QObject{parent}
-{
-
-}
+{}
 
 void ZWaveBackend::startReply(ZWaveReply *reply, int timeout)
 {

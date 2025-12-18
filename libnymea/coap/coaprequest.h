@@ -25,16 +25,16 @@
 #ifndef COAPREQUEST_H
 #define COAPREQUEST_H
 
-#include <QUrl>
 #include <QHostAddress>
+#include <QUrl>
 
-#include "libnymea.h"
-#include "coappdu.h"
 #include "coapoption.h"
+#include "coappdu.h"
+#include "libnymea.h"
 
 class LIBNYMEA_EXPORT CoapRequest
 {
-//    friend class Coap;
+    //    friend class Coap;
 public:
     CoapRequest(const QUrl &url = QUrl());
 
@@ -52,7 +52,6 @@ private:
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
     CoapPdu::ReqRspCode m_reqRspCode;
-
 };
 
 #endif // COAPREQUEST_H

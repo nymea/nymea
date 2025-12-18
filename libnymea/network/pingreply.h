@@ -25,9 +25,9 @@
 #ifndef PINGREPLY_H
 #define PINGREPLY_H
 
-#include <QTimer>
-#include <QObject>
 #include <QHostAddress>
+#include <QObject>
+#include <QTimer>
 
 #include <sys/time.h>
 
@@ -102,7 +102,6 @@ private:
     Error m_error = ErrorNoError;
 
     struct timeval m_startTime;
-
 };
 
 #endif // PINGREPLY_H

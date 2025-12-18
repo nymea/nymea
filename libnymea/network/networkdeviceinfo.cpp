@@ -29,22 +29,17 @@
 
 static const int networkDeviceInfoMetaTypeId = qRegisterMetaType<NetworkDeviceInfo>("NetworkDeviceInfo");
 
-NetworkDeviceInfo::NetworkDeviceInfo()
-{
-
-}
+NetworkDeviceInfo::NetworkDeviceInfo() {}
 
 NetworkDeviceInfo::NetworkDeviceInfo(const QString &macAddress)
 {
     addMacAddress(MacAddress(macAddress));
 }
 
-NetworkDeviceInfo::NetworkDeviceInfo(const QHostAddress &address):
-    m_address{address},
-    m_addressSet{true}
-{
-
-}
+NetworkDeviceInfo::NetworkDeviceInfo(const QHostAddress &address)
+    : m_address{address}
+    , m_addressSet{true}
+{}
 
 QHostAddress NetworkDeviceInfo::address() const
 {
@@ -196,12 +191,8 @@ QString NetworkDeviceInfo::thingParamValueAddress() const
 
 bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
 {
-    return m_address == other.address() &&
-           m_macAddressInfos == other.macAddressInfos() &&
-           m_hostName == other.hostName() &&
-           m_networkInterface.name() == other.networkInterface().name() &&
-           m_monitorMode == other.monitorMode() &&
-           isComplete() == other.isComplete();
+    return m_address == other.address() && m_macAddressInfos == other.macAddressInfos() && m_hostName == other.hostName()
+           && m_networkInterface.name() == other.networkInterface().name() && m_monitorMode == other.monitorMode() && isComplete() == other.isComplete();
 }
 
 bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const

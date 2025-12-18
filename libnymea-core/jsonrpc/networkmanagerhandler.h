@@ -36,11 +36,7 @@ class NetworkManagerHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    enum WiredNetworkConnectionType {
-        WiredNetworkConnectionTypeDHCP,
-        WiredNetworkConnectionTypeManual,
-        WiredNetworkConnectionTypeShared
-    };
+    enum WiredNetworkConnectionType { WiredNetworkConnectionTypeDHCP, WiredNetworkConnectionTypeManual, WiredNetworkConnectionTypeShared };
     Q_ENUM(WiredNetworkConnectionType)
 
     explicit NetworkManagerHandler(NetworkManager *networkManager, QObject *parent = nullptr);
@@ -92,10 +88,9 @@ private:
 
     QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
 
-    NetworkManager* m_networkManager = nullptr;
-
+    NetworkManager *m_networkManager = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NETWORKMANAGERHANDLER_H

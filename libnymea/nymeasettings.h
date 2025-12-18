@@ -63,29 +63,28 @@ public:
     static QString cachePath();
 
     // forwarded QSettings methods
-    QStringList	allKeys() const;
+    QStringList allKeys() const;
     void beginWriteArray(const QString &prefix);
     void setArrayIndex(int i);
     int beginReadArray(const QString &prefix);
 
     void endArray();
     void beginGroup(const QString &prefix);
-    QStringList	childGroups() const;
-    QStringList	childKeys() const;
+    QStringList childGroups() const;
+    QStringList childKeys() const;
     void clear();
     bool contains(const QString &key) const;
     void endGroup();
-    QString	group() const;
-    QString	fileName() const;
+    QString group() const;
+    QString fileName() const;
     bool isWritable() const;
     void remove(const QString &key);
-    void setValue(const QString & key, const QVariant &value);
-    QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
+    void setValue(const QString &key, const QVariant &value);
+    QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 private:
     QSettings *m_settings;
     SettingsRole m_role;
-
 };
 
 #endif // NYMEASETTINGS_H

@@ -25,18 +25,15 @@
 #include "plugininfocompiler.h"
 #include "version.h"
 
-#include <QJsonObject>
-#include <QFile>
-#include <QJsonParseError>
 #include <QDataStream>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
+#include <QJsonObject>
+#include <QJsonParseError>
 #include <QRegularExpression>
 
-PluginInfoCompiler::PluginInfoCompiler()
-{
-
-}
+PluginInfoCompiler::PluginInfoCompiler() {}
 
 int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath, bool strictMode)
 {
@@ -120,7 +117,7 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
     if (!translationsPath.isEmpty()) {
         QDir dir;
         if (!dir.exists(translationsPath)) {
-            if(!dir.mkpath(translationsPath)) {
+            if (!dir.mkpath(translationsPath)) {
                 qWarning() << "Error creating translation file directory" << translationsPath;
                 return 1;
             }
@@ -142,7 +139,6 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
             qDebug() << "Created translations stub";
         }
     }
-
 
     // Files are open. Ready to write content.
 
@@ -230,13 +226,14 @@ void PluginInfoCompiler::writePlugin(const PluginMetadata &metadata)
     foreach (const ThingClass &thingClass, metadata.thingClasses()) {
         writeThingClass(thingClass);
     }
-
 }
 
 void PluginInfoCompiler::writeParams(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName)
 {
     foreach (const ParamType &paramType, paramTypes) {
-        QString variableName = QString("%1ParamTypeId").arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
+        QString variableName = QString("%1ParamTypeId")
+                                   .arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length() - 1) + typeClass + paramType.name()[0].toUpper()
+                                        + paramType.name().right(paramType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
             qWarning().nospace() << "Error: Duplicate name " << variableName << " for ParamTypeId " << paramType.id() << ". Skipping entry.";
             continue;
@@ -244,7 +241,9 @@ void PluginInfoCompiler::writeParams(const ParamTypes &paramTypes, const QString
         m_variableNames.append(variableName);
 
         write(QString("ParamTypeId %1 = ParamTypeId(\"%2\");").arg(variableName).arg(paramType.id().toString()));
-        m_translationStrings.insert(paramType.displayName(), QString("The name of the ParamType (ThingClass: %1, %2Type: %3, ID: %4)").arg(thingClassName).arg(typeClass).arg(typeName).arg(paramType.id().toString()));
+        m_translationStrings
+            .insert(paramType.displayName(),
+                    QString("The name of the ParamType (ThingClass: %1, %2Type: %3, ID: %4)").arg(thingClassName).arg(typeClass).arg(typeName).arg(paramType.id().toString()));
         writeExtern(QString("extern ParamTypeId %1;").arg(variableName));
     }
 }
@@ -299,7 +298,8 @@ void PluginInfoCompiler::writeStateTypes(const StateTypes &stateTypes, const QSt
         writeExtern(QString("extern StateTypeId %1;").arg(variableName));
         m_translationStrings.insert(stateType.displayName(), QString("The name of the StateType (%1) of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
         foreach (const QString &possibleValueDisplayName, stateType.possibleValuesDisplayNames()) {
-            m_translationStrings.insert(possibleValueDisplayName, QString("The name of a possible value of StateType %1 of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
+            m_translationStrings.insert(possibleValueDisplayName,
+                                        QString("The name of a possible value of StateType %1 of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
         }
     }
 }
@@ -326,7 +326,8 @@ void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const 
     foreach (const ActionType &actionType, actionTypes) {
         QString variableName = QString("%1%2ActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in ThingClass " << thingClassName
+                                 << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
@@ -335,7 +336,7 @@ void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const 
         writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
 
         writeParams(actionType.paramTypes(), thingClassName, "Action", actionType.name());
-    }    
+    }
 }
 
 void PluginInfoCompiler::writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName)
@@ -343,12 +344,14 @@ void PluginInfoCompiler::writeBrowserItemActionTypes(const ActionTypes &actionTy
     foreach (const ActionType &actionType, actionTypes) {
         QString variableName = QString("%1%2BrowserItemActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in ThingClass " << thingClassName
+                                 << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
         write(QString("ActionTypeId %1 = ActionTypeId(\"%2\");").arg(variableName).arg(actionType.id().toString()));
-        m_translationStrings.insert(actionType.displayName(), QString("The name of the Browser Item ActionType (%1) of ThingClass %2").arg(actionType.id().toString()).arg(thingClassName));
+        m_translationStrings.insert(actionType.displayName(),
+                                    QString("The name of the Browser Item ActionType (%1) of ThingClass %2").arg(actionType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
 
         writeParams(actionType.paramTypes(), thingClassName, "BrowserItemAction", actionType.name());

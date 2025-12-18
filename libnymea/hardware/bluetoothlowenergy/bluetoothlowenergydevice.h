@@ -25,11 +25,11 @@
 #ifndef BLUETOOTHLOWENERGYDEVICE_H
 #define BLUETOOTHLOWENERGYDEVICE_H
 
-#include <QObject>
-#include <QBluetoothDeviceInfo>
 #include <QBluetoothAddress>
+#include <QBluetoothDeviceInfo>
 #include <QBluetoothServiceInfo>
 #include <QLowEnergyController>
+#include <QObject>
 
 #include "libnymea.h"
 
@@ -62,7 +62,6 @@ signals:
     void stateChanged(const QLowEnergyController::ControllerState &state);
     void errorOccurred(const QLowEnergyController::Error &error);
     void servicesDiscoveryFinished();
-
 };
 
 #endif // BLUETOOTHLOWENERGYDEVICE_H

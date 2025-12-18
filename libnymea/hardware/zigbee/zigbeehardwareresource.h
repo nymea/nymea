@@ -39,17 +39,13 @@ class ZigbeeHardwareResource : public HardwareResource
 {
     Q_OBJECT
 public:
-    enum HandlerType {
-        HandlerTypeBranding,
-        HandlerTypeVendor,
-        HandlerTypeCatchAll
-    };
+    enum HandlerType { HandlerTypeBranding, HandlerTypeVendor, HandlerTypeCatchAll };
     Q_ENUM(HandlerType)
     explicit ZigbeeHardwareResource(QObject *parent = nullptr);
     virtual ~ZigbeeHardwareResource() = default;
 
     virtual void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) = 0;
-    virtual ZigbeeNode* claimNode(ZigbeeHandler *hanlder, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
+    virtual ZigbeeNode *claimNode(ZigbeeHandler *hanlder, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
     virtual void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) = 0;
 
     virtual ZigbeeNetwork::State networkState(const QUuid &networkUuid) = 0;
@@ -57,7 +53,6 @@ public:
 
 signals:
     void networkStateChanged(const QUuid &networkUuid, ZigbeeNetwork::State state);
-
 };
 
 #endif // ZIGBEEHARDWARERESOURCE_H

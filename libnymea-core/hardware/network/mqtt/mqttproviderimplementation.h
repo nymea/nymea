@@ -38,12 +38,13 @@ class MqttProviderImplementation : public MqttProvider
 public:
     explicit MqttProviderImplementation(MqttBroker *broker, QObject *parent = nullptr);
 
-    MqttChannel* createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
-    MqttChannel* createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
-    MqttChannel* createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
-    void releaseChannel(MqttChannel* channel) override;
+    MqttChannel *createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
+    MqttChannel *createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
+    MqttChannel *createChannel(
+        const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
+    void releaseChannel(MqttChannel *channel) override;
 
-    MqttClient* createInternalClient(const QString &clientId) override;
+    MqttClient *createInternalClient(const QString &clientId) override;
 
     bool available() const override;
     bool enabled() const override;
@@ -56,11 +57,11 @@ private slots:
     void onPluginPublished(const QString &topic, const QByteArray &payload);
 
 private:
-    MqttBroker* m_broker = nullptr;
+    MqttBroker *m_broker = nullptr;
 
     QHash<QString, MqttChannel *> m_createdChannels;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MQTTPROVIDERIMPLEMENTATION_H

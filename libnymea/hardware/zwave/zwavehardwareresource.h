@@ -36,18 +36,13 @@ class ZWaveHardwareResource : public HardwareResource
 {
     Q_OBJECT
 public:
-    enum HandlerType {
-        HandlerTypeBranding,
-        HandlerTypeVendor,
-        HandlerTypeCatchAll
-    };
+    enum HandlerType { HandlerTypeBranding, HandlerTypeVendor, HandlerTypeCatchAll };
     Q_ENUM(HandlerType)
 
     explicit ZWaveHardwareResource(QObject *parent = nullptr);
 
     virtual void registerHandler(ZWaveHandler *handler, HandlerType type = HandlerTypeVendor) = 0;
-    virtual ZWaveNode* claimNode(ZWaveHandler *hanlder, const QUuid &networkUuid, quint8 nodeId) = 0;
-
+    virtual ZWaveNode *claimNode(ZWaveHandler *hanlder, const QUuid &networkUuid, quint8 nodeId) = 0;
 };
 
 #endif // ZWAVEHARDWARERESOURCE_H

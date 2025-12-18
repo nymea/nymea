@@ -119,7 +119,7 @@ private:
 };
 Q_DECLARE_METATYPE(StateType)
 
-class StateTypes: public QList<StateType>
+class StateTypes : public QList<StateType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

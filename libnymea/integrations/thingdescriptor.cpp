@@ -34,37 +34,30 @@
     \sa Device
 */
 
-
 #include "thingdescriptor.h"
 
-
 /*! Construct a DeviceDescriptor. */
-ThingDescriptor::ThingDescriptor():
-    m_id(ThingDescriptorId::createThingDescriptorId())
-{
-
-}
+ThingDescriptor::ThingDescriptor()
+    : m_id(ThingDescriptorId::createThingDescriptorId())
+{}
 
 /*! Construct a DeviceDescriptor with the given \a thingClassId, \a title, \a description and \a parentDeviceId.*/
-ThingDescriptor::ThingDescriptor(const ThingClassId &thingClassId, const QString &title, const QString &description, const ThingId &parentId):
-    m_id(ThingDescriptorId::createThingDescriptorId()),
-    m_thingClassId(thingClassId),
-    m_title(title),
-    m_description(description),
-    m_parentId(parentId)
-{
-
-}
+ThingDescriptor::ThingDescriptor(const ThingClassId &thingClassId, const QString &title, const QString &description, const ThingId &parentId)
+    : m_id(ThingDescriptorId::createThingDescriptorId())
+    , m_thingClassId(thingClassId)
+    , m_title(title)
+    , m_description(description)
+    , m_parentId(parentId)
+{}
 
 /*! Construct a DeviceDescriptor with the given \a id, \a thingClassId, \a title, \a description and \a parentDeviceId.*/
-ThingDescriptor::ThingDescriptor(const ThingDescriptorId &id, const ThingClassId &thingClassId, const QString &title, const QString &description, const ThingId &parentId) :
-    m_id(id),
-    m_thingClassId(thingClassId),
-    m_title(title),
-    m_description(description),
-    m_parentId(parentId)
-{
-}
+ThingDescriptor::ThingDescriptor(const ThingDescriptorId &id, const ThingClassId &thingClassId, const QString &title, const QString &description, const ThingId &parentId)
+    : m_id(id)
+    , m_thingClassId(thingClassId)
+    , m_title(title)
+    , m_description(description)
+    , m_parentId(parentId)
+{}
 
 /*! Returns true, if this DeviceDescriptor is valid. A DeviceDescriptor is valid, if the id and the thingClassId are set.
  *  \sa id(), ThingClassId(), */

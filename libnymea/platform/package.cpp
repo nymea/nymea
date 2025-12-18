@@ -24,15 +24,13 @@
 
 #include "package.h"
 
-Package::Package(const QString &packageId, const QString &displayName, const QString &installedVersion, const QString &candidateVersion, const QString &changelog):
-    m_packageId(packageId),
-    m_displayName(displayName),
-    m_installedVersion(installedVersion),
-    m_candidateVersion(candidateVersion),
-    m_changeLog(changelog)
-{
-
-}
+Package::Package(const QString &packageId, const QString &displayName, const QString &installedVersion, const QString &candidateVersion, const QString &changelog)
+    : m_packageId(packageId)
+    , m_displayName(displayName)
+    , m_installedVersion(installedVersion)
+    , m_candidateVersion(candidateVersion)
+    , m_changeLog(changelog)
+{}
 
 QString Package::packageId() const
 {
@@ -116,15 +114,9 @@ void Package::setCanRemove(bool canRemove)
 
 bool Package::operator==(const Package &other) const
 {
-    return m_packageId == other.packageId() &&
-            m_displayName == other.displayName() &&
-            m_summary == other.summary() &&
-            m_installedVersion == other.installedVersion() &&
-            m_candidateVersion == other.candidateVersion() &&
-            m_changeLog == other.changelog() &&
-            m_updateAvailable == other.updateAvailable() &&
-            m_rollbackAvailable == other.rollbackAvailable() &&
-            m_canRemove == other.canRemove();
+    return m_packageId == other.packageId() && m_displayName == other.displayName() && m_summary == other.summary() && m_installedVersion == other.installedVersion()
+           && m_candidateVersion == other.candidateVersion() && m_changeLog == other.changelog() && m_updateAvailable == other.updateAvailable()
+           && m_rollbackAvailable == other.rollbackAvailable() && m_canRemove == other.canRemove();
 }
 
 bool Package::operator!=(const Package &other) const
@@ -132,15 +124,11 @@ bool Package::operator!=(const Package &other) const
     return !operator==(other);
 }
 
-Packages::Packages()
-{
+Packages::Packages() {}
 
-}
-
-Packages::Packages(const QList<Package> &other): QList<Package>(other)
-{
-
-}
+Packages::Packages(const QList<Package> &other)
+    : QList<Package>(other)
+{}
 
 QVariant Packages::get(int index) const
 {

@@ -24,19 +24,15 @@
 
 #include "browseraction.h"
 
-BrowserAction::BrowserAction(const ThingId &thingId, const QString &itemId):
-    m_thingId(thingId),
-    m_itemId(itemId)
-{
+BrowserAction::BrowserAction(const ThingId &thingId, const QString &itemId)
+    : m_thingId(thingId)
+    , m_itemId(itemId)
+{}
 
-}
-
-BrowserAction::BrowserAction(const BrowserAction &other):
-    m_thingId(other.thingId()),
-    m_itemId(other.itemId())
-{
-
-}
+BrowserAction::BrowserAction(const BrowserAction &other)
+    : m_thingId(other.thingId())
+    , m_itemId(other.itemId())
+{}
 
 bool BrowserAction::isValid() const
 {

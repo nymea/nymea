@@ -30,10 +30,7 @@ Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 namespace nymeaserver {
 namespace scriptengine {
 
-Script::Script()
-{
-
-}
+Script::Script() {}
 
 QUuid Script::id() const
 {
@@ -55,16 +52,11 @@ void Script::setName(const QString &name)
     m_name = name;
 }
 
-Scripts::Scripts()
-{
+Scripts::Scripts() {}
 
-}
-
-Scripts::Scripts(const QList<Script> &other):
-    QList<Script>(other)
-{
-
-}
+Scripts::Scripts(const QList<Script> &other)
+    : QList<Script>(other)
+{}
 
 QVariant Scripts::get(int index)
 {
@@ -76,5 +68,5 @@ void Scripts::put(const QVariant &value)
     append(value.value<Script>());
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

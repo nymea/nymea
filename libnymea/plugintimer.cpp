@@ -150,8 +150,6 @@
     \sa pause()
 */
 
-
-
 /*!
     \class PluginTimerManager
     \brief The plugin timer manager for nymea.
@@ -184,19 +182,15 @@
     \sa registerTimer()
 */
 
-#include "plugintimer.h"
 #include "loggingcategories.h"
+#include "plugintimer.h"
 
 /*! Constructs a \l{PluginTimerManager} with the given \a parent. */
-PluginTimerManager::PluginTimerManager(QObject *parent) :
-    HardwareResource("PluginTimerManager", parent)
-{
-
-}
+PluginTimerManager::PluginTimerManager(QObject *parent)
+    : HardwareResource("PluginTimerManager", parent)
+{}
 
 /*! Constructs a PluginTimer with the given \a parent. */
-PluginTimer::PluginTimer(QObject *parent) :
-    QObject(parent)
-{
-
-}
+PluginTimer::PluginTimer(QObject *parent)
+    : QObject(parent)
+{}

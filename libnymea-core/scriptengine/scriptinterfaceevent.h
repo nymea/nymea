@@ -26,18 +26,18 @@
 #define SCRIPTINTERFACEEVENT_H
 
 #include <QObject>
-#include <QUuid>
 #include <QQmlParserStatus>
+#include <QUuid>
 
-#include "types/event.h"
 #include "integrations/thingmanager.h"
+#include "types/event.h"
 
 namespace nymeaserver {
 namespace scriptengine {
 
 class ScriptParams;
 
-class ScriptInterfaceEvent: public QObject, public QQmlParserStatus
+class ScriptInterfaceEvent : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
@@ -70,7 +70,7 @@ private:
     QString m_eventName;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTINTERFACEEVENT_H

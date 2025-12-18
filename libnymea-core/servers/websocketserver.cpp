@@ -51,10 +51,10 @@
     \sa WebServer, TcpServer, TransportInterface
 */
 
-#include "nymeasettings.h"
-#include "nymeacore.h"
 #include "websocketserver.h"
 #include "loggingcategories.h"
+#include "nymeacore.h"
+#include "nymeasettings.h"
 
 #include <QSslConfiguration>
 
@@ -64,12 +64,11 @@ namespace nymeaserver {
  *
  *  \sa ServerManager, ServerConfiguration
  */
-WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
-    TransportInterface(configuration, parent),
-    m_sslConfiguration(sslConfiguration),
-    m_enabled(false)
-{
-}
+WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent)
+    : TransportInterface(configuration, parent)
+    , m_sslConfiguration(sslConfiguration)
+    , m_enabled(false)
+{}
 
 /*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
@@ -157,7 +156,7 @@ void WebSocketServer::onClientDisconnected()
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
     QUuid clientId = m_clientList.key(client);
-    qCDebug(dcWebSocketServer()) << "Client" << clientId.toString() << "disconnected. (Remote address:" << client->peerAddress().toString() << ")" ;
+    qCDebug(dcWebSocketServer()) << "Client" << clientId.toString() << "disconnected. (Remote address:" << client->peerAddress().toString() << ")";
     m_clientList.take(clientId)->deleteLater();
     emit clientDisconnected(clientId);
 }
@@ -214,8 +213,8 @@ bool WebSocketServer::startServer()
     } else {
         m_server = new QWebSocketServer("nymea", QWebSocketServer::NonSecureMode, this);
     }
-    connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
-    connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
+    connect(m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
+    connect(m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
     if (!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
         qCWarning(dcWebSocketServer()) << "Error listening on" << serverUrl().toString();
@@ -244,4 +243,4 @@ bool WebSocketServer::stopServer()
     return true;
 }
 
-}
+} // namespace nymeaserver

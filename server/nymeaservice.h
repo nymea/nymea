@@ -25,14 +25,13 @@
 #ifndef NYMEASERVICE_H
 #define NYMEASERVICE_H
 
-#include <QCoreApplication>
 #include "qtservice/qtservice.h"
+#include <QCoreApplication>
 
 namespace nymeaserver {
 
 class NymeaService : public QtService<QCoreApplication>
 {
-
 public:
     explicit NymeaService(int argc, char **argv);
     ~NymeaService();
@@ -41,6 +40,6 @@ protected:
     void start();
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NYMEASERVICE_H

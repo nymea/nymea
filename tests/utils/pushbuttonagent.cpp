@@ -31,9 +31,9 @@
 
 Q_LOGGING_CATEGORY(dcPushButtonAgent, "PushButtonAgent")
 
-PushButtonAgent::PushButtonAgent(QObject *parent) : QObject(parent)
-{
-}
+PushButtonAgent::PushButtonAgent(QObject *parent)
+    : QObject(parent)
+{}
 
 bool PushButtonAgent::init(QDBusConnection::BusType busType)
 {

@@ -34,15 +34,15 @@
     \sa QtService
 */
 
-#include "unistd.h"
 #include "stdio.h"
+#include "unistd.h"
 
 #include <QDir>
 
-#include "nymeaservice.h"
-#include "nymeacore.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeacore.h"
+#include "nymeaservice.h"
+#include "nymeasettings.h"
 #include "version.h"
 
 Q_DECLARE_LOGGING_CATEGORY(dcApplication)
@@ -50,8 +50,8 @@ Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 namespace nymeaserver {
 
 /*! Constructs the forked nymead application with the given argument count \a argc and argument vector \a argv. */
-NymeaService::NymeaService(int argc, char **argv):
-    QtService<QCoreApplication>(argc, argv, "nymea - IoT server")
+NymeaService::NymeaService(int argc, char **argv)
+    : QtService<QCoreApplication>(argc, argv, "nymea - IoT server")
 {
     application()->setOrganizationName("nymea");
     application()->setApplicationName("nymead");
@@ -64,9 +64,7 @@ NymeaService::NymeaService(int argc, char **argv):
 }
 
 /*! Destroyes the forked nymead application. */
-NymeaService::~NymeaService()
-{
-}
+NymeaService::~NymeaService() {}
 
 /*! Starts the forked nymead application. */
 void NymeaService::start()
@@ -83,4 +81,4 @@ void NymeaService::start()
     NymeaCore::instance();
 }
 
-}
+} // namespace nymeaserver

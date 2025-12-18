@@ -24,10 +24,7 @@
 
 #include "interfaceactiontype.h"
 
-InterfaceActionType::InterfaceActionType()
-{
-
-}
+InterfaceActionType::InterfaceActionType() {}
 
 bool InterfaceActionType::optional() const
 {
@@ -39,11 +36,9 @@ void InterfaceActionType::setOptional(bool optional)
     m_optional = optional;
 }
 
-InterfaceActionTypes::InterfaceActionTypes(const QList<InterfaceActionType> &other):
-    QList<InterfaceActionType>(other)
-{
-
-}
+InterfaceActionTypes::InterfaceActionTypes(const QList<InterfaceActionType> &other)
+    : QList<InterfaceActionType>(other)
+{}
 
 InterfaceActionType InterfaceActionTypes::findByName(const QString &name)
 {

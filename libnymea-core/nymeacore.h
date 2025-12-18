@@ -25,19 +25,19 @@
 #ifndef NYMEACORE_H
 #define NYMEACORE_H
 
-#include "types/event.h"
-#include "types/thingclass.h"
 #include "integrations/integrationplugin.h"
 #include "integrations/thingdescriptor.h"
 #include "integrations/thingmanagerimplementation.h"
+#include "types/event.h"
+#include "types/thingclass.h"
 
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
 
 #include "servermanager.h"
 
-#include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
+#include "time/timemanager.h"
 
 #include "debugserverhandler.h"
 
@@ -75,15 +75,10 @@ class NymeaCore : public QObject
     friend class NymeaTestBase;
 
 public:
-    enum ShutdownReason {
-        ShutdownReasonQuit,
-        ShutdownReasonTerm,
-        ShutdownReasonFailure,
-        ShutdownReasonRestart
-    };
+    enum ShutdownReason { ShutdownReasonQuit, ShutdownReasonTerm, ShutdownReasonFailure, ShutdownReasonRestart };
     Q_ENUM(ShutdownReason)
 
-    static NymeaCore* instance();
+    static NymeaCore *instance();
     ~NymeaCore();
 
     void init(const QStringList &additionalInterfaces = QStringList(), bool disableLogEngine = false);
@@ -92,7 +87,7 @@ public:
     RuleEngine::RuleError removeRule(const RuleId &id);
 
     NymeaConfiguration *configuration() const;
-    LogEngine* logEngine() const;
+    LogEngine *logEngine() const;
     JsonRPCServerImplementation *jsonRPCServer() const;
     ThingManager *thingManager() const;
     RuleEngine *ruleEngine() const;
@@ -119,7 +114,6 @@ signals:
     void initialized();
 
 private:
-
     explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
     static ShutdownReason s_shutdownReason;
@@ -148,12 +142,10 @@ private:
     SerialPortMonitor *m_serialPortMonitor = nullptr;
     ModbusRtuManager *m_modbusRtuManager = nullptr;
 
-
 private slots:
     void thingManagerLoaded();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NYMEACORE_H

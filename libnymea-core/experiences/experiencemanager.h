@@ -54,8 +54,7 @@ private:
 
     QStringList pluginSearchDirs() const;
     void loadExperiencePlugin(const QString &file);
-
 };
 
-}
+} // namespace nymeaserver
 #endif // EXPERIENCEMANAGER_H

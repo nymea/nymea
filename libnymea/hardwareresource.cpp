@@ -47,7 +47,6 @@
     \sa enabledChanged()
 */
 
-
 /*! \fn bool HardwareResource::setEnabled(bool enabled);
     Sets the hardware resource to \a enabled.
 
@@ -69,9 +68,9 @@
 #include "nymeadbusservice.h"
 
 /*! Constructs a new HardwareResource with the given \a name and \a parent. */
-HardwareResource::HardwareResource(const QString &name, QObject *parent) :
-    QObject(parent),
-    m_name(name)
+HardwareResource::HardwareResource(const QString &name, QObject *parent)
+    : QObject(parent)
+    , m_name(name)
 {
     new NymeaDBusService("/io/nymea/nymead/HardwareManager/" + name, this);
 }

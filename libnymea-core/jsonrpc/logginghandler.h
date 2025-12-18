@@ -51,6 +51,6 @@ private:
     LogEngine *m_logEngine = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // LOGGINGHANDLER_H

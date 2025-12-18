@@ -22,13 +22,10 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "plugininfo.h"
 #include "deviceplugintemplate.h"
+#include "plugininfo.h"
 
-DevicePluginExample::DevicePluginExample()
-{
-
-}
+DevicePluginExample::DevicePluginExample() {}
 
 void DevicePluginExample::init()
 {

@@ -46,7 +46,7 @@ public:
     void setPort(const int &port);
 
     QString deviceType() const;
-    void setDeviceType(const QString & deviceType);
+    void setDeviceType(const QString &deviceType);
 
     QString friendlyName() const;
     void setFriendlyName(const QString &friendlyName);
@@ -55,13 +55,13 @@ public:
     void setManufacturer(const QString &manufacturer);
 
     QUrl manufacturerURL() const;
-    void setManufacturerURL(const QUrl & manufacturerURL);
+    void setManufacturerURL(const QUrl &manufacturerURL);
 
     QString modelDescription() const;
-    void setModelDescription(const QString & modelDescription);
+    void setModelDescription(const QString &modelDescription);
 
     QString modelName() const;
-    void setModelName(const QString & modelName);
+    void setModelName(const QString &modelName);
 
     QString modelNumber() const;
     void setModelNumber(const QString &modelNumber);
@@ -97,7 +97,6 @@ private:
 signals:
 
 public slots:
-
 };
 
 #endif // UPNPDEVICE_H

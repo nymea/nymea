@@ -27,7 +27,7 @@
 
 #include "statetype.h"
 
-class InterfaceStateType: public StateType
+class InterfaceStateType : public StateType
 {
 public:
     InterfaceStateType();
@@ -43,7 +43,7 @@ private:
     bool m_loggingOverride = false;
 };
 
-class InterfaceStateTypes: public QList<InterfaceStateType>
+class InterfaceStateTypes : public QList<InterfaceStateType>
 {
 public:
     InterfaceStateTypes() = default;

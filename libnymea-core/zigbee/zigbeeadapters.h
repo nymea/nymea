@@ -44,7 +44,7 @@ public:
     Q_INVOKABLE void put(const QVariant &variant);
 };
 
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapters)
 

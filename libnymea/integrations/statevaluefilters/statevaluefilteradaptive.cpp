@@ -26,10 +26,7 @@
 
 #include <qmath.h>
 
-StateValueFilterAdaptive::StateValueFilterAdaptive()
-{
-
-}
+StateValueFilterAdaptive::StateValueFilterAdaptive() {}
 
 void StateValueFilterAdaptive::addValue(const QVariant &value)
 {
@@ -88,7 +85,6 @@ void StateValueFilterAdaptive::update()
     double changeRatioToCurrentOutput = 1 - qAbs(currentValue / m_outputValue);
     double changeRatioFiltered = 1 - qAbs(normalizedValue / previousNormalizedValue);
 
-
     // If the unfiltered value changes for more than 3 times the standard deviation of the jittering values
     // it's a 99% chance a big change happened that's not jitter (e.g turned on/off)
     // Discard the history and follow the new value right away
@@ -102,7 +98,7 @@ void StateValueFilterAdaptive::update()
             m_outputValueCount++;
         }
 
-    // We're considering it jitter
+        // We're considering it jitter
     } else {
         // Add up the deviation from the current actual value to the currently filtered value
         m_totalDeviation += changeRatioToCurrentOutput;
@@ -130,7 +126,8 @@ void StateValueFilterAdaptive::update()
 
     qCDebug(dcStateValueFilter()) << "Filter statistics for" << this;
     qCDebug(dcStateValueFilter()) << "Input:" << currentValue << "AVG:" << previousNormalizedValue << "Filtered:" << normalizedValue;
-    qCDebug(dcStateValueFilter()) << "Change ratios: Input/average:" << changeRatioToAverage << "Filtered/average:" << changeRatioFiltered  << "Input/output:" << changeRatioToCurrentOutput;
+    qCDebug(dcStateValueFilter()) << "Change ratios: Input/average:" << changeRatioToAverage << "Filtered/average:" << changeRatioFiltered
+                                  << "Input/output:" << changeRatioToCurrentOutput;
     qCDebug(dcStateValueFilter()) << "Std deviation:" << m_standardDeviation << "Total deviation:" << m_totalDeviation;
     qCDebug(dcStateValueFilter()) << "Compression ratio:" << (1.0 * m_inputValueCount / m_outputValueCount) << "(" << m_outputValueCount << "/" << m_inputValueCount << ")";
 }

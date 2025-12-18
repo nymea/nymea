@@ -42,9 +42,7 @@
 #include "upnpdevicedescriptor.h"
 
 /*! Constructs an UpnpDeviceDescriptor */
-UpnpDeviceDescriptor::UpnpDeviceDescriptor()
-{
-}
+UpnpDeviceDescriptor::UpnpDeviceDescriptor() {}
 
 /*! Sets the \a location URL of this UPnP device. */
 void UpnpDeviceDescriptor::setLocation(const QUrl &location)

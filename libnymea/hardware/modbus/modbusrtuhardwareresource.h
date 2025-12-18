@@ -47,7 +47,6 @@ signals:
     void modbusRtuMasterAdded(const QUuid &modbusUuid);
     void modbusRtuMasterRemoved(const QUuid &modbusUuid);
     void modbusRtuMasterChanged(const QUuid &modbusUuid);
-
 };
 
 #endif // MODBUSRTUHARDWARERESOURCE_H

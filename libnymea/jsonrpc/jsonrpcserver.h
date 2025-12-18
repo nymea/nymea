@@ -35,7 +35,6 @@ public:
 
     virtual bool registerHandler(JsonHandler *handler) = 0;
     virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
-
 };
 
 #endif // JSONRPCSERVER_H

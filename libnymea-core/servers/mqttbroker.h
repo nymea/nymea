@@ -25,12 +25,12 @@
 #ifndef MQTTBROKER_H
 #define MQTTBROKER_H
 
-#include <QObject>
 #include <QHostAddress>
+#include <QObject>
 #include <QSslConfiguration>
 
-#include <mqtt.h>
 #include "nymeaconfiguration.h"
+#include <mqtt.h>
 
 class MqttServer;
 
@@ -77,14 +77,13 @@ signals:
     void policyRemoved(const MqttPolicy &policy);
 
 private:
-    MqttServer* m_server = nullptr;
+    MqttServer *m_server = nullptr;
     NymeaMqttAuthorizer *m_authorizer = nullptr;
     QHash<int, ServerConfiguration> m_configs;
     QHash<QString, MqttPolicy> m_policies;
 
-
     friend class NymeaMqttAuthorizer;
 };
-}
+} // namespace nymeaserver
 
 #endif // MQTTBROKER_H

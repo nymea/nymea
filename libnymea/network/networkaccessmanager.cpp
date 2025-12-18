@@ -162,13 +162,10 @@
     \sa get(), post(), put(), deleteResource()
 */
 
-
-
-#include "networkaccessmanager.h"
 #include "loggingcategories.h"
+#include "networkaccessmanager.h"
 
 /*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
-NetworkAccessManager::NetworkAccessManager(QObject *parent) :
-    HardwareResource("Network access manager" , parent)
-{
-}
+NetworkAccessManager::NetworkAccessManager(QObject *parent)
+    : HardwareResource("Network access manager", parent)
+{}

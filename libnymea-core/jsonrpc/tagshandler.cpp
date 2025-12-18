@@ -30,7 +30,8 @@
 
 namespace nymeaserver {
 
-TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
+TagsHandler::TagsHandler(QObject *parent)
+    : JsonHandler(parent)
 {
     // Enums
     registerEnum<TagsStorage::TagError>();
@@ -39,7 +40,9 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     registerObject<Tag, Tags>();
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the Tags matching the given filter. "
                   "Tags can be filtered by a thingID, a ruleId, an appId, a tagId or a combination of any (however, "
                   "combining thingId and ruleId will return an empty result set).";
@@ -51,7 +54,8 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     returns.insert("o:tags", objectRef("Tags"));
     registerMethod("GetTags", description, params, returns, Types::PermissionScopeControlThings);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Add a Tag. "
                   "A Tag must have a thingId OR a ruleId (call this method twice if you want to attach the same tag "
                   "to a thing and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a "
@@ -62,7 +66,8 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
     registerMethod("AddTag", description, params, returns, Types::PermissionScopeControlThings);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Remove a Tag. "
                   "Tag value is optional and will be disregarded. If the ids match, the tag will be deleted and a "
                   "TagRemoved notification will be emitted.";
@@ -116,7 +121,6 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
     QVariantMap returns = statusToReply(TagsStorage::TagErrorNoError);
     returns.insert("tags", ret);
     return createReply(returns);
-
 }
 
 JsonReply *TagsHandler::AddTag(const QVariantMap &params) const
@@ -166,4 +170,4 @@ QVariantMap TagsHandler::statusToReply(TagsStorage::TagError status) const
     return returns;
 }
 
-}
+} // namespace nymeaserver

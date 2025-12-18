@@ -25,10 +25,10 @@
 #ifndef BLUETOOTHSERVER_H
 #define BLUETOOTHSERVER_H
 
-#include <QObject>
-#include <QBluetoothSocket>
-#include <QBluetoothServer>
 #include <QBluetoothLocalDevice>
+#include <QBluetoothServer>
+#include <QBluetoothSocket>
+#include <QObject>
 
 #include "transportinterface.h"
 
@@ -68,9 +68,8 @@ private slots:
 public slots:
     bool startServer() override;
     bool stopServer() override;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // BLUETOOTHSERVER_H

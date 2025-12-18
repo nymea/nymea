@@ -61,4 +61,3 @@ Types::PermissionScopes Types::scopesFromStringList(const QStringList &scopeList
     }
     return ret;
 }
-

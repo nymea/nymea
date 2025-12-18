@@ -30,13 +30,14 @@
 #include <QDir>
 #include <QtConcurrent/QtConcurrentRun>
 
+#include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <linux/i2c-dev.h>
 
 namespace nymeaserver {
 
-I2CManagerImplementation::I2CManagerImplementation(QObject *parent) : I2CManager(parent)
+I2CManagerImplementation::I2CManagerImplementation(QObject *parent)
+    : I2CManager(parent)
 {
     m_pollTimer.setInterval(200);
     m_pollTimer.setSingleShot(true);
@@ -78,9 +79,8 @@ QList<I2CScanResult> nymeaserver::I2CManagerImplementation::scanRegisters(const 
                 long res = 0;
                 // This is how the kernels i2cdetect scans:
                 // Try to read from address 0x30 - 0x35 and 0x50 to 0x5F and write to the others.
-                if ((address >= 0x30 && address <= 0x37)
-                        || (address >= 0x50 && address <= 0x5F)) {
-                    res  = read(f.handle(), &probe, 1);
+                if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
+                    res = read(f.handle(), &probe, 1);
                 } else {
                     res = write(f.handle(), &probe, 1);
                 }
@@ -154,7 +154,6 @@ bool I2CManagerImplementation::startReading(I2CDevice *i2cDevice, int interval)
     return true;
 }
 
-
 void I2CManagerImplementation::stopReading(I2CDevice *i2cDevice)
 {
     QMutexLocker locker(&m_mutex);
@@ -190,13 +189,12 @@ void I2CManagerImplementation::close(I2CDevice *i2cDevice)
     }
 
     int refCount = 0;
-    foreach (I2CDevice* d, m_openFiles.keys()) {
+    foreach (I2CDevice *d, m_openFiles.keys()) {
         if (d->portName() == i2cDevice->portName()) {
             refCount++;
         }
     }
     if (refCount == 0) {
-
         m_mutex.lock();
         QFile *f = m_openFiles.take(i2cDevice);
         m_mutex.unlock();
@@ -208,7 +206,7 @@ void I2CManagerImplementation::close(I2CDevice *i2cDevice)
 
 void I2CManagerImplementation::nextCycle()
 {
-    QFuture<void> future = QtConcurrent::run([this](){
+    QFuture<void> future = QtConcurrent::run([this]() {
         // Copy the write queue to open it up as fast as possible for others to append new entries
         m_writeQueueMutex.lock();
         QList<WritingInfo> writeQueue = m_writeQueue;
@@ -235,7 +233,6 @@ void I2CManagerImplementation::nextCycle()
             bool success = i2cDevice->writeData(fd, info.data);
 
             QMetaObject::invokeMethod(i2cDevice, "dataWritten", Qt::QueuedConnection, Q_ARG(bool, success));
-
         }
 
         foreach (I2CDevice *i2cDevice, m_readers.keys()) {
@@ -266,9 +263,7 @@ void I2CManagerImplementation::nextCycle()
     });
 
     m_watcher.setFuture(future);
-    connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this](){
-        m_pollTimer.start();
-    });
+    connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this]() { m_pollTimer.start(); });
 }
 
-}
+} // namespace nymeaserver

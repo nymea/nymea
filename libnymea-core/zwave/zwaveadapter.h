@@ -43,7 +43,7 @@ private:
     QString m_serialPort;
 };
 
-class ZWaveAdapters: public QList<ZWaveAdapter>
+class ZWaveAdapters : public QList<ZWaveAdapter>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -54,7 +54,6 @@ public:
     bool hasSerialPort(const QString &serialPort);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
-
 };
 
 #endif // ZWAVEADAPTER_H

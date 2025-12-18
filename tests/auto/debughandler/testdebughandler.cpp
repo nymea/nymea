@@ -26,7 +26,7 @@
 
 using namespace nymeaserver;
 
-class TestDebugHandler: public NymeaTestBase
+class TestDebugHandler : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -35,7 +35,6 @@ protected slots:
 
 private slots:
     void getLoggingFilters();
-
 };
 
 void TestDebugHandler::initTestCase()
@@ -52,7 +51,7 @@ void TestDebugHandler::getLoggingFilters()
     QVariantList loggingCategoriesList = loggingFilters.value("loggingCategories").toList();
     QVERIFY(!loggingCategoriesList.isEmpty());
 
-    foreach(const QVariant &categoryVariant, loggingCategoriesList) {
+    foreach (const QVariant &categoryVariant, loggingCategoriesList) {
         QVariantMap categoryMap = categoryVariant.toMap();
         QVERIFY(categoryMap.contains("level"));
         QVERIFY(categoryMap.contains("name"));

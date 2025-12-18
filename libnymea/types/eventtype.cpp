@@ -34,18 +34,13 @@
 
 #include "eventtype.h"
 
-EventType::EventType()
-{
-
-}
+EventType::EventType() {}
 
 /*! Constructs a EventType object with the given \a id. */
-EventType::EventType(const EventTypeId &id):
-    m_id(id),
-    m_index(0)
-{
-
-}
+EventType::EventType(const EventTypeId &id)
+    : m_id(id)
+    , m_index(0)
+{}
 
 /*! Returns the id. */
 EventTypeId EventType::id() const

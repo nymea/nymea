@@ -23,20 +23,20 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "bluetoothlowenergymanagerimplementation.h"
+#include "bluetoothpairingjobimplementation.h"
 #include "loggingcategories.h"
 #include "nymeabluetoothagent.h"
-#include "bluetoothpairingjobimplementation.h"
 
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
-#include <QDBusReply>
 #include <QDBusInterface>
+#include <QDBusReply>
 
 namespace nymeaserver {
 
-BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent) :
-    BluetoothLowEnergyManager(parent),
-    m_reconnectTimer(reconnectTimer)
+BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent)
+    : BluetoothLowEnergyManager(parent)
+    , m_reconnectTimer(reconnectTimer)
 {
     // QBluetooth hangs for the D-Bus timeout if BlueZ is not available. In order to avoid that, let's first check
     // ourselves if bluez is registered on D-Bus.
@@ -95,14 +95,14 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevice
         localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
         QBluetoothDeviceDiscoveryAgent *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(hostInfo.address(), reply);
         discoveryAgent->setLowEnergyDiscoveryTimeout(qMax(5000, qMin(30000, timeout)));
-        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, reply, [=](const QBluetoothDeviceInfo &info){
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, reply, [=](const QBluetoothDeviceInfo &info) {
             // Note: only show low energy devices
             if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
                 qCDebug(dcBluetooth()) << "device discovered" << info.name() << info.address().toString();
                 reply->addDiscoveredDevice(info, hostInfo);
             }
         });
-        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, reply, [=](){
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, reply, [=]() {
             qCDebug(dcBluetooth()) << "Discovery finished";
             reply->setFinished();
         });
@@ -131,20 +131,20 @@ BluetoothPairingJob *BluetoothLowEnergyManagerImplementation::pairDevice(const Q
         return job;
     }
     localDevice->requestPairing(device, QBluetoothLocalDevice::AuthorizedPaired);
-#if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
-    connect(localDevice, &QBluetoothLocalDevice::errorOccurred, job, [=](QBluetoothLocalDevice::Error error){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+    connect(localDevice, &QBluetoothLocalDevice::errorOccurred, job, [=](QBluetoothLocalDevice::Error error) {
         qCDebug(dcBluetooth()) << "Pairing error" << error;
         job->finish(false);
         localDevice->deleteLater();
     });
 #else
-    connect(localDevice, &QBluetoothLocalDevice::error, job, [=](QBluetoothLocalDevice::Error error){
+    connect(localDevice, &QBluetoothLocalDevice::error, job, [=](QBluetoothLocalDevice::Error error) {
         qCDebug(dcBluetooth()) << "Pairing error" << error;
         job->finish(false);
         localDevice->deleteLater();
     });
 #endif
-    connect(localDevice, &QBluetoothLocalDevice::pairingFinished, job, [=](const QBluetoothAddress &address, QBluetoothLocalDevice::Pairing pairing){
+    connect(localDevice, &QBluetoothLocalDevice::pairingFinished, job, [=](const QBluetoothAddress &address, QBluetoothLocalDevice::Pairing pairing) {
         qCDebug(dcBluetooth()) << "Pairing finished" << address.toString() << pairing;
         job->finish(true);
         localDevice->deleteLater();
@@ -238,4 +238,4 @@ void BluetoothLowEnergyManagerImplementation::onReconnectTimeout()
     }
 }
 
-}
+} // namespace nymeaserver

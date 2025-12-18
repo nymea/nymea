@@ -24,10 +24,7 @@
 
 #include "networkutils.h"
 
-NetworkUtils::NetworkUtils()
-{
-
-}
+NetworkUtils::NetworkUtils() {}
 
 QNetworkInterface NetworkUtils::getInterfaceForHostaddress(const QHostAddress &address)
 {

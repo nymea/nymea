@@ -24,11 +24,7 @@
 
 #include "interfaceparamtype.h"
 
-
-InterfaceParamType::InterfaceParamType()
-{
-
-}
+InterfaceParamType::InterfaceParamType() {}
 
 bool InterfaceParamType::optional() const
 {
@@ -40,12 +36,9 @@ void InterfaceParamType::setOptional(bool optional)
     m_optional = optional;
 }
 
-
 InterfaceParamTypes::InterfaceParamTypes(const QList<InterfaceParamType> &other)
     : QList<InterfaceParamType>(other)
-{
-
-}
+{}
 
 InterfaceParamType InterfaceParamTypes::findByName(const QString &name)
 {

@@ -133,26 +133,24 @@
     Writes the given \l{HttpReply} \a httpReply to the given \a debug. This method gets used just for debugging.
 */
 
-
-
 #include "httpreply.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
 #include "version.h"
 
 #include <QDateTime>
-#include <QPair>
 #include <QDebug>
+#include <QPair>
 
 namespace nymeaserver {
 
-HttpReply::HttpReply(QObject *parent) :
-    QObject(parent),
-    m_statusCode(HttpReply::Ok),
-    m_type(HttpReply::TypeSync),
-    m_payload(QByteArray()),
-    m_closeConnection(false),
-    m_timedOut(false)
+HttpReply::HttpReply(QObject *parent)
+    : QObject(parent)
+    , m_statusCode(HttpReply::Ok)
+    , m_type(HttpReply::TypeSync)
+    , m_payload(QByteArray())
+    , m_closeConnection(false)
+    , m_timedOut(false)
 {
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
@@ -165,17 +163,17 @@ HttpReply::HttpReply(QObject *parent) :
     setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
-    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Access-Control-Allow-Origin", "*");
     setRawHeader("Keep-Alive", QString("timeout=%1, max=50").arg(m_timeout).toUtf8());
     packReply();
 }
 
-HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpReply::Type &type, QObject *parent):
-    QObject(parent),
-    m_statusCode(statusCode),
-    m_type(type),
-    m_payload(QByteArray()),
-    m_timedOut(false)
+HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpReply::Type &type, QObject *parent)
+    : QObject(parent)
+    , m_statusCode(statusCode)
+    , m_type(type)
+    , m_payload(QByteArray())
+    , m_timedOut(false)
 {
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &HttpReply::timeout);
@@ -188,7 +186,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
-    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Access-Control-Allow-Origin", "*");
     setRawHeader("Keep-Alive", QString("timeout=%1, max=50").arg(m_timeout).toUtf8());
     packReply();
 }
@@ -348,7 +346,7 @@ void HttpReply::packReply()
 
     // write header
     foreach (const QByteArray &headerName, m_rawHeaderList.keys()) {
-        m_rawHeader.append(headerName + ": " + m_rawHeaderList.value(headerName) + "\r\n" );
+        m_rawHeader.append(headerName + ": " + m_rawHeaderList.value(headerName) + "\r\n");
     }
 
     m_rawHeader.append("\r\n");
@@ -491,4 +489,4 @@ QDebug operator<<(QDebug debug, HttpReply *httpReply)
     return debug;
 }
 
-}
+} // namespace nymeaserver

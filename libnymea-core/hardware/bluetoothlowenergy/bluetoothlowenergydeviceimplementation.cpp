@@ -27,11 +27,13 @@
 
 namespace nymeaserver {
 
-BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
-    BluetoothLowEnergyDevice(parent),
-    m_deviceInfo(deviceInfo)
+BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo,
+                                                                               const QLowEnergyController::RemoteAddressType &addressType,
+                                                                               QObject *parent)
+    : BluetoothLowEnergyDevice(parent)
+    , m_deviceInfo(deviceInfo)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_controller = QLowEnergyController::createCentral(deviceInfo, this);
 #else
     m_controller = new QLowEnergyController(address(), this);
@@ -42,7 +44,7 @@ BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(c
     connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDeviceImplementation::onDisconnected);
     connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished);
     connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDeviceImplementation::onStateChanged);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(m_controller, &QLowEnergyController::errorOccurred, this, &BluetoothLowEnergyDeviceImplementation::onDeviceError);
 #else
     connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
@@ -63,7 +65,6 @@ QLowEnergyController *BluetoothLowEnergyDeviceImplementation::controller() const
 {
     return m_controller;
 }
-
 
 void BluetoothLowEnergyDeviceImplementation::setConnected(bool connected)
 {
@@ -152,9 +153,9 @@ QList<QBluetoothUuid> BluetoothLowEnergyDeviceImplementation::serviceUuids() con
 
 void BluetoothLowEnergyDeviceImplementation::onDeviceError(const QLowEnergyController::Error &error)
 {
-    qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
+    qCWarning(dcBluetooth()) << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
 
     emit errorOccurred(error);
 }
 
-}
+} // namespace nymeaserver

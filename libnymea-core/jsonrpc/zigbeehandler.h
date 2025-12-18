@@ -57,12 +57,8 @@ public:
     };
     Q_ENUM(ZigbeeNodeRouteStatus)
 
-    enum ZigbeeClusterDirection {
-        ZigbeeClusterDirectionServer,
-        ZigbeeClusterDirectionClient
-    };
+    enum ZigbeeClusterDirection { ZigbeeClusterDirectionServer, ZigbeeClusterDirectionClient };
     Q_ENUM(ZigbeeClusterDirection)
-
 
     explicit ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
 
@@ -111,6 +107,6 @@ signals:
     void NodeChanged(const QVariantMap &params);
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZIGBEEHANDLER_H

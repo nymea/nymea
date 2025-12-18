@@ -25,11 +25,11 @@
 #ifndef PLUGININFOCOMPILER_H
 #define PLUGININFOCOMPILER_H
 
-#include <QString>
 #include <QFile>
+#include <QString>
 
-#include "types/paramtype.h"
 #include "integrations/pluginmetadata.h"
+#include "types/paramtype.h"
 
 class PluginInfoCompiler
 {
@@ -37,7 +37,6 @@ public:
     PluginInfoCompiler();
 
     int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath, bool strictMode);
-
 
 private:
     void writePlugin(const PluginMetadata &metadata);

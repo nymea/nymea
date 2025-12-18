@@ -25,12 +25,12 @@
 #ifndef MQTTCHANNEL_H
 #define MQTTCHANNEL_H
 
-#include <QObject>
 #include <QHostAddress>
+#include <QObject>
 
 #include "libnymea.h"
 
-class LIBNYMEA_EXPORT MqttChannel: public QObject
+class LIBNYMEA_EXPORT MqttChannel : public QObject
 {
     Q_OBJECT
 public:
@@ -49,9 +49,9 @@ public:
     virtual bool isConnected() const = 0;
 
 signals:
-    void clientConnected(MqttChannel* channel);
-    void clientDisconnected(MqttChannel* channel);
-    void publishReceived(MqttChannel* channel, const QString &topic, const QByteArray &payload);
+    void clientConnected(MqttChannel *channel);
+    void clientDisconnected(MqttChannel *channel);
+    void publishReceived(MqttChannel *channel, const QString &topic, const QByteArray &payload);
 };
 
 #endif // MQTTCHANNEL_H

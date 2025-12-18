@@ -55,14 +55,16 @@ private:
 Q_DECLARE_METATYPE(Param)
 QDebug operator<<(QDebug dbg, const Param &param);
 
-class LIBNYMEA_EXPORT ParamList: public QList<Param>
+class LIBNYMEA_EXPORT ParamList : public QList<Param>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     ParamList();
     ParamList(const QList<Param> &other);
-    ParamList(std::initializer_list<Param> args):QList(args) {}
+    ParamList(std::initializer_list<Param> args)
+        : QList(args)
+    {}
     Q_INVOKABLE QVariant get(int index);
     Q_INVOKABLE void put(const QVariant &variant);
     bool hasParam(const ParamTypeId &paramTypeId) const;
@@ -72,7 +74,6 @@ public:
 
 private:
     QList<ParamTypeId> m_ids;
-
 };
 Q_DECLARE_METATYPE(ParamList)
 QDebug operator<<(QDebug dbg, const ParamList &params);

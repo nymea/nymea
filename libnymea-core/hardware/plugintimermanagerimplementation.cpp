@@ -28,9 +28,9 @@
 
 namespace nymeaserver {
 
-PluginTimerImplementation::PluginTimerImplementation(int interval, QObject *parent) :
-    PluginTimer(parent),
-    m_interval(interval)
+PluginTimerImplementation::PluginTimerImplementation(int interval, QObject *parent)
+    : PluginTimer(parent)
+    , m_interval(interval)
 {
     connect(NymeaCore::instance()->timeManager(), &TimeManager::tick, this, &PluginTimerImplementation::tick);
 }
@@ -117,9 +117,8 @@ void PluginTimerImplementation::resume()
     m_paused = false;
 }
 
-
-PluginTimerManagerImplementation::PluginTimerManagerImplementation(QObject *parent) :
-    PluginTimerManager(parent)
+PluginTimerManagerImplementation::PluginTimerManagerImplementation(QObject *parent)
+    : PluginTimerManager(parent)
 {
     m_available = true;
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
@@ -200,7 +199,7 @@ void PluginTimerManagerImplementation::timeTick()
 void PluginTimerManagerImplementation::setEnabled(bool enabled)
 {
     if (enabled == m_enabled) {
-        qCDebug(dcHardware()) << "TimerManager already" << (enabled ? "enabled": "disabled");
+        qCDebug(dcHardware()) << "TimerManager already" << (enabled ? "enabled" : "disabled");
         return;
     }
 
@@ -230,6 +229,4 @@ bool PluginTimerManagerImplementation::disable()
     return true;
 }
 
-}
-
-
+} // namespace nymeaserver

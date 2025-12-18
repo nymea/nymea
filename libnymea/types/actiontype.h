@@ -26,8 +26,8 @@
 #define ACTIONTYPE_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "paramtype.h"
+#include "typeutils.h"
 
 #include <QVariantList>
 
@@ -68,7 +68,7 @@ Q_DECLARE_METATYPE(ActionType)
 
 QDebug operator<<(QDebug dbg, const ActionType &actionType);
 
-class ActionTypes: public QList<ActionType>
+class ActionTypes : public QList<ActionType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

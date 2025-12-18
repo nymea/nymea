@@ -24,15 +24,15 @@
 
 #include "tagsstorage.h"
 #include "integrations/thingmanager.h"
-#include "ruleengine/ruleengine.h"
 #include "nymeasettings.h"
+#include "ruleengine/ruleengine.h"
 
 namespace nymeaserver {
 
-TagsStorage::TagsStorage(ThingManager *thingManager, RuleEngine *ruleEngine, QObject *parent):
-    QObject(parent),
-    m_thingManager(thingManager),
-    m_ruleEngine(ruleEngine)
+TagsStorage::TagsStorage(ThingManager *thingManager, RuleEngine *ruleEngine, QObject *parent)
+    : QObject(parent)
+    , m_thingManager(thingManager)
+    , m_ruleEngine(ruleEngine)
 {
     connect(thingManager, &ThingManager::thingRemoved, this, &TagsStorage::thingRemoved);
     connect(ruleEngine, &RuleEngine::ruleRemoved, this, &TagsStorage::ruleRemoved);
@@ -118,9 +118,9 @@ TagsStorage::TagError TagsStorage::addTag(const Tag &tag)
             return TagsStorage::TagErrorThingNotFound;
         }
     } else if (!tag.ruleId().isNull()) {
-       if (!m_ruleEngine->findRule(tag.ruleId()).isValid()) {
-           return TagsStorage::TagErrorRuleNotFound;
-       }
+        if (!m_ruleEngine->findRule(tag.ruleId()).isValid()) {
+            return TagsStorage::TagErrorRuleNotFound;
+        }
     }
 
     int index = m_tags.indexOf(tag);
@@ -145,7 +145,6 @@ TagsStorage::TagError TagsStorage::removeTag(const Tag &tag)
     emit tagRemoved(tag);
     return TagErrorNoError;
 }
-
 
 void TagsStorage::thingRemoved(const ThingId &thingId)
 {
@@ -203,4 +202,4 @@ void TagsStorage::unsaveTag(const Tag &tag)
     settings.remove(tag.tagId());
 }
 
-}
+} // namespace nymeaserver

@@ -41,15 +41,13 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
-
-
 signals:
 
 private:
     ThingManager *m_thingManager = nullptr;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTTHINGMANAGER_H

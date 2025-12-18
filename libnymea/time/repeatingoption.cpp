@@ -88,20 +88,16 @@
 #include <QDateTime>
 
 /*! Constructs an empty \l{RepeatingOption}. */
-RepeatingOption::RepeatingOption() :
-    m_mode(RepeatingModeNone)
-{
-
-}
+RepeatingOption::RepeatingOption()
+    : m_mode(RepeatingModeNone)
+{}
 
 /*! Constructs a \l{RepeatingOption} with the given \a mode, \a weekDays list and \a monthDays list. */
-RepeatingOption::RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays, const QList<int> &monthDays) :
-    m_mode(mode),
-    m_weekDays(weekDays),
-    m_monthDays(monthDays)
-{
-
-}
+RepeatingOption::RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays, const QList<int> &monthDays)
+    : m_mode(mode)
+    , m_weekDays(weekDays)
+    , m_monthDays(monthDays)
+{}
 
 /*! Returns the mode of this \l{RepeatingOption}. */
 RepeatingOption::RepeatingMode RepeatingOption::mode() const

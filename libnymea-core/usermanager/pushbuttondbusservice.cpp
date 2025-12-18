@@ -27,17 +27,17 @@
 #include "nymeadbusservice.h"
 
 #include <QDBusConnection>
-#include <QDebug>
-#include <QDBusServiceWatcher>
 #include <QDBusMessage>
+#include <QDBusServiceWatcher>
+#include <QDebug>
 
 namespace nymeaserver {
 
-PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) :
-    QObject(parent),
-    m_userManager(parent)
+PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent)
+    : QObject(parent)
+    , m_userManager(parent)
 {
-    NymeaDBusService* dbusService = new NymeaDBusService(objectPath, this);
+    NymeaDBusService *dbusService = new NymeaDBusService(objectPath, this);
     if (!dbusService->isValid()) {
         qCWarning(dcUserManager()) << "Failed to register PushButton D-Bus service.";
         return;
@@ -71,7 +71,7 @@ QByteArray PushButtonDBusService::GenerateAuthToken(const QString &deviceName)
     int transactionId = m_userManager->requestPushButtonAuth(deviceName);
     bool success = false;
     QByteArray token;
-    QMetaObject::Connection c = connect(m_userManager, &UserManager::pushButtonAuthFinished, this, [&] (int i, bool s, const QByteArray &t) {
+    QMetaObject::Connection c = connect(m_userManager, &UserManager::pushButtonAuthFinished, this, [&](int i, bool s, const QByteArray &t) {
         if (transactionId == i) {
             success = s;
             token = t;
@@ -92,4 +92,4 @@ void PushButtonDBusService::serviceUnregistered(const QString &serviceName)
     qCDebug(dcUserManager()) << "PushButton agent" << serviceName << "unregistered";
 }
 
-}
+} // namespace nymeaserver

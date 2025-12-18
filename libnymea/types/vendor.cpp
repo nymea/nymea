@@ -34,17 +34,13 @@
 
 #include "vendor.h"
 
-Vendor::Vendor()
-{
-
-}
+Vendor::Vendor() {}
 
 /*! Constructs an Vendor with the given \a id and the given \a name. */
-Vendor::Vendor(const VendorId &id, const QString &name):
-    m_id(id),
-    m_name(name)
-{
-}
+Vendor::Vendor(const VendorId &id, const QString &name)
+    : m_id(id)
+    , m_name(name)
+{}
 
 /*! Returns the id of this Vendor. */
 VendorId Vendor::id() const
@@ -86,15 +82,11 @@ bool Vendor::operator==(const Vendor &other) const
     return m_id == other.id();
 }
 
-Vendors::Vendors()
-{
+Vendors::Vendors() {}
 
-}
-
-Vendors::Vendors(const QList<Vendor> &other): QList<Vendor>(other)
-{
-
-}
+Vendors::Vendors(const QList<Vendor> &other)
+    : QList<Vendor>(other)
+{}
 
 QVariant Vendors::get(int index) const
 {

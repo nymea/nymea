@@ -27,7 +27,7 @@
 
 #include "browseritem.h"
 
-class MediaBrowserItem: public BrowserItem
+class MediaBrowserItem : public BrowserItem
 {
     Q_GADGET
     Q_PROPERTY(MediaBrowserIcon mediaIcon READ mediaIcon)

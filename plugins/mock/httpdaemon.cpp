@@ -24,21 +24,24 @@
 
 #include "httpdaemon.h"
 
-#include "integrations/thing.h"
-#include "integrations/integrationplugin.h"
-#include "types/thingclass.h"
-#include "types/statetype.h"
 #include "extern-plugininfo.h"
+#include "integrations/integrationplugin.h"
+#include "integrations/thing.h"
+#include "types/statetype.h"
+#include "types/thingclass.h"
 
-#include <QTcpSocket>
-#include <QDebug>
 #include <QDateTime>
-#include <QUrlQuery>
+#include <QDebug>
 #include <QRegularExpression>
 #include <QStringList>
+#include <QTcpSocket>
+#include <QUrlQuery>
 
-HttpDaemon::HttpDaemon(Thing *thing, IntegrationPlugin *parent):
-    QTcpServer(parent), disabled(false), m_plugin(parent), m_thing(thing)
+HttpDaemon::HttpDaemon(Thing *thing, IntegrationPlugin *parent)
+    : QTcpServer(parent)
+    , disabled(false)
+    , m_plugin(parent)
+    , m_thing(thing)
 {
     QHash<ThingClassId, ParamTypeId> portMap;
     portMap.insert(mockThingClassId, mockThingHttpportParamTypeId);
@@ -64,7 +67,6 @@ void HttpDaemon::incomingConnection(qintptr socket)
     connect(s, &QTcpSocket::readyRead, this, &HttpDaemon::readClient);
     connect(s, &QTcpSocket::disconnected, this, &HttpDaemon::discardClient);
     s->setSocketDescriptor(socket);
-
 }
 
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
@@ -80,7 +82,7 @@ void HttpDaemon::readClient()
     // This slot is called when the client sent data to the server. The
     // server looks if it was a get request and sends a very simple HTML
     // document back.
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket *socket = (QTcpSocket *) sender();
     if (socket->canReadLine()) {
         QByteArray data = socket->readLine();
         QStringList tokens = QString(data).split(QRegularExpression("[ \r\n][ \r\n]*"));
@@ -148,17 +150,15 @@ void HttpDaemon::readClient()
 
 void HttpDaemon::discardClient()
 {
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket *socket = (QTcpSocket *) sender();
     socket->deleteLater();
 }
 
 QString HttpDaemon::generateHeader()
 {
-    QString contentHeader(
-        "HTTP/1.0 200 Ok\r\n"
-       "Content-Type: text/html; charset=\"utf-8\"\r\n"
-       "\r\n"
-    );
+    QString contentHeader("HTTP/1.0 200 Ok\r\n"
+                          "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                          "\r\n");
     return contentHeader;
 }
 
@@ -172,15 +172,17 @@ QString HttpDaemon::generateWebPage()
     }
     Q_ASSERT(thingClass.isValid());
 
-    QString body = QString(
-    "<html>"
-        "<body>"
-        "<h1>Mock thing controller</h1>\n"
-        "<hr>"
-                "<h2>Thing Information</h2>"
-        "Name: %1<br>"
-        "ID: %2<br>"
-        "ThingClass ID: %3<br>").arg(m_thing->name()).arg(m_thing->id().toString()).arg(thingClass.id().toString());
+    QString body = QString("<html>"
+                           "<body>"
+                           "<h1>Mock thing controller</h1>\n"
+                           "<hr>"
+                           "<h2>Thing Information</h2>"
+                           "Name: %1<br>"
+                           "ID: %2<br>"
+                           "ThingClass ID: %3<br>")
+                       .arg(m_thing->name())
+                       .arg(m_thing->id().toString())
+                       .arg(thingClass.id().toString());
 
     body.append("<hr>");
     body.append("<h2>States</h2>");
@@ -204,18 +206,18 @@ QString HttpDaemon::generateWebPage()
     body.append("<table>");
     for (int i = 0; i < thingClass.eventTypes().count(); ++i) {
         EventType eventType = thingClass.eventTypes().at(i);
-        body.append(QString(
-        "<tr>"
-        "<form action=\"/generateevent\" method=\"get\">"
-        "<td>%1<input type='hidden' name='eventtypeid' value='%2'/></td>"
-        "<td>").arg(eventType.name()).arg(eventType.id().toString()));
+        body.append(QString("<tr>"
+                            "<form action=\"/generateevent\" method=\"get\">"
+                            "<td>%1<input type='hidden' name='eventtypeid' value='%2'/></td>"
+                            "<td>")
+                        .arg(eventType.name())
+                        .arg(eventType.id().toString()));
         if (!eventType.displayName().endsWith(" changed")) {
             body.append(QStringLiteral("<input type='submit' value='Generate'/>"));
         }
         body.append("</td>"
-        "</form>"
-        "</tr>"
-        );
+                    "</form>"
+                    "</tr>");
     }
     body.append("</table>");
 
@@ -234,13 +236,14 @@ QString HttpDaemon::generateWebPage()
                 break;
             }
         }
-        body.append(QString(
-        "<tr>"
-        "<td>%1</td>"
-        "<td>%2</td>"
-        "<td>%3</td>"
-        "</tr>"
-        ).arg(actionName).arg(actionTypeId.toString()).arg(timestamp.toString()));
+        body.append(QString("<tr>"
+                            "<td>%1</td>"
+                            "<td>%2</td>"
+                            "<td>%3</td>"
+                            "</tr>")
+                        .arg(actionName)
+                        .arg(actionTypeId.toString())
+                        .arg(timestamp.toString()));
     }
     body.append("</table>");
 

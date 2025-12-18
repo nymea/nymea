@@ -24,24 +24,19 @@
 
 #include "browseritemaction.h"
 
+BrowserItemAction::BrowserItemAction(const ThingId &thingId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params)
+    : m_thingId(thingId)
+    , m_itemId(itemId)
+    , m_actionTypeId(actionTypeId)
+    , m_params(params)
+{}
 
-BrowserItemAction::BrowserItemAction(const ThingId &thingId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
-    m_thingId(thingId),
-    m_itemId(itemId),
-    m_actionTypeId(actionTypeId),
-    m_params(params)
-{
-
-}
-
-BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
-    m_thingId(other.thingId()),
-    m_itemId(other.itemId()),
-    m_actionTypeId(other.actionTypeId()),
-    m_params(other.params())
-{
-
-}
+BrowserItemAction::BrowserItemAction(const BrowserItemAction &other)
+    : m_thingId(other.thingId())
+    , m_itemId(other.itemId())
+    , m_actionTypeId(other.actionTypeId())
+    , m_params(other.params())
+{}
 
 bool BrowserItemAction::isValid() const
 {

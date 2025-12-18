@@ -23,12 +23,12 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zwavedevicedatabase.h"
+#include <QDataStream>
 #include <QDir>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QRegularExpression>
-#include <QDataStream>
 
 #include "hardware/zwave/zwavenode.h"
 #include "zwavenodeimplementation.h"
@@ -38,11 +38,10 @@ Q_DECLARE_LOGGING_CATEGORY(dcZWave)
 
 namespace nymeaserver {
 
-ZWaveDeviceDatabase::ZWaveDeviceDatabase(const QString &path, const QUuid &networkUuid):
-    m_path(path),
-    m_networkUuid(networkUuid)
-{
-}
+ZWaveDeviceDatabase::ZWaveDeviceDatabase(const QString &path, const QUuid &networkUuid)
+    : m_path(path)
+    , m_networkUuid(networkUuid)
+{}
 
 bool ZWaveDeviceDatabase::initDB()
 {
@@ -76,7 +75,8 @@ bool ZWaveDeviceDatabase::initDB()
 
         query = QSqlQuery(m_db);
         if (!query.exec("INSERT INTO metadata (version) VALUES (1);") || m_db.lastError().isValid()) {
-            qCCritical(dcZWave()) << "Error creating metadata table in devie database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            qCCritical(dcZWave()) << "Error creating metadata table in devie database. Driver error:" << m_db.lastError().driverText()
+                                  << "Database error:" << m_db.lastError().databaseText();
             return false;
         }
     }
@@ -104,7 +104,8 @@ bool ZWaveDeviceDatabase::initDB()
                               ");";
 
         if (!query.exec(queryString) || m_db.lastError().isValid()) {
-            qCCritical(dcZWave()) << "Error creating nodes table in devices database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            qCCritical(dcZWave()) << "Error creating nodes table in devices database. Driver error:" << m_db.lastError().driverText()
+                                  << "Database error:" << m_db.lastError().databaseText();
             return false;
         }
     }
@@ -128,7 +129,8 @@ bool ZWaveDeviceDatabase::initDB()
                               ");";
 
         if (!query.exec(queryString) || m_db.lastError().isValid()) {
-            qCCritical(dcZWave()) << "Error creating nodevalues table in device database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            qCCritical(dcZWave()) << "Error creating nodevalues table in device database. Driver error:" << m_db.lastError().driverText()
+                                  << "Database error:" << m_db.lastError().databaseText();
             return false;
         }
     }
@@ -157,7 +159,8 @@ void ZWaveDeviceDatabase::clearDB()
 void ZWaveDeviceDatabase::storeNode(ZWaveNode *node)
 {
     QSqlQuery query(m_db);
-    query.prepare("INSERT OR REPLACE INTO nodes(nodeId, basicType, deviceType, plusDeviceType, manufacturerId, manufacturerName, name, productId, productName, productType, isZWavePlus, isSecure, isBeaming, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    query.prepare("INSERT OR REPLACE INTO nodes(nodeId, basicType, deviceType, plusDeviceType, manufacturerId, manufacturerName, name, productId, productName, productType, "
+                  "isZWavePlus, isSecure, isBeaming, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
     query.addBindValue(node->nodeId());
     query.addBindValue(node->nodeType());
     query.addBindValue(node->deviceType());
@@ -204,7 +207,8 @@ void ZWaveDeviceDatabase::storeValue(ZWaveNode *node, quint64 valueId)
     out << value.value();
 
     QSqlQuery query(m_db);
-    query.prepare("INSERT OR REPLACE INTO nodevalues(valueId, nodeId, valueGenre, commandClass, instance, idx, type, value, valueSelection, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    query.prepare("INSERT OR REPLACE INTO nodevalues(valueId, nodeId, valueGenre, commandClass, instance, idx, type, value, valueSelection, description) VALUES (?, ?, ?, ?, ?, ?, "
+                  "?, ?, ?, ?);");
     query.addBindValue(value.id());
     query.addBindValue(node->nodeId());
     query.addBindValue(value.genre());
@@ -241,7 +245,6 @@ ZWaveNodes ZWaveDeviceDatabase::createNodes(ZWaveManager *manager)
         return ret;
     }
 
-
     while (query.next()) {
         quint8 nodeId = query.value("nodeId").toUInt();
         ZWaveNodeImplementation *node = new ZWaveNodeImplementation(manager, m_networkUuid, nodeId);
@@ -267,14 +270,13 @@ ZWaveNodes ZWaveDeviceDatabase::createNodes(ZWaveManager *manager)
             continue;
         }
         while (valueQuery.next()) {
-            ZWaveValue value(
-                        valueQuery.value("valueId").toULongLong(),
-                        static_cast<ZWaveValue::Genre>(valueQuery.value("valueGenre").toInt()),
-                        static_cast<ZWaveValue::CommandClass>(valueQuery.value("commandClass").toUInt()),
-                        valueQuery.value("instance").toUInt(),
-                        valueQuery.value("idx").toUInt(),
-                        static_cast<ZWaveValue::Type>(valueQuery.value("type").toInt()),
-                        valueQuery.value("description").toString());
+            ZWaveValue value(valueQuery.value("valueId").toULongLong(),
+                             static_cast<ZWaveValue::Genre>(valueQuery.value("valueGenre").toInt()),
+                             static_cast<ZWaveValue::CommandClass>(valueQuery.value("commandClass").toUInt()),
+                             valueQuery.value("instance").toUInt(),
+                             valueQuery.value("idx").toUInt(),
+                             static_cast<ZWaveValue::Type>(valueQuery.value("type").toInt()),
+                             valueQuery.value("description").toString());
             QByteArray data = QByteArray::fromBase64(valueQuery.value("value").toString().toUtf8());
             QDataStream inputStream(data);
             QVariant deseriealizedValue;
@@ -289,4 +291,4 @@ ZWaveNodes ZWaveDeviceDatabase::createNodes(ZWaveManager *manager)
     return ret;
 }
 
-}
+} // namespace nymeaserver

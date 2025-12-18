@@ -26,8 +26,8 @@
 #define THINGDESCRIPTION_H
 
 #include "libnymea.h"
-#include "typeutils.h"
 #include "types/param.h"
+#include "typeutils.h"
 
 #include <QVariantMap>
 
@@ -39,12 +39,16 @@ class LIBNYMEA_EXPORT ThingDescriptor
     Q_PROPERTY(QUuid thingId READ thingId USER true)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QString description READ description)
-    Q_PROPERTY(ParamList params READ params)                  // added in 0.27
+    Q_PROPERTY(ParamList params READ params) // added in 0.27
 
 public:
     ThingDescriptor();
     ThingDescriptor(const ThingClassId &thingClassId, const QString &title = QString(), const QString &description = QString(), const ThingId &parentId = ThingId());
-    ThingDescriptor(const ThingDescriptorId &id, const ThingClassId &thingClassId, const QString &title = QString(), const QString &description = QString(), const ThingId &parentId = ThingId());
+    ThingDescriptor(const ThingDescriptorId &id,
+                    const ThingClassId &thingClassId,
+                    const QString &title = QString(),
+                    const QString &description = QString(),
+                    const ThingId &parentId = ThingId());
 
     bool isValid() const;
 
@@ -76,14 +80,18 @@ private:
     ParamList m_params;
 };
 
-class ThingDescriptors: public QList<ThingDescriptor>
+class ThingDescriptors : public QList<ThingDescriptor>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     ThingDescriptors() {}
-    inline ThingDescriptors(std::initializer_list<ThingDescriptor> args): QList(args) {}
-    ThingDescriptors(const QList<ThingDescriptor> &other): QList<ThingDescriptor>(other) {}
+    inline ThingDescriptors(std::initializer_list<ThingDescriptor> args)
+        : QList(args)
+    {}
+    ThingDescriptors(const QList<ThingDescriptor> &other)
+        : QList<ThingDescriptor>(other)
+    {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };

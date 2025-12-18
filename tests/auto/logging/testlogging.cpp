@@ -22,10 +22,10 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
+#include "logging/logengine.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
-#include "logging/logengine.h"
+#include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
 
 #include "../plugins/mock/extern-plugininfo.h"
@@ -84,9 +84,7 @@ void TestLogging::initLogs()
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
 
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY2(logEntries.count() > 0,
-             QString("Expected at least one log entry.")
-             .toUtf8());
+    QVERIFY2(logEntries.count() > 0, QString("Expected at least one log entry.").toUtf8());
 
     clearLoggingDatabase("core");
     waitForDBSync();
@@ -111,10 +109,7 @@ void TestLogging::systemLogs()
     // there should be 0 log entries
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY2(logEntries.count() == 0,
-             QString("Expected 0 log entries but got:\n%1")
-             .arg(QString(QJsonDocument::fromVariant(logEntries).toJson()))
-             .toUtf8());
+    QVERIFY2(logEntries.count() == 0, QString("Expected 0 log entries but got:\n%1").arg(QString(QJsonDocument::fromVariant(logEntries).toJson())).toUtf8());
 
     // check the active system log at boot
     qCDebug(dcTests) << "Restarting server";
@@ -125,10 +120,7 @@ void TestLogging::systemLogs()
     // there should be 2 log entries, one for shutdown, one for startup (from server restart)
     response = injectAndWait("Logging.GetLogEntries", params);
     logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY2(logEntries.count() == 2,
-             QString("Expected 2 log entries but got:\n%1")
-             .arg(QString(QJsonDocument::fromVariant(logEntries).toJson()))
-             .toUtf8());
+    QVERIFY2(logEntries.count() == 2, QString("Expected 2 log entries but got:\n%1").arg(QString(QJsonDocument::fromVariant(logEntries).toJson())).toUtf8());
 
     QVariantMap logEntryStartup = logEntries.first().toMap();
     QVariantMap logEntryShutdown = logEntries.last().toMap();
@@ -136,7 +128,6 @@ void TestLogging::systemLogs()
     QCOMPARE(logEntryShutdown.value("values").toMap().value("event").toString(), QString("stopped"));
     QCOMPARE(logEntryShutdown.value("values").toMap().value("shutdownReason").toString(), enumValueName(NymeaCore::ShutdownReasonRestart));
     QCOMPARE(logEntryShutdown.value("values").toMap().value("version").toString(), QString(NYMEA_VERSION_STRING));
-
 
     QCOMPARE(logEntryStartup.value("values").toMap().value("event").toString(), QString("started"));
     QCOMPARE(logEntryStartup.value("values").toMap().value("version").toString(), QString(NYMEA_VERSION_STRING));
@@ -185,7 +176,7 @@ void TestLogging::stateChangeLogs()
     QFETCH(QVariant, newValue);
     QFETCH(bool, expectLogEntry);
 
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
 
@@ -200,8 +191,8 @@ void TestLogging::stateChangeLogs()
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg(initValue.toString())));
     QNetworkReply *reply = nam.get(request);
     {
-    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
-    finishedSpy.wait();
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        finishedSpy.wait();
     }
 
     waitForDBSync();
@@ -216,8 +207,8 @@ void TestLogging::stateChangeLogs()
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg(newValue.toString())));
     reply = nam.get(request);
     {
-    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
-    finishedSpy.wait();
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        finishedSpy.wait();
     }
 
     // Lets wait for the notification
@@ -246,7 +237,7 @@ void TestLogging::stateChangeLogs()
 
 void TestLogging::eventLog()
 {
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
 
@@ -262,11 +253,12 @@ void TestLogging::eventLog()
     // trigger state change in mock device
     QNetworkAccessManager nam;
     int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
-    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4").arg(port).arg(eventTypeId.toString()).arg(mockEvent2EventIntParamParamTypeId.toString()).arg(42)));
+    QNetworkRequest request = QNetworkRequest(
+        QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4").arg(port).arg(eventTypeId.toString()).arg(mockEvent2EventIntParamParamTypeId.toString()).arg(42)));
     QNetworkReply *reply = nam.get(request);
     {
-    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
-    finishedSpy.wait();
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        finishedSpy.wait();
     }
 
     clientSpy.wait();
@@ -334,7 +326,7 @@ void TestLogging::actionLog()
     bool found = false;
     foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
         QVariantMap logEntry = loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
-        if (logEntry.value("source").toString() == "action-" + m_mockThingId.toString() + "-withParams" ) {
+        if (logEntry.value("source").toString() == "action-" + m_mockThingId.toString() + "-withParams") {
             found = true;
             QCOMPARE(logEntry.value("values").toMap().value("status").toString(), enumValueName(Thing::ThingErrorNoError));
             QCOMPARE(logEntry.value("values").toMap().value("triggeredBy").toString(), enumValueName(Action::TriggeredByUser));
@@ -349,7 +341,8 @@ void TestLogging::actionLog()
     QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 
     // EXECUTE without params
-    params.clear(); clientSpy.clear();
+    params.clear();
+    clientSpy.clear();
     params.insert("actionTypeId", mockWithoutParamsActionTypeId);
     params.insert("thingId", m_mockThingId);
     response = injectAndWait("Integrations.ExecuteAction", params);
@@ -368,7 +361,8 @@ void TestLogging::actionLog()
     QVERIFY2(!logEntries.isEmpty(), "No logs received");
 
     // EXECUTE broken action
-    params.clear(); clientSpy.clear();
+    params.clear();
+    clientSpy.clear();
     params.insert("actionTypeId", mockFailingActionTypeId);
     params.insert("thingId", m_mockThingId);
     response = injectAndWait("Integrations.ExecuteAction", params);
@@ -405,11 +399,10 @@ void TestLogging::actionLog()
 
     // Get all action logs in one go
     params.clear();
-    params.insert("sources", QStringList{
-                      "action-" + m_mockThingId.toString() + "-withParams",
-                      "action-" + m_mockThingId.toString() + "-withoutParams",
-                      "action-" + m_mockThingId.toString() + "-failing"
-                  });
+    params.insert("sources",
+                  QStringList{"action-" + m_mockThingId.toString() + "-withParams",
+                              "action-" + m_mockThingId.toString() + "-withoutParams",
+                              "action-" + m_mockThingId.toString() + "-failing"});
 
     response = injectAndWait("Logging.GetLogEntries", params);
 
@@ -422,7 +415,7 @@ void TestLogging::actionLog()
 
 void TestLogging::removeThing()
 {
-    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QList<Thing *> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
 
@@ -430,7 +423,6 @@ void TestLogging::removeThing()
     StateTypeId stateTypeId = mockIntStateTypeId;
 
     qCDebug(dcTests) << "Using mock:" << things.first()->id();
-
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -443,8 +435,8 @@ void TestLogging::removeThing()
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg("12")));
     QNetworkReply *reply = nam.get(request);
     {
-    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
-    finishedSpy.wait();
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        finishedSpy.wait();
     }
 
     waitForDBSync();
@@ -473,4 +465,3 @@ void TestLogging::removeThing()
 
 #include "testlogging.moc"
 QTEST_MAIN(TestLogging)
-

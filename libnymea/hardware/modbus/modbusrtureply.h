@@ -32,17 +32,7 @@ class ModbusRtuReply : public QObject
 {
     Q_OBJECT
 public:
-    enum Error {
-        NoError,
-        ReadError,
-        WriteError,
-        ConnectionError,
-        ConfigurationError,
-        TimeoutError,
-        ProtocolError,
-        ReplyAbortedError,
-        UnknownError
-    };
+    enum Error { NoError, ReadError, WriteError, ConnectionError, ConfigurationError, TimeoutError, ProtocolError, ReplyAbortedError, UnknownError };
     Q_ENUM(Error)
 
     virtual bool isFinished() const = 0;
@@ -56,13 +46,13 @@ public:
     virtual QVector<quint16> result() const = 0;
 
 protected:
-    explicit ModbusRtuReply(QObject *parent = nullptr) : QObject(parent) { };
+    explicit ModbusRtuReply(QObject *parent = nullptr)
+        : QObject(parent){};
     virtual ~ModbusRtuReply() = default;
 
 signals:
     void finished();
     void errorOccurred(ModbusRtuReply::Error error);
-
 };
 
 #endif // MODBUSRTUREPLY_H

@@ -28,8 +28,8 @@
 #include "libnymea.h"
 #include "typeutils.h"
 
-#include <QString>
 #include <QList>
+#include <QString>
 #include <QVariant>
 
 class LIBNYMEA_EXPORT Vendor
@@ -61,7 +61,7 @@ private:
 };
 Q_DECLARE_METATYPE(Vendor)
 
-class LIBNYMEA_EXPORT Vendors: public QList<Vendor>
+class LIBNYMEA_EXPORT Vendors : public QList<Vendor>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

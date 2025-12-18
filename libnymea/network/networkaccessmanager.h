@@ -25,18 +25,18 @@
 #ifndef NETWORKACCESSMANAGER_H
 #define NETWORKACCESSMANAGER_H
 
+#include "hardwareresource.h"
 #include "libnymea.h"
 #include "typeutils.h"
-#include "hardwareresource.h"
 
-#include <QObject>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 #include <QDebug>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
 #include <QUrl>
 
-class LIBNYMEA_EXPORT   NetworkAccessManager : public HardwareResource
+class LIBNYMEA_EXPORT NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
 
@@ -57,7 +57,6 @@ public:
     virtual QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart) = 0;
 
     virtual QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr) = 0;
-
 };
 
 #endif // NETWORKACCESSMANAGER_H

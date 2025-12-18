@@ -41,12 +41,10 @@
 #include "actiontype.h"
 
 /*! Constructs an \l{ActionType} with the given \a id. */
-ActionType::ActionType(const ActionTypeId &id):
-    m_id(id),
-    m_index(0)
-{
-
-}
+ActionType::ActionType(const ActionTypeId &id)
+    : m_id(id)
+    , m_index(0)
+{}
 
 /*! Returns the id of this \l{ActionType}. */
 ActionTypeId ActionType::id() const
@@ -180,4 +178,3 @@ QDebug operator<<(QDebug dbg, const ActionType &actionType)
     dbg.nospace().noquote() << "ActionType(" << actionType.name() << ", " << actionType.displayName() << ", " << actionType.id() << ") ";
     return dbg;
 }
-

@@ -49,15 +49,13 @@
     the response is ready or then the reply timed out.
 */
 
-
-
 /*! Constructs a new \l JsonReply with the given \a type, \a handler, \a method and \a data. */
-JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
-    m_type(type),
-    m_data(data),
-    m_handler(handler),
-    m_method(method),
-    m_timedOut(false)
+JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data)
+    : m_type(type)
+    , m_data(data)
+    , m_handler(handler)
+    , m_method(method)
+    , m_timedOut(false)
 {
     connect(&m_timeout, &QTimer::timeout, this, &JsonReply::timeout);
 }

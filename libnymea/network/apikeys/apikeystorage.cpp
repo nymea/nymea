@@ -24,11 +24,9 @@
 
 #include "apikeystorage.h"
 
-ApiKeyStorage::ApiKeyStorage(QObject *parent):
-    QObject(parent)
-{
-
-}
+ApiKeyStorage::ApiKeyStorage(QObject *parent)
+    : QObject(parent)
+{}
 
 ApiKey ApiKeyStorage::requestKey(const QString &name) const
 {

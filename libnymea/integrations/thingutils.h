@@ -25,11 +25,11 @@
 #ifndef THINGUTILS_H
 #define THINGUTILS_H
 
-#include "thing.h"
 #include "pluginmetadata.h"
+#include "thing.h"
 
-#include "types/paramtype.h"
 #include "types/interface.h"
+#include "types/paramtype.h"
 
 class ThingUtils
 {

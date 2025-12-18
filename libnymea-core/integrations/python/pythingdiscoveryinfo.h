@@ -25,12 +25,11 @@
 #ifndef PYTHINGDISCOVERYINFO_H
 #define PYTHINGDISCOVERYINFO_H
 
-
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
-#include "pythingdescriptor.h"
 #include "pyparam.h"
+#include "pythingdescriptor.h"
 
 #include "integrations/thingdiscoveryinfo.h"
 
@@ -42,7 +41,6 @@
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-
 
 /* Note:
  * When using this, make sure to call PyThingDiscoveryInfo_setInfo() while holding the GIL to initialize
@@ -60,22 +58,21 @@
  *
  */
 
-
-typedef struct {
-    PyObject_HEAD
-    ThingDiscoveryInfo* info;
-    PyObject* pyThingClassId = nullptr;
+typedef struct
+{
+    PyObject_HEAD ThingDiscoveryInfo *info;
+    PyObject *pyThingClassId = nullptr;
     PyObject *pyParams = nullptr;
 } PyThingDiscoveryInfo;
 
-static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/)
+static PyObject *PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject * /*args*/, PyObject * /*kwds*/)
 {
-    PyThingDiscoveryInfo *self = (PyThingDiscoveryInfo*)type->tp_alloc(type, 0);
+    PyThingDiscoveryInfo *self = (PyThingDiscoveryInfo *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qCDebug(dcPythonIntegrations()) << "+++ PyThingDiscoveryInfo";
-    return (PyObject*)self;
+    return (PyObject *) self;
 }
 
 void PyThingDiscoveryInfo_setInfo(PyThingDiscoveryInfo *self, ThingDiscoveryInfo *info)
@@ -85,7 +82,7 @@ void PyThingDiscoveryInfo_setInfo(PyThingDiscoveryInfo *self, ThingDiscoveryInfo
     self->pyParams = PyParams_FromParamList(info->params());
 }
 
-static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
+static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyThingDiscoveryInfo";
     Py_DECREF(self->pyThingClassId);
@@ -93,7 +90,8 @@ static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyThingDiscoveryInfo_paramValue(PyThingDiscoveryInfo* self, PyObject* args) {
+static PyObject *PyThingDiscoveryInfo_paramValue(PyThingDiscoveryInfo *self, PyObject *args)
+{
     char *paramTypeIdStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
@@ -102,7 +100,7 @@ static PyObject * PyThingDiscoveryInfo_paramValue(PyThingDiscoveryInfo* self, Py
 
     ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
     for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
-        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        PyParam *pyParam = reinterpret_cast<PyParam *>(PyTuple_GetItem(self->pyParams, i));
         // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
         ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
         if (ptid == paramTypeId) {
@@ -114,7 +112,7 @@ static PyObject * PyThingDiscoveryInfo_paramValue(PyThingDiscoveryInfo* self, Py
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObject* args)
+static PyObject *PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo *self, PyObject *args)
 {
     int status;
     char *message = nullptr;
@@ -133,7 +131,7 @@ static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObje
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self, PyObject* args)
+static PyObject *PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo *self, PyObject *args)
 {
     PyObject *pyObj = nullptr;
 
@@ -145,7 +143,7 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
         PyErr_SetString(PyExc_ValueError, "Invalid argument to ThingDiscoveryInfo.addDescriptor(). Not a ThingDescriptor.");
         return nullptr;
     }
-    PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)pyObj;
+    PyThingDescriptor *pyDescriptor = (PyThingDescriptor *) pyObj;
 
     ThingClassId thingClassId;
     if (pyDescriptor->pyThingClassId) {
@@ -183,29 +181,26 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
 static PyMemberDef PyThingDiscoveryInfo_members[] = {
     {"thingClassId", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyThingClassId), READONLY, "The ThingClassId this discovery is for."},
     {"params", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyParams), READONLY, "The params for this discovery"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyMethodDef PyThingDiscoveryInfo_methods[] = {
-    { "paramValue", (PyCFunction)PyThingDiscoveryInfo_paramValue, METH_VARARGS, "Get a discovery param value"},
-    { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery" },
-    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish, METH_VARARGS, "Finish a discovery" },
+    {"paramValue", (PyCFunction) PyThingDiscoveryInfo_paramValue, METH_VARARGS, "Get a discovery param value"},
+    {"addDescriptor", (PyCFunction) PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery"},
+    {"finish", (PyCFunction) PyThingDiscoveryInfo_finish, METH_VARARGS, "Finish a discovery"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyThingDiscoveryInfoType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingDiscoveryInfo", /* tp_name */
-    sizeof(PyThingDiscoveryInfo), /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    (destructor)PyThingDiscoveryInfo_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.ThingDiscoveryInfo", /* tp_name */
+    sizeof(PyThingDiscoveryInfo),                              /* tp_basicsize */
+    0,                                                         /* tp_itemsize */
+    (destructor) PyThingDiscoveryInfo_dealloc,                 /* tp_dealloc */
 };
-
-
 
 static void registerThingDiscoveryInfoType(PyObject *module)
 {
-    PyThingDiscoveryInfoType.tp_new = (newfunc)PyThingDiscoveryInfo_new;
+    PyThingDiscoveryInfoType.tp_new = (newfunc) PyThingDiscoveryInfo_new;
     PyThingDiscoveryInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingDiscoveryInfoType.tp_methods = PyThingDiscoveryInfo_methods;
     PyThingDiscoveryInfoType.tp_members = PyThingDiscoveryInfo_members;
@@ -214,11 +209,8 @@ static void registerThingDiscoveryInfoType(PyObject *module)
     if (PyType_Ready(&PyThingDiscoveryInfoType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "ThingDiscoveryInfo", (PyObject *)&PyThingDiscoveryInfoType);
+    PyModule_AddObject(module, "ThingDiscoveryInfo", (PyObject *) &PyThingDiscoveryInfoType);
 }
-
-
-
 
 #pragma GCC diagnostic pop
 

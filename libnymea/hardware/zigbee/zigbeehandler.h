@@ -25,10 +25,10 @@
 #ifndef ZIGBEEHANDLER_H
 #define ZIGBEEHANDLER_H
 
-#include "zigbeenode.h"
 #include "libnymea.h"
+#include "zigbeenode.h"
 
-class LIBNYMEA_EXPORT   ZigbeeHandler
+class LIBNYMEA_EXPORT ZigbeeHandler
 {
 public:
     ZigbeeHandler();

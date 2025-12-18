@@ -41,21 +41,18 @@
 
 /*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramTypeId and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
-ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value):
-    Param(paramTypeId, value),
-    m_operatorType(Types::ValueOperatorEquals)
-{
-}
+ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value)
+    : Param(paramTypeId, value)
+    , m_operatorType(Types::ValueOperatorEquals)
+{}
 
 /*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramName and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
-ParamDescriptor::ParamDescriptor(const QString &paramName, const QVariant &value):
-    Param(ParamTypeId(), value),
-    m_paramName(paramName),
-    m_operatorType(Types::ValueOperatorEquals)
-{
-
-}
+ParamDescriptor::ParamDescriptor(const QString &paramName, const QVariant &value)
+    : Param(ParamTypeId(), value)
+    , m_paramName(paramName)
+    , m_operatorType(Types::ValueOperatorEquals)
+{}
 
 /*! Returns the paramName of this ParamDescriptor. */
 QString ParamDescriptor::paramName() const
@@ -85,19 +82,16 @@ void ParamDescriptor::setOperatorType(Types::ValueOperator operatorType)
 QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << '\n';
+    dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName()
+                  << ", Value:" << paramDescriptor.value() << ")" << '\n';
     return dbg;
 }
 
-ParamDescriptors::ParamDescriptors()
-{
+ParamDescriptors::ParamDescriptors() {}
 
-}
-
-ParamDescriptors::ParamDescriptors(const QList<ParamDescriptor> &other): QList<ParamDescriptor>(other)
-{
-
-}
+ParamDescriptors::ParamDescriptors(const QList<ParamDescriptor> &other)
+    : QList<ParamDescriptor>(other)
+{}
 
 QVariant ParamDescriptors::get(int index) const
 {

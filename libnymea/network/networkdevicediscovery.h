@@ -25,18 +25,18 @@
 #ifndef NETWORKDEVICEDISCOVERY_H
 #define NETWORKDEVICEDISCOVERY_H
 
-#include <QTimer>
-#include <QObject>
 #include <QLoggingCategory>
+#include <QObject>
+#include <QTimer>
 
-#include "libnymea.h"
 #include "hardwareresource.h"
+#include "libnymea.h"
 
 #include "networkdevicemonitor.h"
 
-#include "pingreply.h"
 #include "macaddressdatabasereply.h"
 #include "networkdevicediscoveryreply.h"
+#include "pingreply.h"
 
 #include "integrations/thing.h"
 
@@ -67,7 +67,6 @@ public:
 signals:
     void runningChanged(bool running);
     void cacheUpdated();
-
 };
 
 #endif // NETWORKDEVICEDISCOVERY_H

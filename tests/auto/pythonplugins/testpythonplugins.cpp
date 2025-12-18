@@ -24,8 +24,8 @@
 
 #include "nymeatestbase.h"
 
-#include <typeutils.h>
 #include <integrations/thing.h>
+#include <typeutils.h>
 
 ThingClassId pyMockThingClassId = ThingClassId("1761c256-99b1-41bd-988a-a76087f6a4f1");
 ThingClassId pyMockDiscoveryPairingThingClassId = ThingClassId("248c5046-847b-44d0-ab7c-684ff79197dc");
@@ -33,14 +33,12 @@ ParamTypeId pyMockDiscoveryPairingResultCountDiscoveryParamTypeID = ParamTypeId(
 
 using namespace nymeaserver;
 
-class TestPythonPlugins: public NymeaTestBase
+class TestPythonPlugins : public NymeaTestBase
 {
     Q_OBJECT
 
 private:
-    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
-        verifyError(response, "thingError", enumValueName(error));
-    }
+    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) { verifyError(response, "thingError", enumValueName(error)); }
 
 private slots:
 
@@ -52,7 +50,6 @@ private slots:
     void setupAndRemoveThing();
     void testDiscoverPairAndRemoveThing();
 #endif
-
 };
 
 #ifdef WITH_PYTHON
@@ -65,10 +62,9 @@ void TestPythonPlugins::testRestartServer()
 void TestPythonPlugins::initTestCase()
 {
     NymeaTestBase::initTestCase("*.debug=false\n*.info=false\n*.warning=false\n"
-                                     "Tests.debug=true\n"
-                                     "PyMock.debug=true\n"
-                                     "PythonIntegrations.debug=true\n"
-                                     );
+                                "Tests.debug=true\n"
+                                "PyMock.debug=true\n"
+                                "PythonIntegrations.debug=true\n");
 }
 
 void TestPythonPlugins::setupAndRemoveThing()

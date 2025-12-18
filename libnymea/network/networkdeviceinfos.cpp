@@ -26,18 +26,13 @@
 
 #include <algorithm>
 
-NetworkDeviceInfos::NetworkDeviceInfos() :
-    QVector<NetworkDeviceInfo>()
-{
+NetworkDeviceInfos::NetworkDeviceInfos()
+    : QVector<NetworkDeviceInfo>()
+{}
 
-}
-
-NetworkDeviceInfos::NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other) :
-    QVector<NetworkDeviceInfo>(other)
-{
-
-}
-
+NetworkDeviceInfos::NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other)
+    : QVector<NetworkDeviceInfo>(other)
+{}
 
 int NetworkDeviceInfos::indexFromHostAddress(const QHostAddress &address)
 {
@@ -115,12 +110,10 @@ void NetworkDeviceInfos::removeHostAddress(const QHostAddress &address)
 
 void NetworkDeviceInfos::sortNetworkDevices()
 {
-    std::sort(this->begin(), this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {
-        return a.address().toIPv4Address() < b.address().toIPv4Address();
-    });
+    std::sort(this->begin(), this->end(), [](const NetworkDeviceInfo &a, const NetworkDeviceInfo &b) { return a.address().toIPv4Address() < b.address().toIPv4Address(); });
 }
 
-NetworkDeviceInfos &NetworkDeviceInfos::operator <<(const NetworkDeviceInfo &networkDeviceInfo)
+NetworkDeviceInfos &NetworkDeviceInfos::operator<<(const NetworkDeviceInfo &networkDeviceInfo)
 {
     this->append(networkDeviceInfo);
     return *this;

@@ -29,7 +29,7 @@
 
 using namespace nymeaserver;
 
-class TestVersioning: public NymeaTestBase
+class TestVersioning : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -45,7 +45,6 @@ void TestVersioning::initTestCase()
     NymeaTestBase::initTestCase("*.debug=false\nJsonRpcTraffic.debug=false\nJsonRpc.debug=true\nTests.debug=true");
     qCDebug(dcTests()) << "TestVersioning starting";
 }
-
 
 void TestVersioning::version()
 {
@@ -73,7 +72,6 @@ void TestVersioning::apiChangeBumpsVersion()
     response = injectAndWait("JSONRPC.Introspect", QVariantMap());
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(response.toMap().value("params"));
     QByteArray newApi = jsonDoc.toJson();
-
 
     QFile oldApiFile(oldFilePath);
     QVERIFY(oldApiFile.exists() && oldApiFile.open(QIODevice::ReadOnly));

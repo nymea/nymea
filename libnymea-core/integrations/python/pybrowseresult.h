@@ -25,8 +25,8 @@
 #ifndef PYBROWSERESULT_H
 #define PYBROWSERESULT_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "pything.h"
 
@@ -54,22 +54,22 @@
  *
  */
 
-typedef struct {
-    PyObject_HEAD
-    BrowseResult* browseResult;
+typedef struct
+{
+    PyObject_HEAD BrowseResult *browseResult;
     PyThing *pyThing;
     PyObject *pyItemId;
     PyObject *pyLocale;
 } PyBrowseResult;
 
-
-static PyObject* PyBrowseResult_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
-    PyBrowseResult *self = (PyBrowseResult*)type->tp_alloc(type, 0);
+static PyObject *PyBrowseResult_new(PyTypeObject *type, PyObject * /*args*/, PyObject * /*kwds*/)
+{
+    PyBrowseResult *self = (PyBrowseResult *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qCDebug(dcPythonIntegrations()) << "+++ PyBrowseResult";
-    return (PyObject*)self;
+    return (PyObject *) self;
 }
 
 void PyBrowseResult_setBrowseResult(PyBrowseResult *self, BrowseResult *browseResult, PyThing *pyThing)
@@ -81,8 +81,7 @@ void PyBrowseResult_setBrowseResult(PyBrowseResult *self, BrowseResult *browseRe
     self->pyLocale = PyUnicode_FromString(browseResult->locale().name().toUtf8());
 }
 
-
-static void PyBrowseResult_dealloc(PyBrowseResult* self)
+static void PyBrowseResult_dealloc(PyBrowseResult *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyBrowseResult";
     Py_DECREF(self->pyThing);
@@ -91,7 +90,8 @@ static void PyBrowseResult_dealloc(PyBrowseResult* self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject* PyBrowseResult_addItem(PyBrowseResult *self, PyObject *args) {
+static PyObject *PyBrowseResult_addItem(PyBrowseResult *self, PyObject *args)
+{
     Q_UNUSED(self)
     PyObject *pyObj = nullptr;
     if (!PyArg_ParseTuple(args, "O", &pyObj)) {
@@ -102,7 +102,7 @@ static PyObject* PyBrowseResult_addItem(PyBrowseResult *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Invalid argument to BrowseResult.addItem(BrowserItem). Not a BrowserItem.");
         return nullptr;
     }
-    PyBrowserItem *pyBrowserItem = (PyBrowserItem*)pyObj;
+    PyBrowserItem *pyBrowserItem = (PyBrowserItem *) pyObj;
 
     QString id;
     if (pyBrowserItem->pyId) {
@@ -133,7 +133,8 @@ static PyObject* PyBrowseResult_addItem(PyBrowseResult *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject* PyBrowseResult_finish(PyBrowseResult* self, PyObject* args) {
+static PyObject *PyBrowseResult_finish(PyBrowseResult *self, PyObject *args)
+{
     int status;
     char *message = nullptr;
 
@@ -152,31 +153,29 @@ static PyObject* PyBrowseResult_finish(PyBrowseResult* self, PyObject* args) {
     Py_RETURN_NONE;
 }
 
-
 static PyMemberDef PyBrowseResult_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyBrowseResult, pyThing), 0, "Thing this browse request is for"},
     {"itemId", T_OBJECT_EX, offsetof(PyBrowseResult, pyItemId), 0, "The itemId of the item that should be browsed. Empty if the root item is requested"},
     {"locale", T_OBJECT_EX, offsetof(PyBrowseResult, pyLocale), 0, "The locale strings should be translated to."},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyMethodDef PyBrowseResult_methods[] = {
-    { "addItem", (PyCFunction)PyBrowseResult_addItem, METH_VARARGS, "Add a browser item to the result"},
-    { "finish", (PyCFunction)PyBrowseResult_finish, METH_VARARGS, "Finish a browse request" },
+    {"addItem", (PyCFunction) PyBrowseResult_addItem, METH_VARARGS, "Add a browser item to the result"},
+    {"finish", (PyCFunction) PyBrowseResult_finish, METH_VARARGS, "Finish a browse request"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyBrowseResultType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.BrowseResult",       /* tp_name */
-    sizeof(PyBrowseResult),     /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    (destructor)PyBrowseResult_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.BrowseResult", /* tp_name */
+    sizeof(PyBrowseResult),                              /* tp_basicsize */
+    0,                                                   /* tp_itemsize */
+    (destructor) PyBrowseResult_dealloc,                 /* tp_dealloc */
 };
 
 static void registerBrowseResultType(PyObject *module)
 {
-    PyBrowseResultType.tp_new = (newfunc)PyBrowseResult_new;
+    PyBrowseResultType.tp_new = (newfunc) PyBrowseResult_new;
     PyBrowseResultType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyBrowseResultType.tp_methods = PyBrowseResult_methods;
     PyBrowseResultType.tp_members = PyBrowseResult_members;
@@ -185,11 +184,9 @@ static void registerBrowseResultType(PyObject *module)
     if (PyType_Ready(&PyBrowseResultType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "BrowseResult", (PyObject *)&PyBrowseResultType);
+    PyModule_AddObject(module, "BrowseResult", (PyObject *) &PyBrowseResultType);
 }
 
-
 #pragma GCC diagnostic pop
-
 
 #endif // PYBROWSERESULT_H

@@ -25,17 +25,17 @@
 #ifndef PYTHING_H
 #define PYTHING_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "pyparam.h"
 
 #include "integrations/thing.h"
 #include "loggingcategories.h"
 
+#include <QMetaEnum>
 #include <QPointer>
 #include <QThread>
-#include <QMetaEnum>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -57,11 +57,10 @@
  *
  */
 
-
-typedef struct _thing {
-    PyObject_HEAD
-    Thing *thing = nullptr; // the actual thing in nymea (not thread-safe!)
-    ThingClass *thingClass = nullptr; // A copy of the thing class. This is owned by the python thread
+typedef struct _thing
+{
+    PyObject_HEAD Thing *thing = nullptr; // the actual thing in nymea (not thread-safe!)
+    ThingClass *thingClass = nullptr;     // A copy of the thing class. This is owned by the python thread
     PyObject *pyId = nullptr;
     PyObject *pyThingClassId = nullptr;
     PyObject *pyParentId = nullptr;
@@ -70,19 +69,19 @@ typedef struct _thing {
     PyObject *pySettings = nullptr;
     PyObject *pyNameChangedHandler = nullptr;
     PyObject *pySettingChangedHandler = nullptr;
-    PyObject *pyStates = nullptr; // A copy of the things states
+    PyObject *pyStates = nullptr;         // A copy of the things states
     PyThreadState *threadState = nullptr; // The python threadstate this thing belongs to
 } PyThing;
 
-
-static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
-    PyThing *self = (PyThing*)type->tp_alloc(type, 0);
+static PyObject *PyThing_new(PyTypeObject *type, PyObject * /*args*/, PyObject * /*kwds*/)
+{
+    PyThing *self = (PyThing *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qCDebug(dcPythonIntegrations()) << "+++ PyThing" << self;
 
-    return (PyObject*)self;
+    return (PyObject *) self;
 }
 
 static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadState)
@@ -103,19 +102,16 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
     self->pyStates = PyList_New(thing->states().count());
     for (int i = 0; i < thing->states().count(); i++) {
         State state = thing->states().at(i);
-        PyObject *pyState = Py_BuildValue("{s:s, s:O}",
-                                          "stateTypeId", state.stateTypeId().toString().toUtf8().data(),
-                                          "value", QVariantToPyObject(state.value()));
+        PyObject *pyState = Py_BuildValue("{s:s, s:O}", "stateTypeId", state.stateTypeId().toString().toUtf8().data(), "value", QVariantToPyObject(state.value()));
         PyList_SetItem(self->pyStates, i, pyState);
     }
-
 
     // Connects signal handlers from the Thing to sync stuff over to the pyThing in a
     // thread-safe manner.
 
     // Those lambdas Will be executed in the main thread context. This means we
     // can access self->thing, but need to hold the GIL for interacting with python
-    QObject::connect(thing, &Thing::nameChanged, [=](){
+    QObject::connect(thing, &Thing::nameChanged, [=]() {
         PyEval_RestoreThread(self->threadState);
         Py_XDECREF(self->pyName);
         self->pyName = PyUnicode_FromString(self->thing->name().toUtf8().data());
@@ -129,13 +125,16 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
         PyEval_ReleaseThread(self->threadState);
     });
 
-
-    QObject::connect(thing, &Thing::settingChanged, [=](const ParamTypeId &paramTypeId, const QVariant &value){
+    QObject::connect(thing, &Thing::settingChanged, [=](const ParamTypeId &paramTypeId, const QVariant &value) {
         PyEval_RestoreThread(self->threadState);
         Py_XDECREF(self->pySettings);
         self->pySettings = PyParams_FromParamList(self->thing->settings());
         if (self->pySettingChangedHandler) {
-            PyObject * ret = PyObject_CallFunctionObjArgs(self->pySettingChangedHandler, self, PyUnicode_FromString(paramTypeId.toString().toUtf8().data()), QVariantToPyObject(value), nullptr);
+            PyObject *ret = PyObject_CallFunctionObjArgs(self->pySettingChangedHandler,
+                                                         self,
+                                                         PyUnicode_FromString(paramTypeId.toString().toUtf8().data()),
+                                                         QVariantToPyObject(value),
+                                                         nullptr);
             if (PyErr_Occurred()) {
                 PyErr_Print();
             }
@@ -144,16 +143,14 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
         PyEval_ReleaseThread(self->threadState);
     });
 
-    QObject::connect(thing, &Thing::stateValueChanged, [=](const StateTypeId &stateTypeId, const QVariant &value){
+    QObject::connect(thing, &Thing::stateValueChanged, [=](const StateTypeId &stateTypeId, const QVariant &value) {
         PyEval_RestoreThread(self->threadState);
         for (int i = 0; i < PyList_Size(self->pyStates); i++) {
             PyObject *pyState = PyList_GetItem(self->pyStates, i);
             PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
             StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
             if (stid == stateTypeId) {
-                pyState = Py_BuildValue("{s:s, s:O}",
-                                  "stateTypeId", stateTypeId.toString().toUtf8().data(),
-                                  "value", QVariantToPyObject(value));
+                pyState = Py_BuildValue("{s:s, s:O}", "stateTypeId", stateTypeId.toString().toUtf8().data(), "value", QVariantToPyObject(value));
                 PyList_SetItem(self->pyStates, i, pyState);
                 break;
             }
@@ -162,8 +159,8 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
     });
 }
 
-
-static void PyThing_dealloc(PyThing * self) {
+static void PyThing_dealloc(PyThing *self)
+{
     qCDebug(dcPythonIntegrations()) << "--- PyThing" << self;
     Py_XDECREF(self->pyId);
     Py_XDECREF(self->pyThingClassId);
@@ -178,31 +175,32 @@ static void PyThing_dealloc(PyThing * self) {
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
+static PyObject *PyThing_getName(PyThing *self, void * /*closure*/)
 {
     Py_INCREF(self->pyName);
     return self->pyName;
 }
 
-static PyObject *PyThing_getId(PyThing *self, void */*closure*/)
+static PyObject *PyThing_getId(PyThing *self, void * /*closure*/)
 {
     Py_INCREF(self->pyId);
     return self->pyId;
 }
 
-static PyObject *PyThing_getThingClassId(PyThing *self, void */*closure*/)
+static PyObject *PyThing_getThingClassId(PyThing *self, void * /*closure*/)
 {
     Py_INCREF(self->pyThingClassId);
     return self->pyThingClassId;
 }
 
-static PyObject *PyThing_getParentId(PyThing *self, void */*closure*/)
+static PyObject *PyThing_getParentId(PyThing *self, void * /*closure*/)
 {
     Py_INCREF(self->pyParentId);
     return self->pyParentId;
 }
 
-static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
+static int PyThing_setName(PyThing *self, PyObject *value, void * /*closure*/)
+{
     QString name = QString(PyUnicode_AsUTF8(value));
     if (!self->thing) {
         return -1;
@@ -211,7 +209,7 @@ static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
     return 0;
 }
 
-static PyObject * PyThing_paramValue(PyThing* self, PyObject* args)
+static PyObject *PyThing_paramValue(PyThing *self, PyObject *args)
 {
     char *paramTypeIdStr = nullptr;
 
@@ -228,7 +226,7 @@ static PyObject * PyThing_paramValue(PyThing* self, PyObject* args)
             break;
         }
 
-        Param param = PyParam_ToParam((PyParam*)pyParam);
+        Param param = PyParam_ToParam((PyParam *) pyParam);
         Py_DECREF(pyParam);
 
         if (param.paramTypeId() != paramTypeId) {
@@ -245,7 +243,7 @@ static PyObject * PyThing_paramValue(PyThing* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThing_setting(PyThing* self, PyObject* args)
+static PyObject *PyThing_setting(PyThing *self, PyObject *args)
 {
     char *paramTypeIdStr = nullptr;
 
@@ -262,7 +260,7 @@ static PyObject * PyThing_setting(PyThing* self, PyObject* args)
             break;
         }
 
-        Param param = PyParam_ToParam((PyParam*)pyParam);
+        Param param = PyParam_ToParam((PyParam *) pyParam);
         Py_DECREF(pyParam);
 
         if (param.paramTypeId() != paramTypeId) {
@@ -279,18 +277,19 @@ static PyObject * PyThing_setting(PyThing* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyObject *PyThing_getSettings(PyThing *self, void */*closure*/)
+static PyObject *PyThing_getSettings(PyThing *self, void * /*closure*/)
 {
     Py_INCREF(self->pySettings);
     return self->pySettings;
 }
 
-static int PyThing_setSettings(PyThing */*self*/, PyObject */*value*/, void */*closure*/){
+static int PyThing_setSettings(PyThing * /*self*/, PyObject * /*value*/, void * /*closure*/)
+{
     //    self->thing->setName(QString(PyUnicode_AsUTF8(value)));
     return 0;
 }
 
-static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
+static PyObject *PyThing_stateValue(PyThing *self, PyObject *args)
 {
     char *stateTypeIdStr = nullptr;
 
@@ -316,7 +315,7 @@ static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
     return nullptr;
 }
 
-static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
+static PyObject *PyThing_setStateValue(PyThing *self, PyObject *args)
 {
     char *stateTypeIdStr = nullptr;
     PyObject *valueObj = nullptr;
@@ -336,7 +335,7 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
+static PyObject *PyThing_emitEvent(PyThing *self, PyObject *args)
 {
     char *eventTypeIdStr = nullptr;
     PyObject *valueObj = nullptr;
@@ -367,20 +366,20 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
 }
 
 static PyGetSetDef PyThing_getset[] = {
-    {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thing name", nullptr},
-    {"id", (getter)PyThing_getId, 0, "ThingId", nullptr},
-    {"thingClassId", (getter)PyThing_getThingClassId, 0, "ThingClassId", nullptr},
-    {"parentId", (getter)PyThing_getParentId, 0, "Parent thing id", nullptr},
-    {"settings", (getter)PyThing_getSettings, (setter)PyThing_setSettings, "Thing settings", nullptr},
-    {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
+    {"name", (getter) PyThing_getName, (setter) PyThing_setName, "Thing name", nullptr},
+    {"id", (getter) PyThing_getId, 0, "ThingId", nullptr},
+    {"thingClassId", (getter) PyThing_getThingClassId, 0, "ThingClassId", nullptr},
+    {"parentId", (getter) PyThing_getParentId, 0, "Parent thing id", nullptr},
+    {"settings", (getter) PyThing_getSettings, (setter) PyThing_setSettings, "Thing settings", nullptr},
+    {nullptr, nullptr, nullptr, nullptr, nullptr} /* Sentinel */
 };
 
 static PyMethodDef PyThing_methods[] = {
-    { "paramValue", (PyCFunction)PyThing_paramValue, METH_VARARGS, "Get a things param value by paramTypeId" },
-    { "setting", (PyCFunction)PyThing_setting, METH_VARARGS, "Get a things setting value by paramTypeId" },
-    { "stateValue", (PyCFunction)PyThing_stateValue, METH_VARARGS, "Get a things state value by stateTypeId" },
-    { "setStateValue", (PyCFunction)PyThing_setStateValue, METH_VARARGS, "Set a certain things state value by stateTypeIp" },
-    { "emitEvent", (PyCFunction)PyThing_emitEvent, METH_VARARGS, "Emits an event" },
+    {"paramValue", (PyCFunction) PyThing_paramValue, METH_VARARGS, "Get a things param value by paramTypeId"},
+    {"setting", (PyCFunction) PyThing_setting, METH_VARARGS, "Get a things setting value by paramTypeId"},
+    {"stateValue", (PyCFunction) PyThing_stateValue, METH_VARARGS, "Get a things state value by stateTypeId"},
+    {"setStateValue", (PyCFunction) PyThing_setStateValue, METH_VARARGS, "Set a certain things state value by stateTypeIp"},
+    {"emitEvent", (PyCFunction) PyThing_emitEvent, METH_VARARGS, "Emits an event"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
@@ -388,20 +387,19 @@ static PyMemberDef PyThing_members[] = {
     {"params", T_OBJECT_EX, offsetof(PyThing, pyParams), READONLY, "Thing params"},
     {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, pyNameChangedHandler), 0, "Set a callback for when the thing name changes"},
     {"settingChangedHandler", T_OBJECT_EX, offsetof(PyThing, pySettingChangedHandler), 0, "Set a callback for when a thing setting changes"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyTypeObject PyThingType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.Thing",              /* tp_name */
-    sizeof(PyThing),            /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    (destructor)PyThing_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.Thing", /* tp_name */
+    sizeof(PyThing),                              /* tp_basicsize */
+    0,                                            /* tp_itemsize */
+    (destructor) PyThing_dealloc,                 /* tp_dealloc */
 };
 
 static void registerThingType(PyObject *module)
 {
-    PyThingType.tp_new = (newfunc)PyThing_new;
+    PyThingType.tp_new = (newfunc) PyThing_new;
     PyThingType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingType.tp_methods = PyThing_methods;
     PyThingType.tp_members = PyThing_members;
@@ -411,14 +409,13 @@ static void registerThingType(PyObject *module)
     if (PyType_Ready(&PyThingType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "Thing", reinterpret_cast<PyObject*>(&PyThingType));
+    PyModule_AddObject(module, "Thing", reinterpret_cast<PyObject *>(&PyThingType));
 
     QMetaEnum thingErrorEnum = QMetaEnum::fromType<Thing::ThingError>();
     for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
         PyModule_AddObject(module, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
     }
 }
-
 
 #pragma GCC diagnostic pop
 

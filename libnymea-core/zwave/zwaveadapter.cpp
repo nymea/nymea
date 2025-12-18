@@ -24,10 +24,7 @@
 
 #include "zwaveadapter.h"
 
-ZWaveAdapter::ZWaveAdapter()
-{
-
-}
+ZWaveAdapter::ZWaveAdapter() {}
 
 QString ZWaveAdapter::serialPort() const
 {
@@ -39,16 +36,11 @@ void ZWaveAdapter::setSerialPort(const QString &serialPort)
     m_serialPort = serialPort;
 }
 
-ZWaveAdapters::ZWaveAdapters()
-{
+ZWaveAdapters::ZWaveAdapters() {}
 
-}
-
-ZWaveAdapters::ZWaveAdapters(const QList<ZWaveAdapter> &other):
-    QList<ZWaveAdapter>(other)
-{
-
-}
+ZWaveAdapters::ZWaveAdapters(const QList<ZWaveAdapter> &other)
+    : QList<ZWaveAdapter>(other)
+{}
 
 bool ZWaveAdapters::hasSerialPort(const QString &serialPort)
 {

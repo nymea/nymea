@@ -27,9 +27,9 @@
 #include "integrations/thingmanager.h"
 #include "types/action.h"
 
-#include <QQmlEngine>
 #include <qqml.h>
 #include <QQmlContext>
+#include <QQmlEngine>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -37,20 +37,16 @@ Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 namespace nymeaserver {
 namespace scriptengine {
 
-ScriptInterfaceAction::ScriptInterfaceAction(QObject *parent) : QObject(parent)
-{
-
-}
+ScriptInterfaceAction::ScriptInterfaceAction(QObject *parent)
+    : QObject(parent)
+{}
 
 void ScriptInterfaceAction::classBegin()
 {
-    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong());
 }
 
-void ScriptInterfaceAction::componentComplete()
-{
-
-}
+void ScriptInterfaceAction::componentComplete() {}
 
 QString ScriptInterfaceAction::interfaceName() const
 {
@@ -96,7 +92,8 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
     foreach (Thing *thing, things) {
         ActionType actionType = thing->thingClass().actionTypes().findByName(m_actionName);
         if (actionType.id().isNull()) {
-            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have action" << m_actionName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning()
+                << "Thing" << thing->name() << "does not have action" << m_actionName;
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);
@@ -120,5 +117,5 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
     }
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

@@ -25,8 +25,8 @@
 #ifndef COAPOBSERVERESOURCE_H
 #define COAPOBSERVERESOURCE_H
 
-#include <QObject>
 #include <QHash>
+#include <QObject>
 #include <QUrl>
 
 #include "libnymea.h"
@@ -43,7 +43,6 @@ public:
 private:
     QUrl m_url;
     QByteArray m_token;
-
 };
 
 inline bool operator==(const CoapObserveResource &r1, const CoapObserveResource &r2)
@@ -55,6 +54,5 @@ inline uint qHash(const CoapObserveResource &key, uint seed)
 {
     return qHash(key.url().toString(), seed);
 }
-
 
 #endif // COAPOBSERVERESOURCE_H

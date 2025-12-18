@@ -23,19 +23,19 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "mqttproviderimplementation.h"
-#include "mqttchannelimplementation.h"
 #include "loggingcategories.h"
+#include "mqttchannelimplementation.h"
 
-#include <QUuid>
-#include <QtDebug>
 #include <QNetworkInterface>
 #include <QRegularExpression>
+#include <QUuid>
+#include <QtDebug>
 
 namespace nymeaserver {
 
-MqttProviderImplementation::MqttProviderImplementation(MqttBroker *broker, QObject *parent):
-    MqttProvider(parent),
-    m_broker(broker)
+MqttProviderImplementation::MqttProviderImplementation(MqttBroker *broker, QObject *parent)
+    : MqttProvider(parent)
+    , m_broker(broker)
 {
     connect(broker, &MqttBroker::clientConnected, this, &MqttProviderImplementation::onClientConnected);
     connect(broker, &MqttBroker::clientDisconnected, this, &MqttProviderImplementation::onClientDisconnected);
@@ -61,7 +61,8 @@ MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, 
     return createChannel(clientId, username, password, clientAddress, topicPrefixList);
 }
 
-MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
+MqttChannel *MqttProviderImplementation::createChannel(
+    const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
 {
     if (m_broker->configurations().isEmpty()) {
         qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for thing" << clientId;
@@ -73,7 +74,7 @@ MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, 
         return nullptr;
     }
 
-    MqttChannelImplementation* channel = new MqttChannelImplementation();
+    MqttChannelImplementation *channel = new MqttChannelImplementation();
     channel->m_clientId = clientId;
     channel->m_username = username;
     channel->m_password = password;
@@ -83,7 +84,6 @@ MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, 
         QString defaultTopicPrefix = channel->m_clientId;
         channel->m_topicPrefixList.append(defaultTopicPrefix);
     }
-
 
     foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
         foreach (const QNetworkAddressEntry &addressEntry, interface.addressEntries()) {
@@ -137,12 +137,9 @@ void MqttProviderImplementation::releaseChannel(MqttChannel *channel)
 
 MqttClient *MqttProviderImplementation::createInternalClient(const QString &clientId)
 {
-
     ServerConfiguration preferredConfig;
     foreach (const ServerConfiguration &config, m_broker->configurations()) {
-        if (QHostAddress(config.address) == QHostAddress::Any
-                || QHostAddress(config.address) == QHostAddress::AnyIPv4
-                || QHostAddress(config.address) == QHostAddress::LocalHost) {
+        if (QHostAddress(config.address) == QHostAddress::Any || QHostAddress(config.address) == QHostAddress::AnyIPv4 || QHostAddress(config.address) == QHostAddress::LocalHost) {
             preferredConfig = config;
             break;
         }
@@ -161,7 +158,7 @@ MqttClient *MqttProviderImplementation::createInternalClient(const QString &clie
     policy.allowedSubscribeTopicFilters.append("#");
     m_broker->updatePolicy(policy);
 
-    MqttClient* client = new MqttClient(clientId, this);
+    MqttClient *client = new MqttClient(clientId, this);
     client->setUsername(policy.username);
     client->setPassword(policy.password);
     client->setAutoReconnect(false);
@@ -171,9 +168,8 @@ MqttClient *MqttProviderImplementation::createInternalClient(const QString &clie
         m_broker->removePolicy(clientId);
     });
 
-    if (QHostAddress(preferredConfig.address) == QHostAddress::Any
-            || QHostAddress(preferredConfig.address) == QHostAddress::AnyIPv4
-            || QHostAddress(preferredConfig.address) == QHostAddress::LocalHost) {
+    if (QHostAddress(preferredConfig.address) == QHostAddress::Any || QHostAddress(preferredConfig.address) == QHostAddress::AnyIPv4
+        || QHostAddress(preferredConfig.address) == QHostAddress::LocalHost) {
         client->connectToHost("127.0.0.1", preferredConfig.port);
     } else {
         client->connectToHost(preferredConfig.address, preferredConfig.port);
@@ -216,21 +212,20 @@ void MqttProviderImplementation::onClientDisconnected(const QString &clientId)
 void MqttProviderImplementation::onPublishReceived(const QString &clientId, const QString &topic, const QByteArray &payload)
 {
     if (m_createdChannels.contains(clientId)) {
-        MqttChannel* channel = m_createdChannels.value(clientId);
+        MqttChannel *channel = m_createdChannels.value(clientId);
         emit channel->publishReceived(channel, topic, payload);
     }
 }
 
 void MqttProviderImplementation::onPluginPublished(const QString &topic, const QByteArray &payload)
 {
-    MqttChannelImplementation *channel = static_cast<MqttChannelImplementation*>(sender());
+    MqttChannelImplementation *channel = static_cast<MqttChannelImplementation *>(sender());
     bool found = false;
     foreach (const QString &topicPrefix, channel->topicPrefixList()) {
         if (topicPrefix.startsWith(topicPrefix)) {
             found = true;
             break;
         }
-
     }
     if (!found) {
         qCWarning(dcMqtt) << "Attempt to publish to MQTT channel for client" << channel->clientId() << "but topic is not within allowed topic prefix. Discarding message.";
@@ -238,4 +233,4 @@ void MqttProviderImplementation::onPluginPublished(const QString &topic, const Q
     m_broker->publish(topic, payload);
 }
 
-}
+} // namespace nymeaserver

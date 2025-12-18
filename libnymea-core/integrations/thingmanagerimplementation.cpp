@@ -24,7 +24,7 @@
 
 #include "thingmanagerimplementation.h"
 #include "translator.h"
-#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 #include "scriptintegrationplugin.h"
 #endif
 #ifdef WITH_PYTHON
@@ -32,47 +32,47 @@
 #endif
 
 #include "loggingcategories.h"
-#include "typeutils.h"
 #include "nymeasettings.h"
-#include "version.h"
 #include "plugininfocache.h"
+#include "typeutils.h"
+#include "version.h"
 
+#include "integrations/browseractioninfo.h"
+#include "integrations/browseresult.h"
+#include "integrations/browseritemactioninfo.h"
+#include "integrations/browseritemresult.h"
+#include "integrations/integrationplugin.h"
+#include "integrations/thingactioninfo.h"
 #include "integrations/thingdiscoveryinfo.h"
 #include "integrations/thingpairinginfo.h"
 #include "integrations/thingsetupinfo.h"
-#include "integrations/thingactioninfo.h"
-#include "integrations/integrationplugin.h"
 #include "integrations/thingutils.h"
-#include "integrations/browseresult.h"
-#include "integrations/browseritemresult.h"
-#include "integrations/browseractioninfo.h"
-#include "integrations/browseritemactioninfo.h"
 
 #include "apikeysprovidersloader.h"
 
 //#include "unistd.h"
 
-#include "plugintimer.h"
 #include "logging/logengine.h"
+#include "plugintimer.h"
 
-#include <QPluginLoader>
-#include <QStaticPlugin>
-#include <QtPlugin>
-#include <QDebug>
-#include <QStringList>
 #include <QCoreApplication>
-#include <QStandardPaths>
+#include <QDebug>
 #include <QDir>
 #include <QJsonDocument>
 #include <QMetaEnum>
+#include <QPluginLoader>
 #include <QRegularExpression>
+#include <QStandardPaths>
+#include <QStaticPlugin>
+#include <QStringList>
+#include <QtPlugin>
 
-ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
-    ThingManager(parent),
-    m_hardwareManager(hardwareManager),
-    m_logEngine(logEngine),
-    m_locale(locale),
-    m_translator(new Translator(this))
+ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent)
+    : ThingManager(parent)
+    , m_hardwareManager(hardwareManager)
+    , m_logEngine(logEngine)
+    , m_locale(locale)
+    , m_translator(new Translator(this))
 {
     foreach (const Interface &interface, ThingUtils::allInterfaces()) {
         m_supportedInterfaces.insert(interface.name(), interface);
@@ -105,7 +105,6 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
 
 ThingManagerImplementation::~ThingManagerImplementation()
 {
-
     delete m_translator;
 
     foreach (Thing *thing, m_configuredThings) {
@@ -181,12 +180,11 @@ QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
     foreach (const QString &path, searchDirs) {
         QDir dir(path);
         foreach (const QString &entry, dir.entryList({"*.so", "*.js", "*.py"}, QDir::Files)) {
-
             QFileInfo fi(path + '/' + entry);
             if (entry.startsWith("libnymea_integrationplugin") && entry.endsWith(".so")) {
                 QPluginLoader loader(fi.absoluteFilePath());
                 pluginList.append(loader.metaData().value("MetaData").toObject());
-#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
                 QFile jsonFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
                 if (!jsonFile.open(QFile::ReadOnly)) {
@@ -287,7 +285,7 @@ ThingClasses ThingManagerImplementation::supportedThings(const VendorId &vendorI
     return ret;
 }
 
-ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassId &thingClassId, const ParamList &params)
+ThingDiscoveryInfo *ThingManagerImplementation::discoverThings(const ThingClassId &thingClassId, const ParamList &params)
 {
     ThingClass thingClass = findThingClass(thingClassId);
     if (!thingClass.isValid()) {
@@ -320,7 +318,7 @@ ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassI
     ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
 
     ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, effectiveParams, this, 40000);
-    connect(discoveryInfo, &ThingDiscoveryInfo::finished, this, [this, discoveryInfo](){
+    connect(discoveryInfo, &ThingDiscoveryInfo::finished, this, [this, discoveryInfo]() {
         if (discoveryInfo->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Discovery failed:" << discoveryInfo->status() << discoveryInfo->displayMessage();
             return;
@@ -340,7 +338,7 @@ ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassI
     return discoveryInfo;
 }
 
-ThingSetupInfo* ThingManagerImplementation::addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name)
+ThingSetupInfo *ThingManagerImplementation::addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name)
 {
     return addConfiguredThingInternal(thingClassId, name, params);
 }
@@ -375,7 +373,7 @@ ThingSetupInfo *ThingManagerImplementation::addConfiguredThing(const ThingDescri
     return addConfiguredThingInternal(descriptor.thingClassId(), name, finalParams, descriptor.parentId());
 }
 
-ThingSetupInfo* ThingManagerImplementation::reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name)
+ThingSetupInfo *ThingManagerImplementation::reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name)
 {
     Thing *thing = findConfiguredThing(thingId);
     if (!thing) {
@@ -471,14 +469,12 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
     // try to setup the thing with the new params
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, true, true, 30000);
     plugin->setupThing(info);
-    connect(info, &ThingSetupInfo::destroyed, thing, [=](){
-        m_pendingSetups.remove(thing->id());
-    });
+    connect(info, &ThingSetupInfo::destroyed, thing, [=]() { m_pendingSetups.remove(thing->id()); });
 
-    connect(info, &ThingSetupInfo::finished, this, [this, info](){
-
+    connect(info, &ThingSetupInfo::finished, this, [this, info]() {
         if (info->status() != Thing::ThingErrorNoError) {
-            qCWarning(dcThingManager()) << "Thing reconfiguration failed for" << info->thing()->name() << info->thing()->id().toString() << info->status() << info->displayMessage();
+            qCWarning(dcThingManager()) << "Thing reconfiguration failed for" << info->thing()->name() << info->thing()->id().toString() << info->status()
+                                        << info->displayMessage();
             info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
             // TODO: recover old params.??
             return;
@@ -490,11 +486,9 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
         info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
 
         emit thingChanged(info->thing());
-
     });
 
     return info;
-
 }
 
 Thing::ThingError ThingManagerImplementation::editThing(const ThingId &thingId, const QString &name)
@@ -620,7 +614,6 @@ Thing::ThingError ThingManagerImplementation::setActionLogging(const ThingId &th
         emit thingChanged(thing);
     }
     return Thing::ThingErrorNoError;
-
 }
 
 Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter)
@@ -640,7 +633,7 @@ Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thin
     return Thing::ThingErrorNoError;
 }
 
-ThingPairingInfo* ThingManagerImplementation::pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name)
+ThingPairingInfo *ThingManagerImplementation::pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name)
 {
     PairingTransactionId transactionId = PairingTransactionId::createPairingTransactionId();
 
@@ -663,7 +656,7 @@ ThingPairingInfo* ThingManagerImplementation::pairThing(const ThingClassId &thin
     return info;
 }
 
-ThingPairingInfo* ThingManagerImplementation::pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params, const QString &name)
+ThingPairingInfo *ThingManagerImplementation::pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params, const QString &name)
 {
     PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
     ThingDescriptor descriptor = m_discoveredThings.value(thingDescriptorId);
@@ -748,8 +741,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
     ThingPairingInfo *externalInfo = new ThingPairingInfo(pairingTransactionId, thingClassId, thingId, context.thingName, context.params, context.parentId, this, false);
     plugin->confirmPairing(internalInfo, username, secret);
 
-    connect(internalInfo, &ThingPairingInfo::finished, this, [this, internalInfo, externalInfo, plugin, addNewThing](){
-
+    connect(internalInfo, &ThingPairingInfo::finished, this, [this, internalInfo, externalInfo, plugin, addNewThing]() {
         // Internal pairing failed, so fail the exernal one too.
         if (internalInfo->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "ConfirmPairing failed for" << internalInfo->thingName() << internalInfo->thingClassId();
@@ -787,20 +779,17 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
         initThing(thing);
 
         ThingSetupInfo *info = setupThing(thing, true);
-        connect(info, &ThingSetupInfo::finished, thing, [this, info, externalInfo, addNewThing](){
-
+        connect(info, &ThingSetupInfo::finished, thing, [this, info, externalInfo, addNewThing]() {
             externalInfo->finish(info->status(), info->displayMessage());
 
             if (info->status() != Thing::ThingErrorNoError) {
                 if (addNewThing) {
-                    qCWarning(dcThingManager()) << "Failed to set up thing" << info->thing()
-                                                 << "Not adding thing to the system. Error:"
-                                                  << info->status() << info->displayMessage();
+                    qCWarning(dcThingManager()) << "Failed to set up thing" << info->thing() << "Not adding thing to the system. Error:" << info->status()
+                                                << info->displayMessage();
                     info->thing()->deleteLater();
 
                 } else {
-                    qCWarning(dcThingManager()) << "Failed to reconfigure thing" << info->thing() <<
-                                                    "Error:" << info->status() << info->displayMessage();
+                    qCWarning(dcThingManager()) << "Failed to reconfigure thing" << info->thing() << "Error:" << info->status() << info->displayMessage();
                     info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
                     // TODO: restore parameters?
                 }
@@ -822,13 +811,12 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
 
             postSetupThing(info->thing());
         });
-
     });
 
     return externalInfo;
 }
 
-ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId)
+ThingSetupInfo *ThingManagerImplementation::addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId)
 {
     ThingClass thingClass = findThingClass(thingClassId);
     if (thingClass.id().isNull()) {
@@ -882,11 +870,10 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
     ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
     thing->setSettings(settings);
 
-
     initThing(thing);
 
     ThingSetupInfo *info = setupThing(thing, true);
-    connect(info, &ThingSetupInfo::finished, this, [this, info](){
+    connect(info, &ThingSetupInfo::finished, this, [this, info]() {
         if (info->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Thing setup failed for" << info->thing() << "Not adding thing to system.";
             info->thing()->deleteLater();
@@ -1006,7 +993,7 @@ BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, co
     }
 
     plugin->browseThing(result);
-    connect(result, &BrowseResult::finished, this, [result](){
+    connect(result, &BrowseResult::finished, this, [result]() {
         if (result->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Browsing" << result->thing() << "failed:" << result->status();
         }
@@ -1044,7 +1031,7 @@ BrowserItemResult *ThingManagerImplementation::browserItemDetails(const ThingId 
     }
 
     plugin->browserItem(result);
-    connect(result, &BrowserItemResult::finished, this, [result](){
+    connect(result, &BrowserItemResult::finished, this, [result]() {
         if (result->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Browsing" << result->thing() << "failed:" << result->status();
         }
@@ -1052,7 +1039,7 @@ BrowserItemResult *ThingManagerImplementation::browserItemDetails(const ThingId 
     return result;
 }
 
-BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserAction &browserAction)
+BrowserActionInfo *ThingManagerImplementation::executeBrowserItem(const BrowserAction &browserAction)
 {
     Thing *thing = m_configuredThings.value(browserAction.thingId());
 
@@ -1084,7 +1071,7 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
     return info;
 }
 
-BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
+BrowserItemActionInfo *ThingManagerImplementation::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
 {
     Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
@@ -1343,7 +1330,7 @@ Things ThingManagerImplementation::configuredThings() const
 
 Things ThingManagerImplementation::findConfiguredThings(const ThingClassId &thingClassId) const
 {
-    QList<Thing*> ret;
+    QList<Thing *> ret;
     foreach (Thing *thing, m_configuredThings) {
         if (thing->thingClassId() == thingClassId) {
             ret << thing;
@@ -1354,7 +1341,7 @@ Things ThingManagerImplementation::findConfiguredThings(const ThingClassId &thin
 
 Things ThingManagerImplementation::findConfiguredThings(const QString &interface) const
 {
-    QList<Thing*> ret;
+    QList<Thing *> ret;
     foreach (Thing *thing, m_configuredThings) {
         ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
         if (thingClass.interfaces().contains(interface)) {
@@ -1434,7 +1421,8 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     Thing::ThingError paramCheck = ThingUtils::verifyParams(paramTypes, action.params());
     if (paramCheck != Thing::ThingErrorNoError) {
-        qCWarning(dcThingManager()) << "Cannot execute action" << actionType << "on" << thing << "from" << plugin << "because the param verification failed with error" << paramCheck;
+        qCWarning(dcThingManager()) << "Cannot execute action" << actionType << "on" << thing << "from" << plugin << "because the param verification failed with error"
+                                    << paramCheck;
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
         info->finish(paramCheck);
         return info;
@@ -1443,20 +1431,18 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
     finalAction.setParams(finalParams);
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 15000);
-    connect(info, &ThingActionInfo::finished, this, [=](){
-
+    connect(info, &ThingActionInfo::finished, this, [=]() {
         if (thing->loggedActionTypeIds().contains(actionType.id())) {
             QVariantMap params;
             foreach (const ParamType &paramType, actionType.paramTypes()) {
                 params.insert(paramType.name(), action.paramValue(paramType.id()));
             }
 
-            m_actionLoggers.value(thing->id().toString() + "-" + actionType.name())->log({},
-                                                        {
-                                                            {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                                                            {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
-                                                            {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}
-                                                        });
+            m_actionLoggers.value(thing->id().toString() + "-" + actionType.name())
+                ->log({},
+                      {{"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                       {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
+                       {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}});
         }
 
         emit actionExecuted(action, info->status());
@@ -1468,7 +1454,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 }
 
 void ThingManagerImplementation::loadPlugins()
-{    
+{
     QStringList searchDirs;
     // Add first level of subdirectories to the plugin search dirs so we can point to a collection of plugins
     foreach (const QString &path, pluginSearchDirs()) {
@@ -1483,7 +1469,6 @@ void ThingManagerImplementation::loadPlugins()
         QDir dir(path);
         qCDebug(dcThingManager()) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList({"*.so", "*.js", "*.py"}, QDir::Files)) {
-
             IntegrationPlugin *plugin = nullptr;
 
             QFileInfo fi(path + '/' + entry);
@@ -1491,7 +1476,7 @@ void ThingManagerImplementation::loadPlugins()
                 plugin = createCppIntegrationPlugin(fi.absoluteFilePath());
 
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
-#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
                 ScriptIntegrationPlugin *p = new ScriptIntegrationPlugin(this);
                 bool ok = p->loadScript(fi.absoluteFilePath());
                 if (ok) {
@@ -1575,7 +1560,8 @@ void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface)
 
     foreach (const ThingClass &thingClass, pluginIface->supportedThings()) {
         if (!m_supportedVendors.contains(thingClass.vendorId())) {
-            qCWarning(dcThingManager()) << "Vendor not found. Ignoring thing. VendorId:" << thingClass.vendorId().toString() << "ThingClass:" << thingClass.name() << thingClass.id().toString();
+            qCWarning(dcThingManager()) << "Vendor not found. Ignoring thing. VendorId:" << thingClass.vendorId().toString() << "ThingClass:" << thingClass.name()
+                                        << thingClass.id().toString();
             continue;
         }
         m_vendorThingMap[thingClass.vendorId()].append(thingClass.id());
@@ -1670,7 +1656,8 @@ void ThingManagerImplementation::loadConfiguredThings()
             }
         }
         if (!thingClass.isValid()) {
-            qCWarning(dcThingManager()) << "Not loading thing" << thingName << idString << "because the thing class" << thingClassId << "is neither provided by a plugin nor found in the cache.";
+            qCWarning(dcThingManager()) << "Not loading thing" << thingName << idString << "because the thing class" << thingClassId
+                                        << "is neither provided by a plugin nor found in the cache.";
             settings.endGroup(); // ThingId
             continue;
         }
@@ -1787,8 +1774,7 @@ void ThingManagerImplementation::loadConfiguredThings()
         settings.remove("DeviceConfig");
     }
 
-
-    QHash<ThingId, Thing*> setupList = m_configuredThings;
+    QHash<ThingId, Thing *> setupList = m_configuredThings;
     while (!setupList.isEmpty()) {
         Thing *thing = nullptr;
         foreach (Thing *d, setupList) {
@@ -1864,7 +1850,6 @@ void ThingManagerImplementation::startMonitoringAutoThings()
 void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &thingDescriptors)
 {
     foreach (const ThingDescriptor &thingDescriptor, thingDescriptors) {
-
         ThingClass thingClass = findThingClass(thingDescriptor.thingClassId());
         if (!thingClass.isValid()) {
             qCWarning(dcThingManager()) << "Ignoring appearing auto thing for an unknown ThingClass" << thingDescriptor.thingClassId();
@@ -1909,8 +1894,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
         qCDebug(dcThingManager()) << "Setting up auto thing:" << thing;
 
         ThingSetupInfo *info = setupThing(thing, true);
-        connect(info, &ThingSetupInfo::finished, thing, [this, info](){
-
+        connect(info, &ThingSetupInfo::finished, thing, [this, info]() {
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcThingManager()) << "Setting up" << info->thing() << "failed:" << info->status() << "Not adding auto thing to system.";
                 info->thing()->deleteLater();
@@ -1928,23 +1912,26 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
 
 void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
 {
-    IntegrationPlugin *plugin = static_cast<IntegrationPlugin*>(sender());
+    IntegrationPlugin *plugin = static_cast<IntegrationPlugin *>(sender());
     Thing *thing = m_configuredThings.value(thingId);
 
     if (!thing) {
-        qCWarning(dcThingManager()) << "Received an autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString() << "but this thing is unknown:" << thingId.toString();
+        qCWarning(dcThingManager()) << "Received an autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString()
+                                    << "but this thing is unknown:" << thingId.toString();
         return;
     }
 
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
 
     if (thingClass.pluginId() != plugin->pluginId()) {
-        qCWarning(dcThingManager()) << "Received a autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString() << "but emitting plugin does not own the thing";
+        qCWarning(dcThingManager()) << "Received a autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString()
+                                    << "but emitting plugin does not own the thing";
         return;
     }
 
     if (!thing->autoCreated()) {
-        qCWarning(dcThingManager()) << "Received an autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString() << "but thing creationMethod is not CreateMothodAuto";
+        qCWarning(dcThingManager()) << "Received an autoThingDisappeared signal from plugin" << plugin->pluginDisplayName() << plugin->pluginId().toString()
+                                    << "but thing creationMethod is not CreateMothodAuto";
         return;
     }
 
@@ -1999,9 +1986,10 @@ void ThingManagerImplementation::onEventTriggered(Event event)
     emit eventTriggered(event);
 }
 
-void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues)
+void ThingManagerImplementation::slotThingStateValueChanged(
+    const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues)
 {
-    Thing *thing = qobject_cast<Thing*>(sender());
+    Thing *thing = qobject_cast<Thing *>(sender());
     if (!thing || !m_configuredThings.contains(thing->id())) {
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
@@ -2022,7 +2010,6 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
 
 void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeId &stateTypeId)
 {
-
     foreach (const IOConnection &ioConnection, m_ioConnections) {
         // Check if this state is an input to an IO connection.
         if (ioConnection.inputThingId() == thing->id() && ioConnection.inputStateTypeId() == stateTypeId) {
@@ -2072,8 +2059,8 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
             Param outputParam(ioConnection.outputStateTypeId(), outputValue);
             outputAction.setParams(ParamList() << outputParam);
             qCDebug(dcThingManager()) << "Executing IO connection action on" << outputThing->name() << outputParam;
-            ThingActionInfo* info = executeAction(outputAction);
-            connect(info, &ThingActionInfo::finished, this, [=](){
+            ThingActionInfo *info = executeAction(outputAction);
+            connect(info, &ThingActionInfo::finished, this, [=]() {
                 if (info->status() != Thing::ThingErrorNoError) {
                     // An error happened... let's switch the input back to be in sync with the output
                     qCWarning(dcThingManager()) << "Error syncing IO connection state. Reverting input back to old value.";
@@ -2146,7 +2133,7 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
 
 void ThingManagerImplementation::slotThingSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value)
 {
-    Thing *thing = qobject_cast<Thing*>(sender());
+    Thing *thing = qobject_cast<Thing *>(sender());
     if (!thing) {
         return;
     }
@@ -2156,7 +2143,7 @@ void ThingManagerImplementation::slotThingSettingChanged(const ParamTypeId &para
 
 void ThingManagerImplementation::slotThingNameChanged()
 {
-    Thing *thing = qobject_cast<Thing*>(sender());
+    Thing *thing = qobject_cast<Thing *>(sender());
     if (!thing) {
         return;
     }
@@ -2174,7 +2161,7 @@ ParamList ThingManagerImplementation::buildParams(const ParamTypes &types, const
             value = first.paramValue(paramType.id());
         } else if (second.hasParam(paramType.id())) {
             value = second.paramValue(paramType.id());
-        } else if (paramType.defaultValue().isValid()){
+        } else if (paramType.defaultValue().isValid()) {
             value = paramType.defaultValue();
         }
         if (!value.isNull()) {
@@ -2212,7 +2199,7 @@ void ThingManagerImplementation::pairThingInternal(ThingPairingInfo *info)
 
     plugin->startPairing(info);
 
-    connect(info, &ThingPairingInfo::finished, this, [this, info, thingClass](){
+    connect(info, &ThingPairingInfo::finished, this, [this, info, thingClass]() {
         if (info->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "PairThing failed for" << thingClass << info->status() << info->displayMessage();
             return;
@@ -2231,7 +2218,7 @@ void ThingManagerImplementation::pairThingInternal(ThingPairingInfo *info)
     });
 }
 
-ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing, bool initialSetup)
+ThingSetupInfo *ThingManagerImplementation::setupThing(Thing *thing, bool initialSetup)
 {
     ThingClass thingClass = findThingClass(thing->thingClassId());
     IntegrationPlugin *plugin = m_integrationPlugins.value(thingClass.pluginId());
@@ -2247,9 +2234,7 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing, bool initia
     plugin->setupThing(info);
 
     m_pendingSetups.insert(thing->id(), info);
-    connect(info, &ThingSetupInfo::destroyed, thing, [=](){
-        m_pendingSetups.remove(thing->id());
-    });
+    connect(info, &ThingSetupInfo::destroyed, thing, [=]() { m_pendingSetups.remove(thing->id()); });
 
     return info;
 }
@@ -2420,13 +2405,7 @@ void ThingManagerImplementation::registerStateLogger(Thing *thing, const StateTy
 {
     StateType stateType = thing->thingClass().getStateType(stateTypeId);
     QString name = thing->id().toString() + "-" + stateType.name();
-    QList<QMetaType::Type> sampledTypes {
-        QMetaType::Int,
-        QMetaType::UInt,
-        QMetaType::LongLong,
-        QMetaType::ULongLong,
-        QMetaType::Double
-    };
+    QList<QMetaType::Type> sampledTypes{QMetaType::Int, QMetaType::UInt, QMetaType::LongLong, QMetaType::ULongLong, QMetaType::Double};
     Types::LoggingType loggingType = sampledTypes.contains(stateType.type()) ? Types::LoggingTypeSampled : Types::LoggingTypeDiscrete;
     Logger *logger = m_logEngine->registerLogSource("state-" + name, {}, loggingType, stateType.name());
     m_stateLoggers.insert(name, logger);
@@ -2479,8 +2458,7 @@ void ThingManagerImplementation::trySetupThing(Thing *thing)
     // Set receiving object to "thing" because at startup we load it in any case, knowing that it worked at
     // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
     // it in the meantime... In that case we don't want to call postsetup on it.
-    connect(info, &ThingSetupInfo::finished, thing, [this, info, thing](){
-
+    connect(info, &ThingSetupInfo::finished, thing, [this, info, thing]() {
         if (info->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Error setting up" << info->thing() << info->status() << info->displayMessage();
             info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
@@ -2488,9 +2466,7 @@ void ThingManagerImplementation::trySetupThing(Thing *thing)
 
             // We know this used to work at some point... try again in a bit unless we don't have a plugin for it...
             if (info->status() != Thing::ThingErrorPluginNotFound) {
-                QTimer::singleShot(10000, thing, [this, thing]() {
-                    trySetupThing(thing);
-                });
+                QTimer::singleShot(10000, thing, [this, thing]() { trySetupThing(thing); });
             }
 
             return;
@@ -2544,7 +2520,7 @@ IntegrationPlugin *ThingManagerImplementation::createCppIntegrationPlugin(const 
         return nullptr;
     }
 
-    QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+    QString version = reinterpret_cast<QString (*)()>(versionFunc)();
     lib.unload();
     QStringList parts = version.split('.');
     QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
@@ -2595,7 +2571,7 @@ void ThingManagerImplementation::storeThingStates(Thing *thing)
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.cached()) {
-            storeThingState(thing,  stateType.id());
+            storeThingState(thing, stateType.id());
         }
     }
 }
@@ -2611,4 +2587,3 @@ void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId
     settings.setValue("possibleValues", thing->state(stateTypeId).possibleValues());
     settings.endGroup();
 }
-

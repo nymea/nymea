@@ -26,11 +26,11 @@
 #define ARPSOCKET_H
 
 #include <QDebug>
+#include <QHostAddress>
+#include <QLoggingCategory>
+#include <QNetworkInterface>
 #include <QObject>
 #include <QSocketNotifier>
-#include <QLoggingCategory>
-#include <QHostAddress>
-#include <QNetworkInterface>
 
 #include "libnymea.h"
 #include "macaddress.h"
@@ -67,7 +67,11 @@ private:
     int m_socketDescriptor = -1;
     bool m_isOpen = false;
 
-    bool sendRequestInternally(int networkInterfaceIndex, const MacAddress &senderMacAddress, const QHostAddress &senderHostAddress, const MacAddress &targetMacAddress, const QHostAddress &targetHostAddress);
+    bool sendRequestInternally(int networkInterfaceIndex,
+                               const MacAddress &senderMacAddress,
+                               const QHostAddress &senderHostAddress,
+                               const MacAddress &targetMacAddress,
+                               const QHostAddress &targetHostAddress);
 
     void processDataBuffer(unsigned char *receiveBuffer, int size);
 
@@ -77,7 +81,6 @@ private:
 
     void fillMacAddress(uint8_t *targetArray, const MacAddress &macAddress);
     void fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAddress);
-
 };
 
 #endif // ARPSOCKET_H

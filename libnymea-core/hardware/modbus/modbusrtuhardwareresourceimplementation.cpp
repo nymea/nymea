@@ -23,26 +23,24 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "modbusrtuhardwareresourceimplementation.h"
-#include "loggingcategories.h"
 #include "hardware/modbus/modbusrtumanager.h"
+#include "loggingcategories.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtuResource, "ModbusRtuResource")
 
 namespace nymeaserver {
 
-ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent) :
-    ModbusRtuHardwareResource(parent),
-    m_modbusRtuManager(modbusRtuManager)
+ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent)
+    : ModbusRtuHardwareResource(parent)
+    , m_modbusRtuManager(modbusRtuManager)
 {
-    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster){
-        emit modbusRtuMasterAdded(modbusRtuMaster->modbusUuid());
-    });
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster) { emit modbusRtuMasterAdded(modbusRtuMaster->modbusUuid()); });
 
-    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterRemoved, this, [=](ModbusRtuMaster *modbusRtuMaster){
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterRemoved, this, [=](ModbusRtuMaster *modbusRtuMaster) {
         emit modbusRtuMasterRemoved(modbusRtuMaster->modbusUuid());
     });
 
-    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterChanged, this, [=](ModbusRtuMaster *modbusRtuMaster){
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterChanged, this, [=](ModbusRtuMaster *modbusRtuMaster) {
         emit modbusRtuMasterChanged(modbusRtuMaster->modbusUuid());
     });
 }
@@ -114,4 +112,4 @@ void ModbusRtuHardwareResourceImplementation::setEnabled(bool enabled)
     }
 }
 
-}
+} // namespace nymeaserver

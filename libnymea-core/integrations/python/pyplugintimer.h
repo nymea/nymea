@@ -25,12 +25,12 @@
 #ifndef PYPLUGINTIMER_H
 #define PYPLUGINTIMER_H
 
-#include <Python.h>
-#include <QTimer>
-#include <QThread>
-#include <QCoreApplication>
-#include <QtConcurrent/QtConcurrent>
 #include "structmember.h"
+#include <Python.h>
+#include <QCoreApplication>
+#include <QThread>
+#include <QTimer>
+#include <QtConcurrent/QtConcurrent>
 
 #include "loggingcategories.h"
 
@@ -39,16 +39,15 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-
-typedef struct {
-    PyObject_HEAD
-    PyObject *pyTimeoutHandler = nullptr;
+typedef struct
+{
+    PyObject_HEAD PyObject *pyTimeoutHandler = nullptr;
     QTimer *timer;
     int interval;
     PyInterpreterState *interpreter;
 } PyPluginTimer;
 
-static int PyPluginTimer_init(PyPluginTimer *self, PyObject *args, PyObject */*kwds*/)
+static int PyPluginTimer_init(PyPluginTimer *self, PyObject *args, PyObject * /*kwds*/)
 {
     PyObject *handler;
 
@@ -69,21 +68,19 @@ static int PyPluginTimer_init(PyPluginTimer *self, PyObject *args, PyObject */*k
     // Remember the interpreter from the current thread so we can run the callback in the correct interpreter
     self->interpreter = PyThreadState_GET()->interp;
 
-
-    QObject::connect(self->timer, &QTimer::timeout, [=](){
+    QObject::connect(self->timer, &QTimer::timeout, [=]() {
         qCDebug(dcPythonIntegrations) << "Plugin timer timeout" << self->pyTimeoutHandler;
 
         // Spawn a new thread for the callback of the timer (like we do for every python call).
         // FIXME: Ideally we'd use the plugin's thread pool but we can't easily access that here.
         // If the timer callback blocks for longer than the timer interval, we might end up with
         // tons of threads...
-        QFuture<void> future = QtConcurrent::run([=](){
+        QFuture<void> future = QtConcurrent::run([=]() {
             // Acquire GIL and make the new thread state the current one
             PyThreadState *threadState = PyThreadState_New(self->interpreter);
             PyEval_RestoreThread(threadState);
 
             if (self->pyTimeoutHandler) {
-
                 PyObject *ret = PyObject_CallFunction(self->pyTimeoutHandler, nullptr);
                 if (PyErr_Occurred()) {
                     PyErr_Print();
@@ -99,7 +96,7 @@ static int PyPluginTimer_init(PyPluginTimer *self, PyObject *args, PyObject */*k
     return 0;
 }
 
-static void PyPluginTimer_dealloc(PyPluginTimer * self)
+static void PyPluginTimer_dealloc(PyPluginTimer *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyPluginTimer";
     Py_XDECREF(self->pyTimeoutHandler);
@@ -110,38 +107,32 @@ static void PyPluginTimer_dealloc(PyPluginTimer * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-
-static PyObject *PyPluginTimer_getInterval(PyPluginTimer *self, void */*closure*/)
+static PyObject *PyPluginTimer_getInterval(PyPluginTimer *self, void * /*closure*/)
 {
     return PyLong_FromLong(self->interval);
 }
 
-static int PyPluginTimer_setInterval(PyPluginTimer *self, PyObject *value, void */*closure*/){
+static int PyPluginTimer_setInterval(PyPluginTimer *self, PyObject *value, void * /*closure*/)
+{
     self->interval = PyLong_AsLong(value);
     QMetaObject::invokeMethod(self->timer, "start", Qt::QueuedConnection, Q_ARG(int, self->interval * 1000));
     return 0;
 }
 
 static PyGetSetDef PyPluginTimer_getset[] = {
-    {"interval", (getter)PyPluginTimer_getInterval, (setter)PyPluginTimer_setInterval, "Timer interval", nullptr},
-    {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
+    {"interval", (getter) PyPluginTimer_getInterval, (setter) PyPluginTimer_setInterval, "Timer interval", nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr} /* Sentinel */
 };
 
-
 static PyMemberDef PyPluginTimer_members[] = {
-    {"timeoutHandler", T_OBJECT_EX, offsetof(PyPluginTimer, pyTimeoutHandler), 0, "Set a callback for when the timer timeout triggers."},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {"timeoutHandler", T_OBJECT_EX, offsetof(PyPluginTimer, pyTimeoutHandler), 0, "Set a callback for when the timer timeout triggers."}, {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static PyTypeObject PyPluginTimerType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.PluginTimer",   /* tp_name */
-    sizeof(PyPluginTimer), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)PyPluginTimer_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.PluginTimer", /* tp_name */
+    sizeof(PyPluginTimer),                              /* tp_basicsize */
+    0,                                                  /* tp_itemsize */
+    (destructor) PyPluginTimer_dealloc,                 /* tp_dealloc */
 };
-
-
 
 static void registerPluginTimerType(PyObject *module)
 {
@@ -155,7 +146,7 @@ static void registerPluginTimerType(PyObject *module)
     if (PyType_Ready(&PyPluginTimerType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "PluginTimer", reinterpret_cast<PyObject*>(&PyPluginTimerType));
+    PyModule_AddObject(module, "PluginTimer", reinterpret_cast<PyObject *>(&PyPluginTimerType));
 }
 
 #pragma GCC diagnostic pop

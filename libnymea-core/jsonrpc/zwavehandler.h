@@ -30,8 +30,7 @@
 
 #include <QObject>
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 class ZWaveHandler : public JsonHandler
 {
@@ -81,6 +80,6 @@ private:
     ZWaveManager *m_zwaveManager = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZWAVEHANDLER_H

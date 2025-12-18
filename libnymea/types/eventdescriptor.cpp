@@ -50,27 +50,21 @@
 
 #include "eventdescriptor.h"
 
-EventDescriptor::EventDescriptor()
-{
-
-}
+EventDescriptor::EventDescriptor() {}
 
 /*! Constructs an EventDescriptor describing an \l{Event} with the given \a eventTypeId, \a deviceId and the given \a paramDescriptors. */
-EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const ThingId &thingId, const QList<ParamDescriptor> &paramDescriptors):
-    m_eventTypeId(eventTypeId),
-    m_thingId(thingId),
-    m_paramDescriptors(paramDescriptors)
-{
-}
+EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const ThingId &thingId, const QList<ParamDescriptor> &paramDescriptors)
+    : m_eventTypeId(eventTypeId)
+    , m_thingId(thingId)
+    , m_paramDescriptors(paramDescriptors)
+{}
 
 /*! Constructs an EventDescriptor describing an \l{Event} with the given \a interface, \a interfaceEvent and the given \a paramDescriptors. */
-EventDescriptor::EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors):
-    m_interface(interface),
-    m_interfaceEvent(interfaceEvent),
-    m_paramDescriptors(paramDescriptors)
-{
-
-}
+EventDescriptor::EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors)
+    : m_interface(interface)
+    , m_interfaceEvent(interfaceEvent)
+    , m_paramDescriptors(paramDescriptors)
+{}
 
 /*! Returns true \l{EventDescriptor::Type}{Type} of this descriptor. */
 EventDescriptor::Type EventDescriptor::type() const
@@ -153,7 +147,7 @@ ParamDescriptor EventDescriptor::paramDescriptor(const ParamTypeId &paramTypeId)
 
 /*! Compare this Event to the Event given by \a other.
  *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
-bool EventDescriptor::operator ==(const EventDescriptor &other) const
+bool EventDescriptor::operator==(const EventDescriptor &other) const
 {
     bool paramsMatch = true;
     foreach (const ParamDescriptor &otherParamDescriptor, other.paramDescriptors()) {
@@ -164,16 +158,15 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
         }
     }
 
-    return m_eventTypeId == other.eventTypeId()
-            && m_thingId == other.thingId()
-            && paramsMatch;
+    return m_eventTypeId == other.eventTypeId() && m_thingId == other.thingId() && paramsMatch;
 }
 
 /*! Print an EventDescriptor including ParamDescriptors to QDebug. */
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", ThingId:" << eventDescriptor.thingId().toString() << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() <<  ")" << '\n';
+    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", ThingId:" << eventDescriptor.thingId().toString()
+                  << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() << ")" << '\n';
     for (int i = 0; i < eventDescriptor.paramDescriptors().count(); i++) {
         dbg.nospace() << "    " << i << ": " << eventDescriptor.paramDescriptors().at(i);
     }
@@ -186,22 +179,18 @@ QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "EventDescriptorList (count:" << eventDescriptors.count() << "):" << '\n';
-    for (int i = 0; i < eventDescriptors.count(); i++ ) {
+    for (int i = 0; i < eventDescriptors.count(); i++) {
         dbg.nospace() << "  " << i << ": " << eventDescriptors.at(i);
     }
 
     return dbg;
 }
 
-EventDescriptors::EventDescriptors()
-{
+EventDescriptors::EventDescriptors() {}
 
-}
-
-EventDescriptors::EventDescriptors(const QList<EventDescriptor> &other): QList<EventDescriptor>(other)
-{
-
-}
+EventDescriptors::EventDescriptors(const QList<EventDescriptor> &other)
+    : QList<EventDescriptor>(other)
+{}
 
 QVariant EventDescriptors::get(int index) const
 {

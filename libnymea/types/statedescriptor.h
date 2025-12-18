@@ -25,15 +25,15 @@
 #ifndef STATEDESCRIPTOR_H
 #define STATEDESCRIPTOR_H
 
+#include "event.h"
 #include "libnymea.h"
-#include "typeutils.h"
 #include "paramdescriptor.h"
 #include "state.h"
-#include "event.h"
+#include "typeutils.h"
 
+#include <QDebug>
 #include <QString>
 #include <QVariantList>
-#include <QDebug>
 
 class LIBNYMEA_EXPORT StateDescriptor
 {
@@ -47,10 +47,7 @@ class LIBNYMEA_EXPORT StateDescriptor
     Q_PROPERTY(QUuid valueStateTypeId READ valueStateTypeId WRITE setValueStateTypeId USER true)
     Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
-    enum Type {
-        TypeThing,
-        TypeInterface
-    };
+    enum Type { TypeThing, TypeInterface };
 
     StateDescriptor();
     StateDescriptor(const StateTypeId &stateTypeId, const ThingId &thingId, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
@@ -84,7 +81,7 @@ public:
 
     Q_INVOKABLE bool isValid() const;
 
-    bool operator ==(const StateDescriptor &other) const;
+    bool operator==(const StateDescriptor &other) const;
 
 private:
     StateTypeId m_stateTypeId;

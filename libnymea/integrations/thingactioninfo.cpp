@@ -30,11 +30,11 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-ThingActionInfo::ThingActionInfo(Thing *thing, const Action &action, ThingManager *parent, quint32 timeout):
-    QObject(parent),
-    m_thing(thing),
-    m_action(action),
-    m_thingManager(parent)
+ThingActionInfo::ThingActionInfo(Thing *thing, const Action &action, ThingManager *parent, quint32 timeout)
+    : QObject(parent)
+    , m_thing(thing)
+    , m_action(action)
+    , m_thingManager(parent)
 {
     connect(this, &ThingActionInfo::finished, this, &ThingActionInfo::deleteLater, Qt::QueuedConnection);
 

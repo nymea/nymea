@@ -68,10 +68,9 @@ private:
     bool evaluateWeekly(const QDateTime &dateTime) const;
     bool evaluateMonthly(const QDateTime &dateTime) const;
     bool evaluateYearly(const QDateTime &dateTime) const;
-
 };
 
-class CalendarItems: public QList<CalendarItem>
+class CalendarItems : public QList<CalendarItem>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

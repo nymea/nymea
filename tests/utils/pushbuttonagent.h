@@ -25,8 +25,8 @@
 #ifndef PUSHBUTTONAGENT_H
 #define PUSHBUTTONAGENT_H
 
-#include <QObject>
 #include <QDBusConnection>
+#include <QObject>
 
 #include <QLoggingCategory>
 

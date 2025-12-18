@@ -37,8 +37,8 @@
 
 /*! Constructs a UpnpDevice with the given \a parent and the given \a upnpDeviceDescriptor
  \sa UpnpDeviceDescriptor,*/
-UpnpDevice::UpnpDevice(QObject *parent, UpnpDeviceDescriptor upnpDeviceDescriptor) :
-    QObject(parent)
+UpnpDevice::UpnpDevice(QObject *parent, UpnpDeviceDescriptor upnpDeviceDescriptor)
+    : QObject(parent)
 {
     m_location = upnpDeviceDescriptor.location();
     m_hostAddress = upnpDeviceDescriptor.hostAddress();

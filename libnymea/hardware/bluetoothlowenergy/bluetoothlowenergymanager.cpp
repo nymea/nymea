@@ -50,16 +50,13 @@
     This method should be used to unregister the given \a bluetoothDevice in your DevicePlugin if you don't need it any more.
 */
 
-
 #include "bluetoothlowenergymanager.h"
 #include "loggingcategories.h"
 
 /*! Constructs a \l{BluetoothLowEnergyManager} with the given \a parent. */
-BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
-    HardwareResource("Bluetooth LE manager", parent)
-{
-}
-
+BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent)
+    : HardwareResource("Bluetooth LE manager", parent)
+{}
 
 /*! This method enables / disables this hardwareresource for all plugins. This method is available on the D-Bus. This can be useful if a Bluetooth LE server
     needs access to the hardware. By disabling the bluetooth support, nymea will not allow to use the hardware until it gets reenabled.
@@ -69,15 +66,12 @@ void BluetoothLowEnergyManager::EnableBluetooth(bool enabled)
     setEnabled(enabled);
 }
 
-BluetoothPairingJob::BluetoothPairingJob(const QBluetoothAddress &address, QObject *parent):
-    QObject(parent),
-    m_address(address)
-{
-
-}
+BluetoothPairingJob::BluetoothPairingJob(const QBluetoothAddress &address, QObject *parent)
+    : QObject(parent)
+    , m_address(address)
+{}
 
 QBluetoothAddress BluetoothPairingJob::address() const
 {
     return m_address;
 }
-

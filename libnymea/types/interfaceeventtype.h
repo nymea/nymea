@@ -27,7 +27,7 @@
 
 #include "eventtype.h"
 
-class InterfaceEventType: public EventType
+class InterfaceEventType : public EventType
 {
 public:
     InterfaceEventType();
@@ -43,7 +43,7 @@ private:
     bool m_loggingOverride = false;
 };
 
-class InterfaceEventTypes: public QList<InterfaceEventType>
+class InterfaceEventTypes : public QList<InterfaceEventType>
 {
 public:
     InterfaceEventTypes() = default;

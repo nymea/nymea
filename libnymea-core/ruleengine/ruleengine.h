@@ -31,10 +31,10 @@
 
 #include "integrations/thingmanager.h"
 
-#include <QObject>
 #include <QList>
-#include <QUuid>
+#include <QObject>
 #include <QSettings>
+#include <QUuid>
 
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngineDebug)
@@ -111,7 +111,7 @@ private slots:
     void onDateTimeChanged(const QDateTime &dateTime);
     void onThingRemoved(const ThingId &thingId);
 
-private:    
+private:
     QList<Rule> evaluateEvent(const Event &event);
     QList<Rule> evaluateTime(const QDateTime &dateTime);
 
@@ -131,25 +131,22 @@ private:
 
     void executeRuleActions(const RuleId &ruleId, const QList<RuleAction> &ruleActions);
 
-
 private:
     ThingManager *m_thingManager = nullptr;
     TimeManager *m_timeManager = nullptr;
     Logger *m_logger = nullptr;
 
-    QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
+    QList<RuleId> m_ruleIds;     // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
     QList<RuleId> m_activeRules;
 
     QDateTime m_lastEvaluationTime;
 
     QList<RuleId> m_executingRules;
-
 };
 
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::RuleEngine::RuleError)
-
 
 #endif // RULEENGINE_H

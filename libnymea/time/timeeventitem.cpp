@@ -38,10 +38,7 @@
 #include <QDebug>
 
 /*! Constructs an invalid \l{TimeEventItem}. */
-TimeEventItem::TimeEventItem()
-{
-
-}
+TimeEventItem::TimeEventItem() {}
 
 /*! Returns the dateTime of this \l{TimeEventItem}. */
 QDateTime TimeEventItem::dateTime() const
@@ -112,13 +109,9 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
             return begin < vut && vut <= end;
         }
         case RepeatingOption::RepeatingModeWeekly:
-            return m_repeatingOption.evaluateWeekDay(dateTime) &&
-                    lastEvaluationTime.time() < m_time &&
-                    m_time <= dateTime.time();
+            return m_repeatingOption.evaluateWeekDay(dateTime) && lastEvaluationTime.time() < m_time && m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeMonthly:
-            return m_repeatingOption.evaluateMonthDay(dateTime) &&
-                    lastEvaluationTime.time() < m_time &&
-                    m_time <= dateTime.time();
+            return m_repeatingOption.evaluateMonthDay(dateTime) && lastEvaluationTime.time() < m_time && m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeYearly:
             return false;
         }
@@ -140,20 +133,16 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")" << '\n';
+    dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")"
+                  << '\n';
     return dbg;
 }
 
+TimeEventItems::TimeEventItems() {}
 
-TimeEventItems::TimeEventItems()
-{
-
-}
-
-TimeEventItems::TimeEventItems(const QList<TimeEventItem> &other): QList<TimeEventItem>(other)
-{
-
-}
+TimeEventItems::TimeEventItems(const QList<TimeEventItem> &other)
+    : QList<TimeEventItem>(other)
+{}
 
 QVariant TimeEventItems::get(int index) const
 {

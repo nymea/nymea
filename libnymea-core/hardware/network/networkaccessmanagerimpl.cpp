@@ -40,9 +40,9 @@
 namespace nymeaserver {
 
 /*! Construct the hardware resource NetworkAccessManagerImpl with the given \a parent. */
-NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent) :
-    NetworkAccessManager(parent),
-    m_manager(networkManager)
+NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent)
+    : NetworkAccessManager(parent)
+    , m_manager(networkManager)
 {
     m_available = true;
 
@@ -93,7 +93,7 @@ QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, QH
 
 QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QIODevice *data)
 {
-    QNetworkReply  *reply = m_manager->put(request, data);
+    QNetworkReply *reply = m_manager->put(request, data);
     hookupTimeoutTimer(reply);
     return reply;
 }
@@ -114,7 +114,7 @@ QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QHt
 
 QNetworkReply *NetworkAccessManagerImpl::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
 {
-    QNetworkReply* reply = m_manager->sendCustomRequest(request, verb, data);
+    QNetworkReply *reply = m_manager->sendCustomRequest(request, verb, data);
     hookupTimeoutTimer(reply);
     return reply;
 }
@@ -155,7 +155,7 @@ void NetworkAccessManagerImpl::hookupTimeoutTimer(QNetworkReply *reply)
 
 void NetworkAccessManagerImpl::networkReplyFinished()
 {
-    QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QTimer *timer = m_timeoutTimers.take(reply);
     timer->stop();
     timer->deleteLater();
@@ -163,7 +163,7 @@ void NetworkAccessManagerImpl::networkReplyFinished()
 
 void NetworkAccessManagerImpl::networkTimeout()
 {
-    QTimer *timer = static_cast<QTimer*>(sender());
+    QTimer *timer = static_cast<QTimer *>(sender());
     QNetworkReply *reply = m_timeoutTimers.key(timer);
     qCDebug(dcNetworkManager()) << "Network request timeout for:" << reply->request().url();
     reply->abort();
@@ -179,4 +179,4 @@ bool NetworkAccessManagerImpl::enabled() const
     return m_enabled;
 }
 
-}
+} // namespace nymeaserver

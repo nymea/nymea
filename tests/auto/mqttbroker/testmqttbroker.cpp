@@ -22,11 +22,11 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
-#include "nymeacore.h"
-#include "servers/mqttbroker.h"
-#include "servers/mocktcpserver.h"
 #include "loggingcategories.h"
+#include "nymeacore.h"
+#include "nymeatestbase.h"
+#include "servers/mocktcpserver.h"
+#include "servers/mqttbroker.h"
 
 #include <mqttclient.h>
 
@@ -34,7 +34,7 @@
 
 using namespace nymeaserver;
 
-class TestMqttBroker: public NymeaTestBase
+class TestMqttBroker : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -135,7 +135,8 @@ void TestMqttBroker::testServerConfigurationAPI()
     QCOMPARE(newConfig.value("port").toInt(), 1886);
 
     // The client should get disconnected because of the server going down
-    if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
+    if (disconnectedSpy.count() == 0)
+        disconnectedSpy.wait();
     QVERIFY2(disconnectedSpy.count() == 1, "Client didn't disconnect but server has gone away?");
 
     // Connect the client to the new port
@@ -294,7 +295,6 @@ void TestMqttBroker::testPolicyConfigurationAPI()
     response = injectAndWait("Configuration.GetMqttPolicies");
     responseParams = response.toMap().value("params").toMap();
     QCOMPARE(responseParams.value("mqttPolicies").toList().count(), 0);
-
 }
 
 void TestMqttBroker::testConnectAuthentication_data()
@@ -317,7 +317,6 @@ void TestMqttBroker::testConnectAuthentication_data()
 
     policy.password = "testpassword";
     QTest::newRow("user mismatch") << policy << Mqtt::ConnectReturnCodeAccepted;
-
 }
 
 void TestMqttBroker::testConnectAuthentication()
@@ -408,7 +407,6 @@ void TestMqttBroker::testSubscribePolicy_data()
     QTest::newRow("/a/#, /b/a/c") << (QStringList() << "/a/#") << "/b/a/c" << false;
     QTest::newRow("/+/b/#, /a/b") << (QStringList() << "/+/b/#") << "/a/b" << true;
     QTest::newRow("/+/b/#, /b") << (QStringList() << "/+/b/#") << "/b" << false;
-
 }
 
 void TestMqttBroker::testSubscribePolicy()
@@ -441,7 +439,6 @@ void TestMqttBroker::testSubscribePolicy()
     clientSubscribedSpy.wait(400);
     QCOMPARE(clientSubscribedSpy.count(), (allowed ? 1 : 0));
 }
-
 
 #include "testmqttbroker.moc"
 QTEST_MAIN(TestMqttBroker)

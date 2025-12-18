@@ -27,14 +27,14 @@
 
 #include <QObject>
 
-#include "thing.h"
 #include "integrationplugin.h"
 #include "ioconnection.h"
+#include "thing.h"
+#include "types/browseraction.h"
+#include "types/browseritem.h"
+#include "types/browseritemaction.h"
 #include "types/interface.h"
 #include "types/vendor.h"
-#include "types/browseritem.h"
-#include "types/browseraction.h"
-#include "types/browseritemaction.h"
 
 class ThingManager : public QObject
 {
@@ -44,7 +44,7 @@ public:
     virtual ~ThingManager() = default;
 
     virtual IntegrationPlugins plugins() const = 0;
-    virtual IntegrationPlugin* plugin(const PluginId &pluginId) const = 0;
+    virtual IntegrationPlugin *plugin(const PluginId &pluginId) const = 0;
     virtual Thing::ThingError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig) = 0;
 
     virtual Vendors supportedVendors() const = 0;
@@ -54,23 +54,23 @@ public:
     virtual ThingClass findThingClass(const ThingClassId &thingClassId) const = 0;
 
     virtual Things configuredThings() const = 0;
-    virtual Thing* findConfiguredThing(const ThingId &id) const = 0;
+    virtual Thing *findConfiguredThing(const ThingId &id) const = 0;
     virtual Things findConfiguredThings(const ThingClassId &thingClassId) const = 0;
     virtual Things findConfiguredThings(const QString &interface) const = 0;
     virtual Things findChilds(const ThingId &id) const = 0;
 
-    virtual ThingDiscoveryInfo* discoverThings(const ThingClassId &thingClassId, const ParamList &params) = 0;
+    virtual ThingDiscoveryInfo *discoverThings(const ThingClassId &thingClassId, const ParamList &params) = 0;
 
-    virtual ThingSetupInfo* addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) = 0;
-    virtual ThingSetupInfo* addConfiguredThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
+    virtual ThingSetupInfo *addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual ThingSetupInfo *addConfiguredThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
 
-    virtual ThingSetupInfo* reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) = 0;
-    virtual ThingSetupInfo* reconfigureThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
+    virtual ThingSetupInfo *reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual ThingSetupInfo *reconfigureThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
 
-    virtual ThingPairingInfo* pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) = 0;
-    virtual ThingPairingInfo* pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
-    virtual ThingPairingInfo* pairThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) = 0;
-    virtual ThingPairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
+    virtual ThingPairingInfo *pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual ThingPairingInfo *pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
+    virtual ThingPairingInfo *pairThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual ThingPairingInfo *confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
 
     virtual Thing::ThingError editThing(const ThingId &thingId, const QString &name) = 0;
     virtual Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) = 0;
@@ -82,12 +82,12 @@ public:
 
     virtual Thing::ThingError removeConfiguredThing(const ThingId &thingId) = 0;
 
-    virtual ThingActionInfo* executeAction(const Action &action) = 0;
+    virtual ThingActionInfo *executeAction(const Action &action) = 0;
 
-    virtual BrowseResult* browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale) = 0;
-    virtual BrowserItemResult* browserItemDetails(const ThingId &thingId, const QString &itemId, const QLocale &locale) = 0;
-    virtual BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction) = 0;
-    virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
+    virtual BrowseResult *browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserItemResult *browserItemDetails(const ThingId &thingId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserActionInfo *executeBrowserItem(const BrowserAction &browserAction) = 0;
+    virtual BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual IOConnections ioConnections(const ThingId &thingId = ThingId()) const = 0;
     IOConnectionResult connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted = false);
@@ -108,7 +108,8 @@ signals:
     void loaded();
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
-    void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues);
+    void thingStateChanged(
+        Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues);
     void thingRemoved(const ThingId &thingId);
     void thingAdded(Thing *thing);
     void thingChanged(Thing *thing);

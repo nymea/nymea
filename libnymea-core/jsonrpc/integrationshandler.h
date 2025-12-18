@@ -25,8 +25,8 @@
 #ifndef INTEGRATIONSHANDLER_H
 #define INTEGRATIONSHANDLER_H
 
-#include "jsonrpc/jsonhandler.h"
 #include "integrations/thingmanager.h"
+#include "jsonrpc/jsonhandler.h"
 
 namespace nymeaserver {
 
@@ -108,6 +108,6 @@ private:
     QHash<QString, QString> m_cacheHashes;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // INTEGRATIONSHANDLER_H

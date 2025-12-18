@@ -26,13 +26,13 @@
 
 namespace nymeaserver {
 
-ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent) :
-    ModbusRtuReply(parent),
-    m_slaveAddress(slaveAddress),
-    m_registerAddress(registerAddress)
+ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent)
+    : ModbusRtuReply(parent)
+    , m_slaveAddress(slaveAddress)
+    , m_registerAddress(registerAddress)
 {
     m_timeoutTimer.start(10000);
-    connect(&m_timeoutTimer, &QTimer::timeout, this, [=](){
+    connect(&m_timeoutTimer, &QTimer::timeout, this, [=]() {
         if (!m_finished) {
             m_error = TimeoutError;
             emit errorOccurred(TimeoutError);
@@ -90,4 +90,4 @@ void ModbusRtuReplyImpl::setResult(const QVector<quint16> &result)
     m_result = result;
 }
 
-}
+} // namespace nymeaserver

@@ -29,7 +29,8 @@
 
 class I2CDevice;
 
-struct I2CScanResult {
+struct I2CScanResult
+{
     QString portName;
     int address;
 };

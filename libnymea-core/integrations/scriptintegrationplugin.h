@@ -27,18 +27,23 @@
 
 #include "integrations/integrationplugin.h"
 
-#include <QQmlEngine>
 #include <QJsonObject>
+#include <QQmlEngine>
 
-class ScriptThingDiscoveryInfo: public QObject
+class ScriptThingDiscoveryInfo : public QObject
 {
     Q_OBJECT
 public:
-    ScriptThingDiscoveryInfo(ThingDiscoveryInfo *info): QObject(info), m_info(info) {
+    ScriptThingDiscoveryInfo(ThingDiscoveryInfo *info)
+        : QObject(info)
+        , m_info(info)
+    {
         connect(info, &ThingDiscoveryInfo::aborted, this, &ScriptThingDiscoveryInfo::aborted);
         connect(info, &ThingDiscoveryInfo::finished, this, &ScriptThingDiscoveryInfo::finished);
     }
-    Q_INVOKABLE void addThingDescriptor(const QUuid &thingClassId, const QString &title, const QString &description = QString(), const QVariantList &params = QVariantList(), const QUuid &parentId = QUuid()) {
+    Q_INVOKABLE void addThingDescriptor(
+        const QUuid &thingClassId, const QString &title, const QString &description = QString(), const QVariantList &params = QVariantList(), const QUuid &parentId = QUuid())
+    {
         ParamList paramList;
         for (int i = 0; i < params.count(); i++) {
             paramList << Param(params.at(i).toMap().value("paramTypeId").toUuid(), params.at(i).toMap().value("value"));
@@ -47,22 +52,24 @@ public:
         d.setParams(paramList);
         m_info->addThingDescriptor(d);
     }
-    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) {
-        m_info->finish(status, displayMessage);
-    }
+    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) { m_info->finish(status, displayMessage); }
 signals:
     void aborted();
     void finished();
+
 private:
     ThingDiscoveryInfo *m_info = nullptr;
 };
 
-class ScriptThing: public QObject
+class ScriptThing : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 public:
-    ScriptThing(Thing *thing): QObject(thing), m_thing(thing) {
+    ScriptThing(Thing *thing)
+        : QObject(thing)
+        , m_thing(thing)
+    {
         connect(thing, &Thing::nameChanged, this, &ScriptThing::nameChanged);
     }
 
@@ -82,28 +89,31 @@ private:
     Thing *m_thing = nullptr;
 };
 
-class ScriptThingSetupInfo: public QObject
+class ScriptThingSetupInfo : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ScriptThing* thing READ thing CONSTANT)
+    Q_PROPERTY(ScriptThing *thing READ thing CONSTANT)
 public:
-    ScriptThingSetupInfo(ThingSetupInfo *info, ScriptThing *scriptThing): QObject(info), m_info(info), m_thing(scriptThing) {
+    ScriptThingSetupInfo(ThingSetupInfo *info, ScriptThing *scriptThing)
+        : QObject(info)
+        , m_info(info)
+        , m_thing(scriptThing)
+    {
         connect(info, &ThingSetupInfo::aborted, this, &ScriptThingSetupInfo::aborted);
         connect(info, &ThingSetupInfo::finished, this, &ScriptThingSetupInfo::finished);
     }
-    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) {
-        m_info->finish(status, displayMessage);
-    }
-    ScriptThing* thing() const { return m_thing; }
+    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) { m_info->finish(status, displayMessage); }
+    ScriptThing *thing() const { return m_thing; }
 signals:
     void aborted();
     void finished();
+
 private:
     ThingSetupInfo *m_info = nullptr;
     ScriptThing *m_thing = nullptr;
 };
 
-class ScriptThingPairingInfo: public QObject
+class ScriptThingPairingInfo : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QUuid ThingClassId READ ThingClassId CONSTANT)
@@ -112,14 +122,15 @@ class ScriptThingPairingInfo: public QObject
     Q_PROPERTY(QUuid parentId READ parentId CONSTANT)
     Q_PROPERTY(QUrl oAuthUrl READ oAuthUrl WRITE setOAuthUrl)
 public:
-    ScriptThingPairingInfo(ThingPairingInfo* info): QObject(info), m_info(info) {
+    ScriptThingPairingInfo(ThingPairingInfo *info)
+        : QObject(info)
+        , m_info(info)
+    {
         connect(info, &ThingPairingInfo::aborted, this, &ScriptThingPairingInfo::aborted);
         connect(info, &ThingPairingInfo::finished, this, &ScriptThingPairingInfo::finished);
     }
     Q_INVOKABLE QVariant paramValue(const QUuid &paramTypeId) { return m_info->params().paramValue(paramTypeId); }
-    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) {
-        m_info->finish(status, displayMessage);
-    }
+    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) { m_info->finish(status, displayMessage); }
     QUuid ThingClassId() const { return m_info->thingClassId(); }
     QUuid thingId() const { return m_info->thingId(); }
     QString thingName() const { return m_info->thingName(); }
@@ -129,33 +140,37 @@ public:
 signals:
     void aborted();
     void finished();
+
 private:
     ThingPairingInfo *m_info = nullptr;
 };
 
-class ScriptThingActionInfo: public QObject
+class ScriptThingActionInfo : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ScriptThing* thing READ thing CONSTANT)
+    Q_PROPERTY(ScriptThing *thing READ thing CONSTANT)
     Q_PROPERTY(QUuid actionTypeId READ actionTypeId CONSTANT)
 public:
-    ScriptThingActionInfo(ThingActionInfo* info, ScriptThing* scriptThing): QObject(info), m_info(info), m_thing(scriptThing) {
+    ScriptThingActionInfo(ThingActionInfo *info, ScriptThing *scriptThing)
+        : QObject(info)
+        , m_info(info)
+        , m_thing(scriptThing)
+    {
         connect(info, &ThingActionInfo::finished, this, &ScriptThingActionInfo::finished);
         connect(info, &ThingActionInfo::aborted, this, &ScriptThingActionInfo::aborted);
     }
-    ScriptThing* thing() const { return m_thing; }
+    ScriptThing *thing() const { return m_thing; }
     QUuid actionTypeId() const { return m_info->action().actionTypeId(); }
     Q_INVOKABLE QVariant paramValue(const QUuid &paramTypeId) { return m_info->action().params().paramValue(paramTypeId); }
-    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) {
-        m_info->finish(status, displayMessage);
-    }
+    Q_INVOKABLE void finish(Thing::ThingError status = Thing::ThingErrorNoError, const QString &displayMessage = QString()) { m_info->finish(status, displayMessage); }
 
 signals:
     void aborted();
     void finished();
+
 private:
-    ThingActionInfo* m_info = nullptr;
-    ScriptThing* m_thing = nullptr;
+    ThingActionInfo *m_info = nullptr;
+    ScriptThing *m_thing = nullptr;
 };
 
 class ScriptIntegrationPlugin : public IntegrationPlugin
@@ -179,7 +194,7 @@ public:
 private:
     QQmlEngine *m_engine = nullptr;
     QJSValue m_pluginImport;
-    QHash<Thing*, ScriptThing*> m_things;
+    QHash<Thing *, ScriptThing *> m_things;
 };
 
 #endif // SCRIPTINTEGRATIONPLUGIN_H

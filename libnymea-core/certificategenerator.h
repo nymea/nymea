@@ -35,6 +35,6 @@ public:
     static void generate(const QString &certificateFilename, const QString &keyFilename);
 };
 
-}
+} // namespace nymeaserver
 
 #endif // CERTIFICATEGENERATOR_H

@@ -24,8 +24,8 @@
 
 #include "mediabrowseritem.h"
 
-MediaBrowserItem::MediaBrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable):
-    BrowserItem(id, displayName, browsable, executable)
+MediaBrowserItem::MediaBrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable)
+    : BrowserItem(id, displayName, browsable, executable)
 {
     // Init defaults
     m_extendedProperties["mediaIcon"] = static_cast<int>(MediaBrowserIconNone);

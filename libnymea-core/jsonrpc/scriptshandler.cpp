@@ -32,9 +32,9 @@ namespace nymeaserver {
 
 using namespace scriptengine;
 
-ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
-    JsonHandler(parent),
-    m_engine(scriptEngine)
+ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent)
+    : JsonHandler(parent)
+    , m_engine(scriptEngine)
 {
     registerEnum<ScriptEngine::ScriptError>();
     registerEnum<ScriptEngine::ScriptMessageType>();
@@ -44,19 +44,22 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     QVariantMap params, returns;
     QString description;
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get all script, that is, their names and properties, but no content.";
     returns.insert("scripts", objectRef<Scripts>());
     registerMethod("GetScripts", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get a scripts content.";
     params.insert("id", enumValueName(Uuid));
     returns.insert("scriptError", enumRef<ScriptEngine::ScriptError>());
     returns.insert("o:content", enumValueName(String));
     registerMethod("GetScriptContent", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Add a script";
     params.insert("name", enumValueName(String));
     params.insert("content", enumValueName(String));
@@ -65,7 +68,8 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     returns.insert("o:errors", enumValueName(StringList));
     registerMethod("AddScript", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Edit a script";
     params.insert("id", enumValueName(Uuid));
     params.insert("o:name", enumValueName(String));
@@ -74,7 +78,8 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     returns.insert("o:errors", enumValueName(StringList));
     registerMethod("EditScript", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "remove a script";
     params.insert("id", enumValueName(Uuid));
     returns.insert("scriptError", enumRef<ScriptEngine::ScriptError>());
@@ -108,28 +113,28 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     params.insert("message", enumValueName(String));
     registerNotification("ScriptLogMessage", description, params);
 
-    connect(m_engine, &ScriptEngine::scriptAdded, this, [this](const Script &script){
+    connect(m_engine, &ScriptEngine::scriptAdded, this, [this](const Script &script) {
         QVariantMap params;
         params.insert("script", pack(script));
         emit ScriptAdded(params);
     });
-    connect(m_engine, &ScriptEngine::scriptRemoved, this, [this](const QUuid &scriptId){
+    connect(m_engine, &ScriptEngine::scriptRemoved, this, [this](const QUuid &scriptId) {
         QVariantMap params;
         params.insert("id", scriptId);
         emit ScriptRemoved(params);
     });
-    connect(m_engine, &ScriptEngine::scriptRenamed, this, [this](const Script &script){
+    connect(m_engine, &ScriptEngine::scriptRenamed, this, [this](const Script &script) {
         QVariantMap params;
         params.insert("scriptId", script.id());
         params.insert("name", script.name());
         emit ScriptChanged(params);
     });
-    connect(m_engine, &ScriptEngine::scriptChanged, this, [this](const Script &script){
+    connect(m_engine, &ScriptEngine::scriptChanged, this, [this](const Script &script) {
         QVariantMap params;
         params.insert("scriptId", script.id());
         emit ScriptContentChanged(params);
     });
-    connect(m_engine, &ScriptEngine::scriptConsoleMessage, this, [this](const QUuid &scriptId, ScriptEngine::ScriptMessageType type, const QString &message){
+    connect(m_engine, &ScriptEngine::scriptConsoleMessage, this, [this](const QUuid &scriptId, ScriptEngine::ScriptMessageType type, const QString &message) {
         QVariantMap params;
         params.insert("scriptId", scriptId);
         params.insert("type", enumValueName(type));
@@ -164,7 +169,7 @@ JsonReply *ScriptsHandler::GetScriptContent(const QVariantMap &params)
     return createReply(returns);
 }
 
-JsonReply* ScriptsHandler::AddScript(const QVariantMap &params)
+JsonReply *ScriptsHandler::AddScript(const QVariantMap &params)
 {
     qCDebug(dcJsonRpc()) << "Script:" << params.value("content").toString();
     QVariantMap returns;
@@ -214,7 +219,6 @@ JsonReply *ScriptsHandler::RemoveScript(const QVariantMap &params)
     QVariantMap returns;
     returns.insert("scriptError", enumValueName(status));
     return createReply(returns);
-
 }
 
-}
+} // namespace nymeaserver

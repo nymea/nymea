@@ -25,18 +25,18 @@
 #ifndef COAP_H
 #define COAP_H
 
-#include <QObject>
-#include <QHostInfo>
-#include <QUdpSocket>
 #include <QHostAddress>
+#include <QHostInfo>
 #include <QLoggingCategory>
+#include <QObject>
 #include <QPointer>
 #include <QQueue>
+#include <QUdpSocket>
 
-#include "libnymea.h"
-#include "coaprequest.h"
-#include "coapreply.h"
 #include "coapobserveresource.h"
+#include "coapreply.h"
+#include "coaprequest.h"
+#include "libnymea.h"
 
 /* Information about CoAP
  *
@@ -76,12 +76,12 @@ private:
 
     QHash<int, CoapReply *> m_runningHostLookups;
 
-    QHash<QByteArray, CoapObserveResource> m_observeResources;          // token | resource
+    QHash<QByteArray, CoapObserveResource> m_observeResources; // token | resource
 
     // Blockwise notifications
     QPointer<CoapReply> m_observerReply;
-    QHash<CoapReply *, CoapObserveResource> m_observeReplyResource;     // observe reply | resource
-    QHash<CoapReply *, int> m_observeBlockwise;                         // observe reply | observe nr.
+    QHash<CoapReply *, CoapObserveResource> m_observeReplyResource; // observe reply | resource
+    QHash<CoapReply *, int> m_observeBlockwise;                     // observe reply | observe nr.
 
     void lookupHost();
     void sendRequest(CoapReply *reply, const bool &lookedUp = false);
@@ -109,7 +109,6 @@ private slots:
     void onReadyRead();
     void onReplyTimeout();
     void onReplyFinished();
-
 };
 
 #endif // COAP_H

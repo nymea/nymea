@@ -26,29 +26,27 @@
 
 #include "nymeabluetoothagent.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 BluetoothPairingJobImplementation::BluetoothPairingJobImplementation(NymeaBluetoothAgent *agent, const QBluetoothAddress &address, QObject *parent)
-    : BluetoothPairingJob{address, parent},
-      m_agent{agent},
-      m_address{address}
+    : BluetoothPairingJob{address, parent}
+    , m_agent{agent}
+    , m_address{address}
 {
-    connect(m_agent, &NymeaBluetoothAgent::passKeyRequested, this, [address, this](const QBluetoothAddress &addr){
+    connect(m_agent, &NymeaBluetoothAgent::passKeyRequested, this, [address, this](const QBluetoothAddress &addr) {
         if (address != addr) {
             // Not for us...
             return;
         }
         emit passKeyRequested();
     });
-    connect(m_agent, &NymeaBluetoothAgent::displayPinCode, this, [address, this](const QBluetoothAddress &addr, const QString &pinCode){
+    connect(m_agent, &NymeaBluetoothAgent::displayPinCode, this, [address, this](const QBluetoothAddress &addr, const QString &pinCode) {
         if (address != addr) {
             // Not for us...
             return;
         }
         emit displayPinCode(pinCode);
     });
-
 }
 
 bool BluetoothPairingJobImplementation::isFinished() const
@@ -73,4 +71,4 @@ void BluetoothPairingJobImplementation::finish(bool success)
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection, Q_ARG(bool, success));
 }
 
-}
+} // namespace nymeaserver

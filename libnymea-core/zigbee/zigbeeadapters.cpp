@@ -26,16 +26,11 @@
 
 namespace nymeaserver {
 
-ZigbeeAdapters::ZigbeeAdapters()
-{
+ZigbeeAdapters::ZigbeeAdapters() {}
 
-}
-
-ZigbeeAdapters::ZigbeeAdapters(const QList<ZigbeeAdapter> &other) :
-    QList<ZigbeeAdapter>(other)
-{
-
-}
+ZigbeeAdapters::ZigbeeAdapters(const QList<ZigbeeAdapter> &other)
+    : QList<ZigbeeAdapter>(other)
+{}
 
 bool ZigbeeAdapters::hasSerialPort(const QString &serialPort)
 {
@@ -58,4 +53,4 @@ void ZigbeeAdapters::put(const QVariant &variant)
     append(variant.value<ZigbeeAdapter>());
 }
 
-}
+} // namespace nymeaserver

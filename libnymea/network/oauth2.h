@@ -25,13 +25,13 @@
 #ifndef OAUTH2_H
 #define OAUTH2_H
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QObject>
 #include <QString>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 
 #include "libnymea.h"
 
@@ -99,7 +99,6 @@ private slots:
 signals:
     void authenticationChanged();
     void tokenChanged();
-
 };
 
 #endif // OAUTH2_H

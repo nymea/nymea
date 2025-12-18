@@ -27,8 +27,8 @@
 
 #include <QObject>
 
-#include "jsonrpc/jsonhandler.h"
 #include "hardware/modbus/modbusrtumaster.h"
+#include "jsonrpc/jsonhandler.h"
 
 namespace nymeaserver {
 
@@ -63,6 +63,6 @@ private:
     QVariantMap packModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MODBUSRTUHANDLER_H

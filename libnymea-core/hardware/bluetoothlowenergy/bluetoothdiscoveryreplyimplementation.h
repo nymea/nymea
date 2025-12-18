@@ -25,9 +25,9 @@
 #ifndef BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H
 #define BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H
 
-#include <QObject>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothLocalDevice>
+#include <QObject>
 
 #include "hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h"
 
@@ -44,7 +44,7 @@ public:
 
     bool isFinished() const override;
     BluetoothDiscoveryReplyError error() const override;
-    QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo> > discoveredDevices() const override;
+    QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> discoveredDevices() const override;
 
 private:
     bool m_finished = false;
@@ -52,11 +52,11 @@ private:
     QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> m_discoveredDevices;
 
     void setError(const BluetoothDiscoveryReplyError &error);
-    void setDiscoveredDevices(const QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo> > &discoveredDevices);
+    void setDiscoveredDevices(const QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> &discoveredDevices);
     void addDiscoveredDevice(const QBluetoothDeviceInfo &info, const QBluetoothHostInfo &hostInfo);
     void setFinished();
 };
 
-}
+} // namespace nymeaserver
 
 #endif // BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H

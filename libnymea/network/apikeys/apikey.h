@@ -25,8 +25,8 @@
 #ifndef APIKEY_H
 #define APIKEY_H
 
-#include <QString>
 #include <QHash>
+#include <QString>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcApiKeys)

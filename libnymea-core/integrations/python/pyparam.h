@@ -40,11 +40,10 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-
-typedef struct _pyparam {
-    PyObject_HEAD
-    PyObject* pyParamTypeId = nullptr;
-    PyObject* pyValue = nullptr;
+typedef struct _pyparam
+{
+    PyObject_HEAD PyObject *pyParamTypeId = nullptr;
+    PyObject *pyValue = nullptr;
 } PyParam;
 
 static PyMethodDef PyParam_methods[] = {
@@ -54,9 +53,8 @@ static PyMethodDef PyParam_methods[] = {
 static PyMemberDef PyParam_members[] = {
     {"paramTypeId", T_OBJECT_EX, offsetof(PyParam, pyParamTypeId), 0, "Param type ID"},
     {"value", T_OBJECT_EX, offsetof(PyParam, pyValue), 0, "Param value"},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
-
 
 static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
 {
@@ -78,7 +76,8 @@ static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static void PyParam_dealloc(PyParam * self) {
+static void PyParam_dealloc(PyParam *self)
+{
     qCDebug(dcPythonIntegrations()) << "--- PyParam";
     Py_XDECREF(self->pyParamTypeId);
     Py_XDECREF(self->pyValue);
@@ -86,19 +85,18 @@ static void PyParam_dealloc(PyParam * self) {
 }
 
 static PyTypeObject PyParamType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.Param",   /* tp_name */
-    sizeof(PyParam), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)PyParam_dealloc,/* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.Param", /* tp_name */
+    sizeof(PyParam),                              /* tp_basicsize */
+    0,                                            /* tp_itemsize */
+    (destructor) PyParam_dealloc,                 /* tp_dealloc */
 };
 
-static PyParam* PyParam_fromParam(const Param &param)
+static PyParam *PyParam_fromParam(const Param &param)
 {
     PyObject *pyParamValue = QVariantToPyObject(param.value());
     PyObject *args = Py_BuildValue("(sO)", param.paramTypeId().toString().toUtf8().data(), pyParamValue);
 
-    PyParam *pyParam = (PyParam*)PyObject_CallObject((PyObject*)&PyParamType, args);
+    PyParam *pyParam = (PyParam *) PyObject_CallObject((PyObject *) &PyParamType, args);
 
     Py_DECREF(pyParamValue);
     Py_DECREF(args);
@@ -113,12 +111,12 @@ static Param PyParam_ToParam(PyParam *pyParam)
     return Param(paramTypeId, value);
 }
 
-static PyObject* PyParams_FromParamList(const ParamList &params)
+static PyObject *PyParams_FromParamList(const ParamList &params)
 {
-    PyObject* result = PyTuple_New(params.length());
+    PyObject *result = PyTuple_New(params.length());
     for (int i = 0; i < params.count(); i++) {
         PyParam *pyParam = PyParam_fromParam(params.at(i));
-        PyTuple_SetItem(result, i, (PyObject*)pyParam);
+        PyTuple_SetItem(result, i, (PyObject *) pyParam);
     }
     return result;
 }
@@ -143,7 +141,7 @@ static ParamList PyParams_ToParamList(PyObject *pyParams)
             continue;
         }
 
-        PyParam *pyParam = reinterpret_cast<PyParam*>(next);
+        PyParam *pyParam = reinterpret_cast<PyParam *>(next);
         params.append(PyParam_ToParam(pyParam));
         Py_DECREF(next);
     }
@@ -164,7 +162,7 @@ static void registerParamType(PyObject *module)
     if (PyType_Ready(&PyParamType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "Param", reinterpret_cast<PyObject*>(&PyParamType));
+    PyModule_AddObject(module, "Param", reinterpret_cast<PyObject *>(&PyParamType));
 }
 
 #pragma GCC diagnostic pop

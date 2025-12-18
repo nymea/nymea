@@ -25,21 +25,23 @@
 #include "systemhandler.h"
 
 #include "platform/platform.h"
-#include "platform/platformupdatecontroller.h"
 #include "platform/platformsystemcontroller.h"
+#include "platform/platformupdatecontroller.h"
 
 namespace nymeaserver {
 
-SystemHandler::SystemHandler(Platform *platform, QObject *parent):
-    JsonHandler(parent),
-    m_platform(platform)
+SystemHandler::SystemHandler(Platform *platform, QObject *parent)
+    : JsonHandler(parent)
+    , m_platform(platform)
 {
     // Objects
     registerObject<Package, Packages>();
     registerObject<Repository, Repositories>();
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether "
                   "restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
                   "whether system update features are available in this system. The property \"timeManagement\" "
@@ -50,85 +52,97 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("timeManagement", enumValueName(Bool));
     registerMethod("GetCapabilities", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Initiate a restart of the nymea service. The return value will indicate whether the procedure has been initiated successfully.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("Restart", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("Reboot", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("Shutdown", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
-                   "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
-                   "is true, update related functions on the client should be marked as busy and no interaction with update "
-                   "components shall be allowed. An example for such a state is when the system queries the server if there "
-                   "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
-                   "indicates an actual update process is ongoing. The user should be informed about it, the system also "
-                   "might restart at any point while an update is running.";
+                  "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
+                  "is true, update related functions on the client should be marked as busy and no interaction with update "
+                  "components shall be allowed. An example for such a state is when the system queries the server if there "
+                  "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
+                  "indicates an actual update process is ongoing. The user should be informed about it, the system also "
+                  "might restart at any point while an update is running.";
     returns.insert("busy", enumValueName(Bool));
     returns.insert("updateRunning", enumValueName(Bool));
     registerMethod("GetUpdateStatus", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Instruct the system to poll the server for updates. Normally the system should automatically do this "
-                   "in regular intervals, however, if the client wants to allow the user to manually check for new updates "
-                   "now, this can be called. Returns true if the operation has been started successfully and the update "
-                   "manager will become busy. In order to know whether there are updates available, clients should walk through "
-                   "the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable "
-                   "flag set to true.";
+                  "in regular intervals, however, if the client wants to allow the user to manually check for new updates "
+                  "now, this can be called. Returns true if the operation has been started successfully and the update "
+                  "manager will become busy. In order to know whether there are updates available, clients should walk through "
+                  "the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable "
+                  "flag set to true.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("CheckForUpdates", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of packages currently available to the system. This might include installed available but "
-                   "not installed packages. Installed packages will have the installedVersion set to a non-empty value.";
+                  "not installed packages. Installed packages will have the installedVersion set to a non-empty value.";
     returns.insert("packages", objectRef("Packages"));
     registerMethod("GetPackages", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started "
-                   "successfully. Note that it might still fail later. Before calling this method, clients should "
-                   "check the packages whether they are in a state where they can either be installed (no installedVersion "
-                   "set) or upgraded (updateAvailable set to true).";
+                  "successfully. Note that it might still fail later. Before calling this method, clients should "
+                  "check the packages whether they are in a state where they can either be installed (no installedVersion "
+                  "set) or upgraded (updateAvailable set to true).";
     params.insert("o:packageIds", QVariantList() << enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     registerMethod("UpdatePackages", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this "
-                   "method, clients should check whether the package can be rolled back (canRollback set to true).";
+                  "method, clients should check whether the package can be rolled back (canRollback set to true).";
     params.insert("packageIds", QVariantList() << enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     registerMethod("RollbackPackages", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Starts removing a package. Returns true if the removal has been started successfully. Before calling "
-                   "this method, clients should check whether the package can be removed (canRemove set to true).";
+                  "this method, clients should check whether the package can be removed (canRemove set to true).";
     params.insert("packageIds", QVariantList() << enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     registerMethod("RemovePackages", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the list of repositories currently available to the system.";
-    returns.insert("repositories",objectRef("Repositories"));
+    returns.insert("repositories", objectRef("Repositories"));
     registerMethod("GetRepositories", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Enable or disable a repository.";
     params.insert("repositoryId", enumValueName(String));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("success", enumValueName(Bool));
     registerMethod("EnableRepository", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Get the system time and configuraton. The \"time\" and \"timeZone\" properties "
                   "give the current server time and time zone. \"automaticTimeAvailable\" indicates whether "
                   "this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will "
@@ -139,7 +153,8 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("automaticTime", enumValueName(Bool));
     registerMethod("GetTime", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Set the system time configuraton. The system can be configured to update the time automatically "
                   "by setting \"automaticTime\" to true. This will only work if the \"timeManagement\" capability is "
                   "available on this system and \"GetTime\" indicates the availability of automatic time settings. If "
@@ -155,14 +170,16 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("success", enumValueName(Bool));
     registerMethod("SetTime", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Returns the list of IANA specified time zone IDs which can be used to select a time zone. It is not "
                   "required to use this method if the client toolkit already provides means to obtain a list of IANA time "
                   "zone ids.";
     returns.insert("timeZones", enumValueName(StringList));
     registerMethod("GetTimeZones", description, params, returns);
 
-    params.clear(); returns.clear();
+    params.clear();
+    returns.clear();
     description = "Returns information about the system nymea is running on.";
     returns.insert("deviceSerialNumber", enumValueName(String));
     registerMethod("GetSystemInfo", description, params, returns);
@@ -220,56 +237,61 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
     connect(m_platform->updateController(), &PlatformUpdateController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
-    connect(m_platform->updateController(), &PlatformUpdateController::busyChanged, this, [this](){
+    connect(m_platform->updateController(), &PlatformUpdateController::busyChanged, this, [this]() {
         QVariantMap params;
         params.insert("busy", m_platform->updateController()->busy());
         params.insert("updateRunning", m_platform->updateController()->updateRunning());
         emit UpdateStatusChanged(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::updateRunningChanged, this, [this](){
+    connect(m_platform->updateController(), &PlatformUpdateController::updateRunningChanged, this, [this]() {
         QVariantMap params;
         params.insert("busy", m_platform->updateController()->busy());
         params.insert("updateRunning", m_platform->updateController()->updateRunning());
         emit UpdateStatusChanged(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package){
+    connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package) {
         QVariantMap params;
         params.insert("package", pack(package));
         emit PackageAdded(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::packageChanged, this, [this](const Package &package){
+    connect(m_platform->updateController(), &PlatformUpdateController::packageChanged, this, [this](const Package &package) {
         QVariantMap params;
         params.insert("package", pack(package));
         emit PackageChanged(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::packageRemoved, this, [this](const QString &packageId){
+    connect(m_platform->updateController(), &PlatformUpdateController::packageRemoved, this, [this](const QString &packageId) {
         QVariantMap params;
         params.insert("packageId", packageId);
         emit PackageRemoved(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository){
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository) {
         QVariantMap params;
         params.insert("repository", pack(repository));
         emit RepositoryAdded(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::repositoryChanged, this, [this](const Repository &repository){
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryChanged, this, [this](const Repository &repository) {
         QVariantMap params;
         params.insert("repository", pack(repository));
         emit RepositoryChanged(params);
     });
-    connect(m_platform->updateController(), &PlatformUpdateController::repositoryRemoved, this, [this](const QString &repositoryId){
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryRemoved, this, [this](const QString &repositoryId) {
         QVariantMap params;
         params.insert("repositoryId", repositoryId);
         emit RepositoryRemoved(params);
     });
-    connect(m_platform->systemController(), &PlatformSystemController::timeConfigurationChanged, this, [this](){
-        QVariantMap params;
-        params.insert("time", QDateTime::currentMSecsSinceEpoch() / 1000);
-        params.insert("timeZone", QTimeZone::systemTimeZoneId());
-        params.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
-        params.insert("automaticTime", m_platform->systemController()->automaticTime());
-        emit TimeConfigurationChanged(params);
-    }, Qt::QueuedConnection); // Queued to give QDateTime a chance to sync itself to the system
+    connect(
+        m_platform->systemController(),
+        &PlatformSystemController::timeConfigurationChanged,
+        this,
+        [this]() {
+            QVariantMap params;
+            params.insert("time", QDateTime::currentMSecsSinceEpoch() / 1000);
+            params.insert("timeZone", QTimeZone::systemTimeZoneId());
+            params.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
+            params.insert("automaticTime", m_platform->systemController()->automaticTime());
+            emit TimeConfigurationChanged(params);
+        },
+        Qt::QueuedConnection); // Queued to give QDateTime a chance to sync itself to the system
 }
 
 QString SystemHandler::name() const
@@ -378,7 +400,6 @@ JsonReply *SystemHandler::GetRepositories(const QVariantMap &params) const
     QVariantMap returns;
     returns.insert("repositories", repos);
     return createReply(returns);
-
 }
 
 JsonReply *SystemHandler::EnableRepository(const QVariantMap &params) const
@@ -462,4 +483,4 @@ void SystemHandler::onCapabilitiesChanged()
     emit CapabilitiesChanged(caps);
 }
 
-}
+} // namespace nymeaserver

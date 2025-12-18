@@ -22,15 +22,15 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "nymeatestbase.h"
 
-#include <QXmlReader>
 #include <QRegularExpression>
+#include <QXmlReader>
 
 using namespace nymeaserver;
 
-class TestWebserver: public NymeaTestBase
+class TestWebserver : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -61,9 +61,10 @@ private slots:
     void getDebugServer();
 
 public slots:
-    void onSslErrors(const QList<QSslError> &errors) {
+    void onSslErrors(const QList<QSslError> &errors)
+    {
         qCWarning(dcTests()) << "SSL errors:" << errors;
-        QSslSocket *socket = static_cast<QSslSocket*>(sender());
+        QSslSocket *socket = static_cast<QSslSocket *>(sender());
         socket->ignoreSslErrors();
     }
 };
@@ -101,7 +102,7 @@ void TestWebserver::coverageCalls()
 void TestWebserver::httpVersion()
 {
     QSslSocket *socket = new QSslSocket(this);
-    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    typedef void (QSslSocket::*sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
     QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
@@ -141,7 +142,7 @@ void TestWebserver::httpVersion()
 void TestWebserver::multiPackageMessage()
 {
     QSslSocket *socket = new QSslSocket(this);
-    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    typedef void (QSslSocket::*sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
     QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
@@ -195,7 +196,7 @@ void TestWebserver::checkAllowedMethodCall_data()
     QTest::addColumn<int>("expectedStatusCode");
 
     QTest::newRow("GET") << "GET" << 200;
-    QTest::newRow("PUT") <<  "PUT" << 200;
+    QTest::newRow("PUT") << "PUT" << 200;
     QTest::newRow("POST") << "POST" << 200;
     QTest::newRow("DELETE") << "DELETE" << 200;
     QTest::newRow("OPTIONS") << "OPTIONS" << 200;
@@ -210,7 +211,7 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &errors) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &errors) {
         qCWarning(dcTests) << "SSL errors:" << errors;
         reply->ignoreSslErrors();
     });
@@ -224,20 +225,20 @@ void TestWebserver::checkAllowedMethodCall()
 
     if (method == "GET") {
         reply = nam.get(request);
-    } else if(method == "PUT") {
+    } else if (method == "PUT") {
         reply = nam.put(request, QByteArray("Hello nymea!"));
-    } else if(method == "POST") {
+    } else if (method == "POST") {
         reply = nam.post(request, QByteArray("Hello nymea!"));
-    } else if(method == "DELETE") {
+    } else if (method == "DELETE") {
         reply = nam.deleteResource(request);
-    } else if(method == "HEAD") {
+    } else if (method == "HEAD") {
         reply = nam.head(request);
-    } else if(method == "CONNECT") {
+    } else if (method == "CONNECT") {
         reply = nam.sendCustomRequest(request, "CONNECT");
-    } else if(method == "OPTIONS") {
+    } else if (method == "OPTIONS") {
         QNetworkRequest req(QUrl("https://localhost:3333/api/v1/devices"));
         reply = nam.sendCustomRequest(req, "OPTIONS");
-    } else if(method == "TRACE") {
+    } else if (method == "TRACE") {
         reply = nam.sendCustomRequest(request, "TRACE");
     } else {
         // just to make sure there will be a reply to delete
@@ -248,7 +249,7 @@ void TestWebserver::checkAllowedMethodCall()
 
     QVERIFY2(clientSpy.count() > 0, "expected response");
 
-    if (expectedStatusCode == 405){
+    if (expectedStatusCode == 405) {
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
     }
@@ -281,7 +282,6 @@ void TestWebserver::badRequests_data()
     QTest::newRow("wrong content length") << wrongContentLength << 400;
     QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;
     QTest::newRow("user agent missing") << userAgentMissing << 404;
-
 }
 
 void TestWebserver::badRequests()
@@ -290,7 +290,7 @@ void TestWebserver::badRequests()
     QFETCH(int, expectedStatusCode);
 
     QSslSocket *socket = new QSslSocket(this);
-    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    typedef void (QSslSocket::*sslErrorsSignal)(const QList<QSslError> &);
     connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
     socket->connectToHostEncrypted("127.0.0.1", 3333);
     QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
@@ -333,8 +333,8 @@ void TestWebserver::getFiles_data()
     QTest::newRow("get /../../") << "/../../" << 404;
     QTest::newRow("get /../") << "/../" << 404;
     QTest::newRow("get /etc/nymea/nymead.conf") << "/etc/nymea/nymead.conf" << 404;
-    QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
-    QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
+    QTest::newRow("get /etc/sudoers") << "/etc/sudoers" << 404;
+    QTest::newRow("get /root/.ssh/id_rsa.pub") << "/root/.ssh/id_rsa.pub" << 404;
 }
 
 void TestWebserver::getFiles()
@@ -343,9 +343,7 @@ void TestWebserver::getFiles()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
@@ -366,9 +364,7 @@ void TestWebserver::getFiles()
 void TestWebserver::getServerDescription()
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
@@ -378,7 +374,8 @@ void TestWebserver::getServerDescription()
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
-    QXmlSimpleReader xmlReader; QXmlInputSource xmlSource;
+    QXmlSimpleReader xmlReader;
+    QXmlInputSource xmlSource;
     xmlSource.setData(reply->readAll());
     QVERIFY(xmlReader.parse(xmlSource));
 
@@ -408,9 +405,7 @@ void TestWebserver::getIcons()
     QFETCH(int, iconSize);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
 
     QNetworkRequest request;
@@ -570,8 +565,6 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("PUT /debug/settings/plugins | server disabled | 404") << "put" << "/debug/settings/plugins" << false << 404;
     QTest::newRow("POST /debug/settings/plugins | server disabled | 404") << "post" << "/debug/settings/plugins" << false << 404;
     QTest::newRow("DELETE /debug/settings/plugins | server disabled | 404") << "delete" << "/debug/settings/plugins" << false << 404;
-
-
 }
 
 void TestWebserver::getDebugServer()
@@ -582,7 +575,8 @@ void TestWebserver::getDebugServer()
     QFETCH(int, expectedStatusCode);
 
     // Enable/disable debug server
-    QVariantMap params; QVariant response;
+    QVariantMap params;
+    QVariant response;
     params.insert("enabled", serverEnabled);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyError(response, "configurationError", "ConfigurationErrorNoError");
@@ -592,13 +586,11 @@ void TestWebserver::getDebugServer()
     int statusCode = 0;
 
     QSignalSpy clientSpy(&nam, &QNetworkAccessManager::finished);
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
 
     QNetworkReply *reply = nullptr;
     QNetworkRequest request;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     // Note: in qt6 the request follows by default the redirect
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
 #endif

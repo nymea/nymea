@@ -25,12 +25,12 @@
 #ifndef SCRIPTENGINE_H
 #define SCRIPTENGINE_H
 
-#include <QObject>
-#include <QUuid>
-#include <QQmlEngine>
 #include <QJsonValue>
 #include <QLoggingCategory>
 #include <QMutex>
+#include <QObject>
+#include <QQmlEngine>
+#include <QUuid>
 
 #include "script.h"
 
@@ -45,30 +45,25 @@ class ScriptEngine : public QObject
 {
     Q_OBJECT
 public:
-    enum ScriptError {
-        ScriptErrorNoError,
-        ScriptErrorScriptNotFound,
-        ScriptErrorInvalidScript,
-        ScriptErrorHardwareFailure
-    };
+    enum ScriptError { ScriptErrorNoError, ScriptErrorScriptNotFound, ScriptErrorInvalidScript, ScriptErrorHardwareFailure };
     Q_ENUM(ScriptError)
 
-    enum ScriptMessageType {
-        ScriptMessageTypeLog,
-        ScriptMessageTypeWarning
-    };
+    enum ScriptMessageType { ScriptMessageTypeLog, ScriptMessageTypeWarning };
     Q_ENUM(ScriptMessageType)
 
-    struct AddScriptReply {
+    struct AddScriptReply
+    {
         ScriptError scriptError;
         QStringList errors;
         Script script;
     };
-    struct EditScriptReply {
+    struct EditScriptReply
+    {
         ScriptError scriptError;
         QStringList errors;
     };
-    struct GetScriptReply {
+    struct GetScriptReply
+    {
         ScriptError scriptError;
         QByteArray content;
     };
@@ -105,9 +100,9 @@ private:
     QQmlEngine *m_engine = nullptr;
     Logger *m_logger = nullptr;
 
-    QHash<QUuid, Script*> m_scripts;
+    QHash<QUuid, Script *> m_scripts;
 
-    static QList<ScriptEngine*> s_engines;
+    static QList<ScriptEngine *> s_engines;
     static QtMessageHandler s_upstreamMessageHandler;
     static QLoggingCategory::CategoryFilter s_oldCategoryFilter;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
@@ -115,7 +110,7 @@ private:
     static QMutex s_loggerMutex;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTENGINE_H

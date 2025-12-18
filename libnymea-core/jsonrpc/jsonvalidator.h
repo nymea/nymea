@@ -25,19 +25,24 @@
 #ifndef JSONVALIDATOR_H
 #define JSONVALIDATOR_H
 
+#include <QIODevice>
 #include <QPair>
 #include <QVariant>
-#include <QIODevice>
 
 namespace nymeaserver {
 
 class JsonValidator
 {
 public:
-    class Result {
+    class Result
+    {
     public:
         Result() {}
-        Result(bool success, const QString &errorString = QString(), const QString &where = QString()): m_success(success), m_errorString(errorString), m_where(where) {}
+        Result(bool success, const QString &errorString = QString(), const QString &where = QString())
+            : m_success(success)
+            , m_errorString(errorString)
+            , m_where(where)
+        {}
         bool success() const { return m_success; }
         void setSuccess(bool success) { m_success = success; }
         QString errorString() const { return m_errorString; }
@@ -46,6 +51,7 @@ public:
         void setWhere(const QString &where) { m_where = where; }
         bool deprecated() { return m_deprecated; }
         void setDeprecated(bool deprecated) { m_deprecated = deprecated; }
+
     private:
         bool m_success = false;
         QString m_errorString;
@@ -62,6 +68,7 @@ public:
     Result validateNotificationParams(const QVariantMap &params, const QString &notification, const QVariantMap &api);
 
     Result result() const;
+
 private:
     Result validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api, QIODevice::OpenMode openMode);
     Result validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode);
@@ -69,6 +76,6 @@ private:
     Result m_result;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // JSONVALIDATOR_H

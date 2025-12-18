@@ -28,44 +28,44 @@
 #include "libnymea.h"
 #include "typeutils.h"
 
-#include "thing.h"
-#include "thingdescriptor.h"
 #include "pluginmetadata.h"
 #include "servicedata.h"
+#include "thing.h"
+#include "thingdescriptor.h"
 
-#include "types/thingclass.h"
-#include "types/event.h"
 #include "types/action.h"
-#include "types/vendor.h"
-#include "types/param.h"
-#include "types/interface.h"
 #include "types/browseraction.h"
 #include "types/browseritemaction.h"
+#include "types/event.h"
+#include "types/interface.h"
+#include "types/param.h"
+#include "types/thingclass.h"
+#include "types/vendor.h"
 
 #include "hardwaremanager.h"
 
 #include "network/apikeys/apikeystorage.h"
 
+#include "browseractioninfo.h"
+#include "browseresult.h"
+#include "browseritemactioninfo.h"
+#include "browseritemresult.h"
+#include "thingactioninfo.h"
 #include "thingdiscoveryinfo.h"
 #include "thingpairinginfo.h"
 #include "thingsetupinfo.h"
-#include "thingactioninfo.h"
-#include "browseresult.h"
-#include "browseritemresult.h"
-#include "browseractioninfo.h"
-#include "browseritemactioninfo.h"
 
+#include <QMetaType>
 #include <QObject>
-#include <QTranslator>
 #include <QPair>
 #include <QSettings>
-#include <QMetaType>
+#include <QTranslator>
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations);
 
 class ThingManager;
 
-class LIBNYMEA_EXPORT IntegrationPlugin: public QObject
+class LIBNYMEA_EXPORT IntegrationPlugin : public QObject
 {
     Q_OBJECT
 
@@ -146,18 +146,18 @@ private:
     ParamList m_config;
 };
 Q_DECLARE_INTERFACE(IntegrationPlugin, "io.nymea.IntegrationPlugin")
-Q_DECLARE_METATYPE(IntegrationPlugin*)
+Q_DECLARE_METATYPE(IntegrationPlugin *)
 
 QDebug operator<<(QDebug debug, IntegrationPlugin *plugin);
 
-class LIBNYMEA_EXPORT IntegrationPlugins: public QList<IntegrationPlugin*>
+class LIBNYMEA_EXPORT IntegrationPlugins : public QList<IntegrationPlugin *>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     IntegrationPlugins();
-    IntegrationPlugins(const QList<IntegrationPlugin*> &other);
-    IntegrationPlugin* findById(const PluginId &id) const;
+    IntegrationPlugins(const QList<IntegrationPlugin *> &other);
+    IntegrationPlugin *findById(const PluginId &id) const;
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };

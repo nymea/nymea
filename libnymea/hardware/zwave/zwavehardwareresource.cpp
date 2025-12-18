@@ -26,6 +26,4 @@
 
 ZWaveHardwareResource::ZWaveHardwareResource(QObject *parent)
     : HardwareResource("ZWave hardware resource", parent)
-{
-
-}
+{}

@@ -25,12 +25,12 @@
 #ifndef BLUETOOTHLOWENERGYMANAGER_H
 #define BLUETOOTHLOWENERGYMANAGER_H
 
-#include <QTimer>
-#include <QObject>
-#include <QPointer>
+#include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothLocalDevice>
-#include <QBluetoothDeviceDiscoveryAgent>
+#include <QObject>
+#include <QPointer>
+#include <QTimer>
 
 #include "hardwareresource.h"
 
@@ -41,7 +41,7 @@
 
 class NymeaBluetoothAgent;
 
-class LIBNYMEA_EXPORT BluetoothPairingJob: public QObject
+class LIBNYMEA_EXPORT BluetoothPairingJob : public QObject
 {
     Q_OBJECT
 public:
@@ -72,18 +72,18 @@ public:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
     virtual ~BluetoothLowEnergyManager() = default;
 
-
     virtual BluetoothDiscoveryReply *discoverDevices(int interval = 5000) = 0;
 
     // Bluetooth device registration methods
     virtual BluetoothPairingJob *pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) = 0;
     virtual void unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) = 0;
-    virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
+    virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo,
+                                                     const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress)
+        = 0;
     virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
 
 public slots:
     Q_SCRIPTABLE void EnableBluetooth(bool enabled);
-
 };
 
 #endif // BLUETOOTHLOWENERGYMANAGER_H

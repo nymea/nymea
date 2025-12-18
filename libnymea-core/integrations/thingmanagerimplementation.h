@@ -27,21 +27,21 @@
 
 #include "libnymea.h"
 
+#include "integrations/ioconnection.h"
+#include "integrations/pluginmetadata.h"
 #include "integrations/thing.h"
 #include "integrations/thingdescriptor.h"
-#include "integrations/pluginmetadata.h"
-#include "integrations/ioconnection.h"
 
-#include "types/thingclass.h"
-#include "types/interface.h"
-#include "types/event.h"
 #include "types/action.h"
+#include "types/event.h"
+#include "types/interface.h"
+#include "types/thingclass.h"
 #include "types/vendor.h"
 
-#include <QObject>
-#include <QTimer>
 #include <QLocale>
+#include <QObject>
 #include <QPluginLoader>
+#include <QTimer>
 #include <QTranslator>
 
 #include "hardwaremanager.h"
@@ -57,7 +57,7 @@ class ApiKeysProvidersLoader;
 class LogEngine;
 class Logger;
 
-class ThingManagerImplementation: public ThingManager
+class ThingManagerImplementation : public ThingManager
 {
     Q_OBJECT
 
@@ -69,7 +69,7 @@ public:
 
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
-    void registerStaticPlugin(IntegrationPlugin* plugin);
+    void registerStaticPlugin(IntegrationPlugin *plugin);
 
     IntegrationPlugins plugins() const override;
     IntegrationPlugin *plugin(const PluginId &pluginId) const override;
@@ -80,24 +80,24 @@ public:
     ThingClasses supportedThings(const VendorId &vendorId = VendorId()) const override;
 
     Things configuredThings() const override;
-    Thing* findConfiguredThing(const ThingId &id) const override;
+    Thing *findConfiguredThing(const ThingId &id) const override;
     Things findConfiguredThings(const ThingClassId &thingClassId) const override;
     Things findConfiguredThings(const QString &interface) const override;
     Things findChilds(const ThingId &id) const override;
     ThingClass findThingClass(const ThingClassId &thingClassId) const override;
 
-    ThingDiscoveryInfo* discoverThings(const ThingClassId &thingClassId, const ParamList &params) override;
+    ThingDiscoveryInfo *discoverThings(const ThingClassId &thingClassId, const ParamList &params) override;
 
-    ThingSetupInfo* addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) override;
-    ThingSetupInfo* addConfiguredThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
+    ThingSetupInfo *addConfiguredThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) override;
+    ThingSetupInfo *addConfiguredThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
 
-    ThingSetupInfo* reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) override;
-    ThingSetupInfo* reconfigureThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
+    ThingSetupInfo *reconfigureThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) override;
+    ThingSetupInfo *reconfigureThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
 
-    ThingPairingInfo* pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) override;
-    ThingPairingInfo* pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
-    ThingPairingInfo* pairThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) override;
-    ThingPairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username, const QString &secret) override;
+    ThingPairingInfo *pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name = QString()) override;
+    ThingPairingInfo *pairThing(const ThingDescriptorId &thingDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
+    ThingPairingInfo *pairThing(const ThingId &thingId, const ParamList &params, const QString &name = QString()) override;
+    ThingPairingInfo *confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username, const QString &secret) override;
 
     Thing::ThingError editThing(const ThingId &thingId, const QString &name) override;
     Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) override;
@@ -109,10 +109,10 @@ public:
 
     Thing::ThingError removeConfiguredThing(const ThingId &thingId) override;
 
-    ThingActionInfo* executeAction(const Action &action) override;
+    ThingActionInfo *executeAction(const Action &action) override;
 
-    BrowseResult* browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale) override;
-    BrowserItemResult* browserItemDetails(const ThingId &thingId, const QString &itemId, const QLocale &locale) override;
+    BrowseResult *browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale) override;
+    BrowserItemResult *browserItemDetails(const ThingId &thingId, const QString &itemId, const QLocale &locale) override;
     BrowserActionInfo *executeBrowserItem(const BrowserAction &browserAction) override;
     BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
@@ -186,15 +186,16 @@ private:
     QHash<QString, Interface> m_supportedInterfaces;
     QHash<VendorId, QList<ThingClassId> > m_vendorThingMap;
     QHash<ThingClassId, ThingClass> m_supportedThings;
-    QHash<ThingId, Thing*> m_configuredThings;
+    QHash<ThingId, Thing *> m_configuredThings;
     QHash<ThingDescriptorId, ThingDescriptor> m_discoveredThings;
-    QHash<QString, Logger*> m_stateLoggers;
-    QHash<QString, Logger*> m_actionLoggers;
-    QHash<QString, Logger*> m_eventLoggers;
+    QHash<QString, Logger *> m_stateLoggers;
+    QHash<QString, Logger *> m_actionLoggers;
+    QHash<QString, Logger *> m_eventLoggers;
 
-    QHash<PluginId, IntegrationPlugin*> m_integrationPlugins;
+    QHash<PluginId, IntegrationPlugin *> m_integrationPlugins;
 
-    class PairingContext {
+    class PairingContext
+    {
     public:
         ThingId thingId;
         ThingClassId thingClassId;
@@ -203,7 +204,7 @@ private:
         QString thingName;
     };
     QHash<PairingTransactionId, PairingContext> m_pendingPairings;
-    QHash<ThingId, ThingSetupInfo*> m_pendingSetups;
+    QHash<ThingId, ThingSetupInfo *> m_pendingSetups;
 
     QHash<IOConnectionId, IOConnection> m_ioConnections;
 

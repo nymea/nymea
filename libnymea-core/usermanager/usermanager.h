@@ -74,7 +74,6 @@ public:
 
     UserError removeToken(const QUuid &tokenId);
 
-
     bool verifyToken(const QByteArray &token);
 
 signals:
@@ -100,9 +99,8 @@ private:
     PushButtonDBusService *m_pushButtonDBusService = nullptr;
     int m_pushButtonTransactionIdCounter = 0;
     QPair<int, QString> m_pushButtonTransaction;
-
 };
-}
+} // namespace nymeaserver
 Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)
 
 #endif // USERMANAGER_H

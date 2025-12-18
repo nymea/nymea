@@ -24,12 +24,10 @@
 
 #include "jsoncontext.h"
 
-JsonContext::JsonContext(const QUuid &clientId, const QLocale &locale):
-    m_clientId(clientId),
-    m_locale(locale)
-{
-
-}
+JsonContext::JsonContext(const QUuid &clientId, const QLocale &locale)
+    : m_clientId(clientId)
+    , m_locale(locale)
+{}
 
 QUuid JsonContext::clientId() const
 {

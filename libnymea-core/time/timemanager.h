@@ -25,10 +25,10 @@
 #ifndef TIMEMANAGER_H
 #define TIMEMANAGER_H
 
-#include <QTimer>
-#include <QObject>
 #include <QDateTime>
+#include <QObject>
 #include <QTimeZone>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -59,6 +59,6 @@ private:
     qint64 m_overrideDifference = 0;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TIMEMANAGER_H

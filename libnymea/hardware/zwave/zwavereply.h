@@ -33,6 +33,7 @@ class ZWaveReply : public QObject
 {
     Q_OBJECT
     friend class ZWaveBackend;
+
 public:
     explicit ZWaveReply(QObject *parent = nullptr);
     virtual ~ZWaveReply() = default;

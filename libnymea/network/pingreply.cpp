@@ -24,7 +24,8 @@
 
 #include "pingreply.h"
 
-PingReply::PingReply(QObject *parent) : QObject(parent)
+PingReply::PingReply(QObject *parent)
+    : QObject(parent)
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);

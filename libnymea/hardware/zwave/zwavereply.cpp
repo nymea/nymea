@@ -30,7 +30,7 @@ Q_DECLARE_LOGGING_CATEGORY(dcZWave)
 ZWaveReply::ZWaveReply(QObject *parent)
     : QObject{parent}
 {
-    connect(&m_timer, &QTimer::timeout, this, [this](){
+    connect(&m_timer, &QTimer::timeout, this, [this]() {
         qCWarning(dcZWave) << "ZWaveReply timed out...";
         finish(ZWave::ZWaveErrorTimeout);
     });
@@ -51,7 +51,5 @@ void ZWaveReply::finish(ZWave::ZWaveError status)
     m_finished = true;
     m_timer.stop();
     // Delaying for one event loop pass to give the user chance to connect even if the reply is finished before returning
-    QTimer::singleShot(0, this, [this, status](){
-        emit finished(status);
-    });
+    QTimer::singleShot(0, this, [this, status]() { emit finished(status); });
 }

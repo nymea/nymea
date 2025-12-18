@@ -25,11 +25,11 @@
 #ifndef NETWORKDEVICEMONITORIMPL_H
 #define NETWORKDEVICEMONITORIMPL_H
 
-#include <QObject>
 #include <QDateTime>
+#include <QObject>
 
-#include "network/pingreply.h"
 #include "network/networkdevicemonitor.h"
+#include "network/pingreply.h"
 
 namespace nymeaserver {
 
@@ -89,6 +89,6 @@ private:
     PingReply *m_currentPingReply = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NETWORKDEVICEMONITORIMPL_H

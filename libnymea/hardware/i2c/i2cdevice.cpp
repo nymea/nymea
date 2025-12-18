@@ -68,17 +68,13 @@
     I2CManager::scanRegisters() can be used to scan for available I2C devices connected
     to the system.
 */
-I2CDevice::I2CDevice(const QString &portName, int address, QObject *parent):
-    QObject(parent),
-    m_portName(portName),
-    m_address(address)
-{
+I2CDevice::I2CDevice(const QString &portName, int address, QObject *parent)
+    : QObject(parent)
+    , m_portName(portName)
+    , m_address(address)
+{}
 
-}
-
-I2CDevice::~I2CDevice()
-{
-}
+I2CDevice::~I2CDevice() {}
 
 /*! Returns the port name of this I2C device. */
 QString I2CDevice::portName() const

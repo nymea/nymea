@@ -35,7 +35,8 @@
 
 namespace nymeaserver {
 
-Platform::Platform(QObject *parent) : QObject(parent)
+Platform::Platform(QObject *parent)
+    : QObject(parent)
 {
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
@@ -52,11 +53,11 @@ Platform::Platform(QObject *parent) : QObject(parent)
                 }
             } else if (fi.isDir()) {
                 if (QFileInfo::exists(path + "/" + entry + "/libnymea_systemplugin" + entry + ".so")) {
-                    loadSystemPlugin(path + "/" +  entry + "/libnymea_systemplugin" + entry + ".so");
+                    loadSystemPlugin(path + "/" + entry + "/libnymea_systemplugin" + entry + ".so");
                 } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_updateplugin" + entry + ".so")) {
-                    loadUpdatePlugin(path + "/" +  entry + "/libnymea_updateplugin" + entry + ".so");
+                    loadUpdatePlugin(path + "/" + entry + "/libnymea_updateplugin" + entry + ".so");
                 } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_zeroconfplugin" + entry + ".so")) {
-                    loadZeroConfPlugin(path + "/" +  entry + "/libnymea_zeroconfplugin" + entry + ".so");
+                    loadZeroConfPlugin(path + "/" + entry + "/libnymea_zeroconfplugin" + entry + ".so");
                 }
             }
         }
@@ -110,7 +111,6 @@ QStringList Platform::pluginSearchDirs() const
             searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
         }
     } else {
-
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
             searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platform");
@@ -144,7 +144,7 @@ void Platform::loadSystemPlugin(const QString &file)
         qCWarning(dcPlatform) << loader.errorString();
         return;
     }
-    m_platformSystemController = qobject_cast<PlatformSystemController*>(loader.instance());
+    m_platformSystemController = qobject_cast<PlatformSystemController *>(loader.instance());
     if (!m_platformSystemController) {
         qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
@@ -166,7 +166,7 @@ void Platform::loadUpdatePlugin(const QString &file)
         qCWarning(dcPlatform) << loader.errorString();
         return;
     }
-    m_platformUpdateController = qobject_cast<PlatformUpdateController*>(loader.instance());
+    m_platformUpdateController = qobject_cast<PlatformUpdateController *>(loader.instance());
     if (!m_platformUpdateController) {
         qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
@@ -188,7 +188,7 @@ void Platform::loadZeroConfPlugin(const QString &file)
         qCWarning(dcPlatform) << loader.errorString();
         return;
     }
-    m_platformZeroConfController = qobject_cast<PlatformZeroConfController*>(loader.instance());
+    m_platformZeroConfController = qobject_cast<PlatformZeroConfController *>(loader.instance());
     if (!m_platformZeroConfController) {
         qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
@@ -198,4 +198,4 @@ void Platform::loadZeroConfPlugin(const QString &file)
     m_platformZeroConfController->setParent(this);
 }
 
-}
+} // namespace nymeaserver

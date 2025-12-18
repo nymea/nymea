@@ -25,25 +25,25 @@
 #ifndef JSONRPCSERVERIMPLEMENTATION_H
 #define JSONRPCSERVERIMPLEMENTATION_H
 
-#include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
+#include "jsonrpc/jsonrpcserver.h"
 #include "transportinterface.h"
 #include "usermanager/usermanager.h"
 
-#include "types/thingclass.h"
 #include "types/action.h"
 #include "types/event.h"
+#include "types/thingclass.h"
 
 #include <QObject>
-#include <QVariantMap>
-#include <QString>
 #include <QSslConfiguration>
+#include <QString>
+#include <QVariantMap>
 
 class Thing;
 
 namespace nymeaserver {
 
-class JsonRPCServerImplementation: public JsonHandler, public JsonRPCServer
+class JsonRPCServerImplementation : public JsonHandler, public JsonRPCServer
 {
     Q_OBJECT
 public:
@@ -119,7 +119,6 @@ private:
     QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // JSONRPCSERVERIMPLEMENTATION_H
-

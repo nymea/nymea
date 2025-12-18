@@ -25,9 +25,9 @@
 #ifndef MOCKTCPSERVER_H
 #define MOCKTCPSERVER_H
 
-#include <QObject>
-#include <QNetworkInterface>
 #include <QDebug>
+#include <QNetworkInterface>
+#include <QObject>
 
 #include "transportinterface.h"
 
@@ -46,13 +46,13 @@ public:
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
     void terminateClientConnection(const QUuid &clientId) override;
 
-/************** Used for testing **************************/
-    static QList<MockTcpServer*> servers();
+    /************** Used for testing **************************/
+    static QList<MockTcpServer *> servers();
     void injectData(const QUuid &clientId, const QByteArray &data);
 signals:
     void outgoingData(const QUuid &clientId, const QByteArray &data);
     void connectionTerminated(const QUuid &clientId);
-/************** Used for testing **************************/
+    /************** Used for testing **************************/
 
 public slots:
     bool reconfigureServer(const QHostAddress &address, const uint &port);
@@ -60,12 +60,11 @@ public slots:
     bool stopServer() override;
 
 private:
-    static QList<MockTcpServer*> s_allServers;
+    static QList<MockTcpServer *> s_allServers;
 
     QList<QUuid> m_connectedClients;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TCPSERVER_H
-

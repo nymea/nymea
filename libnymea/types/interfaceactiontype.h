@@ -27,7 +27,7 @@
 
 #include "actiontype.h"
 
-class InterfaceActionType: public ActionType
+class InterfaceActionType : public ActionType
 {
 public:
     InterfaceActionType();
@@ -39,7 +39,7 @@ private:
     bool m_optional = false;
 };
 
-class InterfaceActionTypes: public QList<InterfaceActionType>
+class InterfaceActionTypes : public QList<InterfaceActionType>
 {
 public:
     InterfaceActionTypes() = default;

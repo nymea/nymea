@@ -24,20 +24,18 @@
 
 #include "nymeabluetoothagent.h"
 
-#include <QString>
 #include <QDBusConnection>
 #include <QLoggingCategory>
+#include <QString>
 
 Q_DECLARE_LOGGING_CATEGORY(dcBluetooth)
 
 namespace nymeaserver {
 
-NymeaBluetoothAgentAdapter::NymeaBluetoothAgentAdapter(NymeaBluetoothAgent *agent, QObject *parent):
-    QObject{parent},
-    m_agent{agent}
-{
-
-}
+NymeaBluetoothAgentAdapter::NymeaBluetoothAgentAdapter(NymeaBluetoothAgent *agent, QObject *parent)
+    : QObject{parent}
+    , m_agent{agent}
+{}
 
 QString NymeaBluetoothAgentAdapter::RequestPinCode(const QDBusObjectPath &device, const QDBusMessage &message)
 {
@@ -87,7 +85,6 @@ void NymeaBluetoothAgentAdapter::AuthorizeService(const QDBusObjectPath &device,
     qCDebug(dcBluetooth) << "AuthorizeService" << device.path() << uuid << message.arguments();
     // TODO: Not implemented
     qCWarning(dcBluetooth()) << "AuthorizeService mechanism is not implemented.";
-
 }
 
 void NymeaBluetoothAgentAdapter::Cancel()
@@ -116,7 +113,6 @@ NymeaBluetoothAgent::NymeaBluetoothAgent(QObject *parent)
     } else {
         qCDebug(dcBluetooth()) << "Pairing agent registered.";
     }
-
 }
 
 void NymeaBluetoothAgent::passKeyEntered(const QBluetoothAddress &address, const QString passKey)
@@ -134,7 +130,7 @@ void NymeaBluetoothAgent::passKeyEntered(const QBluetoothAddress &address, const
 
 QBluetoothAddress NymeaBluetoothAgent::deviceForPath(const QDBusObjectPath &path)
 {
-//   qdbus --system org.bluez /org/bluez/hci0/dev_00_1A_22_0B_12_EB org.freedesktop.DBus.Properties.Get org.bluez.Device1 Address
+    //   qdbus --system org.bluez /org/bluez/hci0/dev_00_1A_22_0B_12_EB org.freedesktop.DBus.Properties.Get org.bluez.Device1 Address
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.bluez", path.path(), "org.freedesktop.DBus.Properties", "Get");
     message << "org.bluez.Device1" << "Address";
@@ -167,4 +163,4 @@ void NymeaBluetoothAgent::onDisplayPinCode(const QDBusObjectPath &path, const QS
     emit displayPinCode(address, pinCode);
 }
 
-}
+} // namespace nymeaserver

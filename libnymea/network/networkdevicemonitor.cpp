@@ -25,11 +25,9 @@
 #include "networkdevicemonitor.h"
 #include "networkdeviceinfo.h"
 
-NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
-    QObject(parent)
-{
-
-}
+NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent)
+    : QObject(parent)
+{}
 
 QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
 {
@@ -52,4 +50,3 @@ QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
     dbg.nospace() << ")";
     return dbg;
 }
-

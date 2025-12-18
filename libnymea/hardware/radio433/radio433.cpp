@@ -56,15 +56,13 @@
     Returns true if the given \a rawData can be sent to a RF 433MHz device with the given \a delay. The amount of packages to send can be configured with the parameter \a repetitions.
 */
 
-
 #include "radio433.h"
-#include "loggingcategories.h"
 #include "gpio.h"
+#include "loggingcategories.h"
 
 #include <QFileInfo>
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
-Radio433::Radio433(QObject *parent) :
-    HardwareResource("Radio 433 MHz", parent)
-{
-}
+Radio433::Radio433(QObject *parent)
+    : HardwareResource("Radio 433 MHz", parent)
+{}

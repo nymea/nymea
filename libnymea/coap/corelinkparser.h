@@ -27,8 +27,8 @@
 
 #include <QObject>
 
-#include "libnymea.h"
 #include "corelink.h"
+#include "libnymea.h"
 
 // Constrained RESTful Environments (CoRE) Link Format  : http://tools.ietf.org/html/rfc6690
 

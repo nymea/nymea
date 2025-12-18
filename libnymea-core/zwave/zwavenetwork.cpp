@@ -24,14 +24,12 @@
 
 #include "zwavenetwork.h"
 
-ZWaveNetwork::ZWaveNetwork(const QUuid &networkUuid, const QString &serialPort, const QString &networkKey, QObject *parent):
-    QObject(parent),
-    m_networkUuid(networkUuid),
-    m_serialPort(serialPort),
-    m_networkKey(networkKey)
-{
-
-}
+ZWaveNetwork::ZWaveNetwork(const QUuid &networkUuid, const QString &serialPort, const QString &networkKey, QObject *parent)
+    : QObject(parent)
+    , m_networkUuid(networkUuid)
+    , m_serialPort(serialPort)
+    , m_networkKey(networkKey)
+{}
 
 QUuid ZWaveNetwork::networkUuid() const
 {
@@ -185,20 +183,12 @@ void ZWaveNetwork::setWaitingForNodeRemoval(bool waitingForNodeRemoval)
     }
 }
 
+ZWaveNetworks::ZWaveNetworks() {}
 
-ZWaveNetworks::ZWaveNetworks()
-{
+ZWaveNetworks::ZWaveNetworks(const ZWaveNetworks &other)
+    : QList<ZWaveNetwork *>(other)
+{}
 
-}
-
-ZWaveNetworks::ZWaveNetworks(const ZWaveNetworks &other):
-    QList<ZWaveNetwork*>(other)
-{
-
-}
-
-ZWaveNetworks::ZWaveNetworks(const QList<ZWaveNetwork *> &other):
-    QList<ZWaveNetwork*>(other)
-{
-
-}
+ZWaveNetworks::ZWaveNetworks(const QList<ZWaveNetwork *> &other)
+    : QList<ZWaveNetwork *>(other)
+{}

@@ -24,16 +24,16 @@
 
 #include "scriptalarm.h"
 
-#include <QTimer>
 #include <QLoggingCategory>
+#include <QTimer>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 
 namespace nymeaserver {
 namespace scriptengine {
 
-ScriptAlarm::ScriptAlarm(QObject *parent) : QObject(parent)
-{
-}
+ScriptAlarm::ScriptAlarm(QObject *parent)
+    : QObject(parent)
+{}
 
 QTime ScriptAlarm::time() const
 {
@@ -101,7 +101,6 @@ void ScriptAlarm::timerEvent(QTimerEvent *event)
 
     QTime now = QTime::currentTime();
 
-
     updateActive();
 
     if (!m_weekDays.testFlag(today())) {
@@ -150,5 +149,5 @@ void ScriptAlarm::updateActive()
     }
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

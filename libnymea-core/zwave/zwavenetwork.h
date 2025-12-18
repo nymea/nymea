@@ -25,9 +25,9 @@
 #ifndef ZWAVENETWORK_H
 #define ZWAVENETWORK_H
 
+#include <QHash>
 #include <QObject>
 #include <QUuid>
-#include <QHash>
 
 #include "hardware/zwave/zwavenode.h"
 
@@ -53,12 +53,7 @@ class ZWaveNetwork : public QObject
     friend class nymeaserver::ZWaveManager;
 
 public:
-    enum ZWaveNetworkState {
-        ZWaveNetworkStateOffline,
-        ZWaveNetworkStateStarting,
-        ZWaveNetworkStateOnline,
-        ZWaveNetworkStateError
-    };
+    enum ZWaveNetworkState { ZWaveNetworkStateOffline, ZWaveNetworkStateStarting, ZWaveNetworkStateOnline, ZWaveNetworkStateError };
     Q_ENUM(ZWaveNetworkState)
 
     explicit ZWaveNetwork(const QUuid &networkUuid, const QString &serialPort, const QString &networkKey, QObject *parent = nullptr);
@@ -118,18 +113,17 @@ private:
     bool m_waitingForNodeRemoval = false;
     ZWaveNetworkState m_networkState = ZWaveNetworkStateOffline;
 
-    QHash<quint8, ZWaveNode*> m_nodes;
+    QHash<quint8, ZWaveNode *> m_nodes;
 };
 
-class ZWaveNetworks: public QList<ZWaveNetwork*>
+class ZWaveNetworks : public QList<ZWaveNetwork *>
 {
-  Q_GADGET
+    Q_GADGET
 public:
     ZWaveNetworks();
     ZWaveNetworks(const ZWaveNetworks &other);
     ZWaveNetworks(const QList<ZWaveNetwork *> &other);
 };
 Q_DECLARE_METATYPE(ZWaveNetworks)
-
 
 #endif // ZWAVENETWORK_H

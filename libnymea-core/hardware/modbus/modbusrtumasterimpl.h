@@ -40,7 +40,15 @@ class ModbusRtuMasterImpl : public ModbusRtuMaster
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout, QObject *parent = nullptr);
+    explicit ModbusRtuMasterImpl(const QUuid &modbusUuid,
+                                 const QString &serialPort,
+                                 qint32 baudrate,
+                                 QSerialPort::Parity parity,
+                                 QSerialPort::DataBits dataBits,
+                                 QSerialPort::StopBits stopBits,
+                                 int numberOfRetries,
+                                 int timeout,
+                                 QObject *parent = nullptr);
     ~ModbusRtuMasterImpl() override = default;
 
     QUuid modbusUuid() const override;
@@ -105,6 +113,6 @@ private:
     int m_timeout = 100;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MODBUSRTUMASTERIMPL_H

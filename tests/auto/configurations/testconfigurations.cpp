@@ -22,20 +22,21 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
+#include "../plugins/mock/extern-plugininfo.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
+#include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
-#include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
 
-class TestConfigurations: public NymeaTestBase
+class TestConfigurations : public NymeaTestBase
 {
     Q_OBJECT
 
 private:
-    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError)
+    {
         verifyError(response, "configurationError", enumValueName(error));
     }
 
@@ -54,7 +55,6 @@ private slots:
 
 private:
     QVariantMap loadBasicConfiguration();
-
 };
 
 void TestConfigurations::initTestCase()
@@ -100,7 +100,9 @@ void TestConfigurations::testServerName()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set name unchanged
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("serverName", serverName);
     response = injectAndWait("Configuration.SetServerName", params);
     verifyConfigurationError(response);
@@ -112,7 +114,9 @@ void TestConfigurations::testServerName()
 
     // Set new server name
     QString newServerName = QString("Test server %1").arg(QUuid::createUuid().toString());
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("serverName", newServerName);
 
     notificationSpy.clear();
@@ -157,7 +161,8 @@ void TestConfigurations::testLanguages()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set language unchanged
-    QVariant response; QVariantMap params;
+    QVariant response;
+    QVariantMap params;
     params.insert("language", basicConfigurationMap.value("language"));
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
@@ -176,13 +181,14 @@ void TestConfigurations::testLanguages()
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
         // create a new spy for each run as we restart the server and kill the old one in this loop
-         QSignalSpy notificationSpy2 (m_mockTcpServer, &MockTcpServer::outgoingData);
+        QSignalSpy notificationSpy2(m_mockTcpServer, &MockTcpServer::outgoingData);
 
         // Get current configurations
         basicConfigurationMap = loadBasicConfiguration();
 
         // Set language
-        params.clear(); response.clear();
+        params.clear();
+        response.clear();
         params.insert("language", languageVariant);
         QVariant response = injectAndWait("Configuration.SetLanguage", params);
         verifyConfigurationError(response);
@@ -204,7 +210,6 @@ void TestConfigurations::testLanguages()
             restartServer();
             enableNotifications({"Configuration"});
 
-
             // Get configuration
             basicConfigurationMap = loadBasicConfiguration();
 
@@ -213,7 +218,8 @@ void TestConfigurations::testLanguages()
     }
 
     // Reset the language to en_US
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("language", "en_US");
 
     // Set language
@@ -236,7 +242,9 @@ void TestConfigurations::testDebugServerConfiguration()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Unchanged debug server
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("enabled", debugServerEnabled);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -248,7 +256,9 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Enable debug server
     bool newValue = true;
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("enabled", newValue);
 
     qCDebug(dcTests()) << "Enabling debug server";
@@ -291,9 +301,7 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Webserver request
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
 
     // Check if debug interface is reachable
@@ -311,7 +319,8 @@ void TestConfigurations::testDebugServerConfiguration()
     reply->deleteLater();
 
     // Disable debug server
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("enabled", false);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -363,7 +372,8 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     insecureTunnelProxyConfig.insert("authenticationEnabled", false);
     insecureTunnelProxyConfig.insert("ignoreSslErrors", true);
 
-    QVariantMap params; QVariant response;
+    QVariantMap params;
+    QVariant response;
 
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
@@ -384,33 +394,39 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     // FIXME: make sure the insecure servers are not running
 
     // Remove the insecure configs and try to add them again and expect them to fail
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTcpServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteWebSocketServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response);
 
     // Make sure we cannot add insecure interfaces beside localhost
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureWebSocketConfig);
     response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTunnelProxyConfig);
     response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);

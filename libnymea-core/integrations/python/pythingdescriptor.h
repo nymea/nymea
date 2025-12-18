@@ -25,8 +25,8 @@
 #ifndef PYTHINGDESCRIPTOR_H
 #define PYTHINGDESCRIPTOR_H
 
-#include <Python.h>
 #include "structmember.h"
+#include <Python.h>
 
 #include "integrations/thingdescriptor.h"
 #include "loggingcategories.h"
@@ -36,17 +36,15 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-
-typedef struct {
-    PyObject_HEAD
-    PyObject* pyThingClassId;
-    PyObject* pyName;
-    PyObject* pyDescription;
-    PyObject* pyThingId;
-    PyObject* pyParentId;
-    PyObject* pyParams;
+typedef struct
+{
+    PyObject_HEAD PyObject *pyThingClassId;
+    PyObject *pyName;
+    PyObject *pyDescription;
+    PyObject *pyThingId;
+    PyObject *pyParentId;
+    PyObject *pyParams;
 } PyThingDescriptor;
-
 
 static PyMemberDef PyThingDescriptor_members[] = {
     {"thingClassId", T_OBJECT_EX, offsetof(PyThingDescriptor, pyThingClassId), 0, "Descriptor thingClassId"},
@@ -55,7 +53,7 @@ static PyMemberDef PyThingDescriptor_members[] = {
     {"thingId", T_OBJECT_EX, offsetof(PyThingDescriptor, pyDescription), 0, "The thingId, if there exists a thing for this descriptor already."},
     {"parentId", T_OBJECT_EX, offsetof(PyThingDescriptor, pyParentId), 0, "The thingId of the parent, if this thing is a child."},
     {"params", T_OBJECT_EX, offsetof(PyThingDescriptor, pyParams), 0, "Params for the thing described by this descriptor."},
-    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+    {nullptr, 0, 0, 0, nullptr} /* Sentinel */
 };
 
 static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObject *kwds)
@@ -94,7 +92,7 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     return 0;
 }
 
-static void PyThingDescriptor_dealloc(PyThingDescriptor * self)
+static void PyThingDescriptor_dealloc(PyThingDescriptor *self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyThingDescriptor";
     Py_XDECREF(self->pyThingClassId);
@@ -107,14 +105,11 @@ static void PyThingDescriptor_dealloc(PyThingDescriptor * self)
 }
 
 static PyTypeObject PyThingDescriptorType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingDescriptor",   /* tp_name */
-    sizeof(PyThingDescriptor), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)PyThingDescriptor_dealloc, /* tp_dealloc */
+    PyVarObject_HEAD_INIT(NULL, 0) "nymea.ThingDescriptor", /* tp_name */
+    sizeof(PyThingDescriptor),                              /* tp_basicsize */
+    0,                                                      /* tp_itemsize */
+    (destructor) PyThingDescriptor_dealloc,                 /* tp_dealloc */
 };
-
-
 
 static void registerThingDescriptorType(PyObject *module)
 {
@@ -127,7 +122,7 @@ static void registerThingDescriptorType(PyObject *module)
     if (PyType_Ready(&PyThingDescriptorType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "ThingDescriptor", reinterpret_cast<PyObject*>(&PyThingDescriptorType));
+    PyModule_AddObject(module, "ThingDescriptor", reinterpret_cast<PyObject *>(&PyThingDescriptorType));
 }
 
 #pragma GCC diagnostic pop

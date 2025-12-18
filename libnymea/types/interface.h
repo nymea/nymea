@@ -25,15 +25,20 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "interfaceparamtype.h"
-#include "interfaceeventtype.h"
 #include "interfaceactiontype.h"
+#include "interfaceeventtype.h"
+#include "interfaceparamtype.h"
 #include "interfacestatetype.h"
 
-class Interface{
+class Interface
+{
 public:
     Interface() = default;
-    Interface(const QString &name, const InterfaceParamTypes &paramTypes, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes);
+    Interface(const QString &name,
+              const InterfaceParamTypes &paramTypes,
+              const InterfaceActionTypes &actionTypes,
+              const InterfaceEventTypes &eventTypes,
+              const InterfaceStateTypes &stateTypes);
 
     QString name() const;
 
@@ -53,12 +58,14 @@ private:
     bool m_optional = false;
 };
 
-class LIBNYMEA_EXPORT Interfaces: public QList<Interface>
+class LIBNYMEA_EXPORT Interfaces : public QList<Interface>
 {
 public:
     Interfaces() = default;
     Interfaces(const QList<Interface> &other);
-    Interfaces(std::initializer_list<Interface> args):QList(args) {}
+    Interfaces(std::initializer_list<Interface> args)
+        : QList(args)
+    {}
     Interface findByName(const QString &name);
 };
 

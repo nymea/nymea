@@ -29,7 +29,7 @@
 
 #include <QObject>
 
-class ApiKeysProvider: public QObject
+class ApiKeysProvider : public QObject
 {
     Q_OBJECT
 

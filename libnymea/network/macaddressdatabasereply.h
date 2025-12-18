@@ -38,11 +38,10 @@ public:
     virtual ~MacAddressDatabaseReply() = default;
 
     virtual QString macAddress() const = 0;
-    virtual QString manufacturer() const  = 0;
+    virtual QString manufacturer() const = 0;
 
 signals:
     void finished();
-
 };
 
 #endif // MACADDRESSDATABASEREPLY_H

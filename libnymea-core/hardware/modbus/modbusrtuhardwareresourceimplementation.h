@@ -27,9 +27,9 @@
 
 #include <QObject>
 
+#include "hardware/modbus/modbusrtuhardwareresource.h"
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtumaster.h"
-#include "hardware/modbus/modbusrtuhardwareresource.h"
 
 namespace nymeaserver {
 
@@ -58,9 +58,8 @@ private:
     ModbusRtuManager *m_modbusRtuManager = nullptr;
     bool m_available = false;
     bool m_enabled = false;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MODBUSRTUHARDWARERESOURCEIMPLEMENTATION_H

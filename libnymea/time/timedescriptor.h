@@ -25,8 +25,8 @@
 #ifndef TIMEDESCRIPTOR_H
 #define TIMEDESCRIPTOR_H
 
-#include "timeeventitem.h"
 #include "calendaritem.h"
+#include "timeeventitem.h"
 
 class TimeDescriptor
 {
@@ -47,17 +47,14 @@ public:
 
     bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
 
-//    void dumpToSettings(NymeaSettings &settings, const QString &groupName) const;
-//    static TimeDescriptor loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);
-
+    //    void dumpToSettings(NymeaSettings &settings, const QString &groupName) const;
+    //    static TimeDescriptor loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);
 
 private:
     TimeEventItems m_timeEventItems;
     CalendarItems m_calendarItems;
-
 };
 
 QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor);
-
 
 #endif // TIMEDESCRIPTOR_H

@@ -25,13 +25,16 @@
 #ifndef BROWSERITEMACTION_H
 #define BROWSERITEMACTION_H
 
-#include "typeutils.h"
 #include "types/param.h"
+#include "typeutils.h"
 
 class BrowserItemAction
 {
 public:
-    explicit BrowserItemAction(const ThingId &thingId = ThingId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
+    explicit BrowserItemAction(const ThingId &thingId = ThingId(),
+                               const QString &itemId = QString(),
+                               const ActionTypeId &actionTypeId = ActionTypeId(),
+                               const ParamList &params = ParamList());
     BrowserItemAction(const BrowserItemAction &other);
 
     bool isValid() const;
@@ -45,6 +48,7 @@ public:
     Param param(const ParamTypeId &paramTypeId) const;
 
     void operator=(const BrowserItemAction &other);
+
 private:
     ThingId m_thingId;
     QString m_itemId;

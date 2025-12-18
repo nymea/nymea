@@ -26,25 +26,25 @@
 #include "integrations/thingmanager.h"
 
 #include "scriptaction.h"
-#include "scriptevent.h"
-#include "scriptstate.h"
 #include "scriptalarm.h"
+#include "scriptevent.h"
 #include "scriptinterfaceaction.h"
-#include "scriptinterfacestate.h"
 #include "scriptinterfaceevent.h"
+#include "scriptinterfacestate.h"
+#include "scriptstate.h"
 #include "scriptthing.h"
 #include "scriptthings.h"
 #include "types/action.h"
 
-#include "nymeasettings.h"
 #include "logging/logengine.h"
+#include "nymeasettings.h"
 
 #include <QDir>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QQmlComponent>
-#include <QJsonParseError>
 #include <QJsonDocument>
+#include <QJsonParseError>
+#include <QQmlApplicationEngine>
+#include <QQmlComponent>
+#include <QQmlContext>
 #include <QRegularExpression>
 
 #include "loggingcategories.h"
@@ -54,13 +54,14 @@ NYMEA_LOGGING_CATEGORY(dcScriptEngine, "ScriptEngine")
 namespace nymeaserver {
 namespace scriptengine {
 
-QList<ScriptEngine*> ScriptEngine::s_engines;
+QList<ScriptEngine *> ScriptEngine::s_engines;
 QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
 QMutex ScriptEngine::s_loggerMutex;
 
-ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QObject *parent) : QObject(parent),
-    m_thingManager(thingManager)
+ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QObject *parent)
+    : QObject(parent)
+    , m_thingManager(thingManager)
 {
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "ThingEvent");
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "ThingAction");
@@ -73,7 +74,6 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QOb
     qmlRegisterType<ScriptThings>("nymea", 1, 0, "Things");
     qmlRegisterUncreatableType<Action>("nymea", 1, 0, "Action", "Cannot create Actions. Use ThingAction instead.");
 
-
     m_logger = logEngine->registerLogSource("scripts", {"id", "event"});
 
     m_engine = new QQmlEngine(this);
@@ -83,17 +83,18 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QOb
     // to stdout as they'd end up on the "default" logging category.
     // We collect them ourselves through the warnings() signal and print them to the dcScriptEngine category.
     m_engine->setOutputWarningsToStandardError(false);
-    connect(m_engine, &QQmlEngine::warnings, this, [this](const QList<QQmlError> &warnings){
+    connect(m_engine, &QQmlEngine::warnings, this, [this](const QList<QQmlError> &warnings) {
         foreach (const QQmlError &warning, warnings) {
             QMessageLogContext ctx(warning.url().toString().toUtf8(), warning.line(), "", "ScriptEngine");
             // Send to script logs
             onScriptMessage(
-#if QT_VERSION >= QT_VERSION_CHECK(5,9,0)
-                        warning.messageType(),
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+                warning.messageType(),
 #else
                         QtMsgType::QtWarningMsg,
 #endif
-                        ctx, warning.description());
+                ctx,
+                warning.description());
             // and to logging system
             qCWarning(dcScriptEngine()) << warning.toString();
         }
@@ -110,14 +111,12 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QOb
     }
     s_engines.append(this);
 
-
     QDir dir;
     if (!dir.exists(NymeaSettings::storagePath() + "/scripts/")) {
         dir.mkpath(NymeaSettings::storagePath() + "/scripts/");
     }
 
     loadScripts();
-
 }
 
 ScriptEngine::~ScriptEngine()
@@ -340,7 +339,7 @@ void ScriptEngine::loadScripts()
         qCDebug(dcScriptEngine()) << "Have script:" << entry;
         QFileInfo jsonFileInfo(NymeaSettings::storagePath() + "/scripts/" + entry);
         QString jsonFileName = jsonFileInfo.absoluteFilePath();
-        QString scriptFileName = jsonFileInfo.absolutePath() + "/" + jsonFileInfo.baseName() +  ".qml";
+        QString scriptFileName = jsonFileInfo.absolutePath() + "/" + jsonFileInfo.baseName() + ".qml";
         if (!QFile::exists(scriptFileName)) {
             qCWarning(dcScriptEngine()) << "Missing script" << scriptFileName;
             continue;
@@ -400,7 +399,6 @@ bool ScriptEngine::loadScript(Script *script)
     QString name = jsonDoc.toVariant().toMap().value("name").toString();
 
     script->errors.clear();
-
 
     script->component = new QQmlComponent(m_engine, QUrl::fromLocalFile(fileName), this);
     script->context = new QQmlContext(m_engine, this);
@@ -496,5 +494,5 @@ void ScriptEngine::logCategoryFilter(QLoggingCategory *category)
     }
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

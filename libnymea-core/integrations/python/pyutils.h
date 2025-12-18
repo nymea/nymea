@@ -28,9 +28,9 @@
 #include <Python.h>
 #include <datetime.h>
 
+#include <QDateTime>
 #include <QLoggingCategory>
 #include <QVariant>
-#include <QDateTime>
 
 Q_DECLARE_LOGGING_CATEGORY(dcPythonIntegrations)
 
@@ -123,6 +123,5 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
     qCWarning(dcPythonIntegrations()) << QString("Unhandled data type in converting PyObject to QVariant: %1").arg(pyObject->ob_type->tp_name).toUtf8();
     return QVariant();
 }
-
 
 #endif // PYUTILS_H

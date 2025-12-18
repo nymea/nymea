@@ -75,26 +75,26 @@
 */
 
 #include "webserver.h"
-#include "loggingcategories.h"
-#include "nymeasettings.h"
-#include "nymeacore.h"
+#include "debugserverhandler.h"
 #include "httpreply.h"
 #include "httprequest.h"
-#include "debugserverhandler.h"
+#include "loggingcategories.h"
+#include "nymeacore.h"
+#include "nymeasettings.h"
 #include "version.h"
 
-#include <QRegularExpression>
-#include <QNetworkInterface>
-#include <QXmlStreamWriter>
 #include <QCoreApplication>
+#include <QFile>
 #include <QJsonDocument>
+#include <QNetworkInterface>
+#include <QRegularExpression>
+#include <QSslSocket>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QSslSocket>
+#include <QUrl>
 #include <QUrlQuery>
 #include <QUuid>
-#include <QUrl>
-#include <QFile>
+#include <QXmlStreamWriter>
 
 namespace nymeaserver {
 
@@ -102,15 +102,16 @@ namespace nymeaserver {
  *
  *  \sa ServerManager, WebServerConfiguration
  */
-WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
-    QTcpServer(parent),
-    m_configuration(configuration),
-    m_sslConfiguration(sslConfiguration)
+WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent)
+    : QTcpServer(parent)
+    , m_configuration(configuration)
+    , m_sslConfiguration(sslConfiguration)
 {
     if (QCoreApplication::instance()->organizationName() == "nymea-test") {
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
     }
-    qCDebug(dcWebServer()) << "Starting WebServer. Interface:" << m_configuration.address << "Port:" << m_configuration.port << "SSL:" << m_configuration.sslEnabled << "AUTH:" << m_configuration.authenticationEnabled << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
+    qCDebug(dcWebServer()) << "Starting WebServer. Interface:" << m_configuration.address << "Port:" << m_configuration.port << "SSL:" << m_configuration.sslEnabled
+                           << "AUTH:" << m_configuration.authenticationEnabled << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -237,7 +238,9 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     foreach (WebServerClient *client, m_webServerClients) {
         if (client->address() == socket->peerAddress()) {
             if (client->connections().count() >= 50) {
-                qCWarning(dcWebServer()).noquote() << QString("Maximum connections for this client reached: rejecting connection from client %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+                qCWarning(dcWebServer()).noquote() << QString("Maximum connections for this client reached: rejecting connection from client %1:%2")
+                                                          .arg(socket->peerAddress().toString())
+                                                          .arg(socket->peerPort());
                 socket->close();
                 delete socket;
                 return;
@@ -335,7 +338,8 @@ void WebServer::readClient()
         return;
     }
 
-    qCDebug(dcWebServer()).noquote() << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << request.methodString() << request.url().path() << request.urlQuery().toString();
+    qCDebug(dcWebServer()).noquote() << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << request.methodString()
+                                     << request.url().path() << request.urlQuery().toString();
 
     // Reset timout
     foreach (WebServerClient *webserverClient, m_webServerClients) {
@@ -392,7 +396,8 @@ void WebServer::readClient()
             }
             return;
         } else {
-            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
+            qCWarning(dcWebServer())
+                << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -412,7 +417,6 @@ void WebServer::readClient()
         reply->deleteLater();
         return;
     }
-
 
     // Request for a file...
     if (request.method() == HttpRequest::Get) {
@@ -478,8 +482,8 @@ void WebServer::readClient()
 }
 
 void WebServer::onDisconnected()
-{    
-    QSslSocket* socket = static_cast<QSslSocket *>(sender());
+{
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
 
     // Remove connection from server client
     foreach (WebServerClient *client, m_webServerClients) {
@@ -506,7 +510,7 @@ void WebServer::onDisconnected()
 
 void WebServer::onEncrypted()
 {
-    QSslSocket* socket = static_cast<QSslSocket *>(sender());
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
     qCDebug(dcWebServer()).noquote() << QString("Encrypted connection %1:%2 successfully established.").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
     connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
@@ -521,7 +525,7 @@ void WebServer::onEncrypted()
 
 void WebServer::onError(QAbstractSocket::SocketError error)
 {
-    QSslSocket* socket = static_cast<QSslSocket *>(sender());
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
     switch (error) {
     case QAbstractSocket::RemoteHostClosedError:
         qCDebug(dcWebServer()).noquote() << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
@@ -534,7 +538,7 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 
 void WebServer::onAsyncReplyFinished()
 {
-    HttpReply *reply = qobject_cast<HttpReply*>(sender());
+    HttpReply *reply = qobject_cast<HttpReply *>(sender());
     qCDebug(dcWebServer()) << "Async reply finished";
 
     // check if the reply timeouted
@@ -594,7 +598,6 @@ WebServerConfiguration WebServer::configuration() const
     return m_configuration;
 }
 
-
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
     QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
@@ -611,10 +614,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("minor", "1");
     writer.writeEndElement(); // specVersion
 
-    QString presentationUrl = QString("%1://%2:%3")
-            .arg(m_configuration.sslEnabled ? "https" : "http")
-            .arg(address.toString())
-            .arg(m_configuration.port);
+    QString presentationUrl = QString("%1://%2:%3").arg(m_configuration.sslEnabled ? "https" : "http").arg(address.toString()).arg(m_configuration.port);
     writer.writeStartElement("device");
     writer.writeTextElement("presentationURL", presentationUrl);
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
@@ -732,7 +732,8 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
         if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || QHostAddress(config.address) == address) {
             writer.writeStartElement("service");
             writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter : counter));
-            writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter++ : counter++));
+            writer.writeTextElement("serviceId",
+                                    QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter++ : counter++));
             QString url = QString("%1%2:%3").arg(config.sslEnabled ? "nymeas://" : "nymea://").arg(address.toString()).arg(config.port);
             writer.writeTextElement("SCPDURL", url);
             writer.writeEndElement(); // service
@@ -765,11 +766,10 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 */
 
 /*! Constructs a \l{WebServerClient} with the given \a address and \a parent. */
-WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
-    QObject(parent),
-    m_address(address)
-{
-}
+WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent)
+    : QObject(parent)
+    , m_address(address)
+{}
 
 /*! Returns the address of this \l{WebServerClient}. */
 QHostAddress WebServerClient::address() const
@@ -823,11 +823,11 @@ void WebServerClient::resetTimout(QSslSocket *socket)
 
 void WebServerClient::onTimout()
 {
-    QTimer *timer =  static_cast<QTimer *>(sender());
+    QTimer *timer = static_cast<QTimer *>(sender());
     QSslSocket *socket = m_runningConnections.value(timer);
     qCDebug(dcWebServer()).noquote() << QString("Client connection timout %1:%2 -> closing connection").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     removeConnection(socket);
     socket->close();
 }
 
-}
+} // namespace nymeaserver

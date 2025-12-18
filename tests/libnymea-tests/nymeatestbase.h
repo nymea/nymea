@@ -25,11 +25,11 @@
 #ifndef NYMEATESTBASE_H
 #define NYMEATESTBASE_H
 
+#include <QLoggingCategory>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QSignalSpy>
 #include <QtTest>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QLoggingCategory>
 
 #include <typeutils.h>
 
@@ -68,29 +68,29 @@ protected:
     {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
         QVERIFY2(response.toMap().value("status").toString() == QString("success"),
-                 QString("\nExpected status: \"success\"\nGot: %2\nFull message: %3")
-                     .arg(response.toMap().value("status").toString())
-                     .arg(jsonDoc.toJson().data())
-                     .toLatin1().data());
+                 QString("\nExpected status: \"success\"\nGot: %2\nFull message: %3").arg(response.toMap().value("status").toString()).arg(jsonDoc.toJson().data()).toLatin1().data());
         QVERIFY2(response.toMap().value("params").toMap().value(fieldName).toString() == error,
                  QString("\nExpected: %1\nGot: %2\nFull message: %3\n")
                      .arg(error)
                      .arg(response.toMap().value("params").toMap().value(fieldName).toString())
                      .arg(jsonDoc.toJson().data())
-                     .toLatin1().data());
+                     .toLatin1()
+                     .data());
     }
 
-    template<typename T> QString enumValueName(T value)
+    template<typename T>
+    QString enumValueName(T value)
     {
         QMetaEnum metaEnum = QMetaEnum::fromType<T>();
         return metaEnum.valueToKey(value);
     }
 
-    template<typename T> T enumNameToValue(const QString &name) {
+    template<typename T>
+    T enumNameToValue(const QString &name)
+    {
         QMetaEnum metaEnum = QMetaEnum::fromType<T>();
         return static_cast<T>(metaEnum.keyToValue(name.toUtf8()));
     }
-
 
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {
@@ -100,7 +100,7 @@ protected:
         foreach (const QVariant &requestParam, requestList) {
             bool found = false;
             foreach (const QVariant &responseParam, responseList) {
-                if (requestParam.toMap().value("paramTypeId").toUuid() == responseParam.toMap().value("paramTypeId").toUuid()){
+                if (requestParam.toMap().value("paramTypeId").toUuid() == responseParam.toMap().value("paramTypeId").toUuid()) {
                     QCOMPARE(requestParam.toMap().value("value"), responseParam.toMap().value("value"));
                     found = true;
                     break;
@@ -112,7 +112,8 @@ protected:
     }
 
     // just for debugging
-    inline void printJson(const QVariant &response) {
+    inline void printJson(const QVariant &response)
+    {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
         qCDebug(dcTests()) << jsonDoc.toJson();
     }
@@ -140,9 +141,8 @@ protected:
     ThingId m_mockThingId;
     ThingId m_mockThingAutoId;
     QByteArray m_apiToken;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NYMEATESTBASE_H

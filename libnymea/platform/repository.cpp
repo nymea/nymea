@@ -24,18 +24,13 @@
 
 #include "repository.h"
 
-Repository::Repository(const QString &id, const QString &displayName, bool enabled):
-    m_id(id),
-    m_displayName(displayName),
-    m_enabled(enabled)
-{
+Repository::Repository(const QString &id, const QString &displayName, bool enabled)
+    : m_id(id)
+    , m_displayName(displayName)
+    , m_enabled(enabled)
+{}
 
-}
-
-Repository::Repository()
-{
-
-}
+Repository::Repository() {}
 
 QString Repository::id() const
 {
@@ -57,15 +52,11 @@ void Repository::setEnabled(bool enabled)
     m_enabled = enabled;
 }
 
-Repositories::Repositories()
-{
+Repositories::Repositories() {}
 
-}
-
-Repositories::Repositories(const QList<Repository> &other): QList<Repository>(other)
-{
-
-}
+Repositories::Repositories(const QList<Repository> &other)
+    : QList<Repository>(other)
+{}
 
 QVariant Repositories::get(int index) const
 {

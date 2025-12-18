@@ -38,13 +38,7 @@ class ZigbeeManager : public QObject
 {
     Q_OBJECT
 public:
-    enum ZigbeeNetworkState {
-        ZigbeeNetworkStateOffline,
-        ZigbeeNetworkStateStarting,
-        ZigbeeNetworkStateUpdating,
-        ZigbeeNetworkStateOnline,
-        ZigbeeNetworkStateError
-    };
+    enum ZigbeeNetworkState { ZigbeeNetworkStateOffline, ZigbeeNetworkStateStarting, ZigbeeNetworkStateUpdating, ZigbeeNetworkStateOnline, ZigbeeNetworkStateError };
     Q_ENUM(ZigbeeNetworkState)
 
     enum ZigbeeError {
@@ -65,19 +59,10 @@ public:
     Q_ENUM(ZigbeeError)
 
     // Node information
-    enum ZigbeeNodeType {
-        ZigbeeNodeTypeCoordinator,
-        ZigbeeNodeTypeRouter,
-        ZigbeeNodeTypeEndDevice
-    };
+    enum ZigbeeNodeType { ZigbeeNodeTypeCoordinator, ZigbeeNodeTypeRouter, ZigbeeNodeTypeEndDevice };
     Q_ENUM(ZigbeeNodeType)
 
-    enum ZigbeeNodeState {
-        ZigbeeNodeStateUninitialized,
-        ZigbeeNodeStateInitializing,
-        ZigbeeNodeStateInitialized,
-        ZigbeeNodeStateHandled
-    };
+    enum ZigbeeNodeState { ZigbeeNodeStateUninitialized, ZigbeeNodeStateInitializing, ZigbeeNodeStateInitialized, ZigbeeNodeStateHandled };
     Q_ENUM(ZigbeeNodeState)
 
     explicit ZigbeeManager(QObject *parent = nullptr);
@@ -88,12 +73,20 @@ public:
     ZigbeeAdapters availableAdapters() const;
     QHash<QUuid, ZigbeeNetwork *> zigbeeNetworks() const;
 
-    QPair<ZigbeeError, QUuid> createZigbeeNetwork(const QString &serialPort, uint baudRate, ZigbeeAdapter::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
+    QPair<ZigbeeError, QUuid> createZigbeeNetwork(const QString &serialPort,
+                                                  uint baudRate,
+                                                  ZigbeeAdapter::ZigbeeBackendType backendType,
+                                                  ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
     ZigbeeError removeZigbeeNetwork(const QUuid &networkUuid);
     ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, uint duration = 120);
     ZigbeeError factoryResetNetwork(const QUuid &networkUuid);
     ZigbeeError refreshNeighborTables(const QUuid &networkUuid);
-    ZigbeeReply *createBinding(const QUuid &networkUuid, const ZigbeeAddress &sourceAddress, quint8 sourceEndpointId, quint16 clusterId, const ZigbeeAddress &destinationAddress, quint8 destinationEndpointId);
+    ZigbeeReply *createBinding(const QUuid &networkUuid,
+                               const ZigbeeAddress &sourceAddress,
+                               quint8 sourceEndpointId,
+                               quint16 clusterId,
+                               const ZigbeeAddress &destinationAddress,
+                               quint8 destinationEndpointId);
 
 private:
     ZigbeeAdapters m_adapters;
@@ -107,7 +100,10 @@ private:
     void loadZigbeeNetworks();
     void checkPlatformConfiguration();
     bool networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter);
-    ZigbeeNetwork *createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
+    ZigbeeNetwork *createPlatformNetwork(const QString &serialPort,
+                                         uint baudRate,
+                                         Zigbee::ZigbeeBackendType backendType,
+                                         ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
 
     ZigbeeNetwork *buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType);
     void addNetwork(ZigbeeNetwork *network);
@@ -132,6 +128,6 @@ signals:
     void nodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 };
 
-}
+} // namespace nymeaserver
 
 #endif // ZIGBEEMANAGER_H

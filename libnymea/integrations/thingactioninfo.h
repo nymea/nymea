@@ -28,8 +28,8 @@
 #include <QObject>
 
 #include "thing.h"
-#include "typeutils.h"
 #include "types/action.h"
+#include "typeutils.h"
 
 class ThingManager;
 
@@ -39,7 +39,7 @@ class ThingActionInfo : public QObject
 public:
     explicit ThingActionInfo(Thing *thing, const Action &action, ThingManager *parent, quint32 timeout = 0);
 
-    Thing* thing() const;
+    Thing *thing() const;
     Action action() const;
 
     bool isFinished() const;

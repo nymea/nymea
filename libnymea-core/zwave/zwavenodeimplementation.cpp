@@ -23,22 +23,19 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zwavenodeimplementation.h"
-#include <QUuid>
 #include <QDebug>
+#include <QUuid>
 
 #include "zwavemanager.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
-nymeaserver::ZWaveNodeImplementation::ZWaveNodeImplementation(ZWaveManager *manager, const QUuid &networkUuid, quint8 nodeId, QObject *parent):
-    ZWaveNode{parent},
-    m_manager(manager),
-    m_networkUuid(networkUuid),
-    m_nodeId(nodeId)
-{
-
-}
+nymeaserver::ZWaveNodeImplementation::ZWaveNodeImplementation(ZWaveManager *manager, const QUuid &networkUuid, quint8 nodeId, QObject *parent)
+    : ZWaveNode{parent}
+    , m_manager(manager)
+    , m_networkUuid(networkUuid)
+    , m_nodeId(nodeId)
+{}
 
 QUuid ZWaveNodeImplementation::networkUuid() const
 {
@@ -373,4 +370,4 @@ void ZWaveNodeImplementation::setSecurityMode(quint8 securityMode)
     }
 }
 
-}
+} // namespace nymeaserver

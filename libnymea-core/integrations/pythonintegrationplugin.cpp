@@ -24,29 +24,29 @@
 
 #include <Python.h>
 
-#include "pythonintegrationplugin.h"
-#include "python/pynymeamodule.h"
-#include "python/pystdouthandler.h"
-#include "python/pypluginstorage.h"
 #include "python/pyapikeystorage.h"
+#include "python/pynymeamodule.h"
+#include "python/pypluginstorage.h"
+#include "python/pystdouthandler.h"
+#include "pythonintegrationplugin.h"
 
 #include "loggingcategories.h"
 
-#include <QFileInfo>
-#include <QMetaEnum>
-#include <QJsonDocument>
-#include <QtConcurrent/QtConcurrentRun>
 #include <QCoreApplication>
-#include <QMutex>
+#include <QFileInfo>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <QJsonDocument>
+#include <QMetaEnum>
+#include <QMutex>
+#include <QtConcurrent/QtConcurrentRun>
 
 NYMEA_LOGGING_CATEGORY(dcPythonIntegrations, "PythonIntegrations")
 
-PyThreadState* PythonIntegrationPlugin::s_mainThreadState = nullptr;
-QHash<PythonIntegrationPlugin*, PyObject*> PythonIntegrationPlugin::s_plugins;
+PyThreadState *PythonIntegrationPlugin::s_mainThreadState = nullptr;
+QHash<PythonIntegrationPlugin *, PyObject *> PythonIntegrationPlugin::s_plugins;
 
-PyObject* PythonIntegrationPlugin::pyConfiguration(PyObject* self, PyObject* /*args*/)
+PyObject *PythonIntegrationPlugin::pyConfiguration(PyObject *self, PyObject * /*args*/)
 {
     PythonIntegrationPlugin *plugin = s_plugins.key(self);
     if (!plugin) {
@@ -106,7 +106,7 @@ PyObject *PythonIntegrationPlugin::pySetConfigValue(PyObject *self, PyObject *ar
     Py_RETURN_NONE;
 }
 
-PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/)
+PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject * /*args*/)
 {
     PythonIntegrationPlugin *plugin = s_plugins.key(self);
     if (!plugin) {
@@ -115,12 +115,12 @@ PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/
     }
 
     plugin->m_mutex.lock();
-    PyObject* result = PyTuple_New(plugin->m_things.count());
+    PyObject *result = PyTuple_New(plugin->m_things.count());
     for (int i = 0; i < plugin->m_things.count(); i++) {
         Thing *thing = plugin->m_things.keys().at(i);
         PyThing *pyThing = plugin->m_things.value(thing);
         Py_INCREF(pyThing);
-        PyTuple_SET_ITEM(result, i, (PyObject*)pyThing);
+        PyTuple_SET_ITEM(result, i, (PyObject *) pyThing);
     }
     plugin->m_mutex.unlock();
     return result;
@@ -155,7 +155,7 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
             Py_DECREF(next);
             continue;
         }
-        PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)next;
+        PyThingDescriptor *pyDescriptor = (PyThingDescriptor *) next;
 
         ThingClassId thingClassId;
         if (pyDescriptor->pyThingClassId) {
@@ -206,12 +206,12 @@ PyObject *PythonIntegrationPlugin::pyAutoThingDisappeared(PyObject *self, PyObje
     Py_RETURN_NONE;
 }
 
-PyObject *PythonIntegrationPlugin::pyPluginStorage(PyObject *self, PyObject */*args*/)
+PyObject *PythonIntegrationPlugin::pyPluginStorage(PyObject *self, PyObject * /*args*/)
 {
     // Note: Passing the pluginsStorage() pointer directly into python. Implies that it must not be
     // accessed in the main thread without obtaining the GIL
-    PyObject *pluginStorage = PyObject_CallObject((PyObject*)&PyPluginStorageType, nullptr);
-    PyPluginStorage_setPluginStorage((PyPluginStorage*)pluginStorage, s_plugins.key(self)->pluginStorage());
+    PyObject *pluginStorage = PyObject_CallObject((PyObject *) &PyPluginStorageType, nullptr);
+    PyPluginStorage_setPluginStorage((PyPluginStorage *) pluginStorage, s_plugins.key(self)->pluginStorage());
     return pluginStorage;
 }
 
@@ -219,13 +219,12 @@ PyObject *PythonIntegrationPlugin::pyApiKeyStorage(PyObject *self, PyObject *arg
 {
     // Note: Passing the apiKeyStorage() pointer directly into python. Implies that it must not be
     // accessed in the main thread without obtaining the GIL
-    PyObject *pyApiKeyStorage = PyObject_CallObject((PyObject*)&PyApiKeyStorageType, args);
-    PyApiKeyStorage_setApiKeyStorage((PyApiKeyStorage*)pyApiKeyStorage, s_plugins.key(self)->apiKeyStorage());
+    PyObject *pyApiKeyStorage = PyObject_CallObject((PyObject *) &PyApiKeyStorageType, args);
+    PyApiKeyStorage_setApiKeyStorage((PyApiKeyStorage *) pyApiKeyStorage, s_plugins.key(self)->apiKeyStorage());
     return pyApiKeyStorage;
 }
 
-static PyMethodDef plugin_methods[] =
-{
+static PyMethodDef plugin_methods[] = {
     {"configuration", PythonIntegrationPlugin::pyConfiguration, METH_VARARGS, "Get the plugin configuration."},
     {"configValue", PythonIntegrationPlugin::pyConfigValue, METH_VARARGS, "Get the plugin configuration value for a given config paramTypeId."},
     {"setConfigValue", PythonIntegrationPlugin::pySetConfigValue, METH_VARARGS, "Set the plugin configuration value for a given config paramTypeId."},
@@ -237,10 +236,9 @@ static PyMethodDef plugin_methods[] =
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
-PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationPlugin(parent)
-{
-
-}
+PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent)
+    : IntegrationPlugin(parent)
+{}
 
 PythonIntegrationPlugin::~PythonIntegrationPlugin()
 {
@@ -256,8 +254,7 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
             QFutureWatcher<void> *watcher = m_runningTasks.keys().first();
             QString function = m_runningTasks.value(watcher);
 
-            Py_BEGIN_ALLOW_THREADS
-            qCDebug(dcPythonIntegrations()) << "Waiting for" << metadata().pluginName() << "to finish" << function;
+            Py_BEGIN_ALLOW_THREADS qCDebug(dcPythonIntegrations()) << "Waiting for" << metadata().pluginName() << "to finish" << function;
             watcher->waitForFinished();
             Py_END_ALLOW_THREADS
         }
@@ -363,7 +360,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     // We intentionally strip site-packages and dist-packages because
     // that's too unpredictive in distribution. Instead all dependencies
     // should be installed into the plugins "modules" subdir.
-    PyObject* sysPath = PySys_GetObject("path");
+    PyObject *sysPath = PySys_GetObject("path");
     QStringList importPaths;
     for (int i = 0; i < PyList_Size(sysPath); i++) {
         QString path = QString::fromUtf8(PyUnicode_AsUTF8(PyList_GetItem(sysPath, i)));
@@ -374,7 +371,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     importPaths.append(fi.absolutePath());
     importPaths.append(QString("%1/modules/").arg(fi.absolutePath()));
 
-    PyObject* pluginPaths = PyList_New(importPaths.length());
+    PyObject *pluginPaths = PyList_New(importPaths.length());
     for (int i = 0; i < importPaths.length(); i++) {
         const QString &path = importPaths.at(i);
         PyObject *pyPath = PyUnicode_FromString(path.toUtf8());
@@ -401,7 +398,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     QString category = metadata.pluginName();
     category.replace(0, 1, category[0].toUpper());
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
-    PyObject *logger = PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args);
+    PyObject *logger = PyObject_CallObject((PyObject *) &PyNymeaLoggingHandlerType, args);
     Py_DECREF(args);
 
     int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", logger);
@@ -412,14 +409,13 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     // Override stdout and stderr
     args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtDebugMsg);
-    m_stdOutHandler = PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args);
+    m_stdOutHandler = PyObject_CallObject((PyObject *) &PyStdOutHandlerType, args);
     Py_DECREF(args);
     PySys_SetObject("stdout", m_stdOutHandler);
     args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtWarningMsg);
-    m_stdErrHandler = PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args);
+    m_stdErrHandler = PyObject_CallObject((PyObject *) &PyStdOutHandlerType, args);
     PySys_SetObject("stderr", m_stdErrHandler);
     Py_DECREF(args);
-
 
     // Export metadata ids into module
     exportIds();
@@ -445,7 +441,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     PyEval_ReleaseThread(m_threadState);
 
     // Set up connections to be forwareded into the plugin
-    connect(this, &PythonIntegrationPlugin::configValueChanged, this, [this](const ParamTypeId &paramTypeId, const QVariant &value){
+    connect(this, &PythonIntegrationPlugin::configValueChanged, this, [this](const ParamTypeId &paramTypeId, const QVariant &value) {
         // Sync changed value to the thread-safe copy
         m_mutex.lock();
         m_pluginConfigCopy.setParamValue(paramTypeId, value);
@@ -489,38 +485,38 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
     PyEval_RestoreThread(m_threadState);
 
-    PyThingDiscoveryInfo *pyInfo = (PyThingDiscoveryInfo*)PyObject_CallObject((PyObject*)&PyThingDiscoveryInfoType, NULL);
+    PyThingDiscoveryInfo *pyInfo = (PyThingDiscoveryInfo *) PyObject_CallObject((PyObject *) &PyThingDiscoveryInfoType, NULL);
     PyThingDiscoveryInfo_setInfo(pyInfo, info);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
+    connect(info, &ThingDiscoveryInfo::destroyed, this, [=]() {
         PyEval_RestoreThread(m_threadState);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
         PyEval_ReleaseThread(m_threadState);
     });
 
-    callPluginFunction("discoverThings", reinterpret_cast<PyObject*>(pyInfo));
+    callPluginFunction("discoverThings", reinterpret_cast<PyObject *>(pyInfo));
 }
 
 void PythonIntegrationPlugin::startPairing(ThingPairingInfo *info)
 {
     PyEval_RestoreThread(m_threadState);
 
-    PyThingPairingInfo *pyInfo = (PyThingPairingInfo*)PyObject_CallObject((PyObject*)&PyThingPairingInfoType, nullptr);
+    PyThingPairingInfo *pyInfo = (PyThingPairingInfo *) PyObject_CallObject((PyObject *) &PyThingPairingInfoType, nullptr);
     PyThingPairingInfo_setInfo(pyInfo, info);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info, &ThingPairingInfo::destroyed, this, [=](){
+    connect(info, &ThingPairingInfo::destroyed, this, [=]() {
         PyEval_RestoreThread(m_threadState);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
         PyEval_ReleaseThread(m_threadState);
     });
 
-    bool result = callPluginFunction("startPairing", reinterpret_cast<PyObject*>(pyInfo));
+    bool result = callPluginFunction("startPairing", reinterpret_cast<PyObject *>(pyInfo));
     if (!result) {
         info->finish(Thing::ThingErrorHardwareFailure, "Plugin error: " + pluginName());
     }
@@ -530,12 +526,12 @@ void PythonIntegrationPlugin::confirmPairing(ThingPairingInfo *info, const QStri
 {
     PyEval_RestoreThread(m_threadState);
 
-    PyThingPairingInfo *pyInfo = (PyThingPairingInfo*)PyObject_CallObject((PyObject*)&PyThingPairingInfoType, nullptr);
+    PyThingPairingInfo *pyInfo = (PyThingPairingInfo *) PyObject_CallObject((PyObject *) &PyThingPairingInfoType, nullptr);
     PyThingPairingInfo_setInfo(pyInfo, info);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info, &ThingPairingInfo::destroyed, this, [=](){
+    connect(info, &ThingPairingInfo::destroyed, this, [=]() {
         PyEval_RestoreThread(m_threadState);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
@@ -545,7 +541,7 @@ void PythonIntegrationPlugin::confirmPairing(ThingPairingInfo *info, const QStri
     // PyUnicode_FromString crashes on empty strings. Creating a new empty python string instead.
     PyObject *pyUsername = username.isEmpty() ? PyUnicode_New(1, 127) : PyUnicode_FromString(username.toUtf8().data());
     PyObject *pySecret = secret.isEmpty() ? PyUnicode_New(1, 127) : PyUnicode_FromString(secret.toUtf8().data());
-    bool result = callPluginFunction("confirmPairing", reinterpret_cast<PyObject*>(pyInfo), pyUsername, pySecret);
+    bool result = callPluginFunction("confirmPairing", reinterpret_cast<PyObject *>(pyInfo), pyUsername, pySecret);
     if (!result) {
         info->finish(Thing::ThingErrorHardwareFailure, "Plugin error: " + pluginName());
     }
@@ -564,16 +560,16 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     if (m_things.contains(thing)) {
         pyThing = m_things.value(thing);
     } else {
-        pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
+        pyThing = (PyThing *) PyObject_CallObject((PyObject *) &PyThingType, NULL);
         PyThing_setThing(pyThing, thing, m_threadState);
         m_things.insert(thing, pyThing);
     }
 
     PyObject *args = PyTuple_New(1);
-    PyTuple_SetItem(args, 0, (PyObject*)pyThing);
+    PyTuple_SetItem(args, 0, (PyObject *) pyThing);
     Py_INCREF(pyThing);
 
-    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, args);
+    PyThingSetupInfo *pyInfo = (PyThingSetupInfo *) PyObject_CallObject((PyObject *) &PyThingSetupInfoType, args);
     Py_DECREF(args);
 
     pyInfo->info = info;
@@ -583,7 +579,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info->thing(), &Thing::destroyed, this, [=](){
+    connect(info->thing(), &Thing::destroyed, this, [=]() {
         PyEval_RestoreThread(m_threadState);
         m_things.remove(thing); // In case thingRemoved is never called (e.g. failed setup) it needs to be removed too
         pyThing->thing = nullptr;
@@ -592,15 +588,14 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
         qCDebug(dcPythonIntegrations()) << "Shrunk thread pool for plugin" << metadata().pluginName() << "to" << m_threadPool->maxThreadCount();
         PyEval_ReleaseThread(m_threadState);
     });
-    connect(info, &ThingSetupInfo::destroyed, this, [=](){
+    connect(info, &ThingSetupInfo::destroyed, this, [=]() {
         PyEval_RestoreThread(m_threadState);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
         PyEval_ReleaseThread(m_threadState);
     });
 
-
-    bool result = callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
+    bool result = callPluginFunction("setupThing", reinterpret_cast<PyObject *>(pyInfo));
     if (!result) {
         // The python code did not even start, so let's finish (fail) the setup right away
         info->finish(Thing::ThingErrorSetupFailed);
@@ -609,8 +604,8 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
 void PythonIntegrationPlugin::postSetupThing(Thing *thing)
 {
-    PyThing* pyThing = m_things.value(thing);
-    callPluginFunction("postSetupThing", reinterpret_cast<PyObject*>(pyThing));
+    PyThing *pyThing = m_things.value(thing);
+    callPluginFunction("postSetupThing", reinterpret_cast<PyObject *>(pyThing));
 }
 
 void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
@@ -619,12 +614,12 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 
     PyEval_RestoreThread(m_threadState);
 
-    PyThingActionInfo *pyInfo = (PyThingActionInfo*)PyObject_CallObject((PyObject*)&PyThingActionInfoType, NULL);
+    PyThingActionInfo *pyInfo = (PyThingActionInfo *) PyObject_CallObject((PyObject *) &PyThingActionInfoType, NULL);
     PyThingActionInfo_setInfo(pyInfo, info, pyThing);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info, &ThingActionInfo::destroyed, this, [=](){
+    connect(info, &ThingActionInfo::destroyed, this, [=]() {
         qCDebug(dcPythonIntegrations()) << "ThingActionInfo destroyed";
         PyEval_RestoreThread(m_threadState);
         pyInfo->info = nullptr;
@@ -632,7 +627,7 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
         PyEval_ReleaseThread(m_threadState);
     });
 
-    bool success = callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
+    bool success = callPluginFunction("executeAction", reinterpret_cast<PyObject *>(pyInfo));
     if (!success) {
         info->finish(Thing::ThingErrorUnsupportedFeature);
     }
@@ -641,7 +636,7 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
     PyThing *pyThing = m_things.take(thing); // removing thing from myThings() before the thingRemoved call
-    callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
+    callPluginFunction("thingRemoved", reinterpret_cast<PyObject *>(pyThing));
 }
 
 void PythonIntegrationPlugin::browseThing(BrowseResult *result)
@@ -650,12 +645,12 @@ void PythonIntegrationPlugin::browseThing(BrowseResult *result)
 
     PyEval_RestoreThread(m_threadState);
 
-    PyBrowseResult *pyBrowseResult = (PyBrowseResult*)PyObject_CallObject((PyObject*)&PyBrowseResultType, NULL);
+    PyBrowseResult *pyBrowseResult = (PyBrowseResult *) PyObject_CallObject((PyObject *) &PyBrowseResultType, NULL);
     PyBrowseResult_setBrowseResult(pyBrowseResult, result, pyThing);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(result, &BrowseResult::destroyed, this, [=](){
+    connect(result, &BrowseResult::destroyed, this, [=]() {
         qCDebug(dcPythonIntegrations()) << "BrowseResult destroyed";
         PyEval_RestoreThread(m_threadState);
         pyBrowseResult->browseResult = nullptr;
@@ -663,7 +658,7 @@ void PythonIntegrationPlugin::browseThing(BrowseResult *result)
         PyEval_ReleaseThread(m_threadState);
     });
 
-    bool success = callPluginFunction("browseThing", reinterpret_cast<PyObject*>(pyBrowseResult));
+    bool success = callPluginFunction("browseThing", reinterpret_cast<PyObject *>(pyBrowseResult));
     if (!success) {
         result->finish(Thing::ThingErrorUnsupportedFeature);
     }
@@ -675,12 +670,12 @@ void PythonIntegrationPlugin::executeBrowserItem(BrowserActionInfo *info)
 
     PyEval_RestoreThread(m_threadState);
 
-    PyBrowserActionInfo *pyBrowserActionInfo = (PyBrowserActionInfo*)PyObject_CallObject((PyObject*)&PyBrowserActionInfoType, NULL);
+    PyBrowserActionInfo *pyBrowserActionInfo = (PyBrowserActionInfo *) PyObject_CallObject((PyObject *) &PyBrowserActionInfoType, NULL);
     PyBrowserActionInfo_setInfo(pyBrowserActionInfo, info, pyThing);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(info, &BrowserActionInfo::destroyed, this, [=](){
+    connect(info, &BrowserActionInfo::destroyed, this, [=]() {
         qCDebug(dcPythonIntegrations()) << "BrowserActionInfo destroyed";
         PyEval_RestoreThread(m_threadState);
         pyBrowserActionInfo->info = nullptr;
@@ -688,7 +683,7 @@ void PythonIntegrationPlugin::executeBrowserItem(BrowserActionInfo *info)
         PyEval_ReleaseThread(m_threadState);
     });
 
-    bool success = callPluginFunction("executeBrowserItem", reinterpret_cast<PyObject*>(pyBrowserActionInfo));
+    bool success = callPluginFunction("executeBrowserItem", reinterpret_cast<PyObject *>(pyBrowserActionInfo));
     if (!success) {
         info->finish(Thing::ThingErrorUnsupportedFeature);
     }
@@ -700,12 +695,12 @@ void PythonIntegrationPlugin::browserItem(BrowserItemResult *result)
 
     PyEval_RestoreThread(m_threadState);
 
-    PyBrowserItemResult *pyBrowserItemResult = (PyBrowserItemResult*)PyObject_CallObject((PyObject*)&PyBrowserItemResultType, NULL);
+    PyBrowserItemResult *pyBrowserItemResult = (PyBrowserItemResult *) PyObject_CallObject((PyObject *) &PyBrowserItemResultType, NULL);
     PyBrowserItemResult_setBrowserItemResult(pyBrowserItemResult, result, pyThing);
 
     PyEval_ReleaseThread(m_threadState);
 
-    connect(result, &BrowserItemResult::destroyed, this, [=](){
+    connect(result, &BrowserItemResult::destroyed, this, [=]() {
         qCDebug(dcPythonIntegrations()) << "BrowseItemResult destroyed";
         PyEval_RestoreThread(m_threadState);
         pyBrowserItemResult->browserItemResult = nullptr;
@@ -713,7 +708,7 @@ void PythonIntegrationPlugin::browserItem(BrowserItemResult *result)
         PyEval_ReleaseThread(m_threadState);
     });
 
-    bool success = callPluginFunction("browserItem", reinterpret_cast<PyObject*>(pyBrowserItemResult));
+    bool success = callPluginFunction("browserItem", reinterpret_cast<PyObject *>(pyBrowserItemResult));
     if (!success) {
         result->finish(Thing::ThingErrorUnsupportedFeature);
     }
@@ -759,7 +754,9 @@ void PythonIntegrationPlugin::exportThingClass(const ThingClass &thingClass)
 void PythonIntegrationPlugin::exportParamTypes(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName)
 {
     foreach (const ParamType &paramType, paramTypes) {
-        QString variableName = QString("%1ParamTypeId").arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
+        QString variableName = QString("%1ParamTypeId")
+                                   .arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length() - 1) + typeClass + paramType.name()[0].toUpper()
+                                        + paramType.name().right(paramType.name().length() - 1));
         qCDebug(dcThingManager()) << "  |- ParamType:" << variableName << paramType.id().toString();
         PyModule_AddStringConstant(m_pluginModule, variableName.toUtf8(), paramType.id().toString().toUtf8());
     }
@@ -810,7 +807,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 
     qCDebug(dcThingManager()) << "Calling python plugin function" << function << "on plugin" << pluginName();
     PyObject *pluginFunction = PyObject_GetAttrString(m_pluginModule, function.toUtf8());
-    if(!pluginFunction || !PyCallable_Check(pluginFunction)) {
+    if (!pluginFunction || !PyCallable_Check(pluginFunction)) {
         PyErr_Clear();
         Py_XDECREF(pluginFunction);
         qCDebug(dcThingManager()) << "Python plugin" << pluginName() << "does not implement" << function;
@@ -825,7 +822,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     QFutureWatcher<void> *watcher = new QFutureWatcher<void>(this);
 
     // Run the plugin function in the thread pool
-    QFuture<void> future = QtConcurrent::run(m_threadPool, [=](){
+    QFuture<void> future = QtConcurrent::run(m_threadPool, [=]() {
         qCDebug(dcPythonIntegrations()) << "+++ Thread for" << function << "in plugin" << metadata().pluginName();
 
         // Register this new thread in the interpreter
@@ -861,4 +858,3 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     PyEval_ReleaseThread(m_threadState);
     return true;
 }
-

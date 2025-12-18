@@ -31,7 +31,6 @@
 
 namespace nymeaserver {
 
-
 class ScriptsHandler : public JsonHandler
 {
     Q_OBJECT
@@ -41,11 +40,11 @@ public:
     QString name() const override;
 
 public slots:
-    JsonReply* GetScripts(const QVariantMap &params);
-    JsonReply* GetScriptContent(const QVariantMap &params);
-    JsonReply* AddScript(const QVariantMap &params);
-    JsonReply* EditScript(const QVariantMap &params);
-    JsonReply* RemoveScript(const QVariantMap &params);
+    JsonReply *GetScripts(const QVariantMap &params);
+    JsonReply *GetScriptContent(const QVariantMap &params);
+    JsonReply *AddScript(const QVariantMap &params);
+    JsonReply *EditScript(const QVariantMap &params);
+    JsonReply *RemoveScript(const QVariantMap &params);
 
 signals:
     void ScriptAdded(const QVariantMap &params);
@@ -58,6 +57,6 @@ private:
     scriptengine::ScriptEngine *m_engine = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // SCRIPTSHANDLER_H

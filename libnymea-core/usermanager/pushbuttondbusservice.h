@@ -25,9 +25,9 @@
 #ifndef PUSHBUTTONDBUSSERVICE_H
 #define PUSHBUTTONDBUSSERVICE_H
 
-#include <QObject>
-#include <QDBusObjectPath>
 #include <QDBusContext>
+#include <QDBusObjectPath>
+#include <QObject>
 
 #include "usermanager.h"
 
@@ -58,6 +58,6 @@ private:
     QStringList m_registeredAgents;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // PUSHBUTTONDBUSSERVICE_H

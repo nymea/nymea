@@ -28,8 +28,8 @@
 #include "libnymea.h"
 #include "typeutils.h"
 
-#include <QVariant>
 #include <QDebug>
+#include <QVariant>
 
 class LIBNYMEA_EXPORT State
 {
@@ -76,14 +76,16 @@ private:
 };
 Q_DECLARE_METATYPE(State)
 
-class States: public QList<State>
+class States : public QList<State>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
     States();
     States(const QList<State> &other);
-    States(std::initializer_list<State> args):QList(args) {}
+    States(std::initializer_list<State> args)
+        : QList(args)
+    {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId);

@@ -28,7 +28,7 @@
 
 using namespace nymeaserver;
 
-class TestMacAddress: public NymeaTestBase
+class TestMacAddress : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -47,7 +47,6 @@ private slots:
 
     void macAddressValidation_data();
     void macAddressValidation();
-
 };
 
 void TestMacAddress::initTestCase()

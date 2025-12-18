@@ -30,9 +30,9 @@
 
 namespace nymeaserver {
 
-LoggingHandler::LoggingHandler(LogEngine *logEngine, QObject *parent) :
-    JsonHandler(parent),
-    m_logEngine(logEngine)
+LoggingHandler::LoggingHandler(LogEngine *logEngine, QObject *parent)
+    : JsonHandler(parent)
+    , m_logEngine(logEngine)
 {
     // Enums
     registerEnum<Types::SampleRate>();
@@ -42,7 +42,9 @@ LoggingHandler::LoggingHandler(LogEngine *logEngine, QObject *parent) :
     registerObject<LogEntry, LogEntries>();
 
     // Methods
-    QString description; QVariantMap params; QVariantMap returns;
+    QString description;
+    QVariantMap params;
+    QVariantMap returns;
     description = "Get the LogEntries matching the given filter. \n"
                   "\"sources\": Builtin sources are: \"core\", \"rules\", \"scripts\", \"integrations\". May be extended by experience plugins.\n"
                   "\"columns\": Columns to be returned.\n"
@@ -73,9 +75,7 @@ LoggingHandler::LoggingHandler(LogEngine *logEngine, QObject *parent) :
     params.insert("logEntry", objectRef<LogEntry>());
     registerNotification("LogEntryAdded", description, params);
 
-    connect(m_logEngine, &LogEngine::logEntryAdded, this, [this](const LogEntry &logEntry){
-        emit LogEntryAdded({{"logEntry", packLogEntry(logEntry)}});
-    });
+    connect(m_logEngine, &LogEngine::logEntryAdded, this, [this](const LogEntry &logEntry) { emit LogEntryAdded({{"logEntry", packLogEntry(logEntry)}}); });
 }
 
 QString LoggingHandler::name() const
@@ -83,7 +83,7 @@ QString LoggingHandler::name() const
     return "Logging";
 }
 
-JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
+JsonReply *LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
     JsonReply *reply = createAsyncReply("GetLogEntries");
 
@@ -116,7 +116,7 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 
     QStringList sources = params.value("sources").toStringList();
     LogFetchJob *job = m_logEngine->fetchLogEntries(sources, columns, startTime, endTime, filter, sampleRate, sortOrder, offset, limit);
-    connect(job, &LogFetchJob::finished, reply, [reply](const LogEntries &entries){
+    connect(job, &LogFetchJob::finished, reply, [reply](const LogEntries &entries) {
         QVariantList entryMaps;
         foreach (const LogEntry &logEntry, entries) {
             QVariantMap logEntryMap;
@@ -129,14 +129,9 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
             logEntryMap.insert("values", values);
             entryMaps.append(logEntryMap);
         }
-        QVariantMap params {
-            {"count", entries.count()},
-            {"offset", 0},
-            {"logEntries", entryMaps}
-        };
+        QVariantMap params{{"count", entries.count()}, {"offset", 0}, {"logEntries", entryMaps}};
         reply->setData(params);
         reply->finished();
-
     });
     return reply;
 }
@@ -154,4 +149,4 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
     return logEntryMap;
 }
 
-}
+} // namespace nymeaserver

@@ -26,10 +26,9 @@
 
 #include "loggingcategories.h"
 
-PlatformSystemController::PlatformSystemController(QObject *parent) : QObject(parent)
-{
-
-}
+PlatformSystemController::PlatformSystemController(QObject *parent)
+    : QObject(parent)
+{}
 
 bool PlatformSystemController::powerManagementAvailable() const
 {

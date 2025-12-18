@@ -81,13 +81,9 @@
     \sa BluetoothDiscoveryReplyError
 */
 
-
-
 #include "bluetoothdiscoveryreply.h"
 
 /*! Constructs a new BluetoothDiscoveryReply with the given \a parent. */
-BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent) :
-    QObject(parent)
-{
-
-}
+BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent)
+    : QObject(parent)
+{}

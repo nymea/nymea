@@ -29,12 +29,12 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-BrowseResult::BrowseResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
-    QObject(parent),
-    m_thing(thing),
-    m_itemId(itemId),
-    m_locale(locale),
-    m_thingManager(thingManager)
+BrowseResult::BrowseResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout)
+    : QObject(parent)
+    , m_thing(thing)
+    , m_itemId(itemId)
+    , m_locale(locale)
+    , m_thingManager(thingManager)
 {
     connect(this, &BrowseResult::finished, this, &BrowseResult::deleteLater, Qt::QueuedConnection);
 

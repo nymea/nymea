@@ -24,24 +24,23 @@
 
 #include "zwavemanager.h"
 #include "hardware/zwave/zwavebackend.h"
-#include "zwavemanagerreply.h"
 #include "zwave/zwavenodeimplementation.h"
+#include "zwavemanagerreply.h"
 
 #include "nymeasettings.h"
 
-#include <QSerialPortInfo>
 #include <QCoreApplication>
 #include <QDir>
 #include <QPluginLoader>
-#include <QStringList>
 #include <QRegularExpression>
+#include <QSerialPortInfo>
+#include <QStringList>
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
-ZWaveManager::ZWaveManager(SerialPortMonitor *serialPortMonitor, QObject *parent):
-    QObject(parent),
-    m_serialPortMonitor(serialPortMonitor)
+ZWaveManager::ZWaveManager(SerialPortMonitor *serialPortMonitor, QObject *parent)
+    : QObject(parent)
+    , m_serialPortMonitor(serialPortMonitor)
 {
     qRegisterMetaType<ZWave::ZWaveError>();
     qRegisterMetaType<ZWaveValue::Genre>();
@@ -77,9 +76,7 @@ ZWaveManager::ZWaveManager(SerialPortMonitor *serialPortMonitor, QObject *parent
     connect(m_backend, &ZWaveBackend::valueRemoved, this, &ZWaveManager::onValueRemoved);
 }
 
-ZWaveManager::~ZWaveManager()
-{
-}
+ZWaveManager::~ZWaveManager() {}
 
 bool ZWaveManager::available() const
 {
@@ -168,9 +165,9 @@ bool ZWaveManager::loadNetwork(ZWaveNetwork *network)
     m_dbs.insert(network->networkUuid(), db);
 
     foreach (ZWaveNode *n, db->createNodes(this)) {
-        ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(n);
+        ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(n);
         node->setInitialized(true);
-        connect(node, &ZWaveNodeImplementation::nodeChanged, this, [this, node](){emit nodeChanged(node);});
+        connect(node, &ZWaveNodeImplementation::nodeChanged, this, [this, node]() { emit nodeChanged(node); });
         network->addNode(node);
     }
 
@@ -216,7 +213,7 @@ void ZWaveManager::onNetworkStarted(const QUuid &networkUuid)
     emit networkStateChanged(network);
 
     foreach (ZWaveNode *n, network->nodes()) {
-        ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(n);
+        ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(n);
         if (node->failed() != m_backend->isNodeFailed(networkUuid, node->nodeId())) {
             node->setFailed(m_backend->isNodeFailed(networkUuid, node->nodeId()));
             emit nodeChanged(node);
@@ -232,7 +229,8 @@ void ZWaveManager::onNetworkFailed(const QUuid &networkUuid)
         qCWarning(dcZWave()) << "Received a network failed signal for a network we don't know:" << networkUuid.toString();
         return;
     }
-    qCWarning(dcZWave()).nospace() << "Failed to initialize adapter for network " << network->networkUuid().toString() << " at " << network->serialPort() << ". Retrying in 5 seconds...";
+    qCWarning(dcZWave()).nospace() << "Failed to initialize adapter for network " << network->networkUuid().toString() << " at " << network->serialPort()
+                                   << ". Retrying in 5 seconds...";
     network->setNetworkState(ZWaveNetwork::ZWaveNetworkStateError);
     emit networkStateChanged(network);
 
@@ -276,7 +274,7 @@ void ZWaveManager::onNodeAdded(const QUuid &networkUuid, quint8 nodeId)
         qCWarning(dcZWave()) << "Received a node added signal for a network we don't know:" << networkUuid.toString();
         return;
     }
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (node) {
         qCDebug(dcZWave()) << "Received a new node signal for a node we already know:" << nodeId;
         return;
@@ -285,11 +283,10 @@ void ZWaveManager::onNodeAdded(const QUuid &networkUuid, quint8 nodeId)
     qCInfo(dcZWave()) << "New node with ID" << nodeId << "joined the network" << network->networkUuid();
 
     node = new ZWaveNodeImplementation(this, network->networkUuid(), nodeId, this);
-    connect(node, &ZWaveNodeImplementation::nodeChanged, this, [this, node](){emit nodeChanged(node);});
+    connect(node, &ZWaveNodeImplementation::nodeChanged, this, [this, node]() { emit nodeChanged(node); });
     network->addNode(node);
 
     emit nodeAdded(node);
-
 }
 
 void ZWaveManager::onNodeInitialized(const QUuid &networkUuid, quint8 nodeId)
@@ -300,7 +297,7 @@ void ZWaveManager::onNodeInitialized(const QUuid &networkUuid, quint8 nodeId)
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node initialized signal for a node we don't know:" << nodeId;
         return;
@@ -308,7 +305,6 @@ void ZWaveManager::onNodeInitialized(const QUuid &networkUuid, quint8 nodeId)
     node->setReachable(true);
 
     m_dbs.value(network->networkUuid())->storeNode(node);
-
 
     if (!node->initialized()) {
         node->setInitialized(true);
@@ -327,7 +323,7 @@ void ZWaveManager::onNodeDataChanged(const QUuid &networkUuid, quint8 nodeId)
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node names changed signal for a node we don't know:" << nodeId;
         return;
@@ -369,7 +365,7 @@ void ZWaveManager::onNodeReachableStatus(const QUuid &networkUuid, quint8 nodeId
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node reachable status signal for a node we don't know:" << nodeId;
         return;
@@ -386,7 +382,7 @@ void ZWaveManager::onNodeFailedStatus(const QUuid &networkUuid, quint8 nodeId, b
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node reachable changed signal for a node we don't know:" << nodeId;
         return;
@@ -403,7 +399,7 @@ void ZWaveManager::onNodeSleepStatus(const QUuid &networkUuid, quint8 nodeId, bo
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node sleep signal for a node we don't know:" << nodeId;
         return;
@@ -420,7 +416,7 @@ void ZWaveManager::onNodeLinkQualityStatus(const QUuid &networkUuid, quint8 node
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a node link quality signal for a node we don't know:" << nodeId;
         return;
@@ -456,7 +452,7 @@ void ZWaveManager::onValueAdded(const QUuid &networkUuid, quint8 nodeId, const Z
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave) << "Received a value added signal for a node we don't know:" << nodeId;
         return;
@@ -475,7 +471,7 @@ void ZWaveManager::onValueChanged(const QUuid &networkUuid, quint8 nodeId, const
         return;
     }
 
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave) << "Received a value changed signal for a node we don't know:" << nodeId;
         return;
@@ -483,7 +479,7 @@ void ZWaveManager::onValueChanged(const QUuid &networkUuid, quint8 nodeId, const
 
     qCDebug(dcZWave) << "Value changed for node" << node->nodeId() << value;
     node->updateValue(value);
-//    node->setReachable(true);
+    //    node->setReachable(true);
     m_dbs.value(network->networkUuid())->storeValue(node, value.id());
 }
 
@@ -494,7 +490,7 @@ void ZWaveManager::onValueRemoved(const QUuid &networkUuid, quint8 nodeId, quint
         qCWarning(dcZWave()) << "Received a value removed signal for a network we don't know:" << networkUuid.toString();
         return;
     }
-    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation*>(network->node(nodeId));
+    ZWaveNodeImplementation *node = qobject_cast<ZWaveNodeImplementation *>(network->node(nodeId));
     if (!node) {
         qCWarning(dcZWave()) << "Received a value removed signal for a node we don't know:" << nodeId;
         return;
@@ -502,7 +498,6 @@ void ZWaveManager::onValueRemoved(const QUuid &networkUuid, quint8 nodeId, quint
     node->removeValue(valueId);
     m_dbs.value(network->networkUuid())->removeValue(node, valueId);
 }
-
 
 ZWaveNetworks ZWaveManager::networks() const
 {
@@ -592,7 +587,6 @@ ZWave::ZWaveError ZWaveManager::factoryResetNetwork(const QUuid &networkUuid)
     return ZWave::ZWaveErrorNoError;
 }
 
-
 ZWaveReply *ZWaveManager::addNode(const QUuid &networkUuid)
 {
     ZWaveNetwork *network = m_networks.value(networkUuid);
@@ -607,7 +601,7 @@ ZWaveReply *ZWaveManager::addNode(const QUuid &networkUuid)
     return reply;
 }
 
-ZWaveReply* ZWaveManager::removeNode(const QUuid &networkUuid)
+ZWaveReply *ZWaveManager::removeNode(const QUuid &networkUuid)
 {
     ZWaveManagerReply *reply = new ZWaveManagerReply(this);
     ZWaveNetwork *network = m_networks.value(networkUuid);
@@ -620,7 +614,7 @@ ZWaveReply* ZWaveManager::removeNode(const QUuid &networkUuid)
     return reply;
 }
 
-ZWaveReply* ZWaveManager::removeFailedNode(const QUuid &networkUuid, quint8 nodeId)
+ZWaveReply *ZWaveManager::removeFailedNode(const QUuid &networkUuid, quint8 nodeId)
 {
     ZWaveManagerReply *reply = new ZWaveManagerReply(this);
     ZWaveNetwork *network = m_networks.value(networkUuid);
@@ -639,7 +633,7 @@ ZWaveReply* ZWaveManager::removeFailedNode(const QUuid &networkUuid, quint8 node
     return reply;
 }
 
-ZWaveReply* ZWaveManager::cancelPendingOperation(const QUuid &networkUuid)
+ZWaveReply *ZWaveManager::cancelPendingOperation(const QUuid &networkUuid)
 {
     ZWaveManagerReply *reply = new ZWaveManagerReply(this);
     ZWaveNetwork *network = m_networks.value(networkUuid);
@@ -663,7 +657,6 @@ void ZWaveManager::setValue(const QUuid &networkUuid, quint8 nodeId, const ZWave
 
     qCDebug(dcZWave) << "Setting value" << value.id() << "on node" << nodeId;
     m_backend->setValue(network->networkUuid(), nodeId, value);
-
 }
 
 bool ZWaveManager::loadBackend()
@@ -704,7 +697,7 @@ bool ZWaveManager::loadBackend()
                         qCWarning(dcZWave) << loader.errorString();
                         continue;
                     }
-                    m_backend = qobject_cast<ZWaveBackend*>(loader.instance());
+                    m_backend = qobject_cast<ZWaveBackend *>(loader.instance());
                     if (!m_backend) {
                         qCWarning(dcZWave) << "Could not get plugin instance of" << loader.fileName();
                         loader.unload();
@@ -720,4 +713,4 @@ bool ZWaveManager::loadBackend()
     return false;
 }
 
-}
+} // namespace nymeaserver

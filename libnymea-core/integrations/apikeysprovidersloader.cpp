@@ -28,10 +28,9 @@
 #include <QDir>
 #include <QPluginLoader>
 
-ApiKeysProvidersLoader::ApiKeysProvidersLoader(QObject *parent):
-    QObject(parent)
+ApiKeysProvidersLoader::ApiKeysProvidersLoader(QObject *parent)
+    : QObject(parent)
 {
-
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
         qCDebug(dcApiKeys()) << "Loading API keys provider plugins from:" << dir.absolutePath();
@@ -43,7 +42,7 @@ ApiKeysProvidersLoader::ApiKeysProvidersLoader(QObject *parent):
                 }
             } else if (fi.isDir()) {
                 if (QFileInfo::exists(path + "/" + entry + "/libnymea_apikeysproviderplugin" + entry + ".so")) {
-                    loadPlugin(path + "/" +  entry + "/libnymea_apikeysproviderplugin" + entry + ".so");
+                    loadPlugin(path + "/" + entry + "/libnymea_apikeysproviderplugin" + entry + ".so");
                 }
             }
         }
@@ -105,7 +104,7 @@ void ApiKeysProvidersLoader::loadPlugin(const QString &file)
         qCWarning(dcApiKeys()) << loader.errorString();
         return;
     }
-    ApiKeysProvider *provider = qobject_cast<ApiKeysProvider*>(loader.instance());
+    ApiKeysProvider *provider = qobject_cast<ApiKeysProvider *>(loader.instance());
     if (!provider) {
         qCWarning(dcApiKeys()) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
@@ -114,5 +113,4 @@ void ApiKeysProvidersLoader::loadPlugin(const QString &file)
     qCDebug(dcApiKeys()) << "Loaded API keys provider plugin:" << loader.fileName();
     provider->setParent(this);
     m_providers.append(provider);
-
 }

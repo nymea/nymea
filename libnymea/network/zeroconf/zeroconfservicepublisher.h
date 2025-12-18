@@ -25,8 +25,8 @@
 #ifndef ZEROCONFSERVICEPUBLISHER_H
 #define ZEROCONFSERVICEPUBLISHER_H
 
-#include <QObject>
 #include <QHostAddress>
+#include <QObject>
 
 class ZeroConfServicePublisher : public QObject
 {

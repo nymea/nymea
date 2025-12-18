@@ -109,8 +109,6 @@
 #include "upnpdiscovery.h"
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
-UpnpDiscovery::UpnpDiscovery(QObject *parent) :
-    HardwareResource("UPnP discovery", parent)
-{
-
-}
+UpnpDiscovery::UpnpDiscovery(QObject *parent)
+    : HardwareResource("UPnP discovery", parent)
+{}

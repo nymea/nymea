@@ -48,9 +48,8 @@ private:
     QString m_macAddress;
     QString m_manufacturer;
     qint64 m_startTimestamp;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MACADDRESSDATABASEREPLYIMPL_H

@@ -74,6 +74,6 @@ private:
     RuleEngine *m_ruleEngine = nullptr;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // RULESHANDLER_H

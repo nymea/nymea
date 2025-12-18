@@ -42,8 +42,8 @@ public:
     virtual void init() = 0;
 
 protected:
-    ThingManager* thingManager();
-    JsonRPCServer* jsonRpcServer();
+    ThingManager *thingManager();
+    JsonRPCServer *jsonRpcServer();
 
 private:
     friend class nymeaserver::ExperienceManager;
@@ -51,10 +51,8 @@ private:
 
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
-
 };
 
 Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")
-
 
 #endif // EXPERIENCEPLUGIN_H

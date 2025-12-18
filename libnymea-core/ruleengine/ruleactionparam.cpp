@@ -24,57 +24,44 @@
 
 #include "ruleactionparam.h"
 
-RuleActionParam::RuleActionParam(const Param &param) :
-    m_paramTypeId(param.paramTypeId()),
-    m_value(param.value())
-{
-}
+RuleActionParam::RuleActionParam(const Param &param)
+    : m_paramTypeId(param.paramTypeId())
+    , m_value(param.value())
+{}
 
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value):
-    m_paramTypeId(paramTypeId),
-    m_value(value)
-{
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value)
+    : m_paramTypeId(paramTypeId)
+    , m_value(value)
+{}
 
-}
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId)
+    : m_paramTypeId(paramTypeId)
+    , m_eventTypeId(eventTypeId)
+    , m_eventParamTypeId(eventParamTypeId)
+{}
 
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
-    m_paramTypeId(paramTypeId),
-    m_eventTypeId(eventTypeId),
-    m_eventParamTypeId(eventParamTypeId)
-{
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const ThingId &stateThingId, const StateTypeId &stateTypeId)
+    : m_paramTypeId(paramTypeId)
+    , m_stateThingId(stateThingId)
+    , m_stateTypeId(stateTypeId)
+{}
 
-}
+RuleActionParam::RuleActionParam(const QString &paramName, const QVariant &value)
+    : m_paramName(paramName)
+    , m_value(value)
+{}
 
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const ThingId &stateThingId, const StateTypeId &stateTypeId):
-    m_paramTypeId(paramTypeId),
-    m_stateThingId(stateThingId),
-    m_stateTypeId(stateTypeId)
-{
+RuleActionParam::RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId)
+    : m_paramName(paramName)
+    , m_eventTypeId(eventTypeId)
+    , m_eventParamTypeId(eventParamTypeId)
+{}
 
-}
-
-RuleActionParam::RuleActionParam(const QString &paramName, const QVariant &value):
-    m_paramName(paramName),
-    m_value(value)
-{
-
-}
-
-RuleActionParam::RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
-    m_paramName(paramName),
-    m_eventTypeId(eventTypeId),
-    m_eventParamTypeId(eventParamTypeId)
-{
-
-}
-
-RuleActionParam::RuleActionParam(const QString &paramName, const ThingId &stateThingId, const StateTypeId &stateTypeId):
-    m_paramName(paramName),
-    m_stateThingId(stateThingId),
-    m_stateTypeId(stateTypeId)
-{
-
-}
+RuleActionParam::RuleActionParam(const QString &paramName, const ThingId &stateThingId, const StateTypeId &stateTypeId)
+    : m_paramName(paramName)
+    , m_stateThingId(stateThingId)
+    , m_stateTypeId(stateTypeId)
+{}
 
 ParamTypeId RuleActionParam::paramTypeId() const
 {
@@ -172,11 +159,12 @@ bool RuleActionParam::isStateBased() const
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId().toString() << ", Name:" << ruleActionParam.paramName() << ", Value:" << ruleActionParam.value();
+    dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId().toString() << ", Name:" << ruleActionParam.paramName()
+                  << ", Value:" << ruleActionParam.value();
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
-       dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamTypeId:" << ruleActionParam.eventParamTypeId().toString() << ")";
+        dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamTypeId:" << ruleActionParam.eventParamTypeId().toString() << ")";
     } else {
-       dbg.nospace() << ")";
+        dbg.nospace() << ")";
     }
     return dbg;
 }
@@ -210,8 +198,8 @@ QVariant RuleActionParams::paramValue(const ParamTypeId &ruleActionParamTypeId) 
 bool RuleActionParams::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
-        if (this->operator [](i).paramTypeId()  == ruleActionParamTypeId) {
-            this->operator [](i).setValue(value);
+        if (this->operator[](i).paramTypeId() == ruleActionParamTypeId) {
+            this->operator[](i).setValue(value);
             return true;
         }
     }
@@ -230,7 +218,7 @@ QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleActionParamList (count:" << ruleActionParams.count() << ")" << '\n';
-    for (int i = 0; i < ruleActionParams.count(); i++ ) {
+    for (int i = 0; i < ruleActionParams.count(); i++) {
         dbg.nospace() << "     " << i << ": " << ruleActionParams.at(i) << '\n';
     }
 

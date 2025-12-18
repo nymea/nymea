@@ -37,16 +37,14 @@ public:
 
 private:
     bool m_optional = false;
-
 };
 
-class InterfaceParamTypes: public QList<InterfaceParamType>
+class InterfaceParamTypes : public QList<InterfaceParamType>
 {
 public:
     InterfaceParamTypes() = default;
     InterfaceParamTypes(const QList<InterfaceParamType> &other);
     InterfaceParamType findByName(const QString &name);
 };
-
 
 #endif // INTERFACEPARAMTYPE_H

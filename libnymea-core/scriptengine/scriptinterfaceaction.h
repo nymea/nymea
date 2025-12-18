@@ -63,7 +63,7 @@ public:
     QString m_actionName;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTINTERFACEACTION_H

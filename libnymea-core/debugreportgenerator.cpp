@@ -24,28 +24,27 @@
 
 #include "debugreportgenerator.h"
 #include "loggingcategories.h"
-#include "nymeasettings.h"
-#include "nymeacore.h"
 #include "nymeaconfiguration.h"
+#include "nymeacore.h"
+#include "nymeasettings.h"
 #include "version.h"
 
-#include <QDir>
-#include <QFile>
-#include <QTimer>
-#include <QDateTime>
-#include <QSysInfo>
-#include <QStandardPaths>
 #include <QCoreApplication>
 #include <QCryptographicHash>
-#include <QProcessEnvironment>
+#include <QDateTime>
+#include <QDir>
+#include <QFile>
 #include <QHostInfo>
+#include <QProcessEnvironment>
+#include <QStandardPaths>
+#include <QSysInfo>
+#include <QTimer>
 
 namespace nymeaserver {
 
-DebugReportGenerator::DebugReportGenerator(QObject *parent) : QObject(parent)
-{
-
-}
+DebugReportGenerator::DebugReportGenerator(QObject *parent)
+    : QObject(parent)
+{}
 
 DebugReportGenerator::~DebugReportGenerator()
 {
@@ -106,35 +105,35 @@ void DebugReportGenerator::generateReport()
 
     QProcess *pingProcess = new QProcess(this);
     pingProcess->setProcessChannelMode(QProcess::MergedChannels);
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
     connect(pingProcess, &QProcess::finished, this, &DebugReportGenerator::onPingProcessFinished);
 #else
-    connect(pingProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
+    connect(pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int, QProcess::ExitStatus)));
 #endif
 
     QProcess *digProcess = new QProcess(this);
     digProcess->setProcessChannelMode(QProcess::MergedChannels);
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
     connect(digProcess, &QProcess::finished, this, &DebugReportGenerator::onDigProcessFinished);
 #else
-    connect(digProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
+    connect(digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int, QProcess::ExitStatus)));
 #endif
 
     QProcess *tracePathProcess = new QProcess(this);
     tracePathProcess->setProcessChannelMode(QProcess::MergedChannels);
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
     connect(tracePathProcess, &QProcess::finished, this, &DebugReportGenerator::onTracePathProcessFinished);
 #else
-    connect(tracePathProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
+    connect(tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int, QProcess::ExitStatus)));
 #endif
 
     m_runningProcesses.append(pingProcess);
     m_runningProcesses.append(digProcess);
     m_runningProcesses.append(tracePathProcess);
 
-    pingProcess->start("ping", { "-c", "4", "nymea.io" } );
-    digProcess->start("dig", { "nymea.io" } );
-    tracePathProcess->start("tracepath", { "nymea.io" } );
+    pingProcess->start("ping", {"-c", "4", "nymea.io"});
+    digProcess->start("dig", {"nymea.io"});
+    tracePathProcess->start("tracepath", {"nymea.io"});
 }
 
 void DebugReportGenerator::copyFileToReportDirectory(const QString &fileName, const QString &subDirectory)
@@ -157,12 +156,12 @@ void DebugReportGenerator::verifyRunningProcessesFinished()
         m_compressProcess = new QProcess(this);
         m_compressProcess->setProcessChannelMode(QProcess::MergedChannels);
         m_compressProcess->setWorkingDirectory(QStandardPaths::writableLocation(QStandardPaths::TempLocation));
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
         connect(m_compressProcess, &QProcess::finished, this, &DebugReportGenerator::onCompressProcessFinished);
 #else
-        connect(m_compressProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onCompressProcessFinished(int,QProcess::ExitStatus)));
+        connect(m_compressProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCompressProcessFinished(int, QProcess::ExitStatus)));
 #endif
-        m_compressProcess->start("tar", { "-zcf", m_reportFileName, "-C", QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/", m_reportDirectory.dirName() } );
+        m_compressProcess->start("tar", {"-zcf", m_reportFileName, "-C", QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/", m_reportDirectory.dirName()});
         qCDebug(dcDebugServer()) << "Execut command" << m_compressProcess->program() << m_compressProcess->arguments();
     }
 }
@@ -180,7 +179,8 @@ void DebugReportGenerator::saveSystemInformation()
     stream << "Server name: " << NymeaCore::instance()->configuration()->serverName() << '\n';
     stream << "Server version: " << NYMEA_VERSION_STRING << '\n';
     stream << "JSON-RPC version: " << JSON_PROTOCOL_VERSION << '\n';
-    stream << "Language: " << NymeaCore::instance()->configuration()->locale().name() << " (" << NymeaCore::instance()->configuration()->locale().nativeCountryName() << " - " << NymeaCore::instance()->configuration()->locale().nativeLanguageName() << ")" << '\n';
+    stream << "Language: " << NymeaCore::instance()->configuration()->locale().name() << " (" << NymeaCore::instance()->configuration()->locale().nativeCountryName() << " - "
+           << NymeaCore::instance()->configuration()->locale().nativeLanguageName() << ")" << '\n';
     stream << "Timezone: " << QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()) << '\n';
     stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << '\n';
     stream << "Settings path: " << NymeaSettings::settingsPath() << '\n';
@@ -209,7 +209,6 @@ void DebugReportGenerator::saveLogFiles()
     foreach (const QString &logFile, syslogFiles) {
         copyFileToReportDirectory(logDir.path() + "/" + logFile, "logs");
     }
-
 }
 
 void DebugReportGenerator::saveConfigs()
@@ -232,7 +231,7 @@ void DebugReportGenerator::saveEnv()
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QTextStream stream(&outputFile);
-    foreach(const QString &key, env.keys()) {
+    foreach (const QString &key, env.keys()) {
         qCDebug(dcDebugServer()) << "Process environment:" << key << "-->" << env.value(key);
         stream << key << "=" << env.value(key) << "\n";
     }
@@ -307,7 +306,6 @@ void DebugReportGenerator::onTracePathProcessFinished(int exitCode, QProcess::Ex
     qCDebug(dcDebugServer()) << "Tracepath process finished" << exitCode << exitStatus;
     QByteArray processOutput = process->readAll();
 
-
     QFile outputFile(m_reportDirectory.path() + "/network/tracepath.txt");
     if (!outputFile.open(QIODevice::ReadWrite)) {
         qCWarning(dcDebugServer()) << "Could not open dig file" << outputFile.fileName();
@@ -343,7 +341,7 @@ void DebugReportGenerator::onCompressProcessFinished(int exitCode, QProcess::Exi
         emit finished(false);
     } else {
         m_reportFileData = reportFile.readAll();
-        m_md5Sum =  QString::fromUtf8(QCryptographicHash::hash(m_reportFileData, QCryptographicHash::Md5).toHex());
+        m_md5Sum = QString::fromUtf8(QCryptographicHash::hash(m_reportFileData, QCryptographicHash::Md5).toHex());
         qCDebug(dcDebugServer()) << "File generated successfully" << reportFile.fileName() << m_reportFileData.size() << "B" << m_md5Sum;
         m_isReady = true;
         m_isValid = true;
@@ -359,4 +357,4 @@ void DebugReportGenerator::onCompressProcessFinished(int exitCode, QProcess::Exi
     process = nullptr;
 }
 
-}
+} // namespace nymeaserver

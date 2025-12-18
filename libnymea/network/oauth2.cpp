@@ -26,14 +26,14 @@
 #include "loggingcategories.h"
 
 #include <QDebug>
-#include <QNetworkRequest>
 #include <QJsonDocument>
+#include <QNetworkRequest>
 
-OAuth2::OAuth2(QString clientId, QString clientSecret, QObject *parent) :
-    QObject(parent),
-    m_clientId(clientId),
-    m_clientSecret(clientSecret),
-    m_authenticated(false)
+OAuth2::OAuth2(QString clientId, QString clientSecret, QObject *parent)
+    : QObject(parent)
+    , m_clientId(clientId)
+    , m_clientSecret(clientSecret)
+    , m_authenticated(false)
 {
     m_networkManager = new QNetworkAccessManager(this);
     connect(m_networkManager, &QNetworkAccessManager::finished, this, &OAuth2::replyFinished);
@@ -166,7 +166,6 @@ void OAuth2::replyFinished(QNetworkReply *reply)
 
     // token request
     if (m_tokenRequests.contains(reply)) {
-
         QByteArray data = reply->readAll();
         m_tokenRequests.removeAll(reply);
 
@@ -207,7 +206,6 @@ void OAuth2::replyFinished(QNetworkReply *reply)
         }
 
     } else if (m_refreshTokenRequests.contains(reply)) {
-
         QByteArray data = reply->readAll();
         m_refreshTokenRequests.removeAll(reply);
 

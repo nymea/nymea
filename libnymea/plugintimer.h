@@ -25,9 +25,9 @@
 #ifndef PLUGINTIMER_H
 #define PLUGINTIMER_H
 
-#include <QTimer>
 #include <QObject>
 #include <QPointer>
+#include <QTimer>
 
 #include "hardwareresource.h"
 
@@ -56,9 +56,7 @@ public slots:
     virtual void stop() = 0;
     virtual void pause() = 0;
     virtual void resume() = 0;
-
 };
-
 
 class PluginTimerManager : public HardwareResource
 {

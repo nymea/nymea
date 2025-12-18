@@ -29,15 +29,23 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-ThingPairingInfo::ThingPairingInfo(const PairingTransactionId &pairingTransactionId, const ThingClassId &thingClassId, const ThingId &thingId, const QString &deviceName, const ParamList &params, const ThingId &parentId, ThingManager *parent, bool reconfigure, quint32 timeout):
-    QObject(parent),
-    m_transactionId(pairingTransactionId),
-    m_thingClassId(thingClassId),
-    m_thingId(thingId),
-    m_thingName(deviceName),
-    m_params(params),
-    m_parentId(parentId),
-    m_reconfigure(reconfigure)
+ThingPairingInfo::ThingPairingInfo(const PairingTransactionId &pairingTransactionId,
+                                   const ThingClassId &thingClassId,
+                                   const ThingId &thingId,
+                                   const QString &deviceName,
+                                   const ParamList &params,
+                                   const ThingId &parentId,
+                                   ThingManager *parent,
+                                   bool reconfigure,
+                                   quint32 timeout)
+    : QObject(parent)
+    , m_transactionId(pairingTransactionId)
+    , m_thingClassId(thingClassId)
+    , m_thingId(thingId)
+    , m_thingName(deviceName)
+    , m_params(params)
+    , m_parentId(parentId)
+    , m_reconfigure(reconfigure)
 {
     connect(this, &ThingPairingInfo::finished, this, &ThingPairingInfo::deleteLater, Qt::QueuedConnection);
 
@@ -137,4 +145,3 @@ void ThingPairingInfo::finish(Thing::ThingError status, const QString &displayMe
     m_displayMessage = displayMessage;
     staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }
-

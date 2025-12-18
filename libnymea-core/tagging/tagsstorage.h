@@ -41,15 +41,10 @@ class TagsStorage : public QObject
 {
     Q_OBJECT
 public:
-    enum TagError {
-        TagErrorNoError,
-        TagErrorThingNotFound,
-        TagErrorRuleNotFound,
-        TagErrorTagNotFound
-    };
+    enum TagError { TagErrorNoError, TagErrorThingNotFound, TagErrorRuleNotFound, TagErrorTagNotFound };
     Q_ENUM(TagError)
 
-    explicit TagsStorage(ThingManager* thingManager, RuleEngine* ruleEngine, QObject *parent = nullptr);
+    explicit TagsStorage(ThingManager *thingManager, RuleEngine *ruleEngine, QObject *parent = nullptr);
 
     TagError addTag(const Tag &tag);
     TagError removeTag(const Tag &tag);
@@ -77,6 +72,6 @@ private:
     QList<Tag> m_tags;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TAGSSTORAGE_H

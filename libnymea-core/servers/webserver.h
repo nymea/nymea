@@ -25,18 +25,18 @@
 #ifndef WEBSERVER_H
 #define WEBSERVER_H
 
-#include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QHash>
-#include <QDir>
-#include <QTimer>
-#include <QImage>
 #include <QBuffer>
-#include <QSslSocket>
+#include <QDir>
+#include <QHash>
+#include <QImage>
+#include <QObject>
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
+#include <QSslSocket>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QTimer>
 
 #include "nymeaconfiguration.h"
 
@@ -70,7 +70,6 @@ private:
 private slots:
     void onTimout();
 };
-
 
 class WebServer : public QTcpServer
 {
@@ -122,9 +121,8 @@ public slots:
     bool startServer();
     bool stopServer();
     WebServerConfiguration configuration() const;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // WEBSERVER_H

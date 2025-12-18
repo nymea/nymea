@@ -27,9 +27,9 @@
 
 #include "loggingcategories.h"
 
-#include <QJsonDocument>
 #include <QColor>
 #include <QDateTime>
+#include <QJsonDocument>
 #include <QRegularExpression>
 
 namespace nymeaserver {
@@ -72,7 +72,6 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
         }
     }
     return true;
-
 }
 
 JsonValidator::Result JsonValidator::validateParams(const QVariantMap &params, const QString &method, const QVariantMap &api)
@@ -220,14 +219,13 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Any string converts fine to Uuid, but the resulting uuid might be null
         if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
-
             QString typeName(value.typeName());
             //qCCritical(dcJsonRpc()) << value << value.userType() << value.typeId() << value.typeName() << value.toString() << value.toUuid() << value.canConvert(QMetaType::QUuid);
 
             // Verify if this is one of our own uuid types
             if (typeName == "ThingId" || typeName == "EventTypeId" || typeName == "StateTypeId" || typeName == "ActionTypeId") {
                 return Result(true);
-            }/* else {
+            } /* else {
                 return Result(false, "Invalid Uuid: " + value.toString());
             }*/
         }
@@ -284,7 +282,6 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             }
         }
 
-
         return Result(true);
     }
 
@@ -300,7 +297,6 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         QVariant entryDefinition = list.first();
 
         if (value.userType() != QMetaType::QVariantList && value.userType() != QMetaType::QStringList) {
-
             QString elementType = QString(value.typeName()).remove("QList<").remove(">");
             if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
                 elementType = "Uuid";
@@ -322,4 +318,4 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
     return Result(false);
 }
 
-}
+} // namespace nymeaserver

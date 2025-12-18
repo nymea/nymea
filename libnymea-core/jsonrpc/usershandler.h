@@ -59,9 +59,8 @@ signals:
 private:
     UserManager *m_userManager = nullptr;
     QHash<int, QUuid> m_pushButtonTransactions;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // USERSHANDLER_H

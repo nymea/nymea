@@ -25,14 +25,14 @@
 #ifndef RADIO433TRASMITTER_H
 #define RADIO433TRASMITTER_H
 
-#include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <QQueue>
 #include <QDebug>
+#include <QMutex>
+#include <QObject>
+#include <QQueue>
+#include <QThread>
 
-#include "libnymea.h"
 #include "gpio.h"
+#include "libnymea.h"
 
 namespace nymeaserver {
 
@@ -72,9 +72,8 @@ signals:
 
 public slots:
     void allowSending(bool sending);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // RADIO433TRASMITTER_H

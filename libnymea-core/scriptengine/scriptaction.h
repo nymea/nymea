@@ -27,8 +27,8 @@
 
 #include <QObject>
 #include <QQmlParserStatus>
-#include <QVariantMap>
 #include <QUuid>
+#include <QVariantMap>
 
 #include "integrations/thing.h"
 #include "types/action.h"
@@ -87,7 +87,7 @@ public:
     QString m_actionName;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTACTION_H

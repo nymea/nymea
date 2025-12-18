@@ -26,10 +26,10 @@
 
 namespace nymeaserver {
 
-Radio433Trasmitter::Radio433Trasmitter(QObject *parent, int gpio) :
-    QThread(parent),m_gpioPin(gpio)
-{
-}
+Radio433Trasmitter::Radio433Trasmitter(QObject *parent, int gpio)
+    : QThread(parent)
+    , m_gpioPin(gpio)
+{}
 
 Radio433Trasmitter::~Radio433Trasmitter()
 {
@@ -53,18 +53,17 @@ void Radio433Trasmitter::run()
     QList<int> rawData;
 
     m_queueMutex.lock();
-    while(!m_rawDataQueue.isEmpty()){
-
+    while (!m_rawDataQueue.isEmpty()) {
         rawData = m_rawDataQueue.dequeue();
         m_queueMutex.unlock();
 
         m_gpio->setValue(Gpio::ValueLow);
-        int flag=1;
+        int flag = 1;
 
         foreach (int delay, rawData) {
             // 1 = High, 0 = Low
-            int value = flag %2;
-            m_gpio->setValue((Gpio::Value)value);
+            int value = flag % 2;
+            m_gpio->setValue((Gpio::Value) value);
             flag++;
             usleep(delay);
         }
@@ -85,7 +84,7 @@ bool Radio433Trasmitter::setUpGpio()
 {
     m_gpio = new Gpio(m_gpioPin, this);
 
-    if(!m_gpio->exportGpio() || !m_gpio->setDirection(Gpio::DirectionOutput) || !m_gpio->setValue(Gpio::ValueLow)){
+    if (!m_gpio->exportGpio() || !m_gpio->setDirection(Gpio::DirectionOutput) || !m_gpio->setValue(Gpio::ValueLow)) {
         m_available = false;
         return false;
     }
@@ -98,7 +97,7 @@ void Radio433Trasmitter::sendData(int delay, QList<int> rawData, int repetitions
     QList<int> timings;
     for (int i = 0; i < repetitions; i++) {
         foreach (int data, rawData) {
-            timings.append(delay*data);
+            timings.append(delay * data);
         }
     }
 
@@ -106,9 +105,9 @@ void Radio433Trasmitter::sendData(int delay, QList<int> rawData, int repetitions
     m_rawDataQueue.enqueue(timings);
     m_queueMutex.unlock();
 
-    if(!isRunning()){
+    if (!isRunning()) {
         start();
     }
 }
 
-}
+} // namespace nymeaserver

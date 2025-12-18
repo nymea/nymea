@@ -22,15 +22,15 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
+#include "nymeatestbase.h"
 
 #include "integrations/thingdiscoveryinfo.h"
 #include "integrations/thingsetupinfo.h"
 
-#include "servers/mocktcpserver.h"
 #include "jsonrpc/integrationshandler.h"
+#include "servers/mocktcpserver.h"
 
 #include "../plugins/mock/extern-plugininfo.h"
 
@@ -45,9 +45,7 @@ private:
     ThingId m_lightThingId;
     ThingId m_tempSensorThingId;
 
-    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
-        verifyError(response, "thingError", enumValueName(error));
-    }
+    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) { verifyError(response, "thingError", enumValueName(error)); }
 
 private slots:
 
@@ -69,8 +67,7 @@ void TestIOConnections::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "Mock.debug=true\n"
-                                     "ThingManager.debug=true\n"
-                                     );
+                                     "ThingManager.debug=true\n");
 
     // Adding generic IO mock
     QVariantMap params;
@@ -106,30 +103,50 @@ void TestIOConnections::testConnectionCompatibility_data()
     QTest::addColumn<StateTypeId>("outputStateTypeId");
     QTest::addColumn<Thing::ThingError>("expectedError");
 
-    QTest::newRow("digital in, digital in") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("digital in, digital out") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorNoError;
-    QTest::newRow("digital in, analog in") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("digital in, analog out") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital in, digital in") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital in, digital out") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId
+                                             << Thing::ThingErrorNoError;
+    QTest::newRow("digital in, analog in") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId
+                                           << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital in, analog out") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
 
-    QTest::newRow("digital out, digital in") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("digital out, digital out") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("digital out, analog in") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("digital out, analot out") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital out, digital in") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId
+                                             << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital out, digital out") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId
+                                              << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital out, analog in") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("digital out, analot out") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId
+                                             << Thing::ThingErrorInvalidParameter;
 
-    QTest::newRow("analog in, digital in") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog in, digital out") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog in, analog in") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog in, analog out") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << Thing::ThingErrorNoError;
+    QTest::newRow("analog in, digital in") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId
+                                           << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog in, digital out") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog in, analog in") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId
+                                          << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog in, analog out") << m_ioThingId << genericIoMockAnalogInput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId
+                                           << Thing::ThingErrorNoError;
 
-    QTest::newRow("analog out, digital in") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog out, digital out") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog out, analog in") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId << Thing::ThingErrorInvalidParameter;
-    QTest::newRow("analog out, analog out") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog out, digital in") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockDigitalInput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog out, digital out") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId
+                                             << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog out, analog in") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockAnalogInput1StateTypeId
+                                           << Thing::ThingErrorInvalidParameter;
+    QTest::newRow("analog out, analog out") << m_ioThingId << genericIoMockAnalogOutput1StateTypeId << m_ioThingId << genericIoMockAnalogOutput1StateTypeId
+                                            << Thing::ThingErrorInvalidParameter;
 
-    QTest::newRow("valid input, invalid output thing") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << ThingId("707d5093-4915-499e-8e69-10c11972bb34") << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorThingNotFound;
-    QTest::newRow("valid input, invalid output stateType") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId << StateTypeId("51534cd7-8adf-4bdc-a4c1-042d0a9d4faa") << Thing::ThingErrorStateTypeNotFound;
-    QTest::newRow("invalid input thing, valid output") << ThingId("99843693-8615-416a-8e59-a47b050f5c1a") << genericIoMockDigitalInput1StateTypeId << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorThingNotFound;
-    QTest::newRow("invalid input stateType, valid output") << m_ioThingId << StateTypeId("04657948-e349-4f43-bf20-13f9986ad1b4") << m_ioThingId << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorStateTypeNotFound;
+    QTest::newRow("valid input, invalid output thing") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << ThingId("707d5093-4915-499e-8e69-10c11972bb34")
+                                                       << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorThingNotFound;
+    QTest::newRow("valid input, invalid output stateType") << m_ioThingId << genericIoMockDigitalInput1StateTypeId << m_ioThingId
+                                                           << StateTypeId("51534cd7-8adf-4bdc-a4c1-042d0a9d4faa") << Thing::ThingErrorStateTypeNotFound;
+    QTest::newRow("invalid input thing, valid output") << ThingId("99843693-8615-416a-8e59-a47b050f5c1a") << genericIoMockDigitalInput1StateTypeId << m_ioThingId
+                                                       << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorThingNotFound;
+    QTest::newRow("invalid input stateType, valid output") << m_ioThingId << StateTypeId("04657948-e349-4f43-bf20-13f9986ad1b4") << m_ioThingId
+                                                           << genericIoMockDigitalOutput1StateTypeId << Thing::ThingErrorStateTypeNotFound;
 }
 
 void TestIOConnections::testConnectionCompatibility()
@@ -147,7 +164,6 @@ void TestIOConnections::testConnectionCompatibility()
     params.insert("outputStateTypeId", outputStateTypeId);
     QVariant response = injectAndWait("Integrations.ConnectIO", params);
     verifyThingError(response, expectedError);
-
 }
 
 void TestIOConnections::testDigitalIO_data()
@@ -276,8 +292,8 @@ void TestIOConnections::testAnalogIO()
     params.insert("stateTypeId", virtualIoTemperatureSensorMockTemperatureStateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp), QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
-
+    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp),
+             QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
 
     // set analog input to 0.5 and verify temp aligned
     params.clear();
@@ -298,7 +314,8 @@ void TestIOConnections::testAnalogIO()
     // generic IO output goes from 0 to 3.3. We're setting 1.65V which 50%
     // temp goes from -20 to 50. A input of 1.65 should output a temperature of 15°C
     expectedTemp = 70.0 / 2 - 20;
-    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp), QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
+    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp),
+             QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
 
     // Disconnect IO again
     params.clear();
@@ -322,10 +339,9 @@ void TestIOConnections::testAnalogIO()
     params.insert("stateTypeId", virtualIoTemperatureSensorMockTemperatureStateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp), QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
-
+    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp),
+             QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
 }
 
 #include "testioconnections.moc"
 QTEST_MAIN(TestIOConnections)
-

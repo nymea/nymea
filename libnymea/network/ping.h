@@ -25,22 +25,22 @@
 #ifndef PING_H
 #define PING_H
 
-#include <QUrl>
-#include <QQueue>
-#include <QTimer>
-#include <QObject>
-#include <QHostInfo>
 #include <QHostAddress>
-#include <QSocketNotifier>
+#include <QHostInfo>
 #include <QLoggingCategory>
+#include <QObject>
+#include <QQueue>
+#include <QSocketNotifier>
+#include <QTimer>
+#include <QUrl>
 
 #include "libnymea.h"
 #include "pingreply.h"
 
 #include <netinet/ip_icmp.h>
 
-#define ICMP_PACKET_SIZE  64
-#define ICMP_TTL_VALUE  64
+#define ICMP_PACKET_SIZE 64
+#define ICMP_TTL_VALUE 64
 #define ICMP_PAYLOAD_SIZE (ICMP_PACKET_SIZE - sizeof(struct icmphdr))
 
 class LIBNYMEA_EXPORT Ping : public QObject
@@ -67,7 +67,8 @@ signals:
     void availableChanged(bool available);
 
 private:
-    struct icmpPacket {
+    struct icmpPacket
+    {
         struct icmphdr icmpHeadr;
         char icmpPayload[ICMP_PAYLOAD_SIZE];
     };

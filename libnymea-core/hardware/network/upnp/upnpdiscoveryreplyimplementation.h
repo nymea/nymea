@@ -27,8 +27,8 @@
 
 #include <QObject>
 
-#include "network/upnp/upnpdiscoveryreply.h"
 #include "network/upnp/upnpdevicedescriptor.h"
+#include "network/upnp/upnpdiscoveryreply.h"
 
 namespace nymeaserver {
 
@@ -61,9 +61,8 @@ private:
     void setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors);
     void setError(const UpnpDiscoveryReplyError &error);
     void setFinished();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // UPNPDISCOVERYREPLYIMPLEMENTATION_H

@@ -24,10 +24,9 @@
 
 #include "platformupdatecontroller.h"
 
-PlatformUpdateController::PlatformUpdateController(QObject *parent) : QObject(parent)
-{
-
-}
+PlatformUpdateController::PlatformUpdateController(QObject *parent)
+    : QObject(parent)
+{}
 
 /*! Whether or not the update management is available. Returns true if the system is ready
     to perform any upgrade tasks. When the return value is true, it is assumed that the
@@ -163,4 +162,3 @@ bool PlatformUpdateController::enableRepository(const QString &repositoryId, boo
     Q_UNUSED(enabled)
     return false;
 }
-

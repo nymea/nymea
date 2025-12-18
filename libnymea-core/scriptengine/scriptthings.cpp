@@ -36,30 +36,25 @@ namespace scriptengine {
 
 ScriptThings::ScriptThings(QObject *parent)
     : QSortFilterProxyModel{parent}
-{
-
-}
+{}
 
 void ScriptThings::classBegin()
 {
-    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager *>(qmlEngine(this)->property("thingManager").toULongLong());
     m_model = new ThingsModel(m_thingManager, this);
     setSourceModel(m_model);
 
-    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing){
+    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing) {
         emit thingAdded(newThing->id().toString());
         emit countChanged();
     });
-    connect(m_thingManager, &ThingManager::thingRemoved, this, [this](const ThingId &thingId){
+    connect(m_thingManager, &ThingManager::thingRemoved, this, [this](const ThingId &thingId) {
         emit thingRemoved(thingId.toString());
         emit countChanged();
     });
 }
 
-void ScriptThings::componentComplete()
-{
-
-}
+void ScriptThings::componentComplete() {}
 
 QString ScriptThings::filterInterface() const
 {
@@ -85,7 +80,6 @@ ScriptThing *ScriptThings::get(int index) const
     QQmlEngine::setObjectOwnership(scriptThing, QQmlEngine::JavaScriptOwnership);
     scriptThing->setThingId(thing->id().toString());
     return scriptThing;
-
 }
 
 ScriptThing *ScriptThings::getThing(const QUuid &thingId) const
@@ -111,11 +105,10 @@ bool ScriptThings::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePare
     return true;
 }
 
-ThingsModel::ThingsModel(ThingManager *thingManager, QObject *parent):
-    QAbstractListModel(parent),
-    m_thingManager(thingManager)
-{
-}
+ThingsModel::ThingsModel(ThingManager *thingManager, QObject *parent)
+    : QAbstractListModel(parent)
+    , m_thingManager(thingManager)
+{}
 
 int ThingsModel::rowCount(const QModelIndex &parent) const
 {
@@ -136,10 +129,7 @@ QVariant ThingsModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> ThingsModel::roleNames() const
 {
-    return {
-        {RoleId, "thingId"},
-        {RoleName, "thingName"}
-    };
+    return {{RoleId, "thingId"}, {RoleName, "thingName"}};
 }
 
 Thing *ThingsModel::get(int index) const
@@ -152,5 +142,5 @@ Thing *ThingsModel::getThing(const QUuid &thingId) const
     return m_thingManager->findConfiguredThing(thingId);
 }
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver

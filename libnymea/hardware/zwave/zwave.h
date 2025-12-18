@@ -31,14 +31,7 @@ class ZWave
 {
     Q_GADGET
 public:
-    enum ZWaveError {
-        ZWaveErrorNoError,
-        ZWaveErrorInUse,
-        ZWaveErrorNetworkUuidNotFound,
-        ZWaveErrorNodeIdNotFound,
-        ZWaveErrorTimeout,
-        ZWaveErrorBackendError
-    };
+    enum ZWaveError { ZWaveErrorNoError, ZWaveErrorInUse, ZWaveErrorNetworkUuidNotFound, ZWaveErrorNodeIdNotFound, ZWaveErrorTimeout, ZWaveErrorBackendError };
     Q_ENUM(ZWaveError)
 
 private:

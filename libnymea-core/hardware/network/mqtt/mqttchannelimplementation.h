@@ -62,6 +62,6 @@ private:
     friend class MqttProviderImplementation;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MQTTCHANNELIMPLEMENTATION_H

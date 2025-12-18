@@ -25,21 +25,22 @@
 #ifndef SERIALPORTMONITOR_H
 #define SERIALPORTMONITOR_H
 
-#include <QObject>
 #include <QHash>
-#include <QVariant>
+#include <QObject>
 #include <QSerialPortInfo>
+#include <QVariant>
 
 #ifdef WITH_UDEV
-#include <QSocketNotifier>
 #include <libudev.h>
+#include <QSocketNotifier>
 #else
 #include <QTimer>
 #endif
 
 namespace nymeaserver {
 
-class SerialPort : public QSerialPortInfo {
+class SerialPort : public QSerialPortInfo
+{
     Q_GADGET
     Q_PROPERTY(QString systemLocation READ systemLocation)
     Q_PROPERTY(QString manufacturer READ manufacturer)
@@ -57,7 +58,6 @@ public:
     };
     Q_ENUM(SerialPortParity)
 
-
     enum SerialPortDataBits {
         SerialPortDataBitsData5 = 5,
         SerialPortDataBitsData6 = 6,
@@ -67,19 +67,16 @@ public:
     };
     Q_ENUM(SerialPortDataBits)
 
-
-    enum SerialPortStopBits {
-        SerialPortStopBitsOneStop = 1,
-        SerialPortStopBitsOneAndHalfStop = 3,
-        SerialPortStopBitsTwoStop = 2,
-        SerialPortStopBitsUnknownStopBits = -1
-    };
+    enum SerialPortStopBits { SerialPortStopBitsOneStop = 1, SerialPortStopBitsOneAndHalfStop = 3, SerialPortStopBitsTwoStop = 2, SerialPortStopBitsUnknownStopBits = -1 };
     Q_ENUM(SerialPortStopBits)
 
-    SerialPort() : QSerialPortInfo() { };
-    explicit SerialPort(const QSerialPortInfo &other) : QSerialPortInfo(other) { };
+    SerialPort()
+        : QSerialPortInfo(){};
+    explicit SerialPort(const QSerialPortInfo &other)
+        : QSerialPortInfo(other){};
 
-    QString customDescription() const {
+    QString customDescription() const
+    {
         // Note: this creats the possibility to override the desciption of
         // serial port for the JSON RPC API.
         if (m_customDescription.isEmpty())
@@ -88,13 +85,10 @@ public:
         return m_customDescription;
     }
 
-    void setCustomDescription(const QString &customDescription) {
-        m_customDescription = customDescription;
-    }
+    void setCustomDescription(const QString &customDescription) { m_customDescription = customDescription; }
 
 private:
     QString m_customDescription;
-
 };
 
 class SerialPorts : public QList<SerialPort>
@@ -104,8 +98,10 @@ class SerialPorts : public QList<SerialPort>
 
 public:
     inline SerialPorts() = default;
-    inline SerialPorts(const QList<SerialPort> &other) : QList<SerialPort>(other) { };
-    inline bool hasSerialPort(const QString &serialPort) {
+    inline SerialPorts(const QList<SerialPort> &other)
+        : QList<SerialPort>(other){};
+    inline bool hasSerialPort(const QString &serialPort)
+    {
         for (int i = 0; i < count(); i++) {
             if (at(i).systemLocation() == serialPort) {
                 return true;
@@ -114,10 +110,9 @@ public:
         return false;
     };
 
-    inline  Q_INVOKABLE QVariant get(int index) const { return QVariant::fromValue(at(index)); };
+    inline Q_INVOKABLE QVariant get(int index) const { return QVariant::fromValue(at(index)); };
     inline Q_INVOKABLE void put(const QVariant &variant) { append(variant.value<SerialPort>()); };
 };
-
 
 class SerialPortMonitor : public QObject
 {
@@ -144,10 +139,9 @@ private:
 #else
     QTimer *m_timer = nullptr;
 #endif
-
 };
 
-}
+} // namespace nymeaserver
 
 Q_DECLARE_METATYPE(nymeaserver::SerialPort)
 Q_DECLARE_METATYPE(nymeaserver::SerialPorts)

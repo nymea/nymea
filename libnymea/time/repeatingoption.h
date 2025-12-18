@@ -38,14 +38,7 @@ class RepeatingOption
     Q_PROPERTY(QList<int> weekDays READ weekDays WRITE setWeekDays USER true)
     Q_PROPERTY(QList<int> monthDays READ monthDays WRITE setMonthDays USER true)
 public:
-    enum RepeatingMode {
-        RepeatingModeNone,
-        RepeatingModeHourly,
-        RepeatingModeDaily,
-        RepeatingModeWeekly,
-        RepeatingModeMonthly,
-        RepeatingModeYearly
-    };
+    enum RepeatingMode { RepeatingModeNone, RepeatingModeHourly, RepeatingModeDaily, RepeatingModeWeekly, RepeatingModeMonthly, RepeatingModeYearly };
     Q_ENUM(RepeatingMode)
 
     RepeatingOption();
@@ -71,7 +64,6 @@ private:
 
     QList<int> m_weekDays;
     QList<int> m_monthDays;
-
 };
 
 QDebug operator<<(QDebug dbg, const RepeatingOption &RepeatingOption);

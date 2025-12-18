@@ -60,28 +60,27 @@
 #include "httprequest.h"
 #include "loggingcategories.h"
 
-#include <QUrlQuery>
 #include <QRegularExpression>
+#include <QUrlQuery>
 
 namespace nymeaserver {
 
 /*! Construct an empty \l{HttpRequest}. */
-HttpRequest::HttpRequest() :
-    m_rawData(QByteArray()),
-    m_valid(false),
-    m_isComplete(false)
-{
-}
+HttpRequest::HttpRequest()
+    : m_rawData(QByteArray())
+    , m_valid(false)
+    , m_isComplete(false)
+{}
 
 /*! Construct a \l{HttpRequest} with the given \a rawData. The \a rawData will be parsed in this constructor. You can check
     if the data is valid with \l{isValid()}. You can check if the request is complete with \l{isComplete}.
 
     \sa isValid(), isComplete()
 */
-HttpRequest::HttpRequest(QByteArray rawData) :
-    m_rawData(rawData),
-    m_valid(false),
-    m_isComplete(false)
+HttpRequest::HttpRequest(QByteArray rawData)
+    : m_rawData(rawData)
+    , m_valid(false)
+    , m_isComplete(false)
 {
     validate();
 }
@@ -168,7 +167,8 @@ void HttpRequest::appendData(const QByteArray &data)
 
 void HttpRequest::validate()
 {
-    m_isComplete = true; m_valid = false;
+    m_isComplete = true;
+    m_valid = false;
 
     // Parese the HTTP request. The request is invalid, until the end of the parse process.
     if (m_rawData.isEmpty())
@@ -223,7 +223,6 @@ void HttpRequest::validate()
     if (!m_rawHeaderList.contains("User-Agent"))
         qCDebug(dcWebServer()) << "User-Agent header is missing";
 
-
     // verify content length with actual payload
     if (m_rawHeaderList.contains("Content-Length")) {
         bool ok = false;
@@ -248,7 +247,6 @@ void HttpRequest::validate()
             m_isComplete = true;
             return;
         }
-
     }
     m_valid = true;
 }
@@ -279,4 +277,4 @@ QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
     return debug;
 }
 
-}
+} // namespace nymeaserver

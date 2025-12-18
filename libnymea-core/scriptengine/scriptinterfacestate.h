@@ -26,18 +26,18 @@
 #define SCRIPTINTERFACESTATE_H
 
 #include <QObject>
-#include <QUuid>
 #include <QQmlParserStatus>
+#include <QUuid>
 
-#include "types/state.h"
 #include "integrations/thingmanager.h"
+#include "types/state.h"
 
 namespace nymeaserver {
 namespace scriptengine {
 
 class ScriptParams;
 
-class ScriptInterfaceState: public QObject, public QQmlParserStatus
+class ScriptInterfaceState : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
@@ -70,7 +70,7 @@ private:
     QString m_stateName;
 };
 
-}
-}
+} // namespace scriptengine
+} // namespace nymeaserver
 
 #endif // SCRIPTINTERFACESTATE_H

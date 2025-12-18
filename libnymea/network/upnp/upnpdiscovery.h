@@ -25,18 +25,18 @@
 #ifndef UPNPDISCOVERY_H
 #define UPNPDISCOVERY_H
 
-#include <QUdpSocket>
 #include <QHostAddress>
-#include <QTimer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QTimer>
+#include <QUdpSocket>
 #include <QUrl>
 
-#include "libnymea.h"
 #include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
+#include "libnymea.h"
 #include "upnpdevicedescriptor.h"
+#include "upnpdiscoveryreply.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // nymea basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
@@ -54,7 +54,6 @@ public:
 
 signals:
     void upnpNotify(const QByteArray &notifyMessage);
-
 };
 
 #endif // UPNPDISCOVERY_H

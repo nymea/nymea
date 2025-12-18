@@ -36,31 +36,39 @@
 #include "zeroconfserviceentry.h"
 
 /*! Constructs an empty invalid \l{ZeroConfServiceEntry}*/
-ZeroConfServiceEntry::ZeroConfServiceEntry() :
-    m_port(0),
-    m_protocol(QAbstractSocket::UnknownNetworkLayerProtocol)
-{
-
-}
+ZeroConfServiceEntry::ZeroConfServiceEntry()
+    : m_port(0)
+    , m_protocol(QAbstractSocket::UnknownNetworkLayerProtocol)
+{}
 
 /*! Constructs a new \l{ZeroConfServiceEntry} with the given \a name, \a serviceType, \a hostAddress, \a domain, \a hostName, \a port, \a protocol, \a txt and flags.*/
-ZeroConfServiceEntry::ZeroConfServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, bool cached, bool isWideArea, bool isMulticast, bool isLocal, bool isOurOwn):
-    m_name(name),
-    m_serviceType(serviceType),
-    m_hostAddress(hostAddress),
-    m_domain(domain),
-    m_hostName(hostName),
-    m_port(port),
-    m_protocol(protocol),
-    m_txt(txt),
-    m_isCached(cached),
-    m_isWideArea(isWideArea),
-    m_isMulticast(isMulticast),
-    m_isLocal(isLocal),
-    m_isOurOwn(isOurOwn)
-{
-
-}
+ZeroConfServiceEntry::ZeroConfServiceEntry(QString name,
+                                           QString serviceType,
+                                           QHostAddress hostAddress,
+                                           QString domain,
+                                           QString hostName,
+                                           quint16 port,
+                                           QAbstractSocket::NetworkLayerProtocol protocol,
+                                           QStringList txt,
+                                           bool cached,
+                                           bool isWideArea,
+                                           bool isMulticast,
+                                           bool isLocal,
+                                           bool isOurOwn)
+    : m_name(name)
+    , m_serviceType(serviceType)
+    , m_hostAddress(hostAddress)
+    , m_domain(domain)
+    , m_hostName(hostName)
+    , m_port(port)
+    , m_protocol(protocol)
+    , m_txt(txt)
+    , m_isCached(cached)
+    , m_isWideArea(isWideArea)
+    , m_isMulticast(isMulticast)
+    , m_isLocal(isLocal)
+    , m_isOurOwn(isOurOwn)
+{}
 
 /*! Returns the name of this \l{ZeroConfServiceEntry}.*/
 QString ZeroConfServiceEntry::name() const
@@ -159,31 +167,21 @@ bool ZeroConfServiceEntry::isOurOwn() const
 }
 
 /*! Returns true if this \l{ZeroConfServiceEntry} is equal to \a other; otherwise returns false.*/
-bool ZeroConfServiceEntry::operator ==(const ZeroConfServiceEntry &other) const
+bool ZeroConfServiceEntry::operator==(const ZeroConfServiceEntry &other) const
 {
-    return other.name() == m_name &&
-            other.serviceType() == m_serviceType &&
-            other.hostAddress() == m_hostAddress &&
-            other.domain() == m_domain &&
-            other.hostName() == m_hostName &&
-            other.port() == m_port &&
-            other.protocol() == m_protocol &&
-            other.isChached() == m_isCached &&
-            other.isWideArea() == m_isWideArea &&
-            other.isMulticast() == m_isMulticast &&
-            other.isLocal() == m_isLocal &&
-            other.isOurOwn() == m_isOurOwn &&
-            other.txt() == m_txt;
+    return other.name() == m_name && other.serviceType() == m_serviceType && other.hostAddress() == m_hostAddress && other.domain() == m_domain && other.hostName() == m_hostName
+           && other.port() == m_port && other.protocol() == m_protocol && other.isChached() == m_isCached && other.isWideArea() == m_isWideArea
+           && other.isMulticast() == m_isMulticast && other.isLocal() == m_isLocal && other.isOurOwn() == m_isOurOwn && other.txt() == m_txt;
 }
 
 /*! Returns true if this \l{ZeroConfServiceEntry} is not equal to \a other; otherwise returns false.*/
-bool ZeroConfServiceEntry::operator !=(const ZeroConfServiceEntry &other) const
+bool ZeroConfServiceEntry::operator!=(const ZeroConfServiceEntry &other) const
 {
     return !operator==(other);
 }
 
 /*! Writes the given \a entry to the specified \a dbg.*/
-QDebug operator <<(QDebug dbg, const ZeroConfServiceEntry &entry)
+QDebug operator<<(QDebug dbg, const ZeroConfServiceEntry &entry)
 {
     dbg.nospace() << "ZeroConfServiceEntry(";
     dbg << entry.name() << ")" << '\n';

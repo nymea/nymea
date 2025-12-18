@@ -26,17 +26,17 @@
 #define DEVICECLASS_H
 
 #include "libnymea.h"
-#include "typeutils.h"
-#include "types/vendor.h"
-#include "types/eventtype.h"
 #include "types/actiontype.h"
-#include "types/statetype.h"
+#include "types/eventtype.h"
 #include "types/paramtype.h"
+#include "types/statetype.h"
+#include "types/vendor.h"
+#include "typeutils.h"
 
 #include <qobjectdefs.h>
+#include <QDebug>
 #include <QList>
 #include <QUuid>
-#include <QDebug>
 
 class ThingClass
 {
@@ -61,30 +61,16 @@ class ThingClass
     Q_PROPERTY(ParamTypes discoveryParamTypes READ discoveryParamTypes)
 
 public:
-    enum CreateMethod {
-        CreateMethodUser = 0x01,
-        CreateMethodAuto = 0x02,
-        CreateMethodDiscovery = 0x04
-    };
+    enum CreateMethod { CreateMethodUser = 0x01, CreateMethodAuto = 0x02, CreateMethodDiscovery = 0x04 };
     Q_ENUM(CreateMethod) // Note: required even if Q_DECLARE_FLAGS should do it
 
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
     Q_FLAG(CreateMethods)
 
-    enum SetupMethod {
-        SetupMethodJustAdd,
-        SetupMethodDisplayPin,
-        SetupMethodEnterPin,
-        SetupMethodPushButton,
-        SetupMethodUserAndPassword,
-        SetupMethodOAuth
-    };
+    enum SetupMethod { SetupMethodJustAdd, SetupMethodDisplayPin, SetupMethodEnterPin, SetupMethodPushButton, SetupMethodUserAndPassword, SetupMethodOAuth };
     Q_ENUM(SetupMethod)
 
-    enum DiscoveryType {
-        DiscoveryTypePrecise,
-        DiscoveryTypeWeak
-    };
+    enum DiscoveryType { DiscoveryTypePrecise, DiscoveryTypeWeak };
     Q_ENUM(DiscoveryType)
 
     ThingClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const ThingClassId &id = ThingClassId());
@@ -174,7 +160,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(ThingClass::CreateMethods)
 
 QDebug operator<<(QDebug dbg, const ThingClass &thingClass);
 
-class LIBNYMEA_EXPORT ThingClasses: public QList<ThingClass>
+class LIBNYMEA_EXPORT ThingClasses : public QList<ThingClass>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

@@ -25,12 +25,12 @@
 #ifndef HTTPDAEMON_H
 #define HTTPDAEMON_H
 
-#include "typeutils.h"
 #include "types/param.h"
+#include "typeutils.h"
 
+#include <QDateTime>
 #include <QTcpServer>
 #include <QUuid>
-#include <QDateTime>
 
 class Thing;
 class IntegrationPlugin;
@@ -39,7 +39,7 @@ class HttpDaemon : public QTcpServer
 {
     Q_OBJECT
 public:
-    HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
+    HttpDaemon(Thing *thing, IntegrationPlugin *parent = nullptr);
     ~HttpDaemon();
     void incomingConnection(qintptr socket) override;
 

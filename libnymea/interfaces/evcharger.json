@@ -1,6 +1,6 @@
 {
-    "description": "An EV-charger. Extends the power interface for charging/not charging an electric vehicle. Supports regulation of the max. charging current in addition to be powered on or off.",
-    "extends": ["power"],
+    "description": "An AC electrical vehicle charger. Supports regulation of the max. charging current in addition to be powered on or off. Phase switching, if available, can be performed by setting the desired phase count. The session energy can provide information how much energy has been charged since the car has been plugged in.",
+    "extends": ["charger"],
     "states": [
         {
             "name": "maxChargingCurrent",
@@ -9,11 +9,6 @@
             "unit": "Ampere",
             "minValue": "any",
             "maxValue": "any"
-        },
-        {
-            "name": "pluggedIn",
-            "type": "bool",
-            "optional": true
         },
         {
             "name": "charging",

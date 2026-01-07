@@ -23,40 +23,29 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
-#include "loggingcategories.h"
-#include "platform/platform.h"
-#include "jsonrpc/jsonrpcserverimplementation.h"
-#include "ruleengine/ruleengine.h"
-#include "nymeasettings.h"
-#include "tagging/tagsstorage.h"
-#include "platform/platform.h"
 #include "experiences/experiencemanager.h"
-#include "platform/platformsystemcontroller.h"
-#include "logging/logengineinfluxdb.h"
-#include "scriptengine/scriptengine.h"
-#include "jsonrpc/scriptshandler.h"
 #include "jsonrpc/debughandler.h"
 #include "usermanager/usermanager.h"
 #include "debugserverhandler.h"
 #include "version.h"
 
-#include "integrations/thingmanagerimplementation.h"
-#include "integrations/thing.h"
-#include "integrations/thingactioninfo.h"
 #include "integrations/browseractioninfo.h"
 #include "integrations/browseritemactioninfo.h"
+#include "integrations/thing.h"
+#include "integrations/thingactioninfo.h"
+#include "integrations/thingmanagerimplementation.h"
 
 #include "zigbee/zigbeemanager.h"
 
-#include "zwave/zwavemanager.h"
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
+#include "zwave/zwavemanager.h"
 
 #include <networkmanager.h>
 
-#include <QDir>
 #include <QCoreApplication>
 #include <QMetaObject>
+#include <QDir>
 
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
@@ -66,7 +55,7 @@ NYMEA_LOGGING_CATEGORY(dcCore, "Core")
 
 namespace nymeaserver {
 
-NymeaCore* NymeaCore::s_instance = nullptr;
+NymeaCore *NymeaCore::s_instance = nullptr;
 NymeaCore::ShutdownReason NymeaCore::s_shutdownReason = NymeaCore::ShutdownReasonTerm;
 
 /*! Returns a pointer to the single \l{NymeaCore} instance. */
@@ -80,19 +69,23 @@ NymeaCore *NymeaCore::instance()
 
 /*! Constructs NymeaCore with the given \a parent. This is private.
     Use \l{NymeaCore::instance()} to access the single instance.*/
-NymeaCore::NymeaCore(QObject *parent) :
-    QObject(parent)
-{
-}
+NymeaCore::NymeaCore(QObject *parent)
+    : QObject(parent)
+{}
 
-void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine) {
+void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
+{
     qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
     m_platform = new Platform(this);
 
-    qCDebug(dcCore()) << "Loading nymea configurations from" << QFileInfo(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName()).absoluteFilePath();
+    qCDebug(dcCore()) << "Loading nymea configurations from"
+                      << QFileInfo(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName())
+                             .absoluteFilePath();
     m_configuration = new NymeaConfiguration(this);
+
+    m_backupManager = new BackupManager(this);
 
     qCDebug(dcCore()) << "Creating Time Manager";
     // Migration path: nymea < 0.18 doesn't use system time zone but stores its own time zone in the config
@@ -105,7 +98,8 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_timeManager = new TimeManager(this);
 
     qCDebug(dcCore()) << "Creating User Manager";
-    m_userManager = new UserManager(NymeaSettings::privodeFromDefaultFilePath("user-db.sqlite"), this);
+    m_userManager = new UserManager(NymeaSettings::privodeFromDefaultFilePath("user-db.sqlite"),
+                                    this);
 
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);
@@ -123,10 +117,19 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_modbusRtuManager = new ModbusRtuManager(m_serialPortMonitor, this);
 
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform,
+                                                          m_serverManager->mqttBroker(),
+                                                          m_zigbeeManager,
+                                                          m_zwaveManager,
+                                                          m_modbusRtuManager,
+                                                          this);
 
     qCDebug(dcCore) << "Creating Log Engine";
-    m_logEngine = new LogEngineInfluxDB(m_configuration->logDBHost(), m_configuration->logDBName(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);
+    m_logEngine = new LogEngineInfluxDB(m_configuration->logDBHost(),
+                                        m_configuration->logDBName(),
+                                        m_configuration->logDBUser(),
+                                        m_configuration->logDBPassword(),
+                                        this);
     if (disableLogEngine) {
         m_logEngine->disable();
     } else {
@@ -136,14 +139,18 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_logger = m_logEngine->registerLogSource("core", {"event"});
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
-    m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_logEngine, m_configuration->locale(), this);
+    m_thingManager = new ThingManagerImplementation(m_hardwareManager,
+                                                    m_logEngine,
+                                                    m_configuration->locale(),
+                                                    this);
 
     qCDebug(dcCore) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(m_thingManager, m_timeManager, m_logEngine, this);
 
     qCDebug(dcCore()) << "Creating Script Engine";
     m_scriptEngine = new scriptengine::ScriptEngine(m_thingManager, m_logEngine, this);
-    m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
+    m_serverManager->jsonServer()->registerHandler(
+        new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcCore()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_thingManager, m_ruleEngine, this);
@@ -183,10 +190,10 @@ NymeaCore::~NymeaCore()
 #endif
 
     qCDebug(dcCore()) << "Shutting down NymeaCore";
-    m_logger->log({"stopped"}, {
-                      {"version", NYMEA_VERSION_STRING},
-                      {"shutdownReason", QMetaEnum::fromType<ShutdownReason>().valueToKey(s_shutdownReason)}
-                  });
+    m_logger->log({"stopped"},
+                  {{"version", NYMEA_VERSION_STRING},
+                   {"shutdownReason",
+                    QMetaEnum::fromType<ShutdownReason>().valueToKey(s_shutdownReason)}});
 
     // Disconnect all signals/slots, we're going down now
     m_timeManager->stopTimer();
@@ -233,6 +240,11 @@ void NymeaCore::destroy(ShutdownReason reason)
 NymeaConfiguration *NymeaCore::configuration() const
 {
     return m_configuration;
+}
+
+BackupManager *NymeaCore::backupManager() const
+{
+    return m_backupManager;
 }
 
 ThingManager *NymeaCore::thingManager() const
@@ -400,4 +412,4 @@ void NymeaCore::thingManagerLoaded()
     }
 }
 
-}
+} // namespace nymeaserver

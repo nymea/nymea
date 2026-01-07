@@ -25,8 +25,8 @@
 #include "backupmanager.h"
 #include "loggingcategories.h"
 
-#include <QDir>
 #include <QDateTime>
+#include <QDir>
 #include <QFileInfo>
 #include <QProcess>
 
@@ -34,15 +34,31 @@ NYMEA_LOGGING_CATEGORY(dcBackup, "Backup")
 
 BackupManager::BackupManager(QObject *parent)
     : QObject{parent}
-{
+{}
 
+bool BackupManager::automaticBackupEnabled() const
+{
+    return m_automaticBackupEnabled;
 }
 
-bool BackupManager::createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups, const QString &archivePrefix)
+void BackupManager::setAutomaticBackupEnabled(bool automaticBackupEnabled)
+{
+    if (m_automaticBackupEnabled == automaticBackupEnabled)
+        return;
+
+    m_automaticBackupEnabled = automaticBackupEnabled;
+    emit automaticBackupEnabledChanged(m_automaticBackupEnabled);
+}
+
+bool BackupManager::createBackup(const QString &sourceDir,
+                                 const QString &destinationDir,
+                                 int maxBackups,
+                                 const QString &archivePrefix)
 {
     QFileInfo srcInfo(sourceDir);
     if (!srcInfo.exists() || !srcInfo.isDir()) {
-        qCWarning(dcBackup()) << "Source directory doesn't exist or isn't a directory:" << sourceDir;
+        qCWarning(dcBackup()) << "Source directory doesn't exist or isn't a directory:"
+                              << sourceDir;
         return false;
     }
 
@@ -64,7 +80,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
 
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
-        qCWarning(dcBackup()) << "Creating tar failed with exit code" << exitCode << "command: tar" << args.join(' ');
+        qCWarning(dcBackup()) << "Creating tar failed with exit code" << exitCode << "command: tar"
+                              << args.join(' ');
         QFile::remove(archivePath);
         return false;
     }
@@ -76,7 +93,9 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
 
     if (maxBackups > 0) {
         const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
-        QFileInfoList files = dst.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks, QDir::Time); // sorted by time (newest first)
+        QFileInfoList files = dst.entryInfoList({pattern},
+                                                QDir::Files | QDir::NoSymLinks,
+                                                QDir::Time); // sorted by time (newest first)
         if (files.size() <= maxBackups)
             return true;
 
@@ -94,7 +113,9 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     return true;
 }
 
-bool BackupManager::restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup)
+bool BackupManager::restoreBackup(const QString &fileName,
+                                  const QString &destinationDir,
+                                  bool safetyBackup)
 {
     QFileInfo arcInfo(fileName);
     if (!arcInfo.exists() || !arcInfo.isFile()) {
@@ -113,7 +134,7 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
             const QString stamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
             const QString bakDir = destinationDir + ".bak-" + stamp;
             if (!QDir().rename(destinationDir, bakDir)) {
-                qCWarning(dcBackup()) << "Failed to move existing target to backup:" << bakDir ;
+                qCWarning(dcBackup()) << "Failed to move existing target to backup:" << bakDir;
                 return false;
             }
 
@@ -121,7 +142,8 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
             // Remove existing directory to ensure a clean restore
             QDir dir(destinationDir);
             if (!dir.removeRecursively()) {
-                qCWarning(dcBackup()) << "Failed to clear existing target directory:" << destinationDir;
+                qCWarning(dcBackup())
+                    << "Failed to clear existing target directory:" << destinationDir;
                 return false;
             }
         }
@@ -138,7 +160,8 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
 
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
-        qCWarning(dcBackup()) << "tar failed with exit code" << exitCode << "during restore. Command: tar" << args.join(' ');
+        qCWarning(dcBackup()) << "tar failed with exit code" << exitCode
+                              << "during restore. Command: tar" << args.join(' ');
         return false;
     }
 

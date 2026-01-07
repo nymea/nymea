@@ -34,13 +34,21 @@ public:
     explicit BackupManager(QObject *parent = nullptr);
 
     bool automaticBackupEnabled() const;
-    void setAutomaticBackupEnabled(bool automaticBackupEnabled) const;
+    void setAutomaticBackupEnabled(bool automaticBackupEnabled);
 
-    bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration");
-    bool restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup = false);
+    bool createBackup(const QString &sourceDir,
+                      const QString &destinationDir,
+                      int maxBackups = 5,
+                      const QString &archivePrefix = "nymea-configuration");
+    bool restoreBackup(const QString &fileName,
+                       const QString &destinationDir,
+                       bool safetyBackup = false);
+
+signals:
+    void automaticBackupEnabledChanged(bool automaticBackupEnabled);
 
 private:
-
+    bool m_automaticBackupEnabled = false;
 
 };
 

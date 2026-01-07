@@ -29,6 +29,29 @@
 #include <QFileInfo>
 #include <QJsonParseError>
 #include <QMetaEnum>
+#include <qmath.h>
+
+namespace {
+
+bool isStepSizeType(QMetaType::Type type)
+{
+    switch (type) {
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::Double:
+    case QMetaType::Float:
+    case QMetaType::Short:
+    case QMetaType::ULong:
+    case QMetaType::UShort:
+        return true;
+    default:
+        return false;
+    }
+}
+
+}
 
 ThingUtils::ThingUtils()
 {
@@ -130,6 +153,39 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
 
         if (paramType.minValue().isValid() && ThingUtils::variantLessThan(param.value(), paramType.minValue())) {
             qCWarning(dcThing()) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            return Thing::ThingErrorInvalidParameter;
+        }
+    }
+
+    if (paramType.stepSize() != 0) {
+        QVariant paramValue = param.value();
+        paramValue.convert(static_cast<int>(paramType.type()));
+        QVariant clampedValue = ThingUtils::ensureValueClamping(paramValue, paramType.type(), paramType.minValue(), paramType.maxValue(), paramType.stepSize());
+        const double stepEpsilon = qMax(qAbs(paramType.stepSize()) * 1e-9, 1e-12);
+        bool stepAdjusted = false;
+        switch (paramType.type()) {
+        case QMetaType::Double:
+            stepAdjusted = qAbs(paramValue.toDouble() - clampedValue.toDouble()) > stepEpsilon;
+            break;
+        case QMetaType::Float:
+            stepAdjusted = qAbs(paramValue.toFloat() - clampedValue.toFloat()) > stepEpsilon;
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+        case QMetaType::Short:
+        case QMetaType::ULong:
+        case QMetaType::UShort:
+            stepAdjusted = (paramValue != clampedValue);
+            break;
+        default:
+            break;
+        }
+
+        if (stepAdjusted) {
+            qCWarning(dcThing()) << "Value not matching step size for param" << param.paramTypeId().toString()
+                                 << " Got:" << param.value() << " Step size:" << paramType.stepSize();
             return Thing::ThingErrorInvalidParameter;
         }
     }
@@ -398,6 +454,73 @@ QStringList ThingUtils::generateInterfaceParentList(const QString &interface)
         }
     }
     return ret;
+}
+
+QVariant ThingUtils::ensureValueClamping(const QVariant value, QMetaType::Type type, const QVariant &minValue, const QVariant &maxValue, double stepSize)
+{
+    QVariant adjustedValue = value;
+    if (!adjustedValue.canConvert(static_cast<int>(type)) || !adjustedValue.convert(static_cast<int>(type))) {
+        return value;
+    }
+
+    if (stepSize == 0 || !isStepSizeType(type)) {
+        if (minValue.isValid() && ThingUtils::variantLessThan(adjustedValue, minValue)) {
+            return minValue;
+        }
+        if (maxValue.isValid() && ThingUtils::variantGreaterThan(adjustedValue, maxValue)) {
+            return maxValue;
+        }
+        return adjustedValue;
+    }
+
+    const double step = qAbs(stepSize);
+    const bool hasMinValue = minValue.isValid();
+    const bool hasMaxValue = maxValue.isValid();
+    const double baseValue = hasMinValue ? minValue.toDouble() : 0.0;
+    const double currentValue = adjustedValue.toDouble();
+    const qint64 roundedSteps = qRound64((currentValue - baseValue) / step);
+    double steppedValue = baseValue + roundedSteps * step;
+
+    if (hasMinValue) {
+        const double min = minValue.toDouble();
+        if (steppedValue < min) {
+            steppedValue = min;
+        }
+    }
+
+    if (hasMaxValue) {
+        const double max = maxValue.toDouble();
+        if (steppedValue > max) {
+            const qint64 maxSteps = static_cast<qint64>(qFloor((max - baseValue) / step));
+            steppedValue = baseValue + maxSteps * step;
+            if (hasMinValue && steppedValue < minValue.toDouble()) {
+                steppedValue = minValue.toDouble();
+            }
+        }
+    }
+
+    switch (type) {
+    case QMetaType::Int:
+        return QVariant(static_cast<int>(qRound64(steppedValue)));
+    case QMetaType::UInt:
+        return QVariant(static_cast<uint>(qRound64(steppedValue)));
+    case QMetaType::LongLong:
+        return QVariant(static_cast<qint64>(qRound64(steppedValue)));
+    case QMetaType::ULongLong:
+        return QVariant(static_cast<quint64>(qRound64(steppedValue)));
+    case QMetaType::Double:
+        return QVariant(steppedValue);
+    case QMetaType::Float:
+        return QVariant(static_cast<float>(steppedValue));
+    case QMetaType::Short:
+        return QVariant::fromValue(static_cast<short>(qRound64(steppedValue)));
+    case QMetaType::ULong:
+        return QVariant::fromValue(static_cast<ulong>(qRound64(steppedValue)));
+    case QMetaType::UShort:
+        return QVariant::fromValue(static_cast<ushort>(qRound64(steppedValue)));
+    default:
+        return adjustedValue;
+    }
 }
 
 bool ThingUtils::variantLessThan(const QVariant &leftHandSide, const QVariant &rightHandSide)

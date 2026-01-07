@@ -34,19 +34,14 @@
 
 #include "statetype.h"
 
-StateType::StateType()
-{
-
-}
+StateType::StateType() {}
 
 /*! Constructs a StateType with the given \a id.
  *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
  *  hardcode it into the plugin json file. */
-StateType::StateType(const StateTypeId &id):
-    m_id(id)
-{
-
-}
+StateType::StateType(const StateTypeId &id)
+    : m_id(id)
+{}
 
 /*! Returns the id of the StateType. */
 StateTypeId StateType::id() const
@@ -139,6 +134,18 @@ QVariant StateType::maxValue() const
 void StateType::setMaxValue(const QVariant &maxValue)
 {
     m_maxValue = maxValue;
+}
+
+/*! Returns the step size for the value of this StateType. If there are no steps to consider, the value will be 0. */
+double StateType::stepSize() const
+{
+    return m_stepSize;
+}
+
+/*! Set the step size for the value of this StateType to \a stepSize. If there are no steps to consider, the value can be set to 0. */
+void StateType::setStepSize(double stepSize)
+{
+    m_stepSize = stepSize;
 }
 
 /*! Returns the list of possible values of this StateType. If the list is empty or invalid the \l{State} value can take every value. */

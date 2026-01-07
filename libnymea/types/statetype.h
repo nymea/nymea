@@ -43,6 +43,7 @@ class LIBNYMEA_EXPORT StateType
     Q_PROPERTY(Types::IOType ioType READ ioType WRITE setIOType USER true)
     Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
     Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
+    Q_PROPERTY(double stepSize READ stepSize WRITE setStepSize USER true)
     Q_PROPERTY(QVariantList possibleValues READ possibleValues WRITE setPossibleValues USER true)
     Q_PROPERTY(QStringList possibleValuesDisplayNames READ possibleValuesDisplayNames WRITE setPossibleValuesDisplayNames USER true)
 
@@ -72,6 +73,9 @@ public:
 
     QVariant maxValue() const;
     void setMaxValue(const QVariant &maxValue);
+
+    double stepSize() const;
+    void setStepSize(double stepSize);
 
     QVariantList possibleValues() const;
     void setPossibleValues(const QVariantList &possibleValues);
@@ -108,6 +112,7 @@ private:
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;
+    double m_stepSize = 0;
     QVariantList m_possibleValues;
     QStringList m_possibleValuesDisplayNames;
     Types::Unit m_unit = Types::UnitNone;
@@ -119,7 +124,7 @@ private:
 };
 Q_DECLARE_METATYPE(StateType)
 
-class StateTypes: public QList<StateType>
+class StateTypes : public QList<StateType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

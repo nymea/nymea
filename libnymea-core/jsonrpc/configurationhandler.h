@@ -56,6 +56,7 @@ public:
     Q_INVOKABLE JsonReply *DeleteWebSocketServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTunnelProxyServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteTunnelProxyServerConfiguration(const QVariantMap &params) const;
+
     Q_INVOKABLE JsonReply *SetBackupConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateBackup(const QVariantMap &params) const;
 
@@ -104,9 +105,8 @@ private:
     static QVariantMap packBasicConfiguration();
     static QVariantMap packBackupConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // CONFIGURATIONHANDLER_H

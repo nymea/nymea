@@ -127,7 +127,8 @@ public:
         ConfigurationErrorInvalidDestinationDir,
         ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate,
-        ConfigurationErrorUnsupported
+        ConfigurationErrorUnsupported,
+        ConfigurationErrorBackupFailed
     };
     Q_ENUM(ConfigurationError)
 

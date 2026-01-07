@@ -25,19 +25,17 @@
 #ifndef NYMEACORE_H
 #define NYMEACORE_H
 
-#include "types/event.h"
-#include "types/thingclass.h"
 #include "integrations/integrationplugin.h"
-#include "integrations/thingdescriptor.h"
 #include "integrations/thingmanagerimplementation.h"
 
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
 
 #include "servermanager.h"
+#include "backupmanager.h"
 
-#include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
+#include "time/timemanager.h"
 
 #include "debugserverhandler.h"
 
@@ -83,16 +81,18 @@ public:
     };
     Q_ENUM(ShutdownReason)
 
-    static NymeaCore* instance();
+    static NymeaCore *instance();
     ~NymeaCore();
 
-    void init(const QStringList &additionalInterfaces = QStringList(), bool disableLogEngine = false);
+    void init(const QStringList &additionalInterfaces = QStringList(),
+              bool disableLogEngine = false);
     void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
     NymeaConfiguration *configuration() const;
-    LogEngine* logEngine() const;
+    BackupManager *backupManager() const;
+    LogEngine *logEngine() const;
     JsonRPCServerImplementation *jsonRPCServer() const;
     ThingManager *thingManager() const;
     RuleEngine *ruleEngine() const;
@@ -119,7 +119,6 @@ signals:
     void initialized();
 
 private:
-
     explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
     static ShutdownReason s_shutdownReason;
@@ -127,6 +126,7 @@ private:
     Platform *m_platform = nullptr;
 
     NymeaConfiguration *m_configuration = nullptr;
+    BackupManager *m_backupManager = nullptr;
     ServerManager *m_serverManager = nullptr;
     ThingManagerImplementation *m_thingManager = nullptr;
     RuleEngine *m_ruleEngine = nullptr;
@@ -148,12 +148,10 @@ private:
     SerialPortMonitor *m_serialPortMonitor = nullptr;
     ModbusRtuManager *m_modbusRtuManager = nullptr;
 
-
 private slots:
     void thingManagerLoaded();
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // NYMEACORE_H

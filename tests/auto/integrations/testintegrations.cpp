@@ -28,10 +28,13 @@
 
 #include "integrations/thingdiscoveryinfo.h"
 #include "integrations/thingsetupinfo.h"
+#include "integrations/thingutils.h"
 
 #include "servers/mocktcpserver.h"
 #include "jsonrpc/integrationshandler.h"
 #include "../plugins/mock/extern-plugininfo.h"
+
+#include <QtMath>
 
 using namespace nymeaserver;
 
@@ -136,6 +139,7 @@ private slots:
     void triggerStateChangeSignal();
 
     void params();
+    void ensureValueClamping();
 
     void dynamicMinMax();
 
@@ -2191,6 +2195,26 @@ void TestIntegrations::params()
     QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
 }
 
+void TestIntegrations::ensureValueClamping()
+{
+    const double tolerance = 1e-6;
+
+    QVariant result = ThingUtils::ensureValueClamping(5.789, QMetaType::Double, 0.0, 10.0, 0.1);
+    QVERIFY(qAbs(result.toDouble() - 5.8) < tolerance);
+
+    result = ThingUtils::ensureValueClamping(1.3, QMetaType::Double, 1.0, 5.0, 0.5);
+    QVERIFY(qAbs(result.toDouble() - 1.5) < tolerance);
+
+    result = ThingUtils::ensureValueClamping(11.0, QMetaType::Double, 0.0, 10.0, 3.0);
+    QVERIFY(qAbs(result.toDouble() - 9.0) < tolerance);
+
+    result = ThingUtils::ensureValueClamping(7, QMetaType::Int, 0, 20, 5);
+    QCOMPARE(result.toInt(), 5);
+
+    result = ThingUtils::ensureValueClamping(-5, QMetaType::Int, 0, 20, 0);
+    QCOMPARE(result.toInt(), 0);
+}
+
 void TestIntegrations::dynamicMinMax()
 {
     enableNotifications({"Integrations"});
@@ -2396,4 +2420,3 @@ void TestIntegrations::testTranslations()
 
 #include "testintegrations.moc"
 QTEST_MAIN(TestIntegrations)
-

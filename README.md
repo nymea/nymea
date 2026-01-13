@@ -6,8 +6,6 @@
   </a>
 </p>
 
-nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the built-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
-
 ## Quick start
 
 ### Install nymea on a Raspberry Pi
@@ -18,12 +16,10 @@ nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based arc
 
 We have created an image for your Raspberry Pi that comes with an array of plugins for different smart devices!
 
-Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. You'll have the
-choice between a headless nymea:core setup or a kiosk image that contains nymea:core and nymea:app for Raspberry Pis with touch screen.
+Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. 
 
 Alternatively, the image can be downloaded and flashed manually from [here](https://downloads.nymea.io/images/raspberrypi/). We recommend
-the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-bookworm-latest.zip) or
-[kiosk](https://downloads.nymea.io//images/raspberrypi/nymea-kiosk-image-raspios-bookworm-latest.zip) image.
+the latest Raspberry Pi OS Trixie [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-trixie-latest.zip) image.
 
 ### Get nymea:app here:
 

@@ -27,6 +27,7 @@
 
 #include <QObject>
 
+class LogEngine;
 class ThingManager;
 class JsonRPCServer;
 class WebServerResource;
@@ -49,13 +50,15 @@ public:
 protected:
     ThingManager *thingManager();
     JsonRPCServer *jsonRpcServer();
+    LogEngine *logEngine();
 
 private:
     friend class nymeaserver::ExperienceManager;
-    void initPlugin(ThingManager *thingManager, JsonRPCServer *jsonRPCServer);
+    void initPlugin(ThingManager *thingManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine = nullptr);
 
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
+    LogEngine *m_logEngine = nullptr;
 
 };
 

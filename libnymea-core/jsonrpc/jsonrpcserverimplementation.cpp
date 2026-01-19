@@ -43,19 +43,12 @@
 #include "jsonrpc/jsonhandler.h"
 #include "jsonvalidator.h"
 #include "nymeacore.h"
-#include "integrations/thingmanager.h"
-#include "integrations/integrationplugin.h"
-#include "integrations/thing.h"
-#include "types/thingclass.h"
-#include "ruleengine/rule.h"
-#include "ruleengine/ruleengine.h"
+#include "usermanager/usermanager.h"
 #include "loggingcategories.h"
-#include "platform/platform.h"
 #include "version.h"
 
 #include "integrationshandler.h"
 #include "ruleshandler.h"
-#include "scriptshandler.h"
 #include "logginghandler.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
@@ -103,19 +96,19 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     // Methods
     QString description; QVariantMap returns; QVariantMap params;
     description = "Initiates a connection. Use this method to perform an initial handshake of the "
-                            "connection. Optionally, a parameter \"locale\" is can be passed to set up the used "
-                            "locale for this connection. Strings such as ThingClass displayNames etc will be "
-                            "localized to this locale. If this parameter is omitted, the default system locale "
-                            "(depending on the configuration) is used. The reply of this method contains information "
-                            "about this core instance such as version information, uuid and its name. The locale value"
-                            "indicates the locale used for this connection. Note: This method can be called multiple "
-                            "times. The locale used in the last call for this connection will be used. Other values, "
-                            "like initialSetupRequired might change if the setup has been performed in the meantime.\n "
-                            "The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for "
-                            "a method does not change, a client may use a previously cached copy of the call instead of "
-                            "fetching the content again. While the Hello call doesn't necessarily require a token, this "
-                            "can be called with a token. If a token is provided, it will be verified and the reply contains "
-                            "information about the tokens validity and the user and permissions for the given token.";
+                  "connection. Optionally, a parameter \"locale\" is can be passed to set up the used "
+                  "locale for this connection. Strings such as ThingClass displayNames etc will be "
+                  "localized to this locale. If this parameter is omitted, the default system locale "
+                  "(depending on the configuration) is used. The reply of this method contains information "
+                  "about this core instance such as version information, uuid and its name. The locale value"
+                  "indicates the locale used for this connection. Note: This method can be called multiple "
+                  "times. The locale used in the last call for this connection will be used. Other values, "
+                  "like initialSetupRequired might change if the setup has been performed in the meantime.\n "
+                  "The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for "
+                  "a method does not change, a client may use a previously cached copy of the call instead of "
+                  "fetching the content again. While the Hello call doesn't necessarily require a token, this "
+                  "can be called with a token. If a token is provided, it will be verified and the reply contains "
+                  "information about the tokens validity and the user and permissions for the given token.";
     params.insert("o:locale", enumValueName(String));
     returns.insert("server", enumValueName(String));
     returns.insert("name", enumValueName(String));
@@ -151,13 +144,13 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
 
     params.clear(); returns.clear();
     description = "Enable/Disable notifications for this connections. Either \"enabled\" or """
-                                            "\"namespaces\" needs to be given but not both of them. The boolean based "
-                                            "\"enabled\" parameter will enable/disable all notifications at once. If "
-                                            "instead the list-based \"namespaces\" parameter is provided, all given namespaces"
-                                            "will be enabled, the others will be disabled. The return value of \"success\" will "
-                                            "indicate success of the operation. The \"enabled\" property in the return value is "
-                                            "deprecated and used for legacy compatibilty only. It will be set to true if at least "
-                                            "one namespace has been enabled.";
+                  "\"namespaces\" needs to be given but not both of them. The boolean based "
+                  "\"enabled\" parameter will enable/disable all notifications at once. If "
+                  "instead the list-based \"namespaces\" parameter is provided, all given namespaces"
+                  "will be enabled, the others will be disabled. The return value of \"success\" will "
+                  "indicate success of the operation. The \"enabled\" property in the return value is "
+                  "deprecated and used for legacy compatibilty only. It will be set to true if at least "
+                  "one namespace has been enabled.";
     params.insert("o:namespaces", enumValueName(StringList));
     params.insert("d:o:enabled", enumValueName(Bool));
     returns.insert("namespaces", enumValueName(StringList));
@@ -177,9 +170,9 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via user & password challenge. Provide "
-                   "a device name which allows the user to identify the client and revoke the token in case "
-                   "the device is lost or stolen. This will return a new token to be used to authorize a "
-                   "client at the API.";
+                  "a device name which allows the user to identify the client and revoke the token in case "
+                  "the device is lost or stolen. This will return a new token to be used to authorize a "
+                  "client at the API.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     params.insert("deviceName", enumValueName(String));
@@ -191,18 +184,18 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via Push Button method. "
-                   "Provide a device name which allows the user to identify the client and revoke the "
-                   "token in case the device is lost or stolen. If push button hardware is available, "
-                   "this will return with success and start listening for push button presses. When the "
-                   "push button is pressed, the PushButtonAuthFinished notification will be sent to the "
-                   "requesting client. The procedure will be cancelled when the connection is interrupted. "
-                   "If another client requests push button authentication while a procedure is still going "
-                   "on, the second call will take over and the first one will be notified by the "
-                   "PushButtonAuthFinished signal about the error. The application should make it clear "
-                   "to the user to not press the button when the procedure fails as this can happen for 2 "
-                   "reasons: a) a second user is trying to auth at the same time and only the currently "
-                   "active user should press the button or b) it might indicate an attacker trying to take "
-                   "over and snooping in for tokens.";
+                  "Provide a device name which allows the user to identify the client and revoke the "
+                  "token in case the device is lost or stolen. If push button hardware is available, "
+                  "this will return with success and start listening for push button presses. When the "
+                  "push button is pressed, the PushButtonAuthFinished notification will be sent to the "
+                  "requesting client. The procedure will be cancelled when the connection is interrupted. "
+                  "If another client requests push button authentication while a procedure is still going "
+                  "on, the second call will take over and the first one will be notified by the "
+                  "PushButtonAuthFinished signal about the error. The application should make it clear "
+                  "to the user to not press the button when the procedure fails as this can happen for 2 "
+                  "reasons: a) a second user is trying to auth at the same time and only the currently "
+                  "active user should press the button or b) it might indicate an attacker trying to take "
+                  "over and snooping in for tokens.";
     params.insert("deviceName", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("transactionId", enumValueName(Int));
@@ -226,6 +219,8 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 
     connect(NymeaCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServerImplementation::onPushButtonAuthFinished);
+
+
 
     m_connectionLockdownTimer.setSingleShot(true);
     m_connectionLockdownTimer.setInterval(3000);
@@ -655,7 +650,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         return;
     }
     if (!handler->jsonMethods().contains(method)) {
-        qCWarning(dcJsonRpc()) << QString("JSON RPC method called for invalid method: %1.%2").arg(targetNamespace).arg(method);
+        qCWarning(dcJsonRpc()) << QString("JSON RPC method called for invalid method: %1.%2").arg(targetNamespace, method);
         sendErrorResponse(interface, clientId, commandId, "No such method");
         return;
     }
@@ -798,6 +793,69 @@ void JsonRPCServerImplementation::sendClientNotification(const QUuid &clientId, 
     qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
     qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
     m_clientTransports.value(clientId)->sendData(clientId, data);
+}
+
+void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &params, const ThingId &thingId)
+{
+    JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
+    QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
+
+    QVariantMap notification;
+    notification.insert("id", m_notificationId++);
+    notification.insert("notification", handler->name() + "." + method.name());
+
+    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
+
+        // Check if this client wants to be notified
+        if (!m_clientNotifications.value(clientId).contains(handler->name()))
+            continue;
+
+        // Make sure this client is allowed to receive this notification
+        if (m_clientTokens.contains(clientId)) {
+            const QByteArray token = m_clientTokens.value(clientId);
+            if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, token)) {
+                qCDebug(dcJsonRpc()) << "Not sending notification to client" << "to client" << clientId.toString()
+                << "due to missing thing permissions" << handler->name() + "." + method.name();
+                continue;
+            }
+        }
+
+        // Add deprecation warning if necessary
+        if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
+            QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
+            qCWarning(dcJsonRpc()) << "Client" << clientId << "uses deprecated API. Please update client implementation!";
+            qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
+            notification.insert("deprecationWarning", deprecationMessage);
+        }
+
+        QLocale locale = m_clientLocales.value(clientId);
+        QVariantMap translatedParams = handler->translateNotification(method.name(), params, locale);
+
+        JsonValidator validator;
+        Q_ASSERT_X(validator.validateNotificationParams(translatedParams, handler->name() + '.' + method.name(), m_api).success(),
+                   validator.result().where().toUtf8(),
+                   validator.result().errorString().toUtf8() + "\nGot:" + QJsonDocument::fromVariant(translatedParams).toJson(QJsonDocument::Indented));
+
+        notification.insert("params", translatedParams);
+
+        QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
+
+        qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
+        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+
+        m_clientTransports.value(clientId)->sendData(clientId, data);
+    }
+}
+
+void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &params, const UserInfo &userInfo)
+{
+    // Send client specific notifications
+    qCDebug(dcJsonRpc()) << "Sending notification to client" << userInfo.username() << "connections...";
+    foreach (const QByteArray &token, m_clientTokens) {
+        if (NymeaCore::instance()->userManager()->tokenInfo(token).username() == userInfo.username()) {
+            sendClientNotification(m_clientTokens.key(token), params);
+        }
+    }
 }
 
 void JsonRPCServerImplementation::asyncReplyFinished()
@@ -979,9 +1037,17 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         QMetaMethod method = handler->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegularExpression("^[A-Z]"))) {
             if (method.parameterCount() == 1 && method.parameterType(0) == QMetaType::QVariantMap) {
+                // Generic notification for all subscribed clients
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
             } else if (method.parameterCount() == 2 && method.parameterType(0) == QMetaType::QUuid && method.parameterType(1) == QMetaType::QVariantMap) {
+                // Notifications for a specific client with the given UUID
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QUuid,QVariantMap)")));
+            } else if (method.parameterCount() == 2 && method.parameterType(0) == QMetaType::QVariantMap && method.parameterType(1) == QMetaType::type("ThingId")) {
+                // Notifications which contains thing specific information which might be restricted for certain clients
+                QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QVariantMap,ThingId)")));
+            } else if (method.parameterCount() == 2 && method.parameterType(0) == QMetaType::QVariantMap && method.parameterType(1) == QMetaType::type("nymeaserver::UserInfo")) {
+                // Notifications for a specific user
+                QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QVariantMap,nymeaserver::UserInfo)")));
             }
         }
     }
@@ -1011,6 +1077,7 @@ void JsonRPCServerImplementation::clientConnected(const QUuid &clientId)
         m_newConnectionWaitTimers.remove(clientId);
         interface->terminateClientConnection(clientId);
     });
+
     m_newConnectionWaitTimers.insert(clientId, timer);
     timer->start(10000);
 }
@@ -1023,9 +1090,11 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     m_clientBuffers.remove(clientId);
     m_clientLocales.remove(clientId);
     m_clientTokens.remove(clientId);
+
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }
+
     if (m_newConnectionWaitTimers.contains(clientId)) {
         delete m_newConnectionWaitTimers.take(clientId);
     }

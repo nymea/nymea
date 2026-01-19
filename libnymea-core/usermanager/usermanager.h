@@ -46,7 +46,8 @@ public:
         UserErrorDuplicateUserId,
         UserErrorBadPassword,
         UserErrorTokenNotFound,
-        UserErrorPermissionDenied
+        UserErrorPermissionDenied,
+        UserErrorInconsistantScopes
     };
     Q_ENUM(UserError)
 
@@ -55,10 +56,10 @@ public:
     bool initRequired() const;
     UserInfoList users() const;
 
-    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes);
+    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds = QList<ThingId>());
     UserError changePassword(const QString &username, const QString &newPassword);
     UserError removeUser(const QString &username);
-    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes);
+    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds = QList<ThingId>());
     UserError setUserInfo(const QString &username, const QString &email, const QString &displayName);
 
     bool pushButtonAuthAvailable() const;
@@ -77,11 +78,20 @@ public:
 
     bool verifyToken(const QByteArray &token);
 
+    bool hasRestrictedThingAccess(const QByteArray &token) const;
+    bool accessToThingGranted(const ThingId &thingId, const QByteArray &token);
+    QList<ThingId> getAllowedThingIdsForToken(const QByteArray &token) const;
+
+public slots:
+    void onThingRemoved(const ThingId &thingId);
+
 signals:
     void userAdded(const QString &username);
     void userRemoved(const QString &username);
     void userChanged(const QString &username);
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
+
+    void userThingRestrictionsChanged(const nymeaserver::UserInfo &userInfo, const ThingId &thingId, bool accessGranted);
 
 private:
     bool initDB();
@@ -89,8 +99,11 @@ private:
     bool validateUsername(const QString &username) const;
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
+    bool validateScopes(Types::PermissionScopes scopes) const;
 
     void dumpDBError(const QString &message);
+
+    void evaluateAllowedThingsForUser();
 
 private slots:
     void onPushButtonPressed();
@@ -102,7 +115,9 @@ private:
     QPair<int, QString> m_pushButtonTransaction;
 
 };
+
 }
+
 Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)
 
 #endif // USERMANAGER_H

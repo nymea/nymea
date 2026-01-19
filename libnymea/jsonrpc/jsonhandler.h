@@ -69,7 +69,6 @@ public:
     QVariantMap jsonMethods() const;
     QVariantMap jsonNotifications() const;
 
-
     template<typename T> static QString enumRef();
     template<typename T> static QString flagRef();
     template<typename T> static QString objectRef();

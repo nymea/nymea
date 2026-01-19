@@ -79,6 +79,16 @@ void UserInfo::setScopes(Types::PermissionScopes scopes)
     m_scopes = scopes;
 }
 
+void UserInfo::setAllowedThingIds(const QList<ThingId> &allowedThingIds)
+{
+    m_allowedThingIds = allowedThingIds;
+}
+
+QList<ThingId> UserInfo::allowedThingIds() const
+{
+    return m_allowedThingIds;
+}
+
 QVariant UserInfoList::get(int index) const
 {
     return QVariant::fromValue(at(index));

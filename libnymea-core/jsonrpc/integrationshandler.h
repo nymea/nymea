@@ -26,6 +26,7 @@
 #define INTEGRATIONSHANDLER_H
 
 #include "jsonrpc/jsonhandler.h"
+#include "usermanager/userinfo.h"
 #include "integrations/thingmanager.h"
 
 namespace nymeaserver {
@@ -61,8 +62,9 @@ public:
     Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetStateTypes(const QVariantMap &params, const JsonContext &context) const;
-    Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
+
+    Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *BrowseThing(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params, const JsonContext &context) const;
@@ -71,7 +73,7 @@ public:
     Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context);
 
-    Q_INVOKABLE JsonReply *GetIOConnections(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetIOConnections(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ConnectIO(const QVariantMap &params);
     Q_INVOKABLE JsonReply *DisconnectIO(const QVariantMap &params);
 
@@ -79,14 +81,19 @@ public:
 
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
-    void StateChanged(const QVariantMap &params);
-    void ThingRemoved(const QVariantMap &params);
-    void ThingAdded(const QVariantMap &params);
-    void ThingChanged(const QVariantMap &params);
-    void ThingSettingChanged(const QVariantMap &params);
-    void EventTriggered(const QVariantMap &params);
+    // Thing permission relevant notifications
+    void StateChanged(const QVariantMap &params, const ThingId &thingId);
+    void ThingRemoved(const QVariantMap &params, const ThingId &thingId);
+    void ThingAdded(const QVariantMap &params, const ThingId &thingId);
+    void ThingChanged(const QVariantMap &params, const ThingId &thingId);
+    void ThingSettingChanged(const QVariantMap &params, const ThingId &thingId);
+    void EventTriggered(const QVariantMap &params, const ThingId &thingId);
     void IOConnectionAdded(const QVariantMap &params);
     void IOConnectionRemoved(const QVariantMap &params);
+
+    // User specific notifications depending on the thing based permissions
+    void ThingRemoved(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);
+    void ThingAdded(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

@@ -202,10 +202,13 @@ public:
         PermissionScopeNone             = 0x0000,
         PermissionScopeControlThings    = 0x0001,
         PermissionScopeConfigureThings  = 0x0003,
+        PermissionScopeAccessAllThings  = 0x0004,
         PermissionScopeExecuteRules     = 0x0010,
         PermissionScopeConfigureRules   = 0x0030,
         PermissionScopeAdmin            = 0xFFFF,
     };
+    // TODO: PermissionScopeChangeUserInfos   = 0x0008, // Allow to change password, remove tokens, update user information (display name, email)
+
     Q_ENUM(PermissionScope)
     Q_DECLARE_FLAGS(PermissionScopes, PermissionScope)
     Q_FLAG(PermissionScopes)
@@ -214,6 +217,10 @@ public:
     static PermissionScope scopeFromString(const QString &scopeString);
     static QStringList scopesToStringList(PermissionScopes scopes);
     static QString scopeToString(PermissionScope scope);
+
+    static QStringList thingIdsToStringList(const QList<ThingId> &thingIds);
+    static QList<ThingId> thingIdsFromStringList(const QStringList &stringList);
+
 
     enum LoggingType {
         LoggingTypeDiscrete,

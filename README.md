@@ -6,8 +6,6 @@
   </a>
 </p>
 
-nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the built-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
-
 ## Quick start
 
 ### Install nymea on a Raspberry Pi
@@ -18,12 +16,10 @@ nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based arc
 
 We have created an image for your Raspberry Pi that comes with an array of plugins for different smart devices!
 
-Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. You'll have the
-choice between a headless nymea:core setup or a kiosk image that contains nymea:core and nymea:app for Raspberry Pis with touch screen.
+Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. 
 
 Alternatively, the image can be downloaded and flashed manually from [here](https://downloads.nymea.io/images/raspberrypi/). We recommend
-the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-bookworm-latest.zip) or
-[kiosk](https://downloads.nymea.io//images/raspberrypi/nymea-kiosk-image-raspios-bookworm-latest.zip) image.
+the latest Raspberry Pi OS Trixie [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-trixie-latest.zip) image.
 
 ### Get nymea:app here:
 
@@ -43,20 +39,8 @@ the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/ras
     </td>
     <td> 
       <p>
-        <a href="https://open-store.io/app/io.nymea.nymeaapp">
+        <a href="https://open-store.io/app/io.guh.nymeaapp">
         <img border="0" align="middle" alt="Openstore Badge" src="https://open-store.io/badges/en_US.png" width=200>
-      </p>
-    </td>
-    <td> 
-      <p>
-         <a href="https://apps.apple.com/us/app/nymea-app/id1488785734">
-         <img border="0" align="middle" alt="macOS Badge" src="https://nymea.io/downloads/img/app-store/macos.png" width=200">
-      </p>
-    </td>
-    <td> 
-      <p>
-        <a href="https://snapcraft.io/nymea-app">
-        <img border="0" align="middle" alt="Snap Badge" src="https://nymea.io/downloads/img/app-store/snap-store.png" width=200>
       </p>
     </td>
     <td> 
@@ -72,19 +56,9 @@ Manual download files of nymea:app can be found [here](https://downloads.nymea.i
 
 A detailed description how to install and getting started with *nymea* can be found in the [nymea | user documentation](https://nymea.io/documentation/users/installation/getting-started).
 
-
-## Getting help
-
-If you want to present your project or want to share your newest developments you can share it in
-[Our Forum](https://forum.nymea.io)
-
-If you are facing any troubles, don't hesitate to reach out for us or the community members, we will be pleased to help you:
-Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://discord.gg/tX9YCpD)
-
 ## Developing with nymea
 
 A detailed documentation on how to develop with *nymea* is available on the [nymea | developer documentation](https://nymea.io/documentation/developers/).
-
 
 ## Network discovery
 
@@ -98,9 +72,10 @@ This will allow nymead to create raw sockets for ARP and ICMP network discovery 
 ## License
 --------------------------------------------
 nymea is free software developed by chargebyte austria GmbH, former nymea GmbH.
-Server components, tools, plugins and tests in this repository are licensed under the GNU General Public License version 3 or (at your option) any later version. Public SDK libraries found in `libnymea/` and `libnymea-core/` are provided under the GNU Lesser General Public License version 3 or (at your option) any later version so they can be linked from external applications.
+Server components, tools, plugins and tests in this repository are licensed under the GNU General Public License version 3 or (at your option) any later version.
+Public SDK libraries found in `libnymea/` and `libnymea-core/` are provided under the GNU Lesser General Public License version 3 or (at your option) any later version so they can be linked from external applications.
 
-Copyright (C) 2013 - 2024, nymea GmbH  
-Copyright (C) 2024 - 2025, chargebyte austria GmbH
+Copyright (C) 2013 - 2024, nymea GmbH
+Copyright (C) 2024 - 2026, chargebyte austria GmbH
 
 See `LICENSE.GPL3` and `LICENSE.LGPL3` for the complete license texts.

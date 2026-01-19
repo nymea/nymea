@@ -1,3 +1,20 @@
+nymea (1.14.0) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * Thing based user permissions
+  * Extend webserver resource management
+  * Update translations
+  * NymeaCore: class cleanup and statup improvements
+  * Stabalize verify action exectued tests
+  * ExperienceManager: Provide LogEngine access to experience plugins
+  * Introduce optional stepSize for StateTypes and ParamTypes
+  * Update electric vehicle inteface
+  * Update README.md
+  * Update mac address database
+  * Update copyright year to 2026
+
+ -- jenkins <developer@nymea.io>  Mon, 19 Jan 2026 10:10:03 +0100
+
 nymea (1.13.0) jammy; urgency=medium
 
   [ Simon Stürz ]

@@ -25,8 +25,8 @@
 #ifndef PARAMTYPE_H
 #define PARAMTYPE_H
 
-#include <QVariant>
 #include <QDebug>
+#include <QVariant>
 
 #include "libnymea.h"
 #include "typeutils.h"
@@ -42,6 +42,7 @@ class LIBNYMEA_EXPORT ParamType
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue USER true)
     Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
     Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
+    Q_PROPERTY(double stepSize READ stepSize WRITE setStepSize USER true)
     Q_PROPERTY(QVariantList allowedValues READ allowedValues WRITE setAllowedValues USER true)
     Q_PROPERTY(Types::InputType inputType READ inputType WRITE setInputType USER true)
     Q_PROPERTY(Types::Unit unit READ unit WRITE setUnit USER true)
@@ -74,6 +75,9 @@ public:
     QVariant maxValue() const;
     void setMaxValue(const QVariant &maxValue);
 
+    double stepSize() const;
+    void setStepSize(double stepSize);
+
     Types::InputType inputType() const;
     void setInputType(const Types::InputType &inputType);
 
@@ -98,18 +102,19 @@ private:
     ParamTypeId m_id;
     QString m_name;
     QString m_displayName;
-    int m_index;
+    int m_index = 0;
     QMetaType::Type m_type;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;
-    Types::InputType m_inputType;
-    Types::Unit m_unit;
+    double m_stepSize = 0;
+    Types::InputType m_inputType = Types::InputTypeNone;
+    Types::Unit m_unit = Types::UnitNone;
     QVariantList m_allowedValues;
-    bool m_readOnly;
+    bool m_readOnly = false;
 };
 
-class ParamTypes: public QList<ParamType>
+class ParamTypes : public QList<ParamType>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -123,7 +128,6 @@ public:
     ParamType findByName(const QString &name) const;
     ParamType findById(const ParamTypeId &id) const;
     ParamType &operator[](const QString &name);
-
 };
 Q_DECLARE_METATYPE(QList<ParamType>)
 Q_DECLARE_METATYPE(ParamTypes)

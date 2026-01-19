@@ -3039,6 +3039,7 @@
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "o:readOnly": "Bool",
+            "o:stepSize": "Double",
             "o:unit": "$ref:Unit",
             "r:id": "Uuid",
             "type": "$ref:BasicType"
@@ -3171,6 +3172,7 @@
                 "Variant"
             ],
             "o:possibleValuesDisplayNames": "StringList",
+            "o:stepSize": "Double",
             "o:unit": "$ref:Unit",
             "r:id": "Uuid",
             "type": "$ref:BasicType"

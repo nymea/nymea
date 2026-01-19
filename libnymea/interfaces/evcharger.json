@@ -1,10 +1,10 @@
 {
-    "description": "An EV-charger. Extends the power interface for charging/not charging an electric vehicle. Supports regulation of the max. charging current in addition to be powered on or off.",
+    "description": "An electric vehicle charger. Extends the power interface to report plug/charge state and session energy, and to optionally control charging current and phase count in addition to on/off power control.",
     "extends": ["power"],
     "states": [
         {
             "name": "maxChargingCurrent",
-            "type": "uint",
+            "type": "double",
             "writable": true,
             "unit": "Ampere",
             "minValue": "any",

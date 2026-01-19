@@ -26,7 +26,6 @@
 #define THINGUTILS_H
 
 #include "thing.h"
-#include "pluginmetadata.h"
 
 #include "types/paramtype.h"
 #include "types/interface.h"
@@ -44,6 +43,8 @@ public:
     static Interface loadInterface(const QString &name);
     static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
     static QStringList generateInterfaceParentList(const QString &interface);
+
+    static QVariant ensureValueClamping(const QVariant value, QMetaType::Type type, const QVariant &minValue, const QVariant &maxValue, double stepSize);
 
     static bool variantLessThan(const QVariant &leftHandSide, const QVariant &rightHandSide);
     static bool variantGreaterThan(const QVariant &leftHandSide, const QVariant &rightHandSide);

@@ -1,4 +1,4 @@
-8.4
+8.5
 {
     "enums": {
         "BasicType": [
@@ -358,6 +358,11 @@
             "UnitMilligramPerLiter",
             "UnitLiter",
             "UnitMicroGrammPerCubicalMeter"
+        ],
+        "UpdateType": [
+            "UpdateTypeNone",
+            "UpdateTypeSystem",
+            "UpdateTypePackageManager"
         ],
         "UserError": [
             "UserErrorNoError",
@@ -1785,14 +1790,15 @@
             }
         },
         "System.GetCapabilities": {
-            "description": "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement indicates whether system update features are available in this system. The property \"timeManagement\" indicates whether the system time can be configured on this system. Note that GetTime will be available in any case.",
+            "description": "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement\" indicates whether system update features are available in this system. The \"updateManagementType\" indicates which kind of update is supported on this platform. The property \"timeManagement\" indicates whether the system time can be configured on this system. Note that GetTime will be available in any case.",
             "params": {
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "powerManagement": "Bool",
                 "timeManagement": "Bool",
-                "updateManagement": "Bool"
+                "updateManagement": "Bool",
+                "updateManagementType": "$ref:UpdateType"
             }
         },
         "System.GetPackages": {
@@ -1844,12 +1850,13 @@
             }
         },
         "System.GetUpdateStatus": {
-            "description": "Get the current status of the update system. \"busy\" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running.",
+            "description": "Get the current status of the update system. \"busy\" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running. The \"updateProgress\" property is optional, if the backend supports it, a progress >= 0 indicated the update progress in percentage.",
             "params": {
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "busy": "Bool",
+                "o:updateProgress": "Int",
                 "updateRunning": "Bool"
             }
         },
@@ -2684,7 +2691,8 @@
             "description": "Emitted whenever the system capabilities change.",
             "params": {
                 "powerManagement": "Bool",
-                "updateManagement": "Bool"
+                "updateManagement": "Bool",
+                "updateManagementType": "$ref:UpdateType"
             }
         },
         "System.PackageAdded": {
@@ -2736,6 +2744,7 @@
             "description": "Emitted whenever the update status changes.",
             "params": {
                 "busy": "Bool",
+                "o:updateProgress": "Int",
                 "updateRunning": "Bool"
             }
         },

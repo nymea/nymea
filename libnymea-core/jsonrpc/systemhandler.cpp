@@ -38,15 +38,18 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     registerObject<Package, Packages>();
     registerObject<Repository, Repositories>();
 
+    registerEnum<PlatformUpdateController::UpdateType>();
+
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether "
-                  "restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
-                  "whether system update features are available in this system. The property \"timeManagement\" "
-                  "indicates whether the system time can be configured on this system. Note that GetTime will be "
-                  "available in any case.";
+                  "restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement\" indicates "
+                  "whether system update features are available in this system. The \"updateManagementType\" indicates which kind of update is "
+                  "supported on this platform. The property \"timeManagement\" indicates whether the system time can be configured "
+                  "on this system. Note that GetTime will be available in any case.";
     returns.insert("powerManagement", enumValueName(Bool));
     returns.insert("updateManagement", enumValueName(Bool));
+    returns.insert("updateManagementType", enumRef<PlatformUpdateController::UpdateType>());
     returns.insert("timeManagement", enumValueName(Bool));
     registerMethod("GetCapabilities", description, params, returns);
 
@@ -66,15 +69,17 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     registerMethod("Shutdown", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
-                   "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
-                   "is true, update related functions on the client should be marked as busy and no interaction with update "
-                   "components shall be allowed. An example for such a state is when the system queries the server if there "
-                   "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
-                   "indicates an actual update process is ongoing. The user should be informed about it, the system also "
-                   "might restart at any point while an update is running.";
+    description =   "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
+                    "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
+                    "is true, update related functions on the client should be marked as busy and no interaction with update "
+                    "components shall be allowed. An example for such a state is when the system queries the server if there "
+                    "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
+                    "indicates an actual update process is ongoing. The user should be informed about it, the system also "
+                    "might restart at any point while an update is running. The \"updateProgress\" property is optional, "
+                    "if the backend supports it, a progress >= 0 indicated the update progress in percentage.";
     returns.insert("busy", enumValueName(Bool));
     returns.insert("updateRunning", enumValueName(Bool));
+    returns.insert("o:updateProgress", enumValueName(Int));
     registerMethod("GetUpdateStatus", description, params, returns);
 
     params.clear(); returns.clear();
@@ -172,12 +177,14 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     description = "Emitted whenever the system capabilities change.";
     params.insert("powerManagement", enumValueName(Bool));
     params.insert("updateManagement", enumValueName(Bool));
+    params.insert("updateManagementType", enumRef<PlatformUpdateController::UpdateType>());
     registerNotification("CapabilitiesChanged", description, params);
 
     params.clear();
     description = "Emitted whenever the update status changes.";
     params.insert("busy", enumValueName(Bool));
     params.insert("updateRunning", enumValueName(Bool));
+    params.insert("o:updateProgress", enumValueName(Int));
     registerNotification("UpdateStatusChanged", description, params);
 
     params.clear();
@@ -220,18 +227,17 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
     connect(m_platform->updateController(), &PlatformUpdateController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
+
     connect(m_platform->updateController(), &PlatformUpdateController::busyChanged, this, [this](){
-        QVariantMap params;
-        params.insert("busy", m_platform->updateController()->busy());
-        params.insert("updateRunning", m_platform->updateController()->updateRunning());
-        emit UpdateStatusChanged(params);
+        emit UpdateStatusChanged(buildUpdateStatus());
     });
     connect(m_platform->updateController(), &PlatformUpdateController::updateRunningChanged, this, [this](){
-        QVariantMap params;
-        params.insert("busy", m_platform->updateController()->busy());
-        params.insert("updateRunning", m_platform->updateController()->updateRunning());
-        emit UpdateStatusChanged(params);
+        emit UpdateStatusChanged(buildUpdateStatus());
     });
+    connect(m_platform->updateController(), &PlatformUpdateController::updateProgressChanged, this, [this](){
+        emit UpdateStatusChanged(buildUpdateStatus());
+    });
+
     connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package){
         QVariantMap params;
         params.insert("package", pack(package));
@@ -247,6 +253,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
         params.insert("packageId", packageId);
         emit PackageRemoved(params);
     });
+
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository){
         QVariantMap params;
         params.insert("repository", pack(repository));
@@ -262,6 +269,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
         params.insert("repositoryId", repositoryId);
         emit RepositoryRemoved(params);
     });
+
     connect(m_platform->systemController(), &PlatformSystemController::timeConfigurationChanged, this, [this](){
         QVariantMap params;
         params.insert("time", QDateTime::currentMSecsSinceEpoch() / 1000);
@@ -283,6 +291,7 @@ JsonReply *SystemHandler::GetCapabilities(const QVariantMap &params)
     QVariantMap data;
     data.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
     data.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
+    data.insert("updateManagementType", enumValueName(m_platform->updateController()->updateType()));
     data.insert("timeManagement", m_platform->systemController()->timeManagementAvailable());
     return createReply(data);
 }
@@ -317,10 +326,7 @@ JsonReply *SystemHandler::Shutdown(const QVariantMap &params) const
 JsonReply *SystemHandler::GetUpdateStatus(const QVariantMap &params) const
 {
     Q_UNUSED(params)
-    QVariantMap ret;
-    ret.insert("busy", m_platform->updateController()->busy());
-    ret.insert("updateRunning", m_platform->updateController()->updateRunning());
-    return createReply(ret);
+    return createReply(buildUpdateStatus());
 }
 
 JsonReply *SystemHandler::CheckForUpdates(const QVariantMap &params) const
@@ -459,7 +465,19 @@ void SystemHandler::onCapabilitiesChanged()
     QVariantMap caps;
     caps.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
     caps.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
+    caps.insert("updateManagementType", enumValueName(m_platform->updateController()->updateType()));
     emit CapabilitiesChanged(caps);
+}
+
+QVariantMap SystemHandler::buildUpdateStatus() const
+{
+    QVariantMap params;
+    params.insert("busy", m_platform->updateController()->busy());
+    params.insert("updateRunning", m_platform->updateController()->updateRunning());
+    if (m_platform->updateController()->updateProgress() >= 0)
+        params.insert("updateProgress", m_platform->updateController()->updateProgress());
+
+    return params;
 }
 
 }

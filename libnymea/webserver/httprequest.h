@@ -30,8 +30,6 @@
 #include <QString>
 #include <QHash>
 
-namespace nymeaserver {
-
 class HttpRequest
 {
 public:
@@ -86,7 +84,6 @@ private:
     RequestMethod getRequestMethodType(const QString &methodString);
 };
 
-QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
+QDebug operator<<(QDebug debug, const HttpRequest &httpRequest);
 
-}
 #endif // HTTPREQUEST_H

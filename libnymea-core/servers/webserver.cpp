@@ -76,11 +76,10 @@
 
 #include "webserver.h"
 #include "loggingcategories.h"
-#include "nymeasettings.h"
 #include "nymeacore.h"
-#include "httpreply.h"
-#include "httprequest.h"
-#include "debugserverhandler.h"
+#include "webserver/httpreply.h"
+#include "webserver/httprequest.h"
+#include "webserver/webserverresource.h"
 #include "version.h"
 
 #include <QRegularExpression>
@@ -107,16 +106,20 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
     m_configuration(configuration),
     m_sslConfiguration(sslConfiguration)
 {
-    if (QCoreApplication::instance()->organizationName() == "nymea-test") {
+    if (QCoreApplication::instance()->organizationName() == "nymea-test")
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
-    }
-    qCDebug(dcWebServer()) << "Starting WebServer. Interface:" << m_configuration.address << "Port:" << m_configuration.port << "SSL:" << m_configuration.sslEnabled << "AUTH:" << m_configuration.authenticationEnabled << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
+
+    qCInfo(dcWebServer()) << "Starting WebServer. Interface:" << m_configuration.address
+                          << "Port:" << m_configuration.port
+                          << "SSL:" << (m_configuration.sslEnabled ? "enabled" : "disabled")
+                          << "AUTH:" << (m_configuration.authenticationEnabled ? "enabled" : "disabled")
+                          << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
 }
 
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
-    qCDebug(dcWebServer()) << "Shutting down \"Webserver\"" << serverUrl().toString();
+    qCInfo(dcWebServer()) << "Shutting down \"Webserver\"" << serverUrl().toString();
 
     this->close();
 }
@@ -124,7 +127,17 @@ WebServer::~WebServer()
 /*! Returns the server URL of this WebServer. */
 QUrl WebServer::serverUrl() const
 {
-    return QUrl(QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address).arg(m_configuration.port));
+    QUrl url;
+    url.setScheme(m_configuration.sslEnabled ? "https" : "http");
+    url.setHost(m_configuration.address);
+    url.setPort(m_configuration.port);
+    return url;
+}
+
+/*! Returns the configuration of this WebServer. */
+WebServerConfiguration WebServer::configuration() const
+{
+    return m_configuration;
 }
 
 /*! Send the given \a reply map to the corresponding client.
@@ -133,7 +146,6 @@ QUrl WebServer::serverUrl() const
  */
 void WebServer::sendHttpReply(HttpReply *reply)
 {
-    // get the right socket
     QSslSocket *socket = nullptr;
     socket = m_clientList.value(reply->clientId());
     if (!socket) {
@@ -148,13 +160,40 @@ void WebServer::sendHttpReply(HttpReply *reply)
     socket->write(reply->data());
 }
 
+QList<WebServerResource *> WebServer::resources() const
+{
+    return m_resources.values();
+}
+
+bool WebServer::registerResource(WebServerResource *resource)
+{
+    qCDebug(dcWebServer()) << "Register resource" << resource->basePath() << "on server" << serverUrl().toString();
+
+    if (m_resources.contains(resource->basePath())) {
+        qCWarning(dcWebServer()) << "Could not register resource" << resource->basePath() << "because there is already a resource resistered for this base path.";
+        return false;
+    }
+
+    m_resources.insert(resource->basePath(), resource);
+    return true;
+}
+
+void WebServer::unregisterResource(WebServerResource *resource)
+{
+    qCDebug(dcWebServer()) << "Unregister resource" << resource->basePath() << "from server" << serverUrl().toString();
+    if (!m_resources.contains(resource->basePath())) {
+        qCWarning(dcWebServer()) << "Could not unregister resource" << resource->basePath() << "because there is no resource resistered with this base path.";
+        return;
+    }
+
+    m_resources.remove(resource->basePath());
+}
+
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 {
     QFileInfo file(fileName);
-
-    // make sure the file exists
     if (!file.exists()) {
-        qCDebug(dcWebServer()) << "requested file" << file.filePath() << "does not exist.";
+        qCDebug(dcWebServer()) << "Requested file" << file.filePath() << "does not exist.";
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
@@ -182,6 +221,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
         reply->deleteLater();
         return false;
     }
+
     return true;
 }
 
@@ -269,16 +309,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
         return;
     }
 
-    connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
-    connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
-#else
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
-#endif
-
-    emit clientConnected(clientId);
+    setupClient(clientId, socket);
 }
 
 void WebServer::readClient()
@@ -345,6 +376,37 @@ void WebServer::readClient()
         }
     }
 
+    // Verify if we habe a resource for this request
+    foreach (WebServerResource *resource, m_resources) {
+        if (request.url().path().startsWith(resource->basePath())) {
+            if (!resource->enabled()) {
+                qCDebug(dcWebServer()) << "The corresponding resource exists but is not enabled. Respond with 404 Not Found.";
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
+                reply->setClientId(clientId);
+                sendHttpReply(reply);
+                reply->deleteLater();
+                return;
+            }
+
+            qCDebug(dcDebugServer()) << "Request:" << request.url().toString();
+            HttpReply *reply = resource->processRequest(request);
+            reply->setClientId(clientId);
+
+            // Handle async replies
+            if (reply->type() == HttpReply::TypeAsync) {
+                connect(reply, &HttpReply::finished, this, &WebServer::onAsyncReplyFinished);
+                reply->startWait();
+            } else {
+                sendHttpReply(reply);
+                reply->deleteLater();
+            }
+
+            return;
+        }
+    }
+
+    // No resource handled this request, let the webserver itself handle it
+
     // Verify method
     if (request.method() == HttpRequest::Unhandled) {
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::MethodNotAllowed);
@@ -364,43 +426,6 @@ void WebServer::readClient()
         return;
     }
 
-    // Check if this is a debug call
-    if (request.url().path().startsWith("/debug")) {
-        // Check if debug server is enabled
-        if (NymeaCore::instance()->configuration()->debugServerEnabled()) {
-            // Verify methods
-            if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
-                HttpReply *reply = HttpReply::createErrorReply(HttpReply::MethodNotAllowed);
-                reply->setClientId(clientId);
-                reply->setHeader(HttpReply::AllowHeader, "GET, OPTIONS");
-                sendHttpReply(reply);
-                reply->deleteLater();
-                return;
-            }
-
-            qCDebug(dcDebugServer()) << "Request:" << request.url().toString();
-            HttpReply *reply = NymeaCore::instance()->debugServerHandler()->processDebugRequest(request.url().path(), request.urlQuery());
-            reply->setClientId(clientId);
-
-            // Handle async replies
-            if (reply->type() == HttpReply::TypeAsync) {
-                connect(reply, &HttpReply::finished, this, &WebServer::onAsyncReplyFinished);
-                reply->startWait();
-            } else {
-                sendHttpReply(reply);
-                reply->deleteLater();
-            }
-            return;
-        } else {
-            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
-            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
-            reply->setClientId(clientId);
-            sendHttpReply(reply);
-            reply->deleteLater();
-            return;
-        }
-    }
-
     // Check server.xml call
     if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
         qCDebug(dcWebServer()) << "Server XML request call";
@@ -412,7 +437,6 @@ void WebServer::readClient()
         reply->deleteLater();
         return;
     }
-
 
     // Request for a file...
     if (request.method() == HttpRequest::Get) {
@@ -431,42 +455,12 @@ void WebServer::readClient()
         if (!verifyFile(socket, path))
             return;
 
-        QFile file(path);
-        if (file.open(QFile::ReadOnly)) {
-            qCDebug(dcWebServer()) << "Load file" << file.fileName();
-            HttpReply *reply = HttpReply::createSuccessReply();
 
-            // Check content type
-            if (file.fileName().endsWith(".html")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".css")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".pdf")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/pdf");
-            } else if (file.fileName().endsWith(".js")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/javascript; charset=\"utf-8\";");
-            } else if (file.fileName().endsWith(".ttf")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-ttf");
-            } else if (file.fileName().endsWith(".eot")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/vnd.ms-fontobject");
-            } else if (file.fileName().endsWith(".woff")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-woff");
-            } else if (file.fileName().endsWith(".jpg") || file.fileName().endsWith(".jpeg")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/jpeg");
-            } else if (file.fileName().endsWith(".png") || file.fileName().endsWith(".PNG")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
-            } else if (file.fileName().endsWith(".ico")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/x-icon");
-            } else if (file.fileName().endsWith(".svg")) {
-                reply->setHeader(HttpReply::ContentTypeHeader, "image/svg+xml; charset=\"utf-8\";");
-            }
+        HttpReply *reply = WebServerResource::createFileReply(path);
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
 
-            reply->setPayload(file.readAll());
-            reply->setClientId(clientId);
-            sendHttpReply(reply);
-            reply->deleteLater();
-            return;
-        }
     }
 
     // Reject everything else...
@@ -508,15 +502,7 @@ void WebServer::onEncrypted()
 {
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
     qCDebug(dcWebServer()).noquote() << QString("Encrypted connection %1:%2 successfully established.").arg(socket->peerAddress().toString()).arg(socket->peerPort());
-    connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
-    connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
-#else
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
-#endif
-    emit clientConnected(m_clientList.key(socket));
+    setupClient(m_clientList.key(socket), socket);
 }
 
 void WebServer::onError(QAbstractSocket::SocketError error)
@@ -545,6 +531,20 @@ void WebServer::onAsyncReplyFinished()
 
     sendHttpReply(reply);
     reply->deleteLater();
+}
+
+void WebServer::setupClient(const QUuid &clientId, QSslSocket *socket)
+{
+    connect(socket, &QSslSocket::readyRead, this, &WebServer::readClient);
+    connect(socket, &QSslSocket::disconnected, this, &WebServer::onDisconnected);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(socket, &QSslSocket::errorOccurred, this, &WebServer::onError);
+#else
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+#endif
+
+    emit clientConnected(clientId);
 }
 
 /*! Set the configuration of this \l{WebServer} to the given \a config.
@@ -581,19 +581,13 @@ bool WebServer::startServer()
 bool WebServer::stopServer()
 {
     foreach (QSslSocket *client, m_clientList.values())
-        client->close();
+    client->close();
 
     close();
     m_enabled = false;
     qCDebug(dcWebServer()) << "Webserver closed.";
     return true;
 }
-
-WebServerConfiguration WebServer::configuration() const
-{
-    return m_configuration;
-}
-
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
@@ -612,9 +606,9 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeEndElement(); // specVersion
 
     QString presentationUrl = QString("%1://%2:%3")
-            .arg(m_configuration.sslEnabled ? "https" : "http")
-            .arg(address.toString())
-            .arg(m_configuration.port);
+                                  .arg(m_configuration.sslEnabled ? "https" : "http")
+                                  .arg(address.toString())
+                                  .arg(m_configuration.port);
     writer.writeStartElement("device");
     writer.writeTextElement("presentationURL", presentationUrl);
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
@@ -815,8 +809,7 @@ void WebServerClient::removeConnection(QSslSocket *socket)
  */
 void WebServerClient::resetTimout(QSslSocket *socket)
 {
-    QTimer *timer = nullptr;
-    timer = m_runningConnections.key(socket);
+    QTimer *timer = m_runningConnections.key(socket);
     if (timer)
         timer->start();
 }

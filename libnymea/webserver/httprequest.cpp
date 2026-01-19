@@ -63,8 +63,6 @@
 #include <QUrlQuery>
 #include <QRegularExpression>
 
-namespace nymeaserver {
-
 /*! Construct an empty \l{HttpRequest}. */
 HttpRequest::HttpRequest() :
     m_rawData(QByteArray()),
@@ -279,4 +277,3 @@ QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
     return debug;
 }
 
-}

@@ -137,14 +137,11 @@
 
 #include "httpreply.h"
 #include "loggingcategories.h"
-#include "nymeacore.h"
-#include "version.h"
+#include "../version.h"
 
 #include <QDateTime>
 #include <QPair>
 #include <QDebug>
-
-namespace nymeaserver {
 
 HttpReply::HttpReply(QObject *parent) :
     QObject(parent),
@@ -162,7 +159,7 @@ HttpReply::HttpReply(QObject *parent) :
     // set known headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
@@ -185,7 +182,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     // set known / default headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
@@ -197,6 +194,14 @@ HttpReply *HttpReply::createSuccessReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeSync);
     reply->setPayload("200 Ok");
+    return reply;
+}
+
+HttpReply *HttpReply::createJsonReply(const QJsonDocument &jsonDoc, const HttpReply::HttpStatusCode &statusCode)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    reply->setPayload(jsonDoc.toJson(QJsonDocument::Compact));
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     return reply;
 }
 
@@ -392,6 +397,12 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
     case BadRequest:
         response = QString("Bad Request").toUtf8();
         break;
+    case Unauthorized:
+        response = QString("Unauthorized").toUtf8();
+        break;
+    case PaymentRequired:
+        response = QString("Payment required").toUtf8();
+        break;
     case Forbidden:
         response = QString("Forbidden").toUtf8();
         break;
@@ -400,6 +411,9 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
         break;
     case MethodNotAllowed:
         response = QString("Method Not Allowed").toUtf8();
+        break;
+    case NotAcceptable:
+        response = QString("Not Acceptable").toUtf8();
         break;
     case RequestTimeout:
         response = QString("Request Timeout").toUtf8();
@@ -489,6 +503,4 @@ QDebug operator<<(QDebug debug, HttpReply *httpReply)
     debug << qUtf8Printable(httpReply->rawHeader());
     debug << qUtf8Printable(httpReply->payload());
     return debug;
-}
-
 }

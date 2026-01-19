@@ -23,14 +23,12 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
-#include "servers/httpreply.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "debugserverhandler.h"
 #include "nymeaconfiguration.h"
 #include "version.h"
 
-#include <QXmlStreamWriter>
 #include <QCoreApplication>
 #include <QMessageLogger>
 #include <QJsonDocument>
@@ -41,17 +39,36 @@
 #include <QPair>
 #include <QHostInfo>
 
-
 namespace nymeaserver {
 
-QList<QWebSocket*> DebugServerHandler::s_websocketClients;
+QList<QWebSocket *> DebugServerHandler::s_websocketClients;
 QMutex DebugServerHandler::s_loggingMutex;
 
 DebugServerHandler::DebugServerHandler(QObject *parent) :
-    QObject(parent)
+    WebServerResource("/debug", parent)
 {
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &DebugServerHandler::onDebugServerEnabledChanged);
     onDebugServerEnabledChanged(NymeaCore::instance()->configuration()->debugServerEnabled());
+}
+
+HttpReply *DebugServerHandler::processRequest(const HttpRequest &request)
+{
+    if (m_enabled) {
+
+        // Verify methods
+        if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::MethodNotAllowed);
+            reply->setHeader(HttpReply::AllowHeader, "GET, OPTIONS");
+            return reply;
+        }
+
+        qCDebug(dcDebugServer()) << "Request:" << request.url().toString();
+        return processDebugRequest(request.url().path(), request.urlQuery());
+
+    } else {
+        qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
+        return HttpReply::createErrorReply(HttpReply::NotFound);
+    }
 }
 
 HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery)
@@ -636,6 +653,8 @@ void DebugServerHandler::onDebugServerEnabledChanged(bool enabled)
             m_websocketServer = nullptr;
         }
     }
+
+    setEnabled(enabled);
 }
 
 void DebugServerHandler::onWebsocketClientConnected()

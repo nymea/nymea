@@ -41,8 +41,8 @@ class HttpDaemon : public QTcpServer
 public:
     HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
     ~HttpDaemon();
-    void incomingConnection(qintptr socket) override;
 
+    void incomingConnection(qintptr socket) override;
     void actionExecuted(const ActionTypeId &actionTypeId);
 
 signals:

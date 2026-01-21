@@ -25,6 +25,7 @@
 #include "scriptengine.h"
 #include "integrations/thingmanager.h"
 
+#include "nymeascript.h"
 #include "scriptaction.h"
 #include "scriptevent.h"
 #include "scriptstate.h"
@@ -62,6 +63,7 @@ QMutex ScriptEngine::s_loggerMutex;
 ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QObject *parent) : QObject(parent),
     m_thingManager(thingManager)
 {
+    qmlRegisterType<NymeaScript>("nymea", 1, 0, "NymeaScript");
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "ThingEvent");
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "ThingAction");
     qmlRegisterType<ScriptState>("nymea", 1, 0, "ThingState");
@@ -419,6 +421,21 @@ bool ScriptEngine::loadScript(Script *script)
 
         m_engine->clearComponentCache();
         return false;
+    }
+
+    QObjectList objects = {script->object};
+    while (!objects.empty()) {
+        QObject *obj = objects.takeFirst();
+        objects.append(obj->children());
+
+        qCDebug(dcScriptEngine()) << "Script uses object:" << obj->objectName() << obj->metaObject()->className();
+        if (qstrcmp(obj->metaObject()->className(), "nymeaserver::ScriptState") == 0) {
+            for (int i = 0; i < obj->metaObject()->propertyCount(); i++) {
+                if (qstrcmp(obj->metaObject()->property(i).name(), "thingId") == 0) {
+                    qCDebug(dcScriptEngine()) << "thingId:" << obj->metaObject()->property(i).read(obj);
+                }
+            }
+        }
     }
     return true;
 }

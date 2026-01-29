@@ -603,7 +603,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     }
 
     // check if authentication is required for this transport
-    if (interface->configuration().authenticationEnabled) {        
+    if (interface->configuration().authenticationEnabled) {
         QStringList authExemptMethodsNoUser = {"JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
         QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
@@ -617,7 +617,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
                 return;
             }
         } else {
-            // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
+            // Ok, we have a user. If there isn't a valid token, let's fail unless this is an authentication related call
             if (!authExemptMethodsWithUser.contains(methodString)) {
                 if (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token)) {
                     sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
@@ -681,7 +681,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         handler->setProperty("transportInterface", reinterpret_cast<qint64>(interface));
     }
 
-    JsonContext callContext(clientId, m_clientLocales.value(clientId));
+    JsonContext callContext(clientId, m_clientLocales.value(clientId), interface->configuration().authenticationEnabled);
     callContext.setToken(token);
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace + '.' +  method << "from client" << clientId;
@@ -809,7 +809,9 @@ void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &para
             continue;
 
         // Make sure this client is allowed to receive this notification
-        if (m_clientTokens.contains(clientId)) {
+        TransportInterface *transport = m_clientTransports.value(clientId, nullptr);
+        const bool authEnabled = transport ? transport->configuration().authenticationEnabled : true;
+        if (authEnabled && m_clientTokens.contains(clientId)) {
             const QByteArray token = m_clientTokens.value(clientId);
             if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, token)) {
                 qCDebug(dcJsonRpc()) << "Not sending notification to client" << "to client" << clientId.toString()
@@ -849,9 +851,24 @@ void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &para
 {
     // Send client specific notifications
     qCDebug(dcJsonRpc()) << "Sending notification to client" << userInfo.username() << "connections...";
-    foreach (const QByteArray &token, m_clientTokens) {
+    for (auto it = m_clientTokens.constBegin(); it != m_clientTokens.constEnd(); ++it) {
+        const QUuid clientId = it.key();
+        const QByteArray token = it.value();
+
+        TransportInterface *transport = m_clientTransports.value(clientId, nullptr);
+        const bool authEnabled = transport ? transport->configuration().authenticationEnabled : true;
+
+        if (!authEnabled) {
+            sendClientNotification(clientId, params);
+            continue;
+        }
+
+        if (token.isEmpty()) {
+            continue;
+        }
+
         if (NymeaCore::instance()->userManager()->tokenInfo(token).username() == userInfo.username()) {
-            sendClientNotification(m_clientTokens.key(token), params);
+            sendClientNotification(clientId, params);
         }
     }
 }

@@ -534,7 +534,7 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
 TokenInfo UserManager::tokenInfo(const QByteArray &token) const
 {
     if (!validateToken(token)) {
-        qCWarning(dcUserManager) << "Token did not pass validation:" << token;
+        qCWarning(dcUserManager()) << "Token did not pass validation:" << token;
         return TokenInfo();
     }
 

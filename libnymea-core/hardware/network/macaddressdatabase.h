@@ -50,7 +50,7 @@ private:
     QSqlDatabase m_db;
     bool m_available = false;
     QString m_connectionName;
-    QString m_databaseName = "/usr/share/nymea/mac-addresses.db";
+    QString m_databaseName = "/usr/share/nymea/nymead/mac-addresses.db";
 
     MacAddressDatabaseReplyImpl *m_currentReply = nullptr;
     QFutureWatcher<QString> *m_futureWatcher = nullptr;

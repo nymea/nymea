@@ -30,6 +30,7 @@
 #include <QFileInfo>
 #include <QTimer>
 #include <QSqlDatabase>
+#include <QDir>
 #include <QStandardPaths>
 #include <QtConcurrent/QtConcurrent>
 
@@ -41,18 +42,30 @@ MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
 {
     // Find database in system data locations
     QString databaseFileName;
-    foreach (const QString &dataLocation, QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
-        QFileInfo databaseFileInfo(dataLocation + QDir::separator() + "mac-addresses.db");
-        if (!databaseFileInfo.exists()) {
-            continue;
+    const QStringList dataLocations = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+    foreach (const QString &dataLocation, dataLocations) {
+        const QStringList candidateFiles = {
+            dataLocation + QDir::separator() + "nymea" + QDir::separator() + "nymead" + QDir::separator() + "mac-addresses.db",
+            dataLocation + QDir::separator() + "nymea" + QDir::separator() + "mac-addresses.db",
+            dataLocation + QDir::separator() + "mac-addresses.db"
+        };
+
+        foreach (const QString &candidate, candidateFiles) {
+            QFileInfo databaseFileInfo(candidate);
+            if (!databaseFileInfo.exists())
+                continue;
+
+            databaseFileName = databaseFileInfo.absoluteFilePath();
+            break;
         }
 
-        databaseFileName = databaseFileInfo.absoluteFilePath();
-        break;
+        if (!databaseFileName.isEmpty())
+            break;
+
     }
 
     if (databaseFileName.isEmpty()) {
-        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << dataLocations;
         qCWarning(dcMacAddressDatabase()) << "The mac address database lookup feature will not be available.";
         return;
     }

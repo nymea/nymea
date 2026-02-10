@@ -1,3 +1,13 @@
+nymea (1.14.1) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * LogEngine: Improve behavior of disabled logengine
+  * JsonRpc Server: Improve token verification handling
+  * Update default loations for the mac-addresses.db to be more generic
+  * Thing: Add state name based set method for possible values
+
+ -- jenkins <developer@nymea.io>  Tue, 10 Feb 2026 12:05:47 +0100
+
 nymea (1.14.0) noble; urgency=medium
 
   [ Simon Stürz ]

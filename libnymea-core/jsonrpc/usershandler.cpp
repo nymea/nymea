@@ -189,15 +189,21 @@ JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonCon
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot change password from an unauthenticated connection";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot change password from an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot change password without token even if authentication is disabled for the transport";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -216,15 +222,21 @@ JsonReply *UsersHandler::ChangeUserPassword(const QVariantMap &params, const Jso
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot change a user password from an unauthenticated connection";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot change a user password from an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Cannot change a user password from an unauthenticated connection";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Cannot change a user password from an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot change a user password without token even if authentication is disabled for the transport";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -244,15 +256,21 @@ JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContex
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot get user info from an unauthenticated connection";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot get user info from an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot get user info without token even if authentication is disabled for the transport";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -272,15 +290,21 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext 
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot fetch tokens without token even if authentication is disabled for the transport";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -302,15 +326,21 @@ JsonReply *UsersHandler::GetUserTokens(const QVariantMap &params, const JsonCont
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot fetch tokens without token even if authentication is disabled for the transport";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -333,15 +363,21 @@ JsonReply *UsersHandler::RemoveToken(const QVariantMap &params, const JsonContex
     QVariantMap returns;
 
     QByteArray currentToken = context.token();
-    if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot remove a token from an unauthenticated connection.";
-        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
-        return createReply(returns);
-    }
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot remove a token from an unauthenticated connection.";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
 
-    if (!m_userManager->verifyToken(currentToken)) {
-        // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
-        qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+        if (!m_userManager->verifyToken(currentToken)) {
+            // Might happen if the client is connecting via an unauthenticated connection but tries to sneak in an invalid token
+            qCWarning(dcJsonRpc()) << "Invalid token. Is this an unauthenticated connection?";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot remove a token without token even if authentication is disabled for the transport.";
         returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(returns);
     }
@@ -414,7 +450,20 @@ JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContex
 {
     QVariantMap returns;
 
-    TokenInfo callingTokenInfo = m_userManager->tokenInfo(context.token());
+    QByteArray currentToken = context.token();
+    if (context.authenticationEnabled()) {
+        if (currentToken.isEmpty()) {
+            qCWarning(dcJsonRpc()) << "Cannot set user info from an unauthenticated connection";
+            returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+            return createReply(returns);
+        }
+    } else if (currentToken.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Cannot set user info without token even if authentication is disabled for the transport";
+        returns.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
+        return createReply(returns);
+    }
+
+    TokenInfo callingTokenInfo = m_userManager->tokenInfo(currentToken);
     QString username;
 
     if (params.contains("username")) {

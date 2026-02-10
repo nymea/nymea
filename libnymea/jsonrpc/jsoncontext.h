@@ -31,7 +31,7 @@
 class JsonContext
 {
 public:
-    JsonContext(const QUuid &clientId, const QLocale &locale);
+    JsonContext(const QUuid &clientId, const QLocale &locale, bool authenticationEnabled = true);
 
     QUuid clientId() const;
     QLocale locale() const;
@@ -39,10 +39,14 @@ public:
     QByteArray token() const;
     void setToken(const QByteArray &token);
 
+    bool authenticationEnabled() const;
+    void setAuthenticationEnabled(bool authenticationEnabled);
+
 private:
     QUuid m_clientId;
     QLocale m_locale;
     QByteArray m_token;
+    bool m_authenticationEnabled = true;
 };
 
 #endif // JSONCONTEXT_H

@@ -789,7 +789,7 @@ JsonReply *IntegrationsHandler::GetThings(const QVariantMap &params, const JsonC
     QVariantMap returns;
     QVariantList things;
 
-    if (NymeaCore::instance()->userManager()->hasRestrictedThingAccess(context.token())) {
+    if (NymeaCore::instance()->userManager()->hasRestrictedThingAccess(context.token()) && context.authenticationEnabled()) {
         // Restricted things access
         QList<ThingId> allowedThingIds = NymeaCore::instance()->userManager()->getAllowedThingIdsForToken(context.token());
         if (params.contains("thingId")) {
@@ -983,7 +983,7 @@ JsonReply *IntegrationsHandler::GetStateTypes(const QVariantMap &params, const J
 JsonReply *IntegrationsHandler::GetStateValue(const QVariantMap &params, const JsonContext &context) const
 {
     ThingId thingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     Thing *thing = m_thingManager->findConfiguredThing(thingId);
@@ -1002,7 +1002,7 @@ JsonReply *IntegrationsHandler::GetStateValue(const QVariantMap &params, const J
 JsonReply *IntegrationsHandler::GetStateValues(const QVariantMap &params, const JsonContext &context) const
 {
     ThingId thingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     Thing *thing = m_thingManager->findConfiguredThing(thingId);
@@ -1017,7 +1017,7 @@ JsonReply *IntegrationsHandler::GetStateValues(const QVariantMap &params, const 
 JsonReply *IntegrationsHandler::BrowseThing(const QVariantMap &params, const JsonContext &context) const
 {
     ThingId thingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     QString itemId = params.value("itemId").toString();
@@ -1047,7 +1047,7 @@ JsonReply *IntegrationsHandler::BrowseThing(const QVariantMap &params, const Jso
 JsonReply *IntegrationsHandler::GetBrowserItem(const QVariantMap &params, const JsonContext &context) const
 {
     ThingId thingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     QString itemId = params.value("itemId").toString();
@@ -1072,7 +1072,7 @@ JsonReply *IntegrationsHandler::GetBrowserItem(const QVariantMap &params, const 
 JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
@@ -1101,7 +1101,7 @@ JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const J
 JsonReply *IntegrationsHandler::ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     QString itemId = params.value("itemId").toString();
@@ -1126,7 +1126,7 @@ JsonReply *IntegrationsHandler::ExecuteBrowserItem(const QVariantMap &params, co
 JsonReply *IntegrationsHandler::ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     QString itemId = params.value("itemId").toString();
@@ -1153,7 +1153,7 @@ JsonReply *IntegrationsHandler::ExecuteBrowserItemAction(const QVariantMap &para
 JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId = params.value("thingId").toUuid();
-    if (!NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
+    if (context.authenticationEnabled() && !NymeaCore::instance()->userManager()->accessToThingGranted(thingId, context.token()))
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
 
     IOConnections ioConnections = m_thingManager->ioConnections(thingId);

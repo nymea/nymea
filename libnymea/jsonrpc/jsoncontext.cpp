@@ -24,9 +24,10 @@
 
 #include "jsoncontext.h"
 
-JsonContext::JsonContext(const QUuid &clientId, const QLocale &locale):
+JsonContext::JsonContext(const QUuid &clientId, const QLocale &locale, bool authenticationEnabled):
     m_clientId(clientId),
-    m_locale(locale)
+    m_locale(locale),
+    m_authenticationEnabled(authenticationEnabled)
 {
 
 }
@@ -49,4 +50,14 @@ QByteArray JsonContext::token() const
 void JsonContext::setToken(const QByteArray &token)
 {
     m_token = token;
+}
+
+bool JsonContext::authenticationEnabled() const
+{
+    return m_authenticationEnabled;
+}
+
+void JsonContext::setAuthenticationEnabled(bool authenticationEnabled)
+{
+    m_authenticationEnabled = authenticationEnabled;
 }

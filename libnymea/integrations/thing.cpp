@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -313,14 +313,12 @@ States Thing::states() const
     return m_states;
 }
 
-
 /*! Returns true, a \l{Param} with the given \a paramTypeId exists for this thing. */
 bool Thing::hasParam(const QString &paramName) const
 {
     ParamTypeId paramTypeId = m_thingClass.paramTypes().findByName(paramName).id();
     return m_params.hasParam(paramTypeId);
 }
-
 
 /*! Returns true, a \l{Param} with the given \a paramTypeId exists for this thing. */
 bool Thing::hasParam(const ParamTypeId &paramTypeId) const
@@ -516,7 +514,7 @@ void Thing::setStateValue(const QString &stateName, const QVariant &value)
     setStateValue(stateTypeId, value);
 }
 
-/*! Sets the minimum value for the \l{State} matching the given \a stateTypeId in this thing to value. */
+/*! Sets the minimum value for the \l{State} matching the given \a stateTypeId in this thing to \a minValue. */
 void Thing::setStateMinValue(const StateTypeId &stateTypeId, const QVariant &minValue)
 {
     StateType stateType = m_thingClass.stateTypes().findById(stateTypeId);
@@ -559,14 +557,14 @@ void Thing::setStateMinValue(const StateTypeId &stateTypeId, const QVariant &min
     qCWarning(dcThing()).nospace() << this << ": Failed setting minimum state value " << stateType.name() << " to " << minValue;
 }
 
-/*! Sets the minimum value for the \l{State} matching the given \a stateName in this thing to value. */
+/*! Sets the minimum value for the \l{State} matching the given \a stateName in this thing to \a minValue. */
 void Thing::setStateMinValue(const QString &stateName, const QVariant &minValue)
 {
     StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
     setStateMinValue(stateTypeId, minValue);
 }
 
-/*! Sets the maximum value for the \l{State} matching the given \a stateTypeId in this thing to value. */
+/*! Sets the maximum value for the \l{State} matching the given \a stateTypeId in this thing to \a maxValue. */
 void Thing::setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &maxValue)
 {
     StateType stateType = m_thingClass.stateTypes().findById(stateTypeId);
@@ -619,7 +617,7 @@ void Thing::setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &max
     qCWarning(dcThing()).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << maxValue;
 }
 
-/*! Sets the maximum value for the \l{State} matching the given \a stateName in this thing to value. */
+/*! Sets the maximum value for the \l{State} matching the given \a stateName in this thing to \a maxValue. */
 void Thing::setStateMaxValue(const QString &stateName, const QVariant &maxValue)
 {
     StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
@@ -697,6 +695,14 @@ void Thing::setStateMinMaxValues(const QString &stateName, const QVariant &minVa
     setStateMinMaxValues(stateTypeId, minValue, maxValue);
 }
 
+/*! Sets the possible values for the \l{State} matching the given \a stateName in this thing to \a values. */
+void Thing::setStatePossibleValues(const QString &stateName, const QVariantList &values)
+{
+    const StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
+    setStatePossibleValues(stateTypeId, values);
+}
+
+/*! Sets the possible values for the \l{State} matching the given \a stateTypeId in this thing to \a values. */
 void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVariantList &values)
 {
     StateType stateType = m_thingClass.stateTypes().findById(stateTypeId);
@@ -704,6 +710,7 @@ void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVarian
         qCWarning(dcThing()) << "No such state type" << stateTypeId.toString() << "in" << m_name << "(" + thingClass().name() + ")";
         return;
     }
+
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {
             if (values == m_states.at(i).possibleValues()) {
@@ -739,10 +746,10 @@ void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVarian
             return;
         }
     }
-    qCWarning(dcThing()).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << values;
+    qCWarning(dcThing()).nospace() << this << ": Failed setting possible state values " << stateType.name() << " to " << values;
     Q_ASSERT_X(false,
                m_name.toUtf8(),
-               QString("Failed setting possible state values for %1 to %2").arg(stateType.name()).arg(QString(QJsonDocument::fromVariant(values).toJson())).toUtf8());
+               QString("Failed setting possible state values for %1 to %2").arg(stateType.name(), QString(QJsonDocument::fromVariant(values).toJson())).toUtf8());
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this thing. */

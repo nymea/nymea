@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -32,7 +32,6 @@
 #include "types/state.h"
 #include "types/param.h"
 #include "types/event.h"
-#include "types/browseritem.h"
 
 #include <QObject>
 #include <QUuid>
@@ -145,6 +144,7 @@ public:
     Q_INVOKABLE void setStateMinMaxValues(const StateTypeId &stateTypeId, const QVariant &minValue, const QVariant &maxValue);
     Q_INVOKABLE void setStateMinMaxValues(const QString &stateName, const QVariant &minValue, const QVariant &maxValue);
     Q_INVOKABLE void setStatePossibleValues(const StateTypeId &stateTypeId, const QVariantList &values);
+    Q_INVOKABLE void setStatePossibleValues(const QString &stateName, const QVariantList &values);
 
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
     Q_INVOKABLE State state(const QString &stateName) const;

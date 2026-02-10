@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -25,10 +25,11 @@
 #ifndef BROWSERESULT_H
 #define BROWSERESULT_H
 
-#include <QObject>
 #include <QLocale>
+#include <QObject>
 
 #include "thing.h"
+#include "types/browseritem.h"
 
 class ThingManager;
 
@@ -38,7 +39,7 @@ class BrowseResult : public QObject
 public:
     explicit BrowseResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
 
-    Thing* thing() const;
+    Thing *thing() const;
     QString itemId() const;
     QLocale locale() const;
 

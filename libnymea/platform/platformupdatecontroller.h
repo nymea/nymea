@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -34,14 +34,24 @@ class PlatformUpdateController : public QObject
 {
     Q_OBJECT
 public:
+    enum UpdateType {
+        UpdateTypeNone,
+        UpdateTypeSystem,
+        UpdateTypePackageManager
+    };
+    Q_ENUM(UpdateType)
+
     explicit PlatformUpdateController(QObject *parent = nullptr);
     virtual ~PlatformUpdateController() = default;
+
+    virtual PlatformUpdateController::UpdateType updateType() const;
 
     virtual bool updateManagementAvailable() const;
 
     virtual bool checkForUpdates();
     virtual bool busy() const;
     virtual bool updateRunning() const;
+    virtual int updateProgress() const;
 
     virtual QList<Package> packages() const;
     virtual QList<Repository> repositories() const;
@@ -56,6 +66,7 @@ signals:
     void availableChanged();
     void busyChanged();
     void updateRunningChanged();
+    void updateProgressChanged();
     void packageAdded(const Package &pacakge);
     void packageChanged(const Package &package);
     void packageRemoved(const QString &packageId);

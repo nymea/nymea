@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -24,9 +24,21 @@
 
 #include "platformupdatecontroller.h"
 
-PlatformUpdateController::PlatformUpdateController(QObject *parent) : QObject(parent)
-{
+PlatformUpdateController::PlatformUpdateController(QObject *parent)
+    : QObject(parent)
+{}
 
+/*! Indicates whether the update of this platform is package manager based or entire System updates or none.
+    On platforms like debian the update is mostly package manager based using apt in the background.
+    On many products like yocto or mender based systems there are system update images, where the user has no
+    influcence on individual packages, only to select between entire system images and their updates.
+
+    A backend plugin should override this to indicate the type of the system update.
+    */
+
+PlatformUpdateController::UpdateType PlatformUpdateController::updateType() const
+{
+    return PlatformUpdateController::UpdateTypeNone;
 }
 
 /*! Whether or not the update management is available. Returns true if the system is ready
@@ -76,6 +88,16 @@ bool PlatformUpdateController::busy() const
 bool PlatformUpdateController::updateRunning() const
 {
     return false;
+}
+
+/*! Indicates the progress of the update as percentage. Since not all update platforms support this feature,
+    the value defaults to -1 if not supported or not running.
+
+    A backend plugin should override this and return actual update percentage if supported.
+    */
+int PlatformUpdateController::updateProgress() const
+{
+    return -1;
 }
 
 /*! Returns a list of packages availabe in the system. If a backend supports installation of new packages,
@@ -163,4 +185,3 @@ bool PlatformUpdateController::enableRepository(const QString &repositoryId, boo
     Q_UNUSED(enabled)
     return false;
 }
-

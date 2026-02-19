@@ -1,3 +1,10 @@
+nymea (1.14.2) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * Improve system update plugin API
+
+ -- jenkins <developer@nymea.io>  Thu, 19 Feb 2026 16:27:40 +0100
+
 nymea (1.14.1) noble; urgency=medium
 
   [ Simon Stürz ]

@@ -26,6 +26,7 @@
 #define NETWORKDEVICEDISCOVERYIMPL_H
 
 #include <QHash>
+#include <QSet>
 #include <QObject>
 #include <QSettings>
 #include <QDateTime>
@@ -83,6 +84,8 @@ private:
         QNetworkInterface networkInterface;
         QNetworkAddressEntry addressEntry;
         QHostAddress address;
+        quint32 nextHostAddress = 0;
+        quint32 lastHostAddress = 0;
     } TargetNetwork;
 
     MacAddressDatabase *m_macAddressDatabase = nullptr;
@@ -118,6 +121,8 @@ private:
     NetworkDeviceInfos m_networkInfoCache;
 
     void pingAllNetworkDevices();
+    void scheduleDiscoveryPings();
+    bool enqueueDiscoveryPing();
 
     void processMonitorPingResult(PingReply *reply, NetworkDeviceMonitorImpl *monitor);
 
@@ -139,6 +144,11 @@ private:
 
     NetworkDeviceMonitorImpl *createPluginMonitor(NetworkDeviceMonitorImpl *internalMonitor);
     void cleanupPluginMonitor(NetworkDeviceMonitorImpl *pluginMonitor);
+
+    QList<TargetNetwork> m_discoveryTargetNetworks;
+    QSet<quint32> m_discoveryOwnAddresses;
+    int m_discoveryRoundRobinIndex = 0;
+    int m_discoveryMaxInFlightPings = 512;
 
 private slots:
     void onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);

@@ -1,3 +1,13 @@
+nymea (1.16.0) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * Valve interface
+  * Improve system update plugin API
+  * WIP: NetworkDeviceDiscovery: Improve network discovery speed for
+    larger ne…
+
+ -- jenkins <developer@nymea.io>  Fri, 20 Feb 2026 21:22:41 +0100
+
 nymea (1.14.1) noble; urgency=medium
 
   [ Simon Stürz ]

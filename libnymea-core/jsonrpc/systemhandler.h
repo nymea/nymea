@@ -82,6 +82,8 @@ private slots:
 
 private:
     Platform *m_platform = nullptr;
+
+    QVariantMap buildUpdateStatus() const;
 };
 
 }

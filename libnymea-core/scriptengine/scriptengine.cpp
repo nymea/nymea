@@ -278,7 +278,11 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
     QByteArray oldContent = scriptFile.readAll();
     scriptFile.close();
 
-    scriptFile.open(QFile::WriteOnly | QFile::Truncate);
+    if (!scriptFile.open(QFile::WriteOnly | QFile::Truncate)) {
+        qCWarning(dcScriptEngine()) << "Error opening script for writing" << id;
+        reply.scriptError = ScriptErrorHardwareFailure;
+        return reply;
+    }
     qint64 bytesWritten = scriptFile.write(content);
     scriptFile.flush();
     scriptFile.close();
@@ -295,7 +299,10 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
         reply.errors = script->errors;
 
         // Restore old content
-        scriptFile.open(QFile::WriteOnly | QFile::Truncate);
+        if (!scriptFile.open(QFile::WriteOnly | QFile::Truncate)) {
+            qCWarning(dcScriptEngine()) << "Error restoring script content for" << id;
+            return reply;
+        }
         scriptFile.write(oldContent);
         scriptFile.flush();
         scriptFile.close();

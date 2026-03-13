@@ -27,6 +27,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
 #include <QJsonParseError>
 #include <QMetaEnum>
 #include <qmath.h>

@@ -50,7 +50,6 @@ private:
     InterfaceActionTypes m_actionTypes;
     InterfaceEventTypes m_eventTypes;
     InterfaceStateTypes m_stateTypes;
-    bool m_optional = false;
 };
 
 class LIBNYMEA_EXPORT Interfaces: public QList<Interface>

@@ -435,17 +435,16 @@ void Ping::onSocketReadyRead(int socketDescriptor)
     // We must read all data otherwise the socket notifier does not work as expected
     while (true) {
         // Read the socket data and give some extra space for nested pakets...
-        int receiveBufferSize = 2 * ICMP_PACKET_SIZE + sizeof(struct iphdr);
-        char receiveBuffer[receiveBufferSize];
-        memset(&receiveBuffer, 0, sizeof(receiveBufferSize));
+        const int receiveBufferSize = 2 * ICMP_PACKET_SIZE + sizeof(struct iphdr);
+        QByteArray receiveBuffer(receiveBufferSize, '\0');
 
-        int bytesReceived = recv(socketDescriptor, &receiveBuffer, receiveBufferSize, 0);
+        int bytesReceived = recv(socketDescriptor, receiveBuffer.data(), receiveBufferSize, 0);
         if (bytesReceived < 0) {
             return;
         }
 
         qCDebug(dcPingTraffic()) << "Received" << bytesReceived << "bytes" << "( Socket ID:" << m_socketDescriptor << ")";
-        struct iphdr *ipHeader = (struct iphdr *)receiveBuffer;
+        struct iphdr *ipHeader = reinterpret_cast<struct iphdr *>(receiveBuffer.data());
         int ipHeaderLength = ipHeader->ihl << 2;
         int icmpPacketSize = htons(ipHeader->tot_len) - ipHeaderLength;
         QHostAddress senderAddress(qFromBigEndian(ipHeader->saddr));
@@ -457,7 +456,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                                  << "Size:" << htons(ipHeader->tot_len) << "B"
                                  << "TTL" << ipHeader->ttl;
 
-        struct icmp *responsePacket = reinterpret_cast<struct icmp *>(receiveBuffer + ipHeaderLength);
+        struct icmp *responsePacket = reinterpret_cast<struct icmp *>(receiveBuffer.data() + ipHeaderLength);
         quint16 icmpId = htons(responsePacket->icmp_id);
         quint16 icmpSequnceNumber = htons(responsePacket->icmp_seq);
         qCDebug(dcPingTraffic()) << "ICMP packt (Size:" << icmpPacketSize << "Bytes):"
@@ -515,7 +514,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
 
             // Get the sending package
             int messageOffset = sizeof(struct iphdr) + 8;
-            struct iphdr *nestedIpHeader = (struct iphdr *)(receiveBuffer + messageOffset);
+            struct iphdr *nestedIpHeader = reinterpret_cast<struct iphdr *>(receiveBuffer.data() + messageOffset);
             int nestedIpHeaderLength = nestedIpHeader->ihl << 2;
             int nestedIcmpPacketSize = htons(nestedIpHeader->tot_len) - nestedIpHeaderLength;
             QHostAddress nestedSenderAddress(qFromBigEndian(nestedIpHeader->saddr));
@@ -527,7 +526,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                                      << "Size:" << htons(nestedIpHeader->tot_len) << "B"
                                      << "TTL" << ipHeader->ttl;
 
-            struct icmp *nestedResponsePacket = reinterpret_cast<struct icmp *>(receiveBuffer + messageOffset + nestedIpHeaderLength);
+            struct icmp *nestedResponsePacket = reinterpret_cast<struct icmp *>(receiveBuffer.data() + messageOffset + nestedIpHeaderLength);
             icmpId = htons(nestedResponsePacket->icmp_id);
             icmpSequnceNumber = htons(nestedResponsePacket->icmp_seq);
 

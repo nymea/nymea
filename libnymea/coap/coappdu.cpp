@@ -543,14 +543,13 @@ void CoapPdu::unpack(const QByteArray &data)
     stream >> messageId;
     setMessageId(messageId);
 //    qCDebug(dcCoap()) << "Message ID:" << messageId;
-    char tokenData[tokenLength];
-    if (stream.readRawData(tokenData, tokenLength) != tokenLength) {
+    QByteArray tokenData(tokenLength, '\0');
+    if (stream.readRawData(tokenData.data(), tokenLength) != tokenLength) {
         qCWarning(dcCoap()) << "Token data not complete.";
         m_error = InvalidTokenError;
         return;
     }
-    QByteArray token(tokenData, tokenLength);
-    setToken(token);
+    setToken(tokenData);
 //    qCDebug(dcCoap()) << "Token:" << token.toHex();
 
 
@@ -560,10 +559,11 @@ void CoapPdu::unpack(const QByteArray &data)
 //        qCDebug(dcCoap()) << "OptionByte:" << optionByte;
 
         if (optionByte == 0xff) {
-            char payloadData[65507]; // Max UDP datagram size
-            int payloadLength = stream.readRawData(payloadData, 65507);
+            QByteArray payloadData(65507, '\0'); // Max UDP datagram size
+            int payloadLength = stream.readRawData(payloadData.data(), payloadData.size());
             if (payloadLength > 0) {
-                setPayload(QByteArray(payloadData, payloadLength));
+                payloadData.truncate(payloadLength);
+                setPayload(payloadData);
             }
             return;
         }
@@ -598,11 +598,15 @@ void CoapPdu::unpack(const QByteArray &data)
 //            qCDebug(dcCoap()).nospace() << "Extended option kength (16 bit): " << optionDelta << " (" << optionLengthExtended << " + 269)";
         }
 
-        char optionData[optionLength];
-        stream.readRawData(optionData, optionLength);
-//        qCDebug(dcCoap()) << "Option data:" << QByteArray(optionData, optionLength);
+        QByteArray optionData(optionLength, '\0');
+        if (stream.readRawData(optionData.data(), optionLength) != optionLength) {
+            qCWarning(dcCoap()) << "Option data not complete.";
+            m_error = InvalidOptionLengthError;
+            return;
+        }
+//        qCDebug(dcCoap()) << "Option data:" << optionData;
 
-        addOption(static_cast<CoapOption::Option>(optionDelta), QByteArray(optionData, optionLength));
+        addOption(static_cast<CoapOption::Option>(optionDelta), optionData);
     }
 }
 

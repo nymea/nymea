@@ -51,8 +51,6 @@ private:
     QUrl m_url;
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
-    CoapPdu::ReqRspCode m_reqRspCode;
-
 };
 
 #endif // COAPREQUEST_H

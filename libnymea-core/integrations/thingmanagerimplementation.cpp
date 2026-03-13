@@ -2544,7 +2544,8 @@ IntegrationPlugin *ThingManagerImplementation::createCppIntegrationPlugin(const 
         return nullptr;
     }
 
-    QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+    const char *versionString = reinterpret_cast<const char *(*)()>(versionFunc)();
+    QString version = QString::fromUtf8(versionString ? versionString : "");
     lib.unload();
     QStringList parts = version.split('.');
     QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
@@ -2611,4 +2612,3 @@ void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId
     settings.setValue("possibleValues", thing->state(stateTypeId).possibleValues());
     settings.endGroup();
 }
-

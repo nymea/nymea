@@ -65,7 +65,7 @@ void NymeaBluetoothAgentAdapter::DisplayPasskey(const QDBusObjectPath &device, q
 {
     qCDebug(dcBluetooth) << "DisplayPasskey" << device.path() << passKey << entered;
     // Not using "entered" value which would update whenever the user enters a (wrong) pin on the other end...
-    m_agent->onDisplayPinCode(device, QString("%1").arg(passKey, 6, QChar('0')));
+    m_agent->onDisplayPinCode(device, QString("%1").arg(passKey, 6, 10, QChar('0')));
 }
 
 void NymeaBluetoothAgentAdapter::RequestConfirmation(const QDBusObjectPath &device, quint32 passKey, const QDBusMessage &message)

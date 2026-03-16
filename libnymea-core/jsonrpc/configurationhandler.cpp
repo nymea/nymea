@@ -536,6 +536,13 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     }
     returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigs);
 
+    QVariantList mqttServerConfigs;
+    foreach (const ServerConfiguration &config,
+             NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
+        mqttServerConfigs.append(pack(config));
+    }
+    returns.insert("mqttServerConfigurations", mqttServerConfigs);
+
     return createReply(returns);
 }
 

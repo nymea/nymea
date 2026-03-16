@@ -105,7 +105,6 @@ private:
 
     void saveNetwork(ZigbeeNetwork *network);
     void loadZigbeeNetworks();
-    void checkPlatformConfiguration();
     void loadPlatformConfiguration();
     bool loadedPlatformConfiguration(const QFileInfo &configurationFileInfo);
     bool networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter);

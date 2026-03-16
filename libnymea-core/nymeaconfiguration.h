@@ -26,16 +26,17 @@
 #define NYMEACONFIGURATION_H
 
 #include <QHostAddress>
-#include <QObject>
 #include <QLocale>
-#include <QUuid>
+#include <QObject>
 #include <QUrl>
+#include <QUuid>
 
 #include "nymeasettings.h"
 
 namespace nymeaserver {
 
-class ServerConfiguration {
+class ServerConfiguration
+{
     Q_GADGET
     Q_PROPERTY(QString id MEMBER id)
     Q_PROPERTY(QString address MEMBER address)
@@ -46,23 +47,20 @@ class ServerConfiguration {
 public:
     QString id;
     QString address;
-    void setAddress(const QString &address) {this->address = address; }
+    void setAddress(const QString &address) { this->address = address; }
     uint port = 0;
     bool sslEnabled = true;
     bool authenticationEnabled = true;
 
-    bool operator==(const ServerConfiguration &other) const {
-        return id == other.id
-                && address == other.address
-                && port == other.port
-                && sslEnabled == other.sslEnabled
-                && authenticationEnabled == other.authenticationEnabled;
+    bool operator==(const ServerConfiguration &other) const
+    {
+        return id == other.id && address == other.address && port == other.port && sslEnabled == other.sslEnabled && authenticationEnabled == other.authenticationEnabled;
     }
 };
 
-QDebug operator <<(QDebug debug, const ServerConfiguration &configuration);
+QDebug operator<<(QDebug debug, const ServerConfiguration &configuration);
 
-class WebServerConfiguration: public ServerConfiguration
+class WebServerConfiguration : public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(QString publicFolder MEMBER publicFolder)
@@ -71,14 +69,13 @@ public:
     QString publicFolder;
     bool restServerEnabled = false;
 
-    bool operator==(const WebServerConfiguration &other) const {
-        return ServerConfiguration::operator==(other)
-                && publicFolder == other.publicFolder
-                && restServerEnabled == other.restServerEnabled;
+    bool operator==(const WebServerConfiguration &other) const
+    {
+        return ServerConfiguration::operator==(other) && publicFolder == other.publicFolder && restServerEnabled == other.restServerEnabled;
     }
 };
 
-class TunnelProxyServerConfiguration: public ServerConfiguration
+class TunnelProxyServerConfiguration : public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(bool ignoreSslErrors MEMBER ignoreSslErrors)
@@ -86,13 +83,10 @@ class TunnelProxyServerConfiguration: public ServerConfiguration
 public:
     bool ignoreSslErrors = false;
 
-    bool operator==(const TunnelProxyServerConfiguration &other) const {
-        return ServerConfiguration::operator==(other)
-                && ignoreSslErrors == other.ignoreSslErrors;
-    }
+    bool operator==(const TunnelProxyServerConfiguration &other) const { return ServerConfiguration::operator==(other) && ignoreSslErrors == other.ignoreSslErrors; }
 };
 
-QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration);
+QDebug operator<<(QDebug debug, const TunnelProxyServerConfiguration &configuration);
 
 class MqttPolicy
 {
@@ -135,6 +129,7 @@ public:
     explicit NymeaConfiguration(QObject *parent = nullptr);
 
     QString filePath() const;
+    QString path() const;
 
     // Global settings
     QUuid serverUuid() const;
@@ -219,7 +214,7 @@ private:
     QHash<QString, TunnelProxyServerConfiguration> m_tunnelProxyServerConfigs;
 
     void setServerUuid(const QUuid &uuid);
-    void setWebServerPublicFolder(const QString & path);
+    void setWebServerPublicFolder(const QString &path);
 
     QString defaultWebserverPublicFolderPath() const;
 
@@ -264,7 +259,7 @@ signals:
     void backupMaxCountChanged(int maxCount);
 };
 
-}
+} // namespace nymeaserver
 Q_DECLARE_METATYPE(nymeaserver::ServerConfiguration)
 Q_DECLARE_METATYPE(nymeaserver::MqttPolicy)
 

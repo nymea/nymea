@@ -217,6 +217,10 @@ void DebugReportGenerator::saveConfigs()
     // Start copy files setting files
     QDir settingsDir(NymeaSettings::settingsPath());
     foreach (const QString &fileName, settingsDir.entryList(QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot | QDir::Readable)) {
+        // Important: do not share the user db in a debug report!
+        if (fileName.contains("user-db.sqlite"))
+            continue;
+
         copyFileToReportDirectory(settingsDir.absolutePath() + QDir::separator() + fileName, "config");
     }
 }

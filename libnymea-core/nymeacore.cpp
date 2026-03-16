@@ -23,10 +23,20 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
+#include "debugserverhandler.h"
 #include "experiences/experiencemanager.h"
 #include "jsonrpc/debughandler.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
+#include "jsonrpc/scriptshandler.h"
+#include "logging/logengineinfluxdb.h"
+#include "loggingcategories.h"
+#include "nymeasettings.h"
+#include "platform/platform.h"
+#include "platform/platformsystemcontroller.h"
+#include "ruleengine/ruleengine.h"
+#include "scriptengine/scriptengine.h"
+#include "tagging/tagsstorage.h"
 #include "usermanager/usermanager.h"
-#include "debugserverhandler.h"
 #include "version.h"
 
 #include "integrations/browseractioninfo.h"

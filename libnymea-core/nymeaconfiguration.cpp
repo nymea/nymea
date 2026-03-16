@@ -227,6 +227,11 @@ QString NymeaConfiguration::filePath() const
     return QFileInfo(m_settings->fileName()).filePath();
 }
 
+QString NymeaConfiguration::path() const
+{
+    return QFileInfo(m_settings->fileName()).absolutePath();
+}
+
 QUuid NymeaConfiguration::serverUuid() const
 {
     m_settings->beginGroup("nymead");

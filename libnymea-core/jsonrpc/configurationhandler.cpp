@@ -67,6 +67,8 @@
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
 
+#include <QDir>
+
 namespace nymeaserver {
 
 /*! Constructs a new \l ConfigurationHandler with the given \a parent. */
@@ -335,13 +337,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     description = "Emitted whenever the basic configuration of this server changes.";
     params.insert("basicConfiguration", basicConfiguration);
     registerNotification("BasicConfigurationChanged", description, params);
-
-    params.clear();
-    returns.clear();
-    description = "Emitted whenever the language of the server changed. The Plugins, Vendors and "
-                  "ThingClasses have to be reloaded to get the translated data.";
-    params.insert("language", enumValueName(String));
-    registerNotification("LanguageChanged", description, params);
 
     params.clear();
     returns.clear();
@@ -811,7 +806,7 @@ JsonReply *ConfigurationHandler::CreateBackup(const QVariantMap &params) const
     Q_UNUSED(params);
     qCDebug(dcJsonRpc()) << "Request to create a configuration backup received.";
     bool success = NymeaCore::instance()->backupManager()->createBackup(
-        NymeaCore::instance()->configuration()->filePath(),
+        NymeaCore::instance()->configuration()->path(),
         NymeaCore::instance()->configuration()->backupDestinationDirectory(),
         NymeaCore::instance()->configuration()->backupMaxCount());
     return createReply(success ? statusToReply(NymeaConfiguration::ConfigurationErrorNoError)

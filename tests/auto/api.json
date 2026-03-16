@@ -1,4 +1,4 @@
-8.5
+9.0
 {
     "enums": {
         "BasicType": [
@@ -33,9 +33,11 @@
             "ConfigurationErrorInvalidId",
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
+            "ConfigurationErrorInvalidDestinationDir",
             "ConfigurationErrorBluetoothHardwareNotAvailable",
             "ConfigurationErrorInvalidCertificate",
-            "ConfigurationErrorUnsupported"
+            "ConfigurationErrorUnsupported",
+            "ConfigurationErrorBackupFailed"
         ],
         "CreateMethod": [
             "CreateMethodUser",
@@ -604,6 +606,15 @@
             "returns": {
             }
         },
+        "Configuration.CreateBackup": {
+            "description": "Create a backup of the current configuration. It will be stored in the configured destination directory. Also the maxCout configuration will be considered.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
         "Configuration.DeleteMqttPolicy": {
             "description": "Delete a MQTT policy from the broker.",
             "params": {
@@ -682,6 +693,10 @@
             },
             "permissionScope": "PermissionScopeNone",
             "returns": {
+                "backupConfigurations": {
+                    "destinationDirectory": "String",
+                    "maxCount": "Uint"
+                },
                 "basicConfiguration": {
                     "d:language": "String",
                     "d:location": {
@@ -695,6 +710,9 @@
                     "serverName": "String",
                     "serverUuid": "Uuid"
                 },
+                "mqttServerConfigurations": [
+                    "$ref:ServerConfiguration"
+                ],
                 "tcpServerConfigurations": [
                     "$ref:ServerConfiguration"
                 ],
@@ -741,6 +759,17 @@
                 "timeZones": [
                     "String"
                 ]
+            }
+        },
+        "Configuration.SetBackupConfiguration": {
+            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept.",
+            "params": {
+                "destinationDirectory": "String",
+                "maxCount": "Uint"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetDebugServerEnabled": {
@@ -2372,6 +2401,13 @@
                 "value": "String"
             }
         },
+        "Configuration.BackupConfigurationChanged": {
+            "description": "Emitted whenever the backup configuration changes.",
+            "params": {
+                "destinationDirectory": "String",
+                "maxCount": "Uint"
+            }
+        },
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
@@ -2388,12 +2424,6 @@
                     "serverName": "String",
                     "serverUuid": "Uuid"
                 }
-            }
-        },
-        "Configuration.LanguageChanged": {
-            "description": "Emitted whenever the language of the server changed. The Plugins, Vendors and ThingClasses have to be reloaded to get the translated data.",
-            "params": {
-                "language": "String"
             }
         },
         "Configuration.MqttPolicyChanged": {

@@ -26,7 +26,12 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "version.h"
 #include "../plugins/mock/extern-plugininfo.h"
+
+#include <QFileInfo>
+#include <QRegularExpression>
+#include <limits>
 
 using namespace nymeaserver;
 
@@ -44,6 +49,7 @@ protected slots:
 
 private slots:
     void getConfigurations();
+    void testBackupFiles();
 
     void testServerName();
     void testLanguages();
@@ -54,6 +60,7 @@ private slots:
 
 private:
     QVariantMap loadBasicConfiguration();
+    QVariantList loadBackupFiles();
 
 };
 
@@ -84,6 +91,95 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("tcpServerConfigurations"));
     QVERIFY(configurations.contains("webServerConfigurations"));
     QVERIFY(configurations.contains("webSocketServerConfigurations"));
+}
+
+void TestConfigurations::testBackupFiles()
+{
+    enableNotifications({"Configuration"});
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+    notificationSpy.clear();
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for first backup notification.");
+    QVariantList notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
+    QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for first backup.");
+
+    QVariantList backupFilesNotification = notifications.first().toMap().value("params").toMap().value("backupFiles").toList();
+    QCOMPARE(backupFilesNotification.count(), 1);
+
+    QTest::qWait(1100);
+
+    notificationSpy.clear();
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for second backup notification.");
+    notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
+    QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for second backup.");
+
+    backupFilesNotification = notifications.first().toMap().value("params").toMap().value("backupFiles").toList();
+    QCOMPARE(backupFilesNotification.count(), 2);
+
+    QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 2);
+    QCOMPARE(backupFilesNotification, backupFiles);
+
+    const QString expectedVersion = QString::fromLatin1(NYMEA_VERSION_STRING);
+    const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})\\.tar\\.gz$")
+                                             .arg(QRegularExpression::escape(expectedVersion)));
+
+    qint64 previousTimestamp = std::numeric_limits<qint64>::max();
+    for (const QVariant &backupFileVariant: backupFiles) {
+        const QVariantMap backupFile = backupFileVariant.toMap();
+        QVERIFY2(backupFile.contains("fileName"), "Backup file entry does not contain fileName.");
+        QVERIFY2(backupFile.contains("serverVersion"), "Backup file entry does not contain serverVersion.");
+        QVERIFY2(backupFile.contains("timestamp"), "Backup file entry does not contain timestamp.");
+        QVERIFY2(backupFile.contains("size"), "Backup file entry does not contain size.");
+
+        const QString fileName = backupFile.value("fileName").toString();
+        const QString serverVersion = backupFile.value("serverVersion").toString();
+        const qint64 timestamp = backupFile.value("timestamp").toLongLong();
+        const double size = backupFile.value("size").toDouble();
+
+        QCOMPARE(serverVersion, expectedVersion);
+        QVERIFY2(timestamp > 0, "Backup timestamp should be greater than 0.");
+        QVERIFY2(size > 0, "Backup size should be greater than 0.");
+        QVERIFY2(timestamp <= previousTimestamp, "Backup files should be returned sorted by timestamp descending.");
+        previousTimestamp = timestamp;
+
+        const QRegularExpressionMatch fileNameMatch = fileNamePattern.match(fileName);
+        QVERIFY2(fileNameMatch.hasMatch(), qPrintable(QString("Unexpected backup file name: %1").arg(fileName)));
+
+        const QString timestampString = fileNameMatch.captured(1);
+        const QDateTime fileNameTimestamp(QDate::fromString(timestampString.left(8), "yyyyMMdd"),
+                                          QTime::fromString(timestampString.mid(8, 6), "hhmmss"),
+                                          Qt::UTC);
+        QVERIFY2(fileNameTimestamp.isValid(), qPrintable(QString("Could not parse backup timestamp from file name: %1").arg(fileName)));
+        QCOMPARE(fileNameTimestamp.toSecsSinceEpoch(), timestamp);
+
+        QFileInfo fileInfo(backupDirectory.filePath(fileName));
+        QVERIFY2(fileInfo.exists(), qPrintable(QString("Backup file does not exist on disk: %1").arg(fileInfo.absoluteFilePath())));
+        QCOMPARE(fileInfo.fileName(), fileName);
+        QCOMPARE(static_cast<double>(fileInfo.size()), size);
+    }
+
+    disableNotifications();
 }
 
 void TestConfigurations::testServerName()
@@ -187,18 +283,21 @@ void TestConfigurations::testLanguages()
         QVariant response = injectAndWait("Configuration.SetLanguage", params);
         verifyConfigurationError(response);
 
+
         // Check notification
         notificationSpy2.wait(500);
-        QVariantList languageChangedNotifications = checkNotifications(notificationSpy2, "Configuration.LanguageChanged");
+        QVariantList configurationChangedNotifications = checkNotifications(notificationSpy2, "Configuration.BasicConfigurationChanged");
 
         // If the language did not change no notification should be emitted
         if (basicConfigurationMap.value("language").toString() == languageVariant.toString()) {
-            QVERIFY2(languageChangedNotifications.count() == 0, "Got Configuration.LanguageChanged notification but should have not.");
+            QVERIFY2(configurationChangedNotifications.count() == 0, "Got Configuration.BasicConfigurationChanged notification but should have not.");
         } else {
-            QVERIFY2(languageChangedNotifications.count() == 1, "Should get only one Configuration.LanguageChanged notification");
-            QVariantMap notificationMap = languageChangedNotifications.first().toMap().value("params").toMap();
-            QVERIFY2(notificationMap.contains("language"), "Notification does not contain language");
-            QVERIFY2(notificationMap.value("language").toString() == languageVariant.toString(), "Notification does not contain the new language");
+            QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+            QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
+            QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
+            QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
+            QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
+            QVERIFY2(basicConfigurationNotificationMap.value("language").toString() == languageVariant.toString(), "Notification does not contain the new language");
 
             // Restart the server and check if the language will be loaded correctly
             restartServer();
@@ -423,6 +522,13 @@ QVariantMap TestConfigurations::loadBasicConfiguration()
     QVariant response = injectAndWait("Configuration.GetConfigurations");
     QVariantMap configurationMap = response.toMap().value("params").toMap();
     return configurationMap.value("basicConfiguration").toMap();
+}
+
+QVariantList TestConfigurations::loadBackupFiles()
+{
+    QVariant response = injectAndWait("Configuration.GetBackupFiles");
+    QVariantMap responseMap = response.toMap().value("params").toMap();
+    return responseMap.value("backupFiles").toList();
 }
 
 #include "testconfigurations.moc"

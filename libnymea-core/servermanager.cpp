@@ -118,6 +118,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     // Interfaces
     m_jsonServer = new JsonRPCServerImplementation(m_sslConfiguration, this);
+
     m_transferManager = new TransferManager(this);
     m_transferServer = new TransferServerImplementation(m_transferManager, this);
     m_transportRouter = new TransportRouter(this);

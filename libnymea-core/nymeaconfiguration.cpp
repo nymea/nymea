@@ -590,7 +590,7 @@ void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 QString NymeaConfiguration::backupDestinationDirectory() const
 {
     m_settings->beginGroup("Backup");
-    QString value = m_settings->value("destinationDirectory", "/var/backup/").toString();
+    QString value = m_settings->value("destinationDirectory", "/var/backups/").toString();
     m_settings->endGroup();
     return value;
 }

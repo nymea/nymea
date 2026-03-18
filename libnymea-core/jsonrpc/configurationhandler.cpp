@@ -90,23 +90,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     QVariantMap returns;
     description = "Get the list of available timezones.";
     returns.insert("timeZones", QVariantList() << enumValueName(String));
-    registerMethod("GetTimeZones",
-                   description,
-                   params,
-                   returns,
-                   Types::PermissionScopeNone,
-                   "Use System.GetTimeZones instead.");
+    registerMethod("GetTimeZones", description, params, returns, Types::PermissionScopeNone, "Use System.GetTimeZones instead.");
 
     params.clear();
     returns.clear();
     description = "Returns a list of locale codes available for the server. i.e. en_US, de_AT";
     returns.insert("languages", QVariantList() << enumValueName(String));
-    registerMethod("GetAvailableLanguages",
-                   description,
-                   params,
-                   returns,
-                   Types::PermissionScopeNone,
-                   "Use the locale property in the Handshake message instead.");
+    registerMethod("GetAvailableLanguages", description, params, returns, Types::PermissionScopeNone, "Use the locale property in the Handshake message instead.");
 
     params.clear();
     returns.clear();
@@ -161,25 +151,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     description = "Set the time zone of the server. See also: \"GetTimeZones\"";
     params.insert("timeZone", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetTimeZone",
-                   description,
-                   params,
-                   returns,
-                   Types::PermissionScopeAdmin,
-                   "Use System.SetTimeZone instead.");
+    registerMethod("SetTimeZone", description, params, returns, Types::PermissionScopeAdmin, "Use System.SetTimeZone instead.");
 
     params.clear();
     returns.clear();
-    description
-        = "Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
+    description = "Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
     params.insert("language", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetLanguage",
-                   description,
-                   params,
-                   returns,
-                   Types::PermissionScopeAdmin,
-                   "Use the locale property in the Handshake message instead.");
+    registerMethod("SetLanguage", description, params, returns, Types::PermissionScopeAdmin, "Use the locale property in the Handshake message instead.");
 
     params.clear();
     returns.clear();
@@ -417,82 +396,27 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     params.insert("clientId", enumValueName(String));
     registerNotification("MqttPolicyRemoved", description, params);
 
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::serverNameChanged,
-            this,
-            &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::timeZoneChanged,
-            this,
-            &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::locationChanged,
-            this,
-            &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::localeChanged,
-            this,
-            &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::debugServerEnabledChanged,
-            this,
-            &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::tcpServerConfigurationChanged,
-            this,
-            &ConfigurationHandler::onTcpServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::tcpServerConfigurationRemoved,
-            this,
-            &ConfigurationHandler::onTcpServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::webServerConfigurationChanged,
-            this,
-            &ConfigurationHandler::onWebServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::webServerConfigurationRemoved,
-            this,
-            &ConfigurationHandler::onWebServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::webSocketServerConfigurationChanged,
-            this,
-            &ConfigurationHandler::onWebSocketServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::webSocketServerConfigurationRemoved,
-            this,
-            &ConfigurationHandler::onWebSocketServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::tunnelProxyServerConfigurationChanged,
-            this,
-            &ConfigurationHandler::onTunnelProxyServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::tunnelProxyServerConfigurationRemoved,
-            this,
-            &ConfigurationHandler::onTunnelProxyServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::mqttServerConfigurationChanged,
-            this,
-            &ConfigurationHandler::onMqttServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::mqttServerConfigurationRemoved,
-            this,
-            &ConfigurationHandler::onMqttServerConfigurationRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::mqttPolicyChanged,
-            this,
-            &ConfigurationHandler::onMqttPolicyChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::mqttPolicyRemoved,
-            this,
-            &ConfigurationHandler::onMqttPolicyRemoved);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::backupDestinationDirectoryChanged,
-            this,
-            &ConfigurationHandler::onBackupConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(),
-            &NymeaConfiguration::backupMaxCountChanged,
-            this,
-            &ConfigurationHandler::onBackupConfigurationChanged);
+    const NymeaConfiguration *config = NymeaCore::instance()->configuration();
+
+    connect(config, &NymeaConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(config, &NymeaConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(config, &NymeaConfiguration::locationChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(config, &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(config, &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(config, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
+    connect(config, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ConfigurationHandler::onTcpServerConfigurationRemoved);
+    connect(config, &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
+    connect(config, &NymeaConfiguration::webServerConfigurationRemoved, this, &ConfigurationHandler::onWebServerConfigurationRemoved);
+    connect(config, &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(config, &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ConfigurationHandler::onWebSocketServerConfigurationRemoved);
+    connect(config, &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ConfigurationHandler::onTunnelProxyServerConfigurationChanged);
+    connect(config, &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ConfigurationHandler::onTunnelProxyServerConfigurationRemoved);
+    connect(config, &NymeaConfiguration::mqttServerConfigurationChanged, this, &ConfigurationHandler::onMqttServerConfigurationChanged);
+    connect(config, &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
+    connect(config, &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
+    connect(config, &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
+    connect(config, &NymeaConfiguration::backupDestinationDirectoryChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
+    connect(config, &NymeaConfiguration::backupMaxCountChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -509,36 +433,31 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     returns.insert("backupConfigurations", packBackupConfiguration());
 
     QVariantList tcpServerConfigs;
-    foreach (const ServerConfiguration &config,
-             NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
         tcpServerConfigs.append(pack(config));
     }
     returns.insert("tcpServerConfigurations", tcpServerConfigs);
 
     QVariantList webServerConfigs;
-    foreach (const WebServerConfiguration &config,
-             NymeaCore::instance()->configuration()->webServerConfigurations()) {
+    foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         webServerConfigs.append(pack(config));
     }
     returns.insert("webServerConfigurations", webServerConfigs);
 
     QVariantList webSocketServerConfigs;
-    foreach (const ServerConfiguration &config,
-             NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
         webSocketServerConfigs.append(pack(config));
     }
     returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
 
     QVariantList tunnelProxyServerConfigs;
-    foreach (const TunnelProxyServerConfiguration &config,
-             NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations()) {
+    foreach (const TunnelProxyServerConfiguration &config, NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations()) {
         tunnelProxyServerConfigs.append(pack(config));
     }
     returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigs);
 
     QVariantList mqttServerConfigs;
-    foreach (const ServerConfiguration &config,
-             NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
         mqttServerConfigs.append(pack(config));
     }
     returns.insert("mqttServerConfigurations", mqttServerConfigs);
@@ -636,16 +555,12 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
         bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
         bool isSecured = config.sslEnabled && config.authenticationEnabled;
         if (!isLocalhost && !isSecured) {
-            qCWarning(dcJsonRpc())
-                << "Cannot add insecure TCP server configuration" << config
-                << "because insecure interfaces to the core are explicit disabled.";
+            qCWarning(dcJsonRpc()) << "Cannot add insecure TCP server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
         }
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2")
-                                .arg(config.address)
-                                .arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address).arg(config.port);
     NymeaCore::instance()->configuration()->setTcpServerConfiguration(config);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
@@ -653,8 +568,7 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
 JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty()
-        || !NymeaCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeTcpServerConfiguration(id);
@@ -663,8 +577,7 @@ JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap 
 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
-    WebServerConfiguration config = unpack<WebServerConfiguration>(
-        params.value("configuration").toMap());
+    WebServerConfiguration config = unpack<WebServerConfiguration>(params.value("configuration").toMap());
 
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
@@ -677,9 +590,7 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2")
-                                .arg(config.address)
-                                .arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
@@ -688,8 +599,7 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
 JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty()
-        || !NymeaCore::instance()->configuration()->webServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->webServerConfigurations().contains(id)) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeWebServerConfiguration(id);
@@ -715,16 +625,12 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
         bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
         bool isSecured = config.sslEnabled && config.authenticationEnabled;
         if (!isLocalhost && !isSecured) {
-            qCWarning(dcJsonRpc())
-                << "Cannot add insecure WebSocket server configuration" << config
-                << "because insecure interfaces to the core are explicit disabled.";
+            qCWarning(dcJsonRpc()) << "Cannot add insecure WebSocket server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
         }
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2")
-                                .arg(config.address)
-                                .arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
@@ -734,8 +640,7 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
 JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty()
-        || !NymeaCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
@@ -744,8 +649,7 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
 
 JsonReply *ConfigurationHandler::SetTunnelProxyServerConfiguration(const QVariantMap &params) const
 {
-    TunnelProxyServerConfiguration config = unpack<TunnelProxyServerConfiguration>(
-        params.value("configuration").toMap());
+    TunnelProxyServerConfiguration config = unpack<TunnelProxyServerConfiguration>(params.value("configuration").toMap());
     if (config.id.isEmpty())
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
 
@@ -760,16 +664,12 @@ JsonReply *ConfigurationHandler::SetTunnelProxyServerConfiguration(const QVarian
     // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
     if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
         if (!config.sslEnabled || !config.authenticationEnabled || config.ignoreSslErrors) {
-            qCWarning(dcJsonRpc())
-                << "Cannot add insecure tunnelproxy server configuration" << config
-                << "because insecure interfaces to the core are explicit disabled.";
+            qCWarning(dcJsonRpc()) << "Cannot add insecure tunnelproxy server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
         }
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configuring tunnel proxy server %1:%2")
-                                .arg(config.address)
-                                .arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configuring tunnel proxy server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setTunnelProxyServerConfiguration(config);
 
@@ -779,8 +679,7 @@ JsonReply *ConfigurationHandler::SetTunnelProxyServerConfiguration(const QVarian
 JsonReply *ConfigurationHandler::DeleteTunnelProxyServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty()
-        || !NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().contains(id)) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeTunnelProxyServerConfiguration(id);
@@ -795,11 +694,8 @@ JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &param
     if (!destinationDir.exists()) {
         // Try to make the directory
         if (!destinationDir.mkpath(destinationDirectory)) {
-            qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination "
-                                      "directory does not exist and could not be created."
-                                   << destinationDir;
-            return createReply(
-                statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
+            qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination " "directory does not exist and could not be created." << destinationDir;
+            return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
         }
     }
 
@@ -812,12 +708,10 @@ JsonReply *ConfigurationHandler::CreateBackup(const QVariantMap &params) const
 {
     Q_UNUSED(params);
     qCDebug(dcJsonRpc()) << "Request to create a configuration backup received.";
-    bool success = NymeaCore::instance()->backupManager()->createBackup(
-        NymeaCore::instance()->configuration()->path(),
-        NymeaCore::instance()->configuration()->backupDestinationDirectory(),
-        NymeaCore::instance()->configuration()->backupMaxCount());
-    return createReply(success ? statusToReply(NymeaConfiguration::ConfigurationErrorNoError)
-                               : statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+    bool success = NymeaCore::instance()->backupManager()->createBackup(NymeaCore::instance()->configuration()->path(),
+                                                                        NymeaCore::instance()->configuration()->backupDestinationDirectory(),
+                                                                        NymeaCore::instance()->configuration()->backupMaxCount());
+    return createReply(success ? statusToReply(NymeaConfiguration::ConfigurationErrorNoError) : statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
 }
 
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
@@ -825,8 +719,7 @@ JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList mqttServerConfigs;
-    foreach (const ServerConfiguration &config,
-             NymeaCore::instance()->configuration()->mqttServerConfigurations())
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations())
         mqttServerConfigs << pack(config);
 
     returns.insert("mqttServerConfigurations", mqttServerConfigs);
@@ -847,9 +740,7 @@ JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &p
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure MQTT server %1:%2")
-                                .arg(config.address)
-                                .arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure MQTT server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setMqttServerConfiguration(config);
 
@@ -859,8 +750,7 @@ JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &p
 JsonReply *ConfigurationHandler::DeleteMqttServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty()
-        || !NymeaCore::instance()->configuration()->mqttServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->mqttServerConfigurations().contains(id)) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeMqttServerConfiguration(id);
@@ -890,8 +780,7 @@ JsonReply *ConfigurationHandler::DeleteMqttPolicy(const QVariantMap &params) con
 {
     QString clientId = params.value("clientId").toString();
     bool success = NymeaCore::instance()->configuration()->removeMqttPolicy(clientId);
-    return createReply(statusToReply(success ? NymeaConfiguration::ConfigurationErrorNoError
-                                             : NymeaConfiguration::ConfigurationErrorInvalidId));
+    return createReply(statusToReply(success ? NymeaConfiguration::ConfigurationErrorNoError : NymeaConfiguration::ConfigurationErrorInvalidId));
 }
 
 JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params) const
@@ -919,8 +808,7 @@ void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
     QVariantMap params;
-    params.insert("tcpServerConfiguration",
-                  pack(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
+    params.insert("tcpServerConfiguration", pack(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
     emit TcpServerConfigurationChanged(params);
 }
 
@@ -936,8 +824,7 @@ void ConfigurationHandler::onWebServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: web server configuration changed";
     QVariantMap params;
-    params.insert("webServerConfiguration",
-                  pack(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
+    params.insert("webServerConfiguration", pack(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
     emit WebServerConfigurationChanged(params);
 }
 
@@ -953,9 +840,7 @@ void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &
 {
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
     QVariantMap params;
-    params.insert("webSocketServerConfiguration",
-                  pack(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(
-                      id)));
+    params.insert("webSocketServerConfiguration", pack(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
 }
 
@@ -971,10 +856,7 @@ void ConfigurationHandler::onTunnelProxyServerConfigurationChanged(const QString
 {
     qCDebug(dcJsonRpc()) << "Notification: Tunnel proxy server configuration changed";
     QVariantMap params;
-    params
-        .insert("tunnelProxyServerConfiguration",
-                pack(NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().value(
-                    id)));
+    params.insert("tunnelProxyServerConfiguration", pack(NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().value(id)));
     emit TunnelProxyServerConfigurationChanged(params);
 }
 
@@ -990,9 +872,7 @@ void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: MQTT server configuration changed";
     QVariantMap params;
-    params.insert("mqttServerConfiguration",
-                  pack(NymeaCore::instance()->configuration()->mqttServerConfigurations().value(
-                      id)));
+    params.insert("mqttServerConfiguration", pack(NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id)));
     emit MqttServerConfigurationChanged(params);
 }
 
@@ -1008,8 +888,7 @@ void ConfigurationHandler::onMqttPolicyChanged(const QString &clientId)
 {
     qCDebug(dcJsonRpc()) << "Notification: MQTT policy changed";
     QVariantMap params;
-    params.insert("policy",
-                  pack(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId)));
+    params.insert("policy", pack(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId)));
     emit MqttPolicyChanged(params);
 }
 
@@ -1025,29 +904,22 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
 {
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", NymeaCore::instance()->configuration()->serverName());
-    basicConfiguration.insert("serverUuid",
-                              NymeaCore::instance()->configuration()->serverUuid().toString());
-    basicConfiguration
-        .insert("serverTime",
-                NymeaCore::instance()->timeManager()->currentDateTime().toSecsSinceEpoch());
+    basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toSecsSinceEpoch());
     basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
-    basicConfiguration
-        .insert("location",
-                QVariantMap{{"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
-                            {"longitude",
-                             NymeaCore::instance()->configuration()->locationLongitude()},
-                            {"name", NymeaCore::instance()->configuration()->locationName()}});
-    basicConfiguration.insert("debugServerEnabled",
-                              NymeaCore::instance()->configuration()->debugServerEnabled());
+    basicConfiguration.insert("location",
+                              QVariantMap{{"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
+                                          {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
+                                          {"name", NymeaCore::instance()->configuration()->locationName()}});
+    basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }
 
 QVariantMap ConfigurationHandler::packBackupConfiguration()
 {
     QVariantMap configuration;
-    configuration.insert("destinationDirectory",
-                         NymeaCore::instance()->configuration()->backupDestinationDirectory());
+    configuration.insert("destinationDirectory", NymeaCore::instance()->configuration()->backupDestinationDirectory());
     configuration.insert("maxCount", NymeaCore::instance()->configuration()->backupMaxCount());
     return configuration;
 }
@@ -1055,8 +927,7 @@ QVariantMap ConfigurationHandler::packBackupConfiguration()
 QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const
 {
     QVariantMap returns;
-    returns.insert("configurationError",
-                   enumValueName<NymeaConfiguration::ConfigurationError>(status));
+    returns.insert("configurationError", enumValueName<NymeaConfiguration::ConfigurationError>(status));
     return returns;
 }
 

@@ -27,8 +27,11 @@
 
 #include <QObject>
 
+#include "backupmanager.h"
 #include "jsonrpc/jsonhandler.h"
 #include "nymeaconfiguration.h"
+
+class QFileSystemWatcher;
 
 namespace nymeaserver {
 
@@ -41,6 +44,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetConfigurations(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetBackupFiles(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetAvailableLanguages(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetServerName(const QVariantMap &params) const;
@@ -79,6 +83,7 @@ signals:
     void TunnelProxyServerConfigurationChanged(const QVariantMap &params);
     void TunnelProxyServerConfigurationRemoved(const QVariantMap &params);
     void BackupConfigurationChanged(const QVariantMap &params);
+    void BackupFilesChanged(const QVariantMap &params);
 
     void MqttServerConfigurationChanged(const QVariantMap &params);
     void MqttServerConfigurationRemoved(const QVariantMap &params);
@@ -88,6 +93,7 @@ signals:
 private slots:
     void onBasicConfigurationChanged();
     void onBackupConfigurationChanged();
+    void onBackupFilesDirectoryChanged(const QString &path);
     void onTcpServerConfigurationChanged(const QString &id);
     void onTcpServerConfigurationRemoved(const QString &id);
     void onWebServerConfigurationChanged(const QString &id);
@@ -102,9 +108,15 @@ private slots:
     void onMqttPolicyRemoved(const QString &clientId);
 
 private:
+    BackupFiles backupFiles() const;
+    void updateBackupDestinationDirectoryWatcher();
+    void emitBackupFilesChangedIfNeeded();
+
     static QVariantMap packBasicConfiguration();
     static QVariantMap packBackupConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
+    QFileSystemWatcher *m_backupDestinationDirectoryWatcher = nullptr;
+    BackupFiles m_backupFiles;
 };
 
 } // namespace nymeaserver

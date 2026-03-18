@@ -24,13 +24,122 @@
 
 #include "backupmanager.h"
 #include "loggingcategories.h"
+#include "version.h"
 
+#include <algorithm>
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
+#include <QRegularExpression>
 
 NYMEA_LOGGING_CATEGORY(dcBackup, "Backup")
+
+namespace {
+
+QDateTime parseBackupTimestamp(const QString &timestampString)
+{
+    const QDate date = QDate::fromString(timestampString.left(8), "yyyyMMdd");
+    const QTime time = QTime::fromString(timestampString.mid(8, 6), "hhmmss");
+    return QDateTime(date, time, Qt::UTC);
+}
+
+bool parseBackupFileInfo(const QFileInfo &fileInfo, const QString &archivePrefix, BackupFile *backupFile)
+{
+    const QString escapedArchivePrefix = QRegularExpression::escape(archivePrefix);
+    const QRegularExpression backupPattern(QString("^%1-(.+)-(\\d{14})\\.tar\\.gz$").arg(escapedArchivePrefix));
+    const QRegularExpression legacyBackupPattern(QString("^%1-(\\d{14})\\.tar\\.gz$").arg(escapedArchivePrefix));
+
+    QString serverVersion;
+    QString timestampString;
+
+    const QRegularExpressionMatch backupMatch = backupPattern.match(fileInfo.fileName());
+    if (backupMatch.hasMatch()) {
+        serverVersion = backupMatch.captured(1);
+        timestampString = backupMatch.captured(2);
+    } else {
+        const QRegularExpressionMatch legacyBackupMatch = legacyBackupPattern.match(fileInfo.fileName());
+        if (!legacyBackupMatch.hasMatch()) {
+            return false;
+        }
+        timestampString = legacyBackupMatch.captured(1);
+    }
+
+    const QDateTime timestamp = parseBackupTimestamp(timestampString);
+    if (!timestamp.isValid()) {
+        qCWarning(dcBackup()) << "Ignoring backup file with invalid timestamp:" << fileInfo.fileName();
+        return false;
+    }
+
+    *backupFile = BackupFile(fileInfo.fileName(), serverVersion, timestamp, static_cast<double>(fileInfo.size()));
+    return true;
+}
+
+}
+
+BackupFile::BackupFile()
+{
+}
+
+BackupFile::BackupFile(const QString &fileName, const QString &serverVersion, const QDateTime &timestamp, double size):
+    m_fileName(fileName),
+    m_serverVersion(serverVersion),
+    m_timestamp(timestamp),
+    m_size(size)
+{
+}
+
+QString BackupFile::fileName() const
+{
+    return m_fileName;
+}
+
+QString BackupFile::serverVersion() const
+{
+    return m_serverVersion;
+}
+
+QDateTime BackupFile::timestamp() const
+{
+    return m_timestamp;
+}
+
+double BackupFile::size() const
+{
+    return m_size;
+}
+
+bool BackupFile::operator==(const BackupFile &other) const
+{
+    return m_fileName == other.fileName()
+            && m_serverVersion == other.serverVersion()
+            && m_timestamp == other.timestamp()
+            && m_size == other.size();
+}
+
+bool BackupFile::operator!=(const BackupFile &other) const
+{
+    return !operator==(other);
+}
+
+BackupFiles::BackupFiles()
+{
+}
+
+BackupFiles::BackupFiles(const QList<BackupFile> &other):
+    QList<BackupFile>(other)
+{
+}
+
+QVariant BackupFiles::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void BackupFiles::put(const QVariant &variant)
+{
+    append(variant.value<BackupFile>());
+}
 
 BackupManager::BackupManager(QObject *parent)
     : QObject{parent}
@@ -50,6 +159,35 @@ void BackupManager::setAutomaticBackupEnabled(bool automaticBackupEnabled)
     emit automaticBackupEnabledChanged(m_automaticBackupEnabled);
 }
 
+BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QString &archivePrefix) const
+{
+    BackupFiles backupFiles;
+
+    const QDir dir(destinationDir);
+    if (!dir.exists()) {
+        return backupFiles;
+    }
+
+    const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
+    const QFileInfoList fileInfos = dir.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks, QDir::Name);
+    for (const QFileInfo &fileInfo: fileInfos) {
+        BackupFile backupFile;
+        if (parseBackupFileInfo(fileInfo, archivePrefix, &backupFile)) {
+            backupFiles.append(backupFile);
+        }
+    }
+
+    std::sort(backupFiles.begin(), backupFiles.end(), [](const BackupFile &left, const BackupFile &right) {
+        if (left.timestamp() != right.timestamp()) {
+            return left.timestamp() > right.timestamp();
+        }
+
+        return left.fileName() > right.fileName();
+    });
+
+    return backupFiles;
+}
+
 bool BackupManager::createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups, const QString &archivePrefix)
 {
     QFileInfo srcInfo(sourceDir);
@@ -67,7 +205,7 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     }
 
     const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
-    const QString archiveBaseName = QString("%1-%2.tar.gz").arg(archivePrefix, timestamp);
+    const QString archiveBaseName = QString("%1-%2-%3.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp);
     const QString archivePath = QDir(destinationDir).filePath(archiveBaseName);
 
     QString absSrc = QDir(sourceDir).absolutePath();

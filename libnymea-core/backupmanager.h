@@ -25,7 +25,53 @@
 #ifndef BACKUPMANAGER_H
 #define BACKUPMANAGER_H
 
+#include <QDateTime>
+#include <QList>
+#include <QMetaType>
 #include <QObject>
+#include <QVariant>
+
+class BackupFile
+{
+    Q_GADGET
+    Q_PROPERTY(QString fileName READ fileName)
+    Q_PROPERTY(QString serverVersion READ serverVersion)
+    Q_PROPERTY(QDateTime timestamp READ timestamp)
+    Q_PROPERTY(double size READ size)
+
+public:
+    BackupFile();
+    BackupFile(const QString &fileName, const QString &serverVersion, const QDateTime &timestamp, double size);
+
+    QString fileName() const;
+    QString serverVersion() const;
+    QDateTime timestamp() const;
+    double size() const;
+
+    bool operator==(const BackupFile &other) const;
+    bool operator!=(const BackupFile &other) const;
+
+private:
+    QString m_fileName;
+    QString m_serverVersion;
+    QDateTime m_timestamp;
+    double m_size = 0;
+};
+Q_DECLARE_METATYPE(BackupFile)
+
+class BackupFiles: public QList<BackupFile>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+
+public:
+    BackupFiles();
+    BackupFiles(const QList<BackupFile> &other);
+
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+Q_DECLARE_METATYPE(BackupFiles)
 
 class BackupManager : public QObject
 {
@@ -36,6 +82,7 @@ public:
     bool automaticBackupEnabled() const;
     void setAutomaticBackupEnabled(bool automaticBackupEnabled);
 
+    BackupFiles backupFiles(const QString &destinationDir, const QString &archivePrefix = "nymea-configuration") const;
     bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration");
     bool restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup = false);
 

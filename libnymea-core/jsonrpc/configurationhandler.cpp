@@ -68,6 +68,7 @@
 #include "platform/platformsystemcontroller.h"
 
 #include <QDir>
+#include <QFileSystemWatcher>
 
 namespace nymeaserver {
 
@@ -83,6 +84,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     registerObject<WebServerConfiguration>();
     registerObject<TunnelProxyServerConfiguration>();
     registerObject<MqttPolicy>();
+    registerObject<BackupFile, BackupFiles>();
 
     // Methods
     QString description;
@@ -97,6 +99,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     description = "Returns a list of locale codes available for the server. i.e. en_US, de_AT";
     returns.insert("languages", QVariantList() << enumValueName(String));
     registerMethod("GetAvailableLanguages", description, params, returns, Types::PermissionScopeNone, "Use the locale property in the Handshake message instead.");
+
+    params.clear();
+    returns.clear();
+    description = "Get the list of configuration backup files from the configured destination directory.";
+    returns.insert("backupFiles", QVariantList() << objectRef<BackupFile>());
+    registerMethod("GetBackupFiles", description, params, returns);
 
     params.clear();
     returns.clear();
@@ -362,6 +370,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
 
     params.clear();
     returns.clear();
+    description = "Emitted whenever the list of backup files changes.";
+    params.insert("backupFiles", QVariantList() << objectRef<BackupFile>());
+    registerNotification("BackupFilesChanged", description, params);
+
+    params.clear();
+    returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
     params.insert("mqttServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("MqttServerConfigurationChanged", description, params);
@@ -417,6 +431,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     connect(config, &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
     connect(config, &NymeaConfiguration::backupDestinationDirectoryChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
     connect(config, &NymeaConfiguration::backupMaxCountChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
+
+    m_backupDestinationDirectoryWatcher = new QFileSystemWatcher(this);
+    connect(m_backupDestinationDirectoryWatcher, &QFileSystemWatcher::directoryChanged, this, &ConfigurationHandler::onBackupFilesDirectoryChanged);
+
+    updateBackupDestinationDirectoryWatcher();
+    m_backupFiles = backupFiles();
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -462,6 +482,15 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     }
     returns.insert("mqttServerConfigurations", mqttServerConfigs);
 
+    return createReply(returns);
+}
+
+JsonReply *ConfigurationHandler::GetBackupFiles(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+
+    QVariantMap returns;
+    returns.insert("backupFiles", pack(backupFiles()));
     return createReply(returns);
 }
 
@@ -801,7 +830,16 @@ void ConfigurationHandler::onBasicConfigurationChanged()
 void ConfigurationHandler::onBackupConfigurationChanged()
 {
     qCDebug(dcJsonRpc()) << "Notification: Backup configuration changed";
+    updateBackupDestinationDirectoryWatcher();
     emit BackupConfigurationChanged(packBackupConfiguration());
+    emitBackupFilesChangedIfNeeded();
+}
+
+void ConfigurationHandler::onBackupFilesDirectoryChanged(const QString &path)
+{
+    qCDebug(dcJsonRpc()) << "Backup directory changed:" << path;
+    updateBackupDestinationDirectoryWatcher();
+    emitBackupFilesChangedIfNeeded();
 }
 
 void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
@@ -922,6 +960,51 @@ QVariantMap ConfigurationHandler::packBackupConfiguration()
     configuration.insert("destinationDirectory", NymeaCore::instance()->configuration()->backupDestinationDirectory());
     configuration.insert("maxCount", NymeaCore::instance()->configuration()->backupMaxCount());
     return configuration;
+}
+
+BackupFiles ConfigurationHandler::backupFiles() const
+{
+    return NymeaCore::instance()->backupManager()->backupFiles(NymeaCore::instance()->configuration()->backupDestinationDirectory());
+}
+
+void ConfigurationHandler::updateBackupDestinationDirectoryWatcher()
+{
+    const QString destinationDirectory = NymeaCore::instance()->configuration()->backupDestinationDirectory();
+    const QString watchedDirectory = destinationDirectory.isEmpty() ? QString() : QDir(destinationDirectory).absolutePath();
+
+    const QStringList watchedDirectories = m_backupDestinationDirectoryWatcher->directories();
+    for (const QString &directory: watchedDirectories) {
+        if (directory != watchedDirectory) {
+            m_backupDestinationDirectoryWatcher->removePath(directory);
+        }
+    }
+
+    if (watchedDirectory.isEmpty()) {
+        return;
+    }
+
+    if (!QDir(watchedDirectory).exists()) {
+        return;
+    }
+
+    if (!m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
+        m_backupDestinationDirectoryWatcher->addPath(watchedDirectory);
+    }
+}
+
+void ConfigurationHandler::emitBackupFilesChangedIfNeeded()
+{
+    const BackupFiles currentBackupFiles = backupFiles();
+    if (currentBackupFiles == m_backupFiles) {
+        return;
+    }
+
+    qCDebug(dcJsonRpc()) << "Notification: Backup files changed";
+    m_backupFiles = currentBackupFiles;
+
+    QVariantMap params;
+    params.insert("backupFiles", pack(m_backupFiles));
+    emit BackupFilesChanged(params);
 }
 
 QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const

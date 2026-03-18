@@ -46,6 +46,7 @@
 #include "loggingcategories.h"
 
 #include "jsonrpc/jsonrpcserverimplementation.h"
+#include "jsonrpc/transfershandler.h"
 #include "servers/mocktcpserver.h"
 #include "servers/tcpserver.h"
 #include "servers/websocketserver.h"
@@ -53,6 +54,9 @@
 #include "servers/bluetoothserver.h"
 #include "servers/mqttbroker.h"
 #include "servers/tunnelproxyserver.h"
+#include "transferserverimplementation.h"
+#include "transfermanager.h"
+#include "transportrouter.h"
 
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
@@ -114,10 +118,15 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     // Interfaces
     m_jsonServer = new JsonRPCServerImplementation(m_sslConfiguration, this);
+    m_transferManager = new TransferManager(this);
+    m_transferServer = new TransferServerImplementation(m_transferManager, this);
+    m_transportRouter = new TransportRouter(this);
+    m_jsonServer->registerHandler(new TransfersHandler(m_transferManager, m_jsonServer));
 
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
-    m_jsonServer->registerTransportInterface(tcpServer);
+    m_mockTcpServer = tcpServer;
+    registerCoreTransport(tcpServer);
     tcpServer->startServer();
 
     foreach (const QString &interfaceString, additionalInterfaces) {
@@ -133,7 +142,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             config.sslEnabled = additionalInterface.scheme().startsWith("nymeas");
             config.authenticationEnabled = false;
             server = new TcpServer(config, m_sslConfiguration, this);
-            m_jsonServer->registerTransportInterface(server);
+            registerCoreTransport(server);
             m_tcpServers.insert(config.id, qobject_cast<TcpServer*>(server));
             serverType = "tcp";
             serviceType = "_jsonrpc._tcp";
@@ -141,7 +150,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             config.sslEnabled = additionalInterface.scheme().startsWith("wss");
             config.authenticationEnabled = false;
             server = new WebSocketServer(config, m_sslConfiguration, this);
-            m_jsonServer->registerTransportInterface(server);
+            registerCoreTransport(server);
             m_webSocketServers.insert(config.id, qobject_cast<WebSocketServer*>(server));
             serverType = "ws";
             serviceType = "_ws._tcp";
@@ -158,7 +167,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         }
 
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(tcpServer);
+        registerCoreTransport(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
             qCDebug(dcServerManager()) << "Started TCP server" << tcpServer->serverUrl().toString();
@@ -173,7 +182,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         }
 
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(webSocketServer);
+        registerCoreTransport(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
             qCDebug(dcServerManager()) << "Started WebSocket server" << webSocketServer->serverUrl().toString();
@@ -183,7 +192,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     qCDebug(dcBluetoothServer()) << "Creating Bluetooth server.";
     m_bluetoothServer = new BluetoothServer(this);
-    m_jsonServer->registerTransportInterface(m_bluetoothServer);
+    registerCoreTransport(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {
         if (m_disableInsecureInterfaces) {
             qCWarning(dcServerManager()) << "The bluetooth RFCOM server is enabled, but insecure server interfaces have been disabled explicitly. Not starting the bluetooth server.";
@@ -203,9 +212,9 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_tunnelProxyServers.insert(config.id, tunnelProxyServer);
         connect(tunnelProxyServer, &TunnelProxyServer::runningChanged, this, [this, tunnelProxyServer](bool running){
             if (running) {
-                m_jsonServer->registerTransportInterface(tunnelProxyServer);
+                registerCoreTransport(tunnelProxyServer);
             } else {
-                m_jsonServer->unregisterTransportInterface(tunnelProxyServer);
+                unregisterCoreTransport(tunnelProxyServer);
             }
         });
 
@@ -262,6 +271,37 @@ JsonRPCServerImplementation *ServerManager::jsonServer() const
     return m_jsonServer;
 }
 
+void ServerManager::registerCoreTransport(TransportInterface *transport)
+{
+    if (m_registeredCoreTransports.contains(transport)) {
+        return;
+    }
+
+    TransportInterface *jsonTransport = m_transportRouter->registerTransportInterface(transport, false);
+    TransportInterface *transferTransport = m_transportRouter->registerTransportInterface(transport, true);
+    m_jsonServer->registerTransportInterface(jsonTransport);
+    m_transferServer->registerTransportInterface(transferTransport);
+    m_registeredCoreTransports.insert(transport);
+}
+
+void ServerManager::unregisterCoreTransport(TransportInterface *transport)
+{
+    if (!m_registeredCoreTransports.contains(transport)) {
+        return;
+    }
+
+    TransportInterface *jsonTransport = m_transportRouter->transportProxy(transport, false);
+    TransportInterface *transferTransport = m_transportRouter->transportProxy(transport, true);
+    if (jsonTransport) {
+        m_jsonServer->unregisterTransportInterface(jsonTransport);
+    }
+    if (transferTransport) {
+        m_transferServer->unregisterTransportInterface(transferTransport);
+    }
+    m_transportRouter->unregisterTransportInterface(transport);
+    m_registeredCoreTransports.remove(transport);
+}
+
 /*! Returns the pointer to the created \l{BluetoothServer} in this \l{ServerManager}. */
 BluetoothServer *ServerManager::bluetoothServer() const
 {
@@ -314,7 +354,7 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     } else {
         qCDebug(dcServerManager()) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
         server = new TcpServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(server);
+        registerCoreTransport(server);
         m_tcpServers.insert(config.id, server);
     }
     if (server->startServer()) {
@@ -329,7 +369,7 @@ void ServerManager::tcpServerConfigurationRemoved(const QString &id)
         return;
     }
     TcpServer *server = m_tcpServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     unregisterZeroConfService(id, "tcp");
     server->stopServer();
     server->deleteLater();
@@ -347,7 +387,7 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
     } else {
         qCDebug(dcServerManager()) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
         server = new WebSocketServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(server);
+        registerCoreTransport(server);
         m_webSocketServers.insert(server->configuration().id, server);
     }
     if (server->startServer()) {
@@ -362,7 +402,7 @@ void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
         return;
     }
     WebSocketServer *server = m_webSocketServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     unregisterZeroConfService(id, "ws");
     server->stopServer();
     server->deleteLater();
@@ -452,9 +492,9 @@ void ServerManager::tunnelProxyServerConfigurationChanged(const QString &id)
         m_tunnelProxyServers.insert(server->configuration().id, server);
         connect(server, &TunnelProxyServer::runningChanged, this, [this, server](bool running){
             if (running) {
-                m_jsonServer->registerTransportInterface(server);
+                registerCoreTransport(server);
             } else {
-                m_jsonServer->unregisterTransportInterface(server);
+                unregisterCoreTransport(server);
             }
         });
     }
@@ -469,7 +509,7 @@ void ServerManager::tunnelProxyServerConfigurationRemoved(const QString &id)
         return;
     }
     TunnelProxyServer *server = m_tunnelProxyServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     server->stopServer();
     server->deleteLater();
 }

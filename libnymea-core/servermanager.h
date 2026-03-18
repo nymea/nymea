@@ -26,6 +26,7 @@
 #define SERVERMANAGER_H
 
 #include <QObject>
+#include <QSet>
 
 #include "nymeaconfiguration.h"
 
@@ -39,6 +40,10 @@ namespace nymeaserver {
 class Platform;
 class NymeaConfiguration;
 class JsonRPCServerImplementation;
+class TransferManager;
+class TransferServerImplementation;
+class TransportRouter;
+class TransportInterface;
 class TcpServer;
 class WebSocketServer;
 class WebServer;
@@ -82,6 +87,10 @@ private slots:
     void tunnelProxyServerConfigurationRemoved(const QString &id);
 
 private:
+    void registerCoreTransport(TransportInterface *transport);
+    void unregisterCoreTransport(TransportInterface *transport);
+
+private:
     bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
     void unregisterZeroConfService(const QString &configId, const QString &serverType);
 
@@ -94,8 +103,12 @@ private:
 
     // Interfaces
     JsonRPCServerImplementation *m_jsonServer;
+    TransferManager *m_transferManager = nullptr;
+    TransferServerImplementation *m_transferServer = nullptr;
+    TransportRouter *m_transportRouter = nullptr;
 
     BluetoothServer *m_bluetoothServer;
+    QSet<TransportInterface *> m_registeredCoreTransports;
     QHash<QString, TcpServer *> m_tcpServers;
     QHash<QString, WebSocketServer *> m_webSocketServers;
     QHash<QString, WebServer *> m_webServers;

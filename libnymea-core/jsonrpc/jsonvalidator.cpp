@@ -39,7 +39,7 @@ bool hasTaggedPrefix(const QString &key, const QString &tag)
 {
     int offset = 0;
     while (offset + 2 <= key.length() && key.at(offset + 1) == QLatin1Char(':')) {
-        if (key.midRef(offset, 2) == tag) {
+        if (key.mid(offset, 2) == tag) {
             return true;
         }
         offset += 2;

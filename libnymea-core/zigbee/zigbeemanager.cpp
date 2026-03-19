@@ -363,10 +363,10 @@ void ZigbeeManager::loadPlatformConfiguration()
      * autoSetup=true
      */
 
-    if (loadedPlatformConfiguration(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf"))
+    if (loadedPlatformConfiguration(QFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf")))
         return;
 
-    if (loadedPlatformConfiguration(NymeaSettings::defaultSettingsPath() + QDir::separator() + "zigbee-platform.conf"))
+    if (loadedPlatformConfiguration(QFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + "zigbee-platform.conf")))
         return;
 
     qCDebug(dcZigbee()) << "No platform configuration applied";

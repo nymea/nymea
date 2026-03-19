@@ -334,7 +334,7 @@ QLocale NymeaConfiguration::locale() const
     m_settings->beginGroup("nymead");
     QString value = m_settings->value("language", "en_US").toString();
     m_settings->endGroup();
-    return value;
+    return QLocale(value);
 }
 
 void NymeaConfiguration::setLocale(const QLocale &locale)

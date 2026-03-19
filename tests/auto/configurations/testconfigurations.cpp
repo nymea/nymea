@@ -54,6 +54,7 @@ private slots:
     void getConfigurations();
     void testBackupFiles();
     void testCreateBackupUsesUniqueFileNames();
+    void testBackupRetentionKeepsCreatedArchive();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -232,6 +233,43 @@ void TestConfigurations::testCreateBackupUsesUniqueFileNames()
 
     const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
     QCOMPARE(backupFiles.count(), 2);
+}
+
+void TestConfigurations::testBackupRetentionKeepsCreatedArchive()
+{
+    QTemporaryDir sourceDirectory;
+    QVERIFY2(sourceDirectory.isValid(), "Could not create temporary source directory.");
+
+    QFile sourceFile(sourceDirectory.filePath("config.json"));
+    QVERIFY2(sourceFile.open(QIODevice::WriteOnly), "Could not create temporary source file.");
+    sourceFile.write("{\"test\":true}\n");
+    sourceFile.close();
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-retention";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear retention backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create retention backup directory.");
+
+    while (QTime::currentTime().msec() > 50) {
+        QTest::qWait(5);
+    }
+
+    QString firstArchivePath;
+    QString secondArchivePath;
+    BackupManager *backupManager = NymeaCore::instance()->backupManager();
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 1, "nymea-configuration", &firstArchivePath),
+             "Failed to create first retained backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 1, "nymea-configuration", &secondArchivePath),
+             "Failed to create second retained backup archive.");
+
+    QVERIFY2(QFileInfo::exists(secondArchivePath), "The newly created backup archive should still exist after retention cleanup.");
+    QVERIFY2(!QFileInfo::exists(firstArchivePath), "The older backup archive should be removed when maxBackups is reached.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 1);
+    QCOMPARE(QFileInfo(secondArchivePath).fileName(), backupFiles.first());
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

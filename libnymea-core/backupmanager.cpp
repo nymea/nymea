@@ -237,13 +237,21 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         if (files.size() <= maxBackups)
             return true;
 
-        // Delete everything after index (maxKeep-1)
-        for (int i = maxBackups; i < files.size(); ++i) {
+        const QString createdArchiveAbsolutePath = QFileInfo(createdArchivePath).absoluteFilePath();
+        int remainingFiles = files.size();
+
+        // Delete the oldest backups first but never the archive we just created.
+        for (int i = files.size() - 1; i >= 0 && remainingFiles > maxBackups; --i) {
             const QString path = files.at(i).absoluteFilePath();
+            if (path == createdArchiveAbsolutePath) {
+                continue;
+            }
+
             if (!QFile::remove(path)) {
                 qCWarning(dcBackup()) << "Warning: failed to remove old backup: " << path;
             } else {
                 qCDebug(dcBackup()) << "Removed old backup: " << path;
+                --remainingFiles;
             }
         }
     }

@@ -257,8 +257,20 @@ QString NymeaSettings::scriptsPath()
 /*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */
 QString NymeaSettings::storagePath()
 {
-    // For backwards compatibility
-    return NymeaSettings::settingsPath();
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    QString path;
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
+        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
+    } else if (organisationName == "nymea-test") {
+        path = "/tmp/" + organisationName;
+    } else if (NymeaSettings::isRoot()) {
+        path = "/var/lib/" + organisationName;
+    } else {
+        path = QDir::homePath() + "/.local/share/" + organisationName;
+    }
+
+    return QDir(path).absolutePath();
 }
 
 QString NymeaSettings::cachePath()

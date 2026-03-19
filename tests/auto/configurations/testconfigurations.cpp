@@ -55,6 +55,7 @@ private slots:
 
     void testServerName();
     void testLanguages();
+    void testLocationNotifications();
 
     void testDebugServerConfiguration();
 
@@ -424,6 +425,47 @@ void TestConfigurations::testLanguages()
     // Set language
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
+
+    disableNotifications();
+}
+
+void TestConfigurations::testLocationNotifications()
+{
+    enableNotifications({"Configuration"});
+
+    const QVariantMap currentBasicConfiguration = loadBasicConfiguration();
+    const QVariantMap currentLocation = currentBasicConfiguration.value("location").toMap();
+
+    const double newLatitude = currentLocation.value("latitude").toDouble() + 1.234567;
+    const double newLongitude = currentLocation.value("longitude").toDouble() - 2.345678;
+    const QString newName = QString("Test location %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+
+    QVariantMap params;
+    params.insert("location", QVariantMap{
+                      {"latitude", newLatitude},
+                      {"longitude", newLongitude},
+                      {"name", newName},
+                  });
+    const QVariant response = injectAndWait("Configuration.SetLocation", params);
+    verifyConfigurationError(response);
+
+    QVERIFY2(notificationSpy.wait(500), "Timed out waiting for Configuration.BasicConfigurationChanged notification.");
+    const QVariantList configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
+    QCOMPARE(configurationChangedNotifications.count(), 1);
+
+    const QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+    const QVariantMap basicConfiguration = notificationContent.value("basicConfiguration").toMap();
+    const QVariantMap notifiedLocation = basicConfiguration.value("location").toMap();
+    QCOMPARE(notifiedLocation.value("latitude").toDouble(), newLatitude);
+    QCOMPARE(notifiedLocation.value("longitude").toDouble(), newLongitude);
+    QCOMPARE(notifiedLocation.value("name").toString(), newName);
+
+    const QVariantMap storedLocation = loadBasicConfiguration().value("location").toMap();
+    QCOMPARE(storedLocation.value("latitude").toDouble(), newLatitude);
+    QCOMPARE(storedLocation.value("longitude").toDouble(), newLongitude);
+    QCOMPARE(storedLocation.value("name").toString(), newName);
 
     disableNotifications();
 }

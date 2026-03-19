@@ -313,16 +313,20 @@ QString NymeaConfiguration::locationName() const
 void NymeaConfiguration::setLocation(double latitude, double longitude, const QString &name)
 {
     m_settings->beginGroup("nymead");
-    if (m_settings->value("locationLatitude").toDouble() != latitude ||
-        m_settings->value("locationLongitude").toDouble() != longitude ||
-        m_settings->value("locationName").toString() != name) {
+    const bool changed = m_settings->value("locationLatitude").toDouble() != latitude ||
+            m_settings->value("locationLongitude").toDouble() != longitude ||
+            m_settings->value("locationName").toString() != name;
+    if (changed) {
 
         m_settings->setValue("locationLatitude", latitude);
         m_settings->setValue("locationLongitude", longitude);
         m_settings->setValue("locationName", name);
-        emit locationChanged();
     }
     m_settings->endGroup();
+
+    if (changed) {
+        emit locationChanged();
+    }
 }
 
 QLocale NymeaConfiguration::locale() const

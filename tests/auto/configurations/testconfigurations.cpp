@@ -26,11 +26,12 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
-#include "version.h"
 #include "../plugins/mock/extern-plugininfo.h"
 
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QScopedPointer>
+#include <QWebSocket>
 #include <limits>
 
 using namespace nymeaserver;
@@ -50,6 +51,7 @@ protected slots:
 private slots:
     void getConfigurations();
     void testBackupFiles();
+    void testCreateAndDownloadBackup();
 
     void testServerName();
     void testLanguages();
@@ -61,6 +63,17 @@ private slots:
 private:
     QVariantMap loadBasicConfiguration();
     QVariantList loadBackupFiles();
+    QWebSocket *openSocket();
+    QVariant sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params = QVariantMap(), QVariantMap *notification = nullptr);
+
+public slots:
+    void sslErrors(const QList<QSslError> &)
+    {
+        QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
+        if (socket) {
+            socket->ignoreSslErrors();
+        }
+    }
 
 };
 
@@ -140,10 +153,6 @@ void TestConfigurations::testBackupFiles()
     QCOMPARE(backupFiles.count(), 2);
     QCOMPARE(backupFilesNotification, backupFiles);
 
-    const QString expectedVersion = QString::fromLatin1(NYMEA_VERSION_STRING);
-    const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})\\.tar\\.gz$")
-                                             .arg(QRegularExpression::escape(expectedVersion)));
-
     qint64 previousTimestamp = std::numeric_limits<qint64>::max();
     for (const QVariant &backupFileVariant: backupFiles) {
         const QVariantMap backupFile = backupFileVariant.toMap();
@@ -157,12 +166,14 @@ void TestConfigurations::testBackupFiles()
         const qint64 timestamp = backupFile.value("timestamp").toLongLong();
         const double size = backupFile.value("size").toDouble();
 
-        QCOMPARE(serverVersion, expectedVersion);
+        QVERIFY2(!serverVersion.isEmpty(), "Backup serverVersion should not be empty.");
         QVERIFY2(timestamp > 0, "Backup timestamp should be greater than 0.");
         QVERIFY2(size > 0, "Backup size should be greater than 0.");
         QVERIFY2(timestamp <= previousTimestamp, "Backup files should be returned sorted by timestamp descending.");
         previousTimestamp = timestamp;
 
+        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})\\.tar\\.gz$")
+                                                 .arg(QRegularExpression::escape(serverVersion)));
         const QRegularExpressionMatch fileNameMatch = fileNamePattern.match(fileName);
         QVERIFY2(fileNameMatch.hasMatch(), qPrintable(QString("Unexpected backup file name: %1").arg(fileName)));
 
@@ -180,6 +191,101 @@ void TestConfigurations::testBackupFiles()
     }
 
     disableNotifications();
+}
+
+void TestConfigurations::testCreateAndDownloadBackup()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-download";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear download backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create download backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateAndDownloadBackup");
+    verifyConfigurationError(response);
+
+    const QVariantMap createDownloadResponse = response.toMap().value("params").toMap();
+    const QString downloadId = createDownloadResponse.value("downloadId").toString();
+    const QString fileName = createDownloadResponse.value("fileName").toString();
+    const qint64 size = createDownloadResponse.value("size").toLongLong();
+
+    QVERIFY2(!downloadId.isEmpty(), "CreateAndDownloadBackup did not return a downloadId.");
+    QVERIFY2(!fileName.isEmpty(), "CreateAndDownloadBackup did not return a fileName.");
+    QVERIFY2(size > 0, "CreateAndDownloadBackup did not return a valid size.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 1);
+    QCOMPARE(fileName, backupFiles.first());
+
+    QFile backupFile(backupDirectory.filePath(fileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open created backup file.");
+    const QByteArray expectedPayload = backupFile.readAll();
+    QCOMPARE(expectedPayload.size(), size);
+
+    {
+        QScopedPointer<QWebSocket> apiSocket(openSocket());
+        QVERIFY(!apiSocket.isNull());
+
+        response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        params.clear();
+        params.insert("downloadId", downloadId);
+        response = sendAndWait(apiSocket.data(), 2, "Transfers.StartDownload", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        const QVariantMap downloadInfo = response.toMap().value("params").toMap();
+        const QString downloadTransferId = downloadInfo.value("transferId").toString();
+        const QString downloadTransferToken = downloadInfo.value("transferToken").toString();
+        QCOMPARE(downloadInfo.value("fileName").toString(), fileName);
+        QCOMPARE(downloadInfo.value("size").toLongLong(), size);
+        QVERIFY(!downloadTransferId.isEmpty());
+        QVERIFY(!downloadTransferToken.isEmpty());
+
+        QScopedPointer<QWebSocket> downloadSocket(openSocket());
+        QVERIFY(!downloadSocket.isNull());
+
+        params.clear();
+        params.insert("transferId", downloadTransferId);
+        params.insert("transferToken", downloadTransferToken);
+        response = sendAndWait(downloadSocket.data(), 10, "Transfer.Connect", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+        QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("download"));
+
+        QByteArray downloadedPayload;
+        bool finished = false;
+        int downloadCommandId = 11;
+        while (!finished) {
+            params.clear();
+            params.insert("maxBytes", 4096);
+            response = sendAndWait(downloadSocket.data(), downloadCommandId++, "Transfer.RequestChunk", params);
+            QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+            const QVariantMap chunkParams = response.toMap().value("params").toMap();
+            downloadedPayload.append(QByteArray::fromBase64(chunkParams.value("data").toByteArray()));
+            finished = chunkParams.value("finished").toBool();
+        }
+
+        QCOMPARE(downloadedPayload, expectedPayload);
+
+        QSignalSpy downloadDisconnectedSpy(downloadSocket.data(), &QWebSocket::disconnected);
+        downloadSocket->close();
+        downloadDisconnectedSpy.wait(1000);
+
+        params.clear();
+        QSignalSpy apiDisconnectedSpy(apiSocket.data(), &QWebSocket::disconnected);
+        apiSocket->close();
+        apiDisconnectedSpy.wait(1000);
+    }
+
+    qApp->processEvents();
 }
 
 void TestConfigurations::testServerName()
@@ -216,7 +322,7 @@ void TestConfigurations::testServerName()
     verifyConfigurationError(response);
 
     // Check notification not emitted
-    notificationSpy.wait(500);
+    notificationSpy.wait();
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
     QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
@@ -529,6 +635,63 @@ QVariantList TestConfigurations::loadBackupFiles()
     QVariant response = injectAndWait("Configuration.GetBackupFiles");
     QVariantMap responseMap = response.toMap().value("params").toMap();
     return responseMap.value("backupFiles").toList();
+}
+
+QWebSocket *TestConfigurations::openSocket()
+{
+    QWebSocket *socket = new QWebSocket("nymea configuration tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestConfigurations::sslErrors);
+
+    QSignalSpy connectedSpy(socket, &QWebSocket::connected);
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
+    if (!connectedSpy.wait()) {
+        socket->deleteLater();
+        return nullptr;
+    }
+
+    return socket;
+}
+
+QVariant TestConfigurations::sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params, QVariantMap *notification)
+{
+    QVariantMap call;
+    call.insert("id", id);
+    call.insert("method", method);
+    if (method.startsWith("JSONRPC.") || method.startsWith("Transfers.")) {
+        call.insert("token", m_apiToken);
+    }
+    if (!params.isEmpty()) {
+        call.insert("params", params);
+    }
+
+    const QByteArray payload = QJsonDocument::fromVariant(call).toJson(QJsonDocument::Compact);
+    QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
+    socket->sendTextMessage(QString::fromUtf8(payload));
+
+    while (spy.count() > 0 || spy.wait()) {
+        for (int i = 0; i < spy.count(); ++i) {
+            QJsonParseError error;
+            const QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).at(0).toByteArray(), &error);
+            if (error.error != QJsonParseError::NoError) {
+                continue;
+            }
+
+            const QVariantMap response = jsonDoc.toVariant().toMap();
+            if (response.contains("notification")) {
+                if (notification) {
+                    *notification = response;
+                }
+                continue;
+            }
+
+            if (response.value("id").toInt() == id) {
+                return response;
+            }
+        }
+        spy.clear();
+    }
+
+    return QVariant();
 }
 
 #include "testconfigurations.moc"

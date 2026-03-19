@@ -66,8 +66,11 @@
 #include "nymeacore.h"
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
+#include "transfermanager.h"
 
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 
 namespace nymeaserver {
@@ -272,6 +275,17 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
           "destination directory. Also the maxCout configuration will be considered.";
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("CreateBackup", description, params, returns);
+
+    params.clear();
+    returns.clear();
+    description
+        = "Create a backup of the current configuration and generate a download entry for the "
+          "dedicated transfer connection.";
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    returns.insert("downloadId", enumValueName(String));
+    returns.insert("fileName", enumValueName(String));
+    returns.insert("size", enumValueName(Int));
+    registerMethod("CreateAndDownloadBackup", description, params, returns);
 
     // MQTT
     params.clear();
@@ -741,6 +755,38 @@ JsonReply *ConfigurationHandler::CreateBackup(const QVariantMap &params) const
                                                                         NymeaCore::instance()->configuration()->backupDestinationDirectory(),
                                                                         NymeaCore::instance()->configuration()->backupMaxCount());
     return createReply(success ? statusToReply(NymeaConfiguration::ConfigurationErrorNoError) : statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+}
+
+JsonReply *ConfigurationHandler::CreateAndDownloadBackup(const QVariantMap &params, const JsonContext &context) const
+{
+    Q_UNUSED(params)
+    qCDebug(dcJsonRpc()) << "Request to create and download a configuration backup received.";
+
+    QString archivePath;
+    const bool success = NymeaCore::instance()->backupManager()->createBackup(NymeaCore::instance()->configuration()->path(),
+                                                                              NymeaCore::instance()->configuration()->backupDestinationDirectory(),
+                                                                              NymeaCore::instance()->configuration()->backupMaxCount(),
+                                                                              "nymea-configuration",
+                                                                              &archivePath);
+    if (!success || archivePath.isEmpty()) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+    }
+
+    QFile archiveFile(archivePath);
+    if (!archiveFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcJsonRpc()) << "Failed to open created backup archive for download:" << archivePath << archiveFile.errorString();
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+    }
+
+    const auto downloadInfo = NymeaCore::instance()->serverManager()->transferManager()->createDownload(QFileInfo(archiveFile).fileName(),
+                                                                                                         archiveFile.readAll(),
+                                                                                                         context);
+
+    QVariantMap returns = statusToReply(NymeaConfiguration::ConfigurationErrorNoError);
+    returns.insert("downloadId", downloadInfo.downloadId);
+    returns.insert("fileName", downloadInfo.fileName);
+    returns.insert("size", downloadInfo.size);
+    return createReply(returns);
 }
 
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const

@@ -615,6 +615,18 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
+        "Configuration.CreateAndDownloadBackup": {
+            "description": "Create a backup of the current configuration and generate a download entry for the dedicated transfer connection.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError",
+                "downloadId": "String",
+                "fileName": "String",
+                "size": "Int"
+            }
+        },
         "Configuration.DeleteMqttPolicy": {
             "description": "Delete a MQTT policy from the broker.",
             "params": {

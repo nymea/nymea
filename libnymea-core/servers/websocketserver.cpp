@@ -156,9 +156,15 @@ void WebSocketServer::onClientConnected()
 void WebSocketServer::onClientDisconnected()
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    QUuid clientId = m_clientList.key(client);
+    const QUuid clientId = m_clientList.key(client);
+    if (clientId.isNull()) {
+        qCDebug(dcWebSocketServer()) << "Ignoring disconnect from unmanaged websocket client.";
+        return;
+    }
+
     qCDebug(dcWebSocketServer()) << "Client" << clientId.toString() << "disconnected. (Remote address:" << client->peerAddress().toString() << ")" ;
-    m_clientList.take(clientId)->deleteLater();
+    m_clientList.remove(clientId);
+    client->deleteLater();
     emit clientDisconnected(clientId);
 }
 

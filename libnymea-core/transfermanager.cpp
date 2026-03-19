@@ -30,6 +30,32 @@ TransferManager::TransferSessionInfo TransferManager::createUpload(const QString
     return info;
 }
 
+TransferManager::DownloadInfo TransferManager::createDownload(const QString &fileName, const QByteArray &data, const JsonContext &context, bool emitNotification)
+{
+    DownloadInfo info;
+
+    DownloadEntry entry;
+    entry.downloadId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    entry.fileName = fileName;
+    entry.data = data;
+    entry.ownerClientId = context.clientId();
+    entry.ownerToken = context.token();
+    m_downloads.insert(entry.downloadId, entry);
+
+    if (emitNotification) {
+        QVariantMap params;
+        params.insert("downloadId", entry.downloadId);
+        params.insert("fileName", entry.fileName);
+        params.insert("size", entry.data.size());
+        emit downloadAvailable(entry.ownerClientId, params);
+    }
+
+    info.downloadId = entry.downloadId;
+    info.fileName = entry.fileName;
+    info.size = entry.data.size();
+    return info;
+}
+
 TransferManager::TransferSessionInfo TransferManager::createDownloadTransfer(const QString &downloadId, const JsonContext &context)
 {
     TransferSessionInfo info;
@@ -144,25 +170,11 @@ TransferManager::DownloadInfo TransferManager::finishUpload(const QString &trans
         return info;
     }
 
-    DownloadEntry entry;
-    entry.downloadId = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    entry.fileName = session.fileName;
-    entry.data = session.data;
-    entry.ownerClientId = session.ownerClientId;
-    entry.ownerToken = session.ownerToken;
-    m_downloads.insert(entry.downloadId, entry);
+    JsonContext context(session.ownerClientId, QLocale(), !session.ownerToken.isEmpty());
+    context.setToken(session.ownerToken);
+    const DownloadInfo downloadInfo = createDownload(session.fileName, session.data, context, true);
     m_transferSessions.remove(transferId);
-
-    QVariantMap params;
-    params.insert("downloadId", entry.downloadId);
-    params.insert("fileName", entry.fileName);
-    params.insert("size", entry.data.size());
-    emit downloadAvailable(entry.ownerClientId, params);
-
-    info.downloadId = entry.downloadId;
-    info.fileName = entry.fileName;
-    info.size = entry.data.size();
-    return info;
+    return downloadInfo;
 }
 
 QByteArray TransferManager::readDownloadChunk(const QString &transferId, int maxSize, bool *finished, QString *errorString)

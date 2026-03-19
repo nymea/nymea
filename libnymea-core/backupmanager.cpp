@@ -188,7 +188,7 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
     return backupFiles;
 }
 
-bool BackupManager::createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups, const QString &archivePrefix)
+bool BackupManager::createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups, const QString &archivePrefix, QString *archivePath)
 {
     QFileInfo srcInfo(sourceDir);
     if (!srcInfo.exists() || !srcInfo.isDir()) {
@@ -206,22 +206,26 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
 
     const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
     const QString archiveBaseName = QString("%1-%2-%3.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp);
-    const QString archivePath = QDir(destinationDir).filePath(archiveBaseName);
+    const QString createdArchivePath = QDir(destinationDir).filePath(archiveBaseName);
 
     QString absSrc = QDir(sourceDir).absolutePath();
     QStringList args;
-    args << "-czf" << archivePath << "-C" << absSrc << ".";
+    args << "-czf" << createdArchivePath << "-C" << absSrc << ".";
 
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
         qCWarning(dcBackup()) << "Creating tar failed with exit code" << exitCode << "command: tar" << args.join(' ');
-        QFile::remove(archivePath);
+        QFile::remove(createdArchivePath);
         return false;
     }
 
-    if (!QFileInfo::exists(archivePath)) {
+    if (!QFileInfo::exists(createdArchivePath)) {
         qCWarning(dcBackup()) << "Archive has not been created. Unknown error.";
         return false;
+    }
+
+    if (archivePath) {
+        *archivePath = createdArchivePath;
     }
 
     if (maxBackups > 0) {

@@ -272,6 +272,11 @@ JsonRPCServerImplementation *ServerManager::jsonServer() const
     return m_jsonServer;
 }
 
+TransferManager *ServerManager::transferManager() const
+{
+    return m_transferManager;
+}
+
 void ServerManager::registerCoreTransport(TransportInterface *transport)
 {
     if (m_registeredCoreTransports.contains(transport)) {

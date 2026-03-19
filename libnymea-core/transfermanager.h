@@ -40,6 +40,7 @@ public:
     explicit TransferManager(QObject *parent = nullptr);
 
     TransferSessionInfo createUpload(const QString &fileName, qint64 size, const JsonContext &context);
+    DownloadInfo createDownload(const QString &fileName, const QByteArray &data, const JsonContext &context, bool emitNotification = false);
     TransferSessionInfo createDownloadTransfer(const QString &downloadId, const JsonContext &context);
 
     bool uploadTransferExists(const QString &transferId) const;

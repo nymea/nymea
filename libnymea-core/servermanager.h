@@ -61,6 +61,7 @@ public:
 
     // Interfaces
     JsonRPCServerImplementation *jsonServer() const;
+    TransferManager *transferManager() const;
     BluetoothServer *bluetoothServer() const;
     MockTcpServer *mockTcpServer() const;
     MqttBroker *mqttBroker() const;

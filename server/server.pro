@@ -10,9 +10,7 @@ INSTALLS += target
 
 QT += sql websockets bluetooth dbus network
 
-greaterThan(QT_MAJOR_VERSION, 5) {
-    QT += core5compat
-} else {
+lessThan(QT_MAJOR_VERSION, 6) {
     QT += xml
 }
 
@@ -40,4 +38,3 @@ SOURCES += main.cpp \
 HEADERS += \
     nymeaservice.h \
     nymeaapplication.h
-

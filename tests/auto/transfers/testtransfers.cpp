@@ -16,6 +16,7 @@ class TestTransfers : public NymeaTestBase
 private slots:
     void initTestCase();
     void testUploadDownloadRoundtrip();
+    void testStartDownloadRejectsUnknownDownloadId();
 
 public slots:
     void sslErrors(const QList<QSslError> &)
@@ -143,6 +144,22 @@ void TestTransfers::testUploadDownloadRoundtrip()
     }
 
     QCOMPARE(downloadedPayload, payload);
+}
+
+void TestTransfers::testStartDownloadRejectsUnknownDownloadId()
+{
+    QScopedPointer<QWebSocket> apiSocket(openSocket());
+    QVERIFY(!apiSocket.isNull());
+
+    QVariant response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    QVariantMap params;
+    params.insert("downloadId", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    response = sendAndWait(apiSocket.data(), 2, "Transfers.StartDownload", params);
+
+    QCOMPARE(response.toMap().value("status").toString(), QString("error"));
+    QCOMPARE(response.toMap().value("error").toString(), QString("Unknown download"));
 }
 
 QWebSocket *TestTransfers::openSocket()

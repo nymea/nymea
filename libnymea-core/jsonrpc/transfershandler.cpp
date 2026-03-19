@@ -85,6 +85,9 @@ JsonReply *TransfersHandler::CreateUpload(const QVariantMap &params, const JsonC
 JsonReply *TransfersHandler::StartDownload(const QVariantMap &params, const JsonContext &context)
 {
     const auto info = m_transferManager->createDownloadTransfer(params.value("downloadId").toString(), context);
+    if (info.transferId.isEmpty() || info.transferToken.isEmpty()) {
+        return createErrorReply(QStringLiteral("Unknown download"));
+    }
 
     QVariantMap ret;
     ret.insert("transferId", info.transferId);

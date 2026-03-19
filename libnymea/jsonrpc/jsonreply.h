@@ -40,13 +40,20 @@ public:
         TypeSync,
         TypeAsync
     };
+    enum ResponseType {
+        ResponseTypeSuccess,
+        ResponseTypeError
+    };
 
     static JsonReply *createReply(JsonHandler *handler, const QVariantMap &data);
+    static JsonReply *createErrorReply(JsonHandler *handler, const QString &error);
     static JsonReply *createAsyncReply(JsonHandler *handler, const QString &method);
 
     Type type() const;
+    ResponseType responseType() const;
     QVariantMap data() const;
     void setData(const QVariantMap &data);
+    QString errorString() const;
 
     JsonHandler *handler() const;
     QString method() const;
@@ -69,9 +76,12 @@ private slots:
     void timeout();
 
 private:
-    JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data = QVariantMap());
+    JsonReply(Type type, ResponseType responseType, JsonHandler *handler, const QString &method,
+              const QVariantMap &data = QVariantMap(), const QString &errorString = QString());
     Type m_type;
+    ResponseType m_responseType;
     QVariantMap m_data;
+    QString m_errorString;
 
     JsonHandler *m_handler;
     QString m_method;

@@ -52,9 +52,11 @@
 
 
 /*! Constructs a new \l JsonReply with the given \a type, \a handler, \a method and \a data. */
-JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
+JsonReply::JsonReply(Type type, ResponseType responseType, JsonHandler *handler, const QString &method, const QVariantMap &data, const QString &errorString):
     m_type(type),
+    m_responseType(responseType),
     m_data(data),
+    m_errorString(errorString),
     m_handler(handler),
     m_method(method),
     m_timedOut(false)
@@ -65,19 +67,29 @@ JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, con
 /*! Returns the pointer to a new \l{JsonReply} for the given \a handler and \a data. */
 JsonReply *JsonReply::createReply(JsonHandler *handler, const QVariantMap &data)
 {
-    return new JsonReply(TypeSync, handler, QString(), data);
+    return new JsonReply(TypeSync, ResponseTypeSuccess, handler, QString(), data);
+}
+
+JsonReply *JsonReply::createErrorReply(JsonHandler *handler, const QString &error)
+{
+    return new JsonReply(TypeSync, ResponseTypeError, handler, QString(), QVariantMap(), error);
 }
 
 /*! Returns the pointer to a new asynchronous \l{JsonReply} for the given \a handler and \a method. */
 JsonReply *JsonReply::createAsyncReply(JsonHandler *handler, const QString &method)
 {
-    return new JsonReply(TypeAsync, handler, method);
+    return new JsonReply(TypeAsync, ResponseTypeSuccess, handler, method);
 }
 
 /*! Returns the type of this \l{JsonReply}.*/
 JsonReply::Type JsonReply::type() const
 {
     return m_type;
+}
+
+JsonReply::ResponseType JsonReply::responseType() const
+{
+    return m_responseType;
 }
 
 /*! Returns the data of this \l{JsonReply}.*/
@@ -90,6 +102,11 @@ QVariantMap JsonReply::data() const
 void JsonReply::setData(const QVariantMap &data)
 {
     m_data = data;
+}
+
+QString JsonReply::errorString() const
+{
+    return m_errorString;
 }
 
 /*! Returns the handler of this \l{JsonReply}.*/

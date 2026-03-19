@@ -156,7 +156,7 @@ QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)
 
             QString destinationPath = settingsFileInfo.absolutePath();
             if (!(QDir(destinationPath).exists())) {
-                if (!QDir().mkdir(destinationPath)) {
+                if (!QDir().mkpath(destinationPath)) {
                     qCWarning(dcSystem()) << "Unable to create directory for storing configuration" << destinationPath;
                 } else {
                     qCDebug(dcSystem()) << "Created successfully directory for storing configuration" << destinationPath;

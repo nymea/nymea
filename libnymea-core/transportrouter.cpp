@@ -158,17 +158,34 @@ void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &d
     }
 
     state.buffer.append(data);
-    if (!state.buffer.trimmed().endsWith('}')) {
+
+    QByteArray firstPacket;
+    QByteArray trailingData;
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(state.buffer, &error);
+    if (error.error == QJsonParseError::NoError) {
+        firstPacket = state.buffer;
+    } else if (error.error == QJsonParseError::GarbageAtEnd) {
+        firstPacket = state.buffer.left(error.offset);
+        trailingData = state.buffer.mid(error.offset);
+
+        jsonDoc = QJsonDocument::fromJson(firstPacket, &error);
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(dcTransportRouter()) << "Failed to parse protocol selector from client" << clientId << error.errorString();
+            terminateUnroutedClient(clientId);
+            return;
+        }
+    } else {
         if (state.buffer.size() > 1024 * 1024) {
             qCWarning(dcTransportRouter()) << "Dropping unrouted client with oversized buffer";
             terminateUnroutedClient(clientId);
+            return;
         }
-        return;
-    }
 
-    QJsonParseError error;
-    const QJsonDocument jsonDoc = QJsonDocument::fromJson(state.buffer, &error);
-    if (error.error != QJsonParseError::NoError) {
+        if (!state.buffer.trimmed().endsWith('}')) {
+            return;
+        }
+
         qCWarning(dcTransportRouter()) << "Failed to parse protocol selector from client" << clientId << error.errorString();
         terminateUnroutedClient(clientId);
         return;
@@ -176,12 +193,17 @@ void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &d
 
     const QString method = jsonDoc.object().value("method").toString();
     if (method == "JSONRPC.Hello") {
-        routeClient(clientId, Protocol::JsonRpc, state.buffer);
+        routeClient(clientId, Protocol::JsonRpc, firstPacket);
     } else if (method == "Transfer.Connect") {
-        routeClient(clientId, Protocol::Transfer, state.buffer);
+        routeClient(clientId, Protocol::Transfer, firstPacket);
     } else {
         qCWarning(dcTransportRouter()) << "Unsupported initial method from client" << clientId << method;
         terminateUnroutedClient(clientId);
+        return;
+    }
+
+    if (!trailingData.isEmpty() && m_clients.contains(clientId)) {
+        onDataAvailable(clientId, trailingData);
     }
 }
 

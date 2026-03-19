@@ -111,6 +111,7 @@ private slots:
 
     void testDataFragmentation_data();
     void testDataFragmentation();
+    void testPipelinedHandshakeRouting();
 
     void testGarbageData();
 
@@ -1321,6 +1322,29 @@ void TestJSONRPC::testDataFragmentation()
     QCOMPARE(spy.count(), 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QCOMPARE(jsonDoc.toVariant().toMap().value("status").toString(), QStringLiteral("success"));
+}
+
+void TestJSONRPC::testPipelinedHandshakeRouting()
+{
+    QSignalSpy replySpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n"
+                                           "{\"id\": 556, \"method\": \"JSONRPC.Introspect\"}\n");
+
+    while (replySpy.count() < 2) {
+        QVERIFY(replySpy.wait());
+    }
+
+    QCOMPARE(disconnectedSpy.count(), 0);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(replySpy.at(0).at(1).toByteArray());
+    QCOMPARE(jsonDoc.toVariant().toMap().value("status").toString(), QStringLiteral("success"));
+
+    jsonDoc = QJsonDocument::fromJson(replySpy.at(1).at(1).toByteArray());
+    const QVariantMap response = jsonDoc.toVariant().toMap();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QVERIFY(response.value("params").toMap().contains("methods"));
 }
 
 void TestJSONRPC::testGarbageData()

@@ -76,6 +76,7 @@ TransferManager::TransferSessionInfo TransferManager::createDownloadTransfer(con
     session.ownerToken = entry.ownerToken;
 
     m_transferSessions.insert(session.transferId, session);
+    m_downloads.remove(downloadId);
     info.transferId = session.transferId;
     info.transferToken = session.transferToken;
     info.fileName = session.fileName;

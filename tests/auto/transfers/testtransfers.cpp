@@ -120,6 +120,10 @@ void TestTransfers::testUploadDownloadRoundtrip()
     QVERIFY(!downloadTransferId.isEmpty());
     QVERIFY(!downloadTransferToken.isEmpty());
 
+    response = sendAndWait(apiSocket.data(), 201, "Transfers.StartDownload", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("error"));
+    QCOMPARE(response.toMap().value("error").toString(), QString("Unknown download"));
+
     QScopedPointer<QWebSocket> downloadSocket(openSocket());
     QVERIFY(!downloadSocket.isNull());
 

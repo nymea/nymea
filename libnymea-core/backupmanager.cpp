@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
+#include <QUuid>
 #include <QRegularExpression>
 
 NYMEA_LOGGING_CATEGORY(dcBackup, "Backup")
@@ -47,7 +48,7 @@ QDateTime parseBackupTimestamp(const QString &timestampString)
 bool parseBackupFileInfo(const QFileInfo &fileInfo, const QString &archivePrefix, BackupFile *backupFile)
 {
     const QString escapedArchivePrefix = QRegularExpression::escape(archivePrefix);
-    const QRegularExpression backupPattern(QString("^%1-(.+)-(\\d{14})\\.tar\\.gz$").arg(escapedArchivePrefix));
+    const QRegularExpression backupPattern(QString("^%1-(.+)-(\\d{14})(?:-([0-9a-fA-F-]+))?\\.tar\\.gz$").arg(escapedArchivePrefix));
     const QRegularExpression legacyBackupPattern(QString("^%1-(\\d{14})\\.tar\\.gz$").arg(escapedArchivePrefix));
 
     QString serverVersion;
@@ -205,7 +206,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     }
 
     const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
-    const QString archiveBaseName = QString("%1-%2-%3.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp);
+    const QString uniqueSuffix = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const QString archiveBaseName = QString("%1-%2-%3-%4.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp, uniqueSuffix);
     const QString createdArchivePath = QDir(destinationDir).filePath(archiveBaseName);
 
     QString absSrc = QDir(sourceDir).absolutePath();

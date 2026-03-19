@@ -31,6 +31,8 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QScopedPointer>
+#include <QTemporaryDir>
+#include <QTime>
 #include <QWebSocket>
 #include <limits>
 
@@ -51,6 +53,7 @@ protected slots:
 private slots:
     void getConfigurations();
     void testBackupFiles();
+    void testCreateBackupUsesUniqueFileNames();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -173,7 +176,7 @@ void TestConfigurations::testBackupFiles()
         QVERIFY2(timestamp <= previousTimestamp, "Backup files should be returned sorted by timestamp descending.");
         previousTimestamp = timestamp;
 
-        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})\\.tar\\.gz$")
+        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})(?:-[0-9a-fA-F-]+)?\\.tar\\.gz$")
                                                  .arg(QRegularExpression::escape(serverVersion)));
         const QRegularExpressionMatch fileNameMatch = fileNamePattern.match(fileName);
         QVERIFY2(fileNameMatch.hasMatch(), qPrintable(QString("Unexpected backup file name: %1").arg(fileName)));
@@ -192,6 +195,43 @@ void TestConfigurations::testBackupFiles()
     }
 
     disableNotifications();
+}
+
+void TestConfigurations::testCreateBackupUsesUniqueFileNames()
+{
+    QTemporaryDir sourceDirectory;
+    QVERIFY2(sourceDirectory.isValid(), "Could not create temporary source directory.");
+
+    QFile sourceFile(sourceDirectory.filePath("config.json"));
+    QVERIFY2(sourceFile.open(QIODevice::WriteOnly), "Could not create temporary source file.");
+    sourceFile.write("{\"test\":true}\n");
+    sourceFile.close();
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-unique";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear unique backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create unique backup directory.");
+
+    while (QTime::currentTime().msec() > 50) {
+        QTest::qWait(5);
+    }
+
+    QString firstArchivePath;
+    QString secondArchivePath;
+    BackupManager *backupManager = NymeaCore::instance()->backupManager();
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &firstArchivePath),
+             "Failed to create first backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &secondArchivePath),
+             "Failed to create second backup archive.");
+
+    QVERIFY2(!firstArchivePath.isEmpty(), "First backup path should not be empty.");
+    QVERIFY2(!secondArchivePath.isEmpty(), "Second backup path should not be empty.");
+    QVERIFY2(firstArchivePath != secondArchivePath, "Backups created in the same second should use unique archive paths.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 2);
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

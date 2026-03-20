@@ -206,7 +206,7 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     }
 
     const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
-    const QString uniqueSuffix = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const QString uniqueSuffix = QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
     const QString archiveBaseName = QString("%1-%2-%3-%4.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp, uniqueSuffix);
     const QString createdArchivePath = QDir(destinationDir).filePath(archiveBaseName);
 
@@ -307,6 +307,6 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
         return false;
     }
 
-    qCInfo(dcBackup()) << "Resored backup" << fileName << "successfully into" << destinationDir;
+    qCInfo(dcBackup()) << "Restored backup" << fileName << "successfully into" << destinationDir;
     return true;
 }

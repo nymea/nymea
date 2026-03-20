@@ -54,6 +54,7 @@
 #include <networkmanager.h>
 
 #include <QCoreApplication>
+#include <QFile>
 #include <QMetaObject>
 #include <QDir>
 
@@ -67,6 +68,45 @@ namespace nymeaserver {
 
 NymeaCore *NymeaCore::s_instance = nullptr;
 NymeaCore::ShutdownReason NymeaCore::s_shutdownReason = NymeaCore::ShutdownReasonTerm;
+QStringList NymeaCore::s_additionalInterfaces;
+bool NymeaCore::s_disableLogEngine = false;
+NymeaCore::PendingRestartAction NymeaCore::s_pendingRestartAction = NymeaCore::PendingRestartActionNone;
+QString NymeaCore::s_pendingRestoreBackupPath;
+
+namespace {
+
+bool removeDirectoryContents(const QString &directoryPath)
+{
+    QDir directory(directoryPath);
+    if (!directory.exists()) {
+        return true;
+    }
+
+    const QFileInfoList entries = directory.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    foreach (const QFileInfo &entry, entries) {
+        bool success = false;
+        if (entry.isDir()) {
+            success = QDir(entry.absoluteFilePath()).removeRecursively();
+        } else {
+            success = QFile::remove(entry.absoluteFilePath());
+        }
+
+        if (!success) {
+            qCWarning(dcCore()) << "Failed to remove persistent entry:" << entry.absoluteFilePath();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+}
+
+/*! Constructs NymeaCore with the given \a parent. This is private.
+    Use \l{NymeaCore::instance()} to access the single instance.*/
+NymeaCore::NymeaCore(QObject *parent)
+    : QObject(parent)
+{}
 
 /*! Returns a pointer to the single \l{NymeaCore} instance. */
 NymeaCore *NymeaCore::instance()
@@ -77,14 +117,17 @@ NymeaCore *NymeaCore::instance()
     return s_instance;
 }
 
-/*! Constructs NymeaCore with the given \a parent. This is private.
-    Use \l{NymeaCore::instance()} to access the single instance.*/
-NymeaCore::NymeaCore(QObject *parent)
-    : QObject(parent)
-{}
+void NymeaCore::restart(ShutdownReason reason)
+{
+    destroy(reason);
+    instance()->init(s_additionalInterfaces, s_disableLogEngine);
+}
 
 void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
 {
+    s_additionalInterfaces = additionalInterfaces;
+    s_disableLogEngine = disableLogEngine;
+
     qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
@@ -254,6 +297,19 @@ void NymeaCore::destroy(ShutdownReason reason)
     }
 
     s_instance = nullptr;
+    performPendingRestartAction();
+}
+
+void NymeaCore::scheduleFactoryReset()
+{
+    s_pendingRestartAction = PendingRestartActionFactoryReset;
+    s_pendingRestoreBackupPath.clear();
+}
+
+void NymeaCore::scheduleBackupRestore(const QString &backupFilePath)
+{
+    s_pendingRestartAction = PendingRestartActionRestoreBackup;
+    s_pendingRestoreBackupPath = backupFilePath;
 }
 
 NymeaConfiguration *NymeaCore::configuration() const
@@ -398,6 +454,40 @@ LogEngine *NymeaCore::logEngine() const
 JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
+}
+
+bool NymeaCore::wipePersistentData()
+{
+    return removeDirectoryContents(NymeaSettings::settingsPath())
+            && removeDirectoryContents(NymeaSettings::cachePath());
+}
+
+bool NymeaCore::performPendingRestartAction()
+{
+    const PendingRestartAction pendingRestartAction = s_pendingRestartAction;
+    const QString pendingRestoreBackupPath = s_pendingRestoreBackupPath;
+
+    s_pendingRestartAction = PendingRestartActionNone;
+    s_pendingRestoreBackupPath.clear();
+
+    if (pendingRestartAction == PendingRestartActionNone) {
+        return true;
+    }
+
+    bool success = wipePersistentData();
+    if (pendingRestartAction == PendingRestartActionRestoreBackup) {
+        BackupManager backupManager;
+        if (!backupManager.restoreBackup(pendingRestoreBackupPath, NymeaSettings::settingsPath())) {
+            qCWarning(dcCore()) << "Failed to restore backup during restart:" << pendingRestoreBackupPath;
+            success = false;
+        }
+    }
+
+    if (!success) {
+        qCWarning(dcCore()) << "Pending restart action did not complete successfully.";
+    }
+
+    return success;
 }
 
 void NymeaCore::thingManagerLoaded()

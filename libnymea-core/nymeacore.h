@@ -76,16 +76,21 @@ public:
         ShutdownReasonQuit,
         ShutdownReasonTerm,
         ShutdownReasonFailure,
-        ShutdownReasonRestart
+        ShutdownReasonRestart,
+        ShutdownReasonRestartFactoryDefaults
     };
     Q_ENUM(ShutdownReason)
 
     static NymeaCore *instance();
     ~NymeaCore();
 
+    static void restart(ShutdownReason reason = ShutdownReasonRestart);
+
     void init(const QStringList &additionalInterfaces = QStringList(),
               bool disableLogEngine = false);
     void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
+    void scheduleFactoryReset();
+    void scheduleBackupRestore(const QString &backupFilePath);
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
@@ -118,8 +123,18 @@ signals:
 
 private:
     explicit NymeaCore(QObject *parent = nullptr);
+    enum PendingRestartAction {
+        PendingRestartActionNone,
+        PendingRestartActionFactoryReset,
+        PendingRestartActionRestoreBackup
+    };
+
     static NymeaCore *s_instance;
     static ShutdownReason s_shutdownReason;
+    static QStringList s_additionalInterfaces;
+    static bool s_disableLogEngine;
+    static PendingRestartAction s_pendingRestartAction;
+    static QString s_pendingRestoreBackupPath;
 
     Platform *m_platform = nullptr;
 
@@ -144,6 +159,9 @@ private:
     ZWaveManager *m_zwaveManager = nullptr;
     SerialPortMonitor *m_serialPortMonitor = nullptr;
     ModbusRtuManager *m_modbusRtuManager = nullptr;
+
+    static bool wipePersistentData();
+    static bool performPendingRestartAction();
 
 private slots:
     void thingManagerLoaded();

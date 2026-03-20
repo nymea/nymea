@@ -1869,6 +1869,15 @@
                 "success": "Bool"
             }
         },
+        "System.FactoryReset": {
+            "description": "Reset nymea to factory defaults. Clients should warn the user before calling this method because all current configuration data will be lost, the server will restart immediately afterwards and it will come back up using the factory defaults if any are available.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "success": "Bool"
+            }
+        },
         "System.GetCapabilities": {
             "description": "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement\" indicates whether system update features are available in this system. The \"updateManagementType\" indicates which kind of update is supported on this platform. The property \"timeManagement\" indicates whether the system time can be configured on this system. Note that GetTime will be available in any case.",
             "params": {

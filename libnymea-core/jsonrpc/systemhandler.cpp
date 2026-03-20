@@ -27,6 +27,10 @@
 #include "platform/platform.h"
 #include "platform/platformupdatecontroller.h"
 #include "platform/platformsystemcontroller.h"
+#include "nymeacore.h"
+
+#include <QCoreApplication>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -57,6 +61,11 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     description = "Initiate a restart of the nymea service. The return value will indicate whether the procedure has been initiated successfully.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("Restart", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Reset nymea to factory defaults. Clients should warn the user before calling this method because all current configuration data will be lost, the server will restart immediately afterwards and it will come back up using the factory defaults if any are available.";
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("FactoryReset", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.";
@@ -311,6 +320,19 @@ JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
     bool status = m_platform->systemController()->reboot();
     QVariantMap returns;
     returns.insert("success", status);
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::FactoryReset(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    NymeaCore::instance()->scheduleFactoryReset();
+    QTimer::singleShot(0, qApp, []() {
+        NymeaCore::restart(NymeaCore::ShutdownReasonRestartFactoryDefaults);
+    });
+
+    QVariantMap returns;
+    returns.insert("success", true);
     return createReply(returns);
 }
 

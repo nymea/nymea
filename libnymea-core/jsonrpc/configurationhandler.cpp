@@ -297,6 +297,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     returns.insert("size", enumValueName(Int));
     registerMethod("DownloadBackupFile", description, params, returns);
 
+    params.clear();
+    returns.clear();
+    description = "Delete an existing configuration backup file.";
+    params.insert("fileName", enumValueName(String));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("DeleteBackupFile", description, params, returns);
+
     // MQTT
     params.clear();
     returns.clear();
@@ -824,6 +831,24 @@ JsonReply *ConfigurationHandler::DownloadBackupFile(const QVariantMap &params, c
     returns.insert("fileName", downloadInfo.fileName);
     returns.insert("size", downloadInfo.size);
     return createReply(returns);
+}
+
+JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params) const
+{
+    const QString fileName = params.value("fileName").toString();
+
+    NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError;
+    const QString archivePath = resolveBackupFilePath(fileName, &error);
+    if (archivePath.isEmpty()) {
+        return createReply(statusToReply(error));
+    }
+
+    if (!QFile::remove(archivePath)) {
+        qCWarning(dcJsonRpc()) << "Failed to remove backup archive:" << archivePath;
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+    }
+
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const

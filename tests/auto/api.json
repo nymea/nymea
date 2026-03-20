@@ -658,6 +658,16 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
+        "Configuration.DeleteBackupFile": {
+            "description": "Delete an existing configuration backup file.",
+            "params": {
+                "fileName": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
         "Configuration.DeleteTunnelProxyServerConfiguration": {
             "description": "Delete a Tunnel Proxy Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.",
             "params": {

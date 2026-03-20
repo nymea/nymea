@@ -57,6 +57,7 @@ private slots:
     void testCreateBackupUsesUniqueFileNames();
     void testBackupRetentionKeepsCreatedArchive();
     void testDownloadBackupFile();
+    void testDeleteBackupFile();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -381,6 +382,47 @@ void TestConfigurations::testDownloadBackupFile()
     QSignalSpy apiDisconnectedSpy(apiSocket.data(), &QWebSocket::disconnected);
     apiSocket->close();
     apiDisconnectedSpy.wait(1000);
+}
+
+void TestConfigurations::testDeleteBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-delete";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear delete backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create delete backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+    QVERIFY2(QFileInfo::exists(backupDirectory.filePath(fileName)), "Created backup file should exist before deletion.");
+
+    params.clear();
+    params.insert("fileName", QString("../%1").arg(fileName));
+    response = injectAndWait("Configuration.DeleteBackupFile", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidFileName);
+    QVERIFY2(QFileInfo::exists(backupDirectory.filePath(fileName)), "Backup file should still exist after invalid delete request.");
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.DeleteBackupFile", params);
+    verifyConfigurationError(response);
+
+    QVERIFY2(!QFileInfo::exists(backupDirectory.filePath(fileName)), "Backup file should be removed after delete request.");
+    backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 0);
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

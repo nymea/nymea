@@ -833,6 +833,21 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
+        "Configuration.UploadAndRestoreBackup": {
+            "description": "Create an upload session for a configuration backup archive. The uploaded file will be stored temporarily under /tmp, the current configuration will be wiped after the upload finishes and the server will restart immediately using the restored backup. Clients should warn the user before calling this method because all current configuration data will be lost.",
+            "params": {
+                "fileName": "String",
+                "size": "Int"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError",
+                "o:fileName": "String",
+                "o:size": "Int",
+                "o:transferId": "String",
+                "o:transferToken": "String"
+            }
+        },
         "Configuration.SetDebugServerEnabled": {
             "description": "Enable or disable the debug server.",
             "params": {

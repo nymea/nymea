@@ -3,6 +3,10 @@
 #include "transfermanager.h"
 #include "loggingcategories.h"
 
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+
 namespace nymeaserver {
 
 TransferManager::TransferManager(QObject *parent)
@@ -16,6 +20,31 @@ TransferManager::TransferSessionInfo TransferManager::createUpload(const QString
     session.transferToken = QUuid::createUuid().toString(QUuid::WithoutBraces);
     session.direction = Direction::Upload;
     session.fileName = fileName;
+    session.size = size;
+    session.ownerClientId = context.clientId();
+    session.ownerToken = context.token();
+
+    m_transferSessions.insert(session.transferId, session);
+
+    TransferSessionInfo info;
+    info.transferId = session.transferId;
+    info.transferToken = session.transferToken;
+    info.fileName = session.fileName;
+    info.size = session.size;
+    return info;
+}
+
+TransferManager::TransferSessionInfo TransferManager::createRestoreUpload(const QString &fileName, qint64 size, const QString &targetFilePath, const JsonContext &context)
+{
+    QFile::remove(targetFilePath);
+
+    TransferSession session;
+    session.transferId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    session.transferToken = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    session.direction = Direction::Upload;
+    session.uploadAction = UploadAction::RestoreBackup;
+    session.fileName = fileName;
+    session.targetFilePath = targetFilePath;
     session.size = size;
     session.ownerClientId = context.clientId();
     session.ownerToken = context.token();
@@ -132,23 +161,51 @@ bool TransferManager::appendUploadData(const QString &transferId, const QByteArr
         return false;
     }
 
-    session.data.append(data);
-    session.offset += data.size();
-    if (session.size > 0 && session.offset > session.size) {
-        session.data.chop(data.size());
-        session.offset -= data.size();
+    if (session.size > 0 && session.offset + data.size() > session.size) {
         if (errorString) {
             *errorString = QStringLiteral("Upload exceeds announced size");
         }
         return false;
     }
 
+    if (session.uploadAction == UploadAction::RestoreBackup) {
+        QFileInfo targetFileInfo(session.targetFilePath);
+        const QString targetDirectoryPath = targetFileInfo.absolutePath();
+        if (!QDir(targetDirectoryPath).exists() && !QDir().mkpath(targetDirectoryPath)) {
+            if (errorString) {
+                *errorString = QStringLiteral("Failed to create upload destination directory");
+            }
+            return false;
+        }
+
+        QFile targetFile(session.targetFilePath);
+        if (!targetFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+            if (errorString) {
+                *errorString = targetFile.errorString();
+            }
+            return false;
+        }
+
+        if (targetFile.write(data) != data.size()) {
+            if (errorString) {
+                *errorString = targetFile.errorString();
+            }
+            return false;
+        }
+
+        targetFile.close();
+    } else {
+        session.data.append(data);
+    }
+
+    session.offset += data.size();
+
     return true;
 }
 
-TransferManager::DownloadInfo TransferManager::finishUpload(const QString &transferId, QString *errorString)
+TransferManager::FinishedUploadInfo TransferManager::finishUpload(const QString &transferId, QString *errorString)
 {
-    DownloadInfo info;
+    FinishedUploadInfo info;
     if (!m_transferSessions.contains(transferId)) {
         if (errorString) {
             *errorString = QStringLiteral("Unknown transfer");
@@ -171,11 +228,36 @@ TransferManager::DownloadInfo TransferManager::finishUpload(const QString &trans
         return info;
     }
 
-    JsonContext context(session.ownerClientId, QLocale(), !session.ownerToken.isEmpty());
-    context.setToken(session.ownerToken);
-    const DownloadInfo downloadInfo = createDownload(session.fileName, session.data, context, true);
+    info.fileName = session.fileName;
+    info.size = session.offset;
+
+    if (session.uploadAction == UploadAction::RestoreBackup) {
+        if (!QFileInfo::exists(session.targetFilePath)) {
+            QFile targetFile(session.targetFilePath);
+            if (!targetFile.open(QIODevice::WriteOnly)) {
+                if (errorString) {
+                    *errorString = targetFile.errorString();
+                }
+                return info;
+            }
+            targetFile.close();
+        }
+        info.restoreTriggered = true;
+    } else {
+        JsonContext context(session.ownerClientId, QLocale(), !session.ownerToken.isEmpty());
+        context.setToken(session.ownerToken);
+        const DownloadInfo downloadInfo = createDownload(session.fileName, session.data, context, true);
+        info.downloadId = downloadInfo.downloadId;
+        info.fileName = downloadInfo.fileName;
+        info.size = downloadInfo.size;
+    }
+
     m_transferSessions.remove(transferId);
-    return downloadInfo;
+    if (info.restoreTriggered) {
+        emit restoreUploadFinished(session.transferId, session.targetFilePath);
+    }
+
+    return info;
 }
 
 QByteArray TransferManager::readDownloadChunk(const QString &transferId, int maxSize, bool *finished, QString *errorString)

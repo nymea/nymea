@@ -37,9 +37,18 @@ public:
         qint64 size = 0;
     };
 
+    struct FinishedUploadInfo
+    {
+        QString downloadId;
+        QString fileName;
+        qint64 size = 0;
+        bool restoreTriggered = false;
+    };
+
     explicit TransferManager(QObject *parent = nullptr);
 
     TransferSessionInfo createUpload(const QString &fileName, qint64 size, const JsonContext &context);
+    TransferSessionInfo createRestoreUpload(const QString &fileName, qint64 size, const QString &targetFilePath, const JsonContext &context);
     DownloadInfo createDownload(const QString &fileName, const QByteArray &data, const JsonContext &context, bool emitNotification = false);
     TransferSessionInfo createDownloadTransfer(const QString &downloadId, const JsonContext &context);
 
@@ -52,20 +61,28 @@ public:
     qint64 transferOffset(const QString &transferId) const;
 
     bool appendUploadData(const QString &transferId, const QByteArray &data, QString *errorString = nullptr);
-    DownloadInfo finishUpload(const QString &transferId, QString *errorString = nullptr);
+    FinishedUploadInfo finishUpload(const QString &transferId, QString *errorString = nullptr);
 
     QByteArray readDownloadChunk(const QString &transferId, int maxSize, bool *finished, QString *errorString = nullptr);
 
 signals:
     void downloadAvailable(const QUuid &clientId, const QVariantMap &params);
+    void restoreUploadFinished(const QString &transferId, const QString &filePath);
 
 private:
+    enum class UploadAction {
+        CreateDownload,
+        RestoreBackup
+    };
+
     struct TransferSession
     {
         QString transferId;
         QString transferToken;
         Direction direction = Direction::Upload;
+        UploadAction uploadAction = UploadAction::CreateDownload;
         QString fileName;
+        QString targetFilePath;
         qint64 size = 0;
         qint64 offset = 0;
         QByteArray data;

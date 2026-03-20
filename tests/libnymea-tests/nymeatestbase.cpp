@@ -443,8 +443,8 @@ void NymeaTestBase::restartServer()
 
 void NymeaTestBase::waitForServerRestart()
 {
-    QPointer<MockTcpServer> previousServer = m_mockTcpServer;
-    QTRY_VERIFY_WITH_TIMEOUT(previousServer.isNull(), 5000);
+    MockTcpServer *previousServer = m_mockTcpServer;
+    QTRY_VERIFY_WITH_TIMEOUT(!MockTcpServer::servers().contains(previousServer), 5000);
     QTRY_VERIFY_WITH_TIMEOUT(!MockTcpServer::servers().isEmpty(), 5000);
 
     m_mockTcpServer = MockTcpServer::servers().first();

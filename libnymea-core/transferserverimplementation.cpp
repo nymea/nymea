@@ -133,15 +133,20 @@ void TransferServerImplementation::processPacket(TransportInterface *interface, 
     if (method == QLatin1String("Transfer.FinishUpload")) {
         QString errorString;
         const auto info = m_transferManager->finishUpload(state.transferId, &errorString);
-        if (info.downloadId.isEmpty()) {
+        if (info.downloadId.isEmpty() && !info.restoreTriggered) {
             sendErrorResponse(interface, clientId, commandId, errorString);
             return;
         }
 
         QVariantMap ret;
-        ret.insert("downloadId", info.downloadId);
         ret.insert("fileName", info.fileName);
         ret.insert("size", info.size);
+        if (!info.downloadId.isEmpty()) {
+            ret.insert("downloadId", info.downloadId);
+        }
+        if (info.restoreTriggered) {
+            ret.insert("restoreTriggered", true);
+        }
         sendResponse(interface, clientId, commandId, ret);
         return;
     }

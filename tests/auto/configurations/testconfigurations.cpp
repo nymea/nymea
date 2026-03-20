@@ -62,6 +62,7 @@ private slots:
     void testDownloadBackupFile();
     void testDeleteBackupFile();
     void testRestoreBackupFile();
+    void testUploadAndRestoreBackup();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -573,6 +574,98 @@ void TestConfigurations::testRestoreBackupFile()
     params.insert("fileName", fileName);
     response = injectAndWait("Configuration.RestoreBackupFile", params);
     verifyConfigurationError(response);
+
+    waitForServerRestart();
+
+    QTRY_COMPARE_WITH_TIMEOUT(loadBasicConfiguration().value("serverName").toString(), restoredServerName, 5000);
+}
+
+void TestConfigurations::testUploadAndRestoreBackup()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-upload-restore";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear upload restore backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create upload restore backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    const QString restoredServerName = QString("Uploaded restore server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", restoredServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+    const QString backupFileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!backupFileName.isEmpty(), "Created backup file name should not be empty.");
+
+    QFile backupFile(backupDirectory.filePath(backupFileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open created backup file.");
+    const QByteArray backupPayload = backupFile.readAll();
+    QVERIFY2(!backupPayload.isEmpty(), "Created backup file payload should not be empty.");
+
+    const QString changedServerName = QString("Changed after upload restore %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", changedServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), changedServerName);
+
+    QScopedPointer<QWebSocket> apiSocket(openSocket());
+    QVERIFY(!apiSocket.isNull());
+
+    response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    params.clear();
+    params.insert("fileName", backupFileName);
+    params.insert("size", backupPayload.size());
+    response = sendAndWait(apiSocket.data(), 2, "Configuration.UploadAndRestoreBackup", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    verifyConfigurationError(response);
+
+    const QVariantMap uploadInfo = response.toMap().value("params").toMap();
+    const QString uploadTransferId = uploadInfo.value("transferId").toString();
+    const QString uploadTransferToken = uploadInfo.value("transferToken").toString();
+    QCOMPARE(uploadInfo.value("fileName").toString(), backupFileName);
+    QCOMPARE(uploadInfo.value("size").toLongLong(), backupPayload.size());
+    QVERIFY(!uploadTransferId.isEmpty());
+    QVERIFY(!uploadTransferToken.isEmpty());
+
+    QScopedPointer<QWebSocket> uploadSocket(openSocket());
+    QVERIFY(!uploadSocket.isNull());
+
+    params.clear();
+    params.insert("transferId", uploadTransferId);
+    params.insert("transferToken", uploadTransferToken);
+    response = sendAndWait(uploadSocket.data(), 10, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("upload"));
+
+    int transferCommandId = 11;
+    const int chunkSize = 4096;
+    for (int offset = 0; offset < backupPayload.size(); offset += chunkSize) {
+        params.clear();
+        params.insert("data", backupPayload.mid(offset, chunkSize).toBase64());
+        response = sendAndWait(uploadSocket.data(), transferCommandId++, "Transfer.UploadChunk", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    }
+
+    response = sendAndWait(uploadSocket.data(), transferCommandId, "Transfer.FinishUpload");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVERIFY(response.toMap().value("params").toMap().value("restoreTriggered").toBool());
 
     waitForServerRestart();
 
@@ -1111,7 +1204,7 @@ QVariant TestConfigurations::sendAndWait(QWebSocket *socket, int id, const QStri
     QVariantMap call;
     call.insert("id", id);
     call.insert("method", method);
-    if (method.startsWith("JSONRPC.") || method.startsWith("Transfers.")) {
+    if (!method.startsWith("Transfer.")) {
         call.insert("token", m_apiToken);
     }
     if (!params.isEmpty()) {

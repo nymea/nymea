@@ -74,6 +74,7 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QTimer>
+#include <QUuid>
 
 namespace nymeaserver {
 
@@ -317,6 +318,20 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     params.insert("fileName", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("RestoreBackupFile", description, params, returns);
+
+    params.clear();
+    returns.clear();
+    description = "Create an upload session for a configuration backup archive. The uploaded file will be stored temporarily under /tmp, the current configuration will be wiped after the upload finishes and the server will restart immediately using the restored backup. Clients should warn the user before calling this method because all current configuration data will be lost.";
+    params.insert("fileName", enumValueName(String));
+    params.insert("size", enumValueName(Int));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    returns.insert("o:transferId", enumValueName(String));
+    returns.insert("o:transferToken", enumValueName(String));
+    returns.insert("o:fileName", enumValueName(String));
+    returns.insert("o:size", enumValueName(Int));
+    registerMethod("UploadAndRestoreBackup", description, params, returns);
+
+    connect(NymeaCore::instance()->serverManager()->transferManager(), &TransferManager::restoreUploadFinished, this, &ConfigurationHandler::onRestoreUploadFinished);
 
     // MQTT
     params.clear();
@@ -907,6 +922,27 @@ JsonReply *ConfigurationHandler::RestoreBackupFile(const QVariantMap &params) co
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
+JsonReply *ConfigurationHandler::UploadAndRestoreBackup(const QVariantMap &params, const JsonContext &context) const
+{
+    const QString fileName = params.value("fileName").toString();
+    if (!isSafeBackupFileName(fileName)) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidFileName));
+    }
+
+    const qint64 size = params.value("size").toLongLong();
+    const QString tempFilePath = QDir(QDir::tempPath()).filePath(QString("nymea-restore-%1-%2").arg(QUuid::createUuid().toString(QUuid::WithoutBraces), QFileInfo(fileName).fileName()));
+    const auto transferInfo = NymeaCore::instance()->serverManager()->transferManager()->createRestoreUpload(fileName, size, tempFilePath, context);
+
+    m_restoreUploadPaths.insert(transferInfo.transferId, tempFilePath);
+
+    QVariantMap returns = statusToReply(NymeaConfiguration::ConfigurationErrorNoError);
+    returns.insert("transferId", transferInfo.transferId);
+    returns.insert("transferToken", transferInfo.transferToken);
+    returns.insert("fileName", transferInfo.fileName);
+    returns.insert("size", transferInfo.size);
+    return createReply(returns);
+}
+
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
 {
     Q_UNUSED(params)
@@ -1004,6 +1040,24 @@ void ConfigurationHandler::onBackupFilesDirectoryChanged(const QString &path)
     qCDebug(dcJsonRpc()) << "Backup directory changed:" << path;
     updateBackupDestinationDirectoryWatcher();
     emitBackupFilesChangedIfNeeded();
+}
+
+void ConfigurationHandler::onRestoreUploadFinished(const QString &transferId, const QString &filePath)
+{
+    if (!m_restoreUploadPaths.contains(transferId)) {
+        return;
+    }
+
+    const QString scheduledRestorePath = m_restoreUploadPaths.take(transferId);
+    if (scheduledRestorePath != filePath) {
+        qCWarning(dcJsonRpc()) << "Restore upload completed with unexpected file path:" << transferId << filePath << scheduledRestorePath;
+        return;
+    }
+
+    NymeaCore::instance()->scheduleBackupRestore(scheduledRestorePath);
+    QTimer::singleShot(0, qApp, []() {
+        NymeaCore::restart();
+    });
 }
 
 void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
@@ -1139,7 +1193,7 @@ QString ConfigurationHandler::resolveBackupFilePath(const QString &fileName, Nym
         *error = NymeaConfiguration::ConfigurationErrorNoError;
     }
 
-    if (fileName.isEmpty() || QDir::isAbsolutePath(fileName) || fileName.contains('/') || fileName.contains('\\') || fileName == "." || fileName == "..") {
+    if (!isSafeBackupFileName(fileName)) {
         if (error) {
             *error = NymeaConfiguration::ConfigurationErrorInvalidFileName;
         }
@@ -1156,6 +1210,16 @@ QString ConfigurationHandler::resolveBackupFilePath(const QString &fileName, Nym
         *error = NymeaConfiguration::ConfigurationErrorBackupFailed;
     }
     return QString();
+}
+
+bool ConfigurationHandler::isSafeBackupFileName(const QString &fileName)
+{
+    return !fileName.isEmpty()
+            && !QDir::isAbsolutePath(fileName)
+            && !fileName.contains('/')
+            && !fileName.contains('\\')
+            && fileName != "."
+            && fileName != "..";
 }
 
 void ConfigurationHandler::updateBackupDestinationDirectoryWatcher()

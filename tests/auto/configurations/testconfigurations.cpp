@@ -61,6 +61,7 @@ private slots:
     void testAutomaticBackup();
     void testDownloadBackupFile();
     void testDeleteBackupFile();
+    void testRestoreBackupFile();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -527,6 +528,55 @@ void TestConfigurations::testDeleteBackupFile()
     QVERIFY2(!QFileInfo::exists(backupDirectory.filePath(fileName)), "Backup file should be removed after delete request.");
     backupFiles = loadBackupFiles();
     QCOMPARE(backupFiles.count(), 0);
+}
+
+void TestConfigurations::testRestoreBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-restore";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear restore backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create restore backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    const QString restoredServerName = QString("Restored server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", restoredServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+
+    const QString changedServerName = QString("Changed server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", changedServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), changedServerName);
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.RestoreBackupFile", params);
+    verifyConfigurationError(response);
+
+    waitForServerRestart();
+
+    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), restoredServerName);
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

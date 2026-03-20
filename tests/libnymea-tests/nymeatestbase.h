@@ -119,6 +119,7 @@ protected:
 
     void waitForDBSync();
     void restartServer();
+    void waitForServerRestart();
     void clearLoggingDatabase(const QString &source);
 
 private:

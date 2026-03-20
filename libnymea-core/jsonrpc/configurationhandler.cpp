@@ -69,9 +69,11 @@
 #include "transfermanager.h"
 
 #include <QDir>
+#include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -308,6 +310,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     params.insert("fileName", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteBackupFile", description, params, returns);
+
+    params.clear();
+    returns.clear();
+    description = "Restore an existing configuration backup file. Clients should warn the user before calling this method because the current configuration data will be wiped, the server will restart immediately afterwards and it will come back up using the restored backup.";
+    params.insert("fileName", enumValueName(String));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("RestoreBackupFile", description, params, returns);
 
     // MQTT
     params.clear();
@@ -874,6 +883,24 @@ JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params) con
         qCWarning(dcJsonRpc()) << "Failed to remove backup archive:" << archivePath;
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
     }
+
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::RestoreBackupFile(const QVariantMap &params) const
+{
+    const QString fileName = params.value("fileName").toString();
+
+    NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError;
+    const QString archivePath = resolveBackupFilePath(fileName, &error);
+    if (archivePath.isEmpty()) {
+        return createReply(statusToReply(error));
+    }
+
+    NymeaCore::instance()->scheduleBackupRestore(archivePath);
+    QTimer::singleShot(0, qApp, []() {
+        NymeaCore::restart();
+    });
 
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }

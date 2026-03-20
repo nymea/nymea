@@ -29,6 +29,8 @@
 #include "usermanager/usermanager.h"
 #include "logging/logengine.h"
 
+#include <QPointer>
+
 using namespace nymeaserver;
 
 Q_LOGGING_CATEGORY(dcTests, "Tests")
@@ -436,6 +438,17 @@ void NymeaTestBase::restartServer()
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
 
+    injectAndWait("JSONRPC.Hello");
+}
+
+void NymeaTestBase::waitForServerRestart()
+{
+    QPointer<MockTcpServer> previousServer = m_mockTcpServer;
+    QTRY_VERIFY_WITH_TIMEOUT(previousServer.isNull(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!MockTcpServer::servers().isEmpty(), 5000);
+
+    m_mockTcpServer = MockTcpServer::servers().first();
+    m_mockTcpServer->clientConnected(m_clientId);
     injectAndWait("JSONRPC.Hello");
 }
 

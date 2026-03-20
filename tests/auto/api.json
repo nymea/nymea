@@ -823,6 +823,16 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
+        "Configuration.RestoreBackupFile": {
+            "description": "Restore an existing configuration backup file. Clients should warn the user before calling this method because the current configuration data will be wiped, the server will restart immediately afterwards and it will come back up using the restored backup.",
+            "params": {
+                "fileName": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
         "Configuration.SetDebugServerEnabled": {
             "description": "Enable or disable the debug server.",
             "params": {

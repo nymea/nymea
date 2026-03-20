@@ -1110,8 +1110,7 @@ QString ConfigurationHandler::resolveBackupFilePath(const QString &fileName, Nym
         *error = NymeaConfiguration::ConfigurationErrorNoError;
     }
 
-    const QFileInfo fileInfo(fileName);
-    if (fileName.isEmpty() || fileInfo.fileName() != fileName || fileName == "." || fileName == "..") {
+    if (fileName.isEmpty() || QDir::isAbsolutePath(fileName) || fileName.contains('/') || fileName.contains('\\') || fileName == "." || fileName == "..") {
         if (error) {
             *error = NymeaConfiguration::ConfigurationErrorInvalidFileName;
         }

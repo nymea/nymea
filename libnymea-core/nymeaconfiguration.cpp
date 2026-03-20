@@ -22,22 +22,22 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
 #include "nymeaconfiguration.h"
+#include "loggingcategories.h"
 
-#include <QTimeZone>
 #include <QCoreApplication>
-#include <QFile>
 #include <QDir>
+#include <QFile>
+#include <QTimeZone>
 
 NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
 
 namespace nymeaserver {
 
-NymeaConfiguration::NymeaConfiguration(QObject *parent) :
-    QObject{parent},
-    m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)},
-    m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
+NymeaConfiguration::NymeaConfiguration(QObject *parent)
+    : QObject{parent}
+    , m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)}
+    , m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
 {
     // Init server uuid if we don't have one.
     QUuid id = serverUuid();
@@ -313,11 +313,10 @@ QString NymeaConfiguration::locationName() const
 void NymeaConfiguration::setLocation(double latitude, double longitude, const QString &name)
 {
     m_settings->beginGroup("nymead");
-    const bool changed = m_settings->value("locationLatitude").toDouble() != latitude ||
-            m_settings->value("locationLongitude").toDouble() != longitude ||
-            m_settings->value("locationName").toString() != name;
+    const bool changed = m_settings->value("locationLatitude").toDouble() != latitude
+                         || m_settings->value("locationLongitude").toDouble() != longitude
+                         || m_settings->value("locationName").toString() != name;
     if (changed) {
-
         m_settings->setValue("locationLatitude", latitude);
         m_settings->setValue("locationLongitude", longitude);
         m_settings->setValue("locationName", name);
@@ -760,7 +759,7 @@ void NymeaConfiguration::deleteMqttPolicy(const QString &clientId)
     m_mqttPoliciesSettings->remove(clientId);
 }
 
-QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
+QDebug operator<<(QDebug debug, const ServerConfiguration &configuration)
 {
     debug.nospace() << "ServerConfiguration(" << configuration.address;
     debug.nospace() << ", " << configuration.id;
@@ -769,7 +768,7 @@ QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
     return debug.maybeSpace();
 }
 
-QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
+QDebug operator<<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
 {
     debug.nospace() << "TunnelProxyServerConfiguration(" << configuration.id;
     debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
@@ -792,4 +791,4 @@ QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configura
     return debug.maybeSpace();
 }
 
-}
+} // namespace nymeaserver

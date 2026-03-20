@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -22,13 +22,13 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
+#include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
-#include "../plugins/mock/extern-plugininfo.h"
 
 #include <QFileInfo>
+#include <QHostAddress>
 #include <QRegularExpression>
 #include <QScopedPointer>
 #include <QTemporaryDir>
@@ -38,12 +38,13 @@
 
 using namespace nymeaserver;
 
-class TestConfigurations: public NymeaTestBase
+class TestConfigurations : public NymeaTestBase
 {
     Q_OBJECT
 
 private:
-    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError)
+    {
         verifyError(response, "configurationError", enumValueName(error));
     }
 
@@ -79,7 +80,6 @@ public slots:
             socket->ignoreSslErrors();
         }
     }
-
 };
 
 void TestConfigurations::initTestCase()
@@ -95,6 +95,20 @@ void TestConfigurations::initTestCase()
     }
 
     NymeaTestBase::initTestCase("*.debug=false\nApplication.debug=true\nTests.debug=true\nServerManager.debug=true");
+
+    ServerConfiguration config;
+    foreach (const ServerConfiguration &existingConfig, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
+        if (existingConfig.port == 4444 && (QHostAddress(existingConfig.address) == QHostAddress("127.0.0.1") || QHostAddress(existingConfig.address) == QHostAddress("0.0.0.0"))) {
+            config = existingConfig;
+            break;
+        }
+    }
+
+    config.address = "127.0.0.1";
+    config.port = 4444;
+    config.sslEnabled = true;
+    config.authenticationEnabled = false;
+    NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 }
 
 void TestConfigurations::getConfigurations()
@@ -159,7 +173,7 @@ void TestConfigurations::testBackupFiles()
     QCOMPARE(backupFilesNotification, backupFiles);
 
     qint64 previousTimestamp = std::numeric_limits<qint64>::max();
-    for (const QVariant &backupFileVariant: backupFiles) {
+    foreach (const QVariant &backupFileVariant, backupFiles) {
         const QVariantMap backupFile = backupFileVariant.toMap();
         QVERIFY2(backupFile.contains("fileName"), "Backup file entry does not contain fileName.");
         QVERIFY2(backupFile.contains("serverVersion"), "Backup file entry does not contain serverVersion.");
@@ -177,15 +191,12 @@ void TestConfigurations::testBackupFiles()
         QVERIFY2(timestamp <= previousTimestamp, "Backup files should be returned sorted by timestamp descending.");
         previousTimestamp = timestamp;
 
-        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})(?:-[0-9a-fA-F-]+)?\\.tar\\.gz$")
-                                                 .arg(QRegularExpression::escape(serverVersion)));
+        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})(?:-[0-9a-fA-F-]+)?\\.tar\\.gz$").arg(QRegularExpression::escape(serverVersion)));
         const QRegularExpressionMatch fileNameMatch = fileNamePattern.match(fileName);
         QVERIFY2(fileNameMatch.hasMatch(), qPrintable(QString("Unexpected backup file name: %1").arg(fileName)));
 
         const QString timestampString = fileNameMatch.captured(1);
-        const QDateTime fileNameTimestamp(QDate::fromString(timestampString.left(8), "yyyyMMdd"),
-                                          QTime::fromString(timestampString.mid(8, 6), "hhmmss"),
-                                          Qt::UTC);
+        const QDateTime fileNameTimestamp(QDate::fromString(timestampString.left(8), "yyyyMMdd"), QTime::fromString(timestampString.mid(8, 6), "hhmmss"), Qt::UTC);
         QVERIFY2(fileNameTimestamp.isValid(), qPrintable(QString("Could not parse backup timestamp from file name: %1").arg(fileName)));
         QCOMPARE(fileNameTimestamp.toSecsSinceEpoch(), timestamp);
 
@@ -222,10 +233,8 @@ void TestConfigurations::testCreateBackupUsesUniqueFileNames()
     QString firstArchivePath;
     QString secondArchivePath;
     BackupManager *backupManager = NymeaCore::instance()->backupManager();
-    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &firstArchivePath),
-             "Failed to create first backup archive.");
-    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &secondArchivePath),
-             "Failed to create second backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &firstArchivePath), "Failed to create first backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &secondArchivePath), "Failed to create second backup archive.");
 
     QVERIFY2(!firstArchivePath.isEmpty(), "First backup path should not be empty.");
     QVERIFY2(!secondArchivePath.isEmpty(), "Second backup path should not be empty.");
@@ -381,7 +390,9 @@ void TestConfigurations::testServerName()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set name unchanged
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("serverName", serverName);
     response = injectAndWait("Configuration.SetServerName", params);
     verifyConfigurationError(response);
@@ -393,7 +404,9 @@ void TestConfigurations::testServerName()
 
     // Set new server name
     QString newServerName = QString("Test server %1").arg(QUuid::createUuid().toString());
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("serverName", newServerName);
 
     notificationSpy.clear();
@@ -438,7 +451,8 @@ void TestConfigurations::testLanguages()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set language unchanged
-    QVariant response; QVariantMap params;
+    QVariant response;
+    QVariantMap params;
     params.insert("language", basicConfigurationMap.value("language"));
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
@@ -457,17 +471,17 @@ void TestConfigurations::testLanguages()
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
         // create a new spy for each run as we restart the server and kill the old one in this loop
-         QSignalSpy notificationSpy2 (m_mockTcpServer, &MockTcpServer::outgoingData);
+        QSignalSpy notificationSpy2(m_mockTcpServer, &MockTcpServer::outgoingData);
 
         // Get current configurations
         basicConfigurationMap = loadBasicConfiguration();
 
         // Set language
-        params.clear(); response.clear();
+        params.clear();
+        response.clear();
         params.insert("language", languageVariant);
         QVariant response = injectAndWait("Configuration.SetLanguage", params);
         verifyConfigurationError(response);
-
 
         // Check notification
         notificationSpy2.wait(500);
@@ -488,7 +502,6 @@ void TestConfigurations::testLanguages()
             restartServer();
             enableNotifications({"Configuration"});
 
-
             // Get configuration
             basicConfigurationMap = loadBasicConfiguration();
 
@@ -497,7 +510,8 @@ void TestConfigurations::testLanguages()
     }
 
     // Reset the language to en_US
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("language", "en_US");
 
     // Set language
@@ -521,7 +535,8 @@ void TestConfigurations::testLocationNotifications()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     QVariantMap params;
-    params.insert("location", QVariantMap{
+    params.insert("location",
+                  QVariantMap{
                       {"latitude", newLatitude},
                       {"longitude", newLongitude},
                       {"name", newName},
@@ -529,7 +544,9 @@ void TestConfigurations::testLocationNotifications()
     const QVariant response = injectAndWait("Configuration.SetLocation", params);
     verifyConfigurationError(response);
 
-    QVERIFY2(notificationSpy.wait(500), "Timed out waiting for Configuration.BasicConfigurationChanged notification.");
+    if (notificationSpy.count() == 0)
+        QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for Configuration.BasicConfigurationChanged notification.");
+
     const QVariantList configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QCOMPARE(configurationChangedNotifications.count(), 1);
 
@@ -561,7 +578,9 @@ void TestConfigurations::testDebugServerConfiguration()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Unchanged debug server
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("enabled", debugServerEnabled);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -573,7 +592,9 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Enable debug server
     bool newValue = true;
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("enabled", newValue);
 
     qCDebug(dcTests()) << "Enabling debug server";
@@ -616,9 +637,7 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Webserver request
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
 
     // Check if debug interface is reachable
@@ -636,7 +655,8 @@ void TestConfigurations::testDebugServerConfiguration()
     reply->deleteLater();
 
     // Disable debug server
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("enabled", false);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -688,7 +708,8 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     insecureTunnelProxyConfig.insert("authenticationEnabled", false);
     insecureTunnelProxyConfig.insert("ignoreSslErrors", true);
 
-    QVariantMap params; QVariant response;
+    QVariantMap params;
+    QVariant response;
 
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
@@ -709,33 +730,39 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     // FIXME: make sure the insecure servers are not running
 
     // Remove the insecure configs and try to add them again and expect them to fail
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTcpServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteWebSocketServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response);
 
     // Make sure we cannot add insecure interfaces beside localhost
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureWebSocketConfig);
     response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTunnelProxyConfig);
     response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);

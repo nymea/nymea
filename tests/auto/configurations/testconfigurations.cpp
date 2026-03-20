@@ -56,6 +56,7 @@ private slots:
     void testBackupFiles();
     void testCreateBackupUsesUniqueFileNames();
     void testBackupRetentionKeepsCreatedArchive();
+    void testDownloadBackupFile();
     void testCreateAndDownloadBackup();
 
     void testServerName();
@@ -279,6 +280,107 @@ void TestConfigurations::testBackupRetentionKeepsCreatedArchive()
     const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
     QCOMPARE(backupFiles.count(), 1);
     QCOMPARE(QFileInfo(secondArchivePath).fileName(), backupFiles.first());
+}
+
+void TestConfigurations::testDownloadBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-download-existing";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear download-existing backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create download-existing backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+
+    params.clear();
+    params.insert("fileName", QString("../%1").arg(fileName));
+    response = injectAndWait("Configuration.DownloadBackupFile", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidFileName);
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.DownloadBackupFile", params);
+    verifyConfigurationError(response);
+
+    const QVariantMap downloadBackupResponse = response.toMap().value("params").toMap();
+    const QString downloadId = downloadBackupResponse.value("downloadId").toString();
+    const qint64 size = downloadBackupResponse.value("size").toLongLong();
+
+    QVERIFY2(!downloadId.isEmpty(), "DownloadBackupFile did not return a downloadId.");
+    QCOMPARE(downloadBackupResponse.value("fileName").toString(), fileName);
+    QVERIFY2(size > 0, "DownloadBackupFile did not return a valid size.");
+
+    QFile backupFile(backupDirectory.filePath(fileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open existing backup file.");
+    const QByteArray expectedPayload = backupFile.readAll();
+    QCOMPARE(expectedPayload.size(), size);
+
+    QScopedPointer<QWebSocket> apiSocket(openSocket());
+    QVERIFY(!apiSocket.isNull());
+
+    response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    params.clear();
+    params.insert("downloadId", downloadId);
+    response = sendAndWait(apiSocket.data(), 2, "Transfers.StartDownload", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    const QVariantMap downloadInfo = response.toMap().value("params").toMap();
+    const QString downloadTransferId = downloadInfo.value("transferId").toString();
+    const QString downloadTransferToken = downloadInfo.value("transferToken").toString();
+    QCOMPARE(downloadInfo.value("fileName").toString(), fileName);
+    QCOMPARE(downloadInfo.value("size").toLongLong(), size);
+    QVERIFY(!downloadTransferId.isEmpty());
+    QVERIFY(!downloadTransferToken.isEmpty());
+
+    QScopedPointer<QWebSocket> downloadSocket(openSocket());
+    QVERIFY(!downloadSocket.isNull());
+
+    params.clear();
+    params.insert("transferId", downloadTransferId);
+    params.insert("transferToken", downloadTransferToken);
+    response = sendAndWait(downloadSocket.data(), 10, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("download"));
+
+    QByteArray downloadedPayload;
+    bool finished = false;
+    int downloadCommandId = 11;
+    while (!finished) {
+        params.clear();
+        params.insert("maxBytes", 4096);
+        response = sendAndWait(downloadSocket.data(), downloadCommandId++, "Transfer.RequestChunk", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        const QVariantMap chunkParams = response.toMap().value("params").toMap();
+        downloadedPayload.append(QByteArray::fromBase64(chunkParams.value("data").toByteArray()));
+        finished = chunkParams.value("finished").toBool();
+    }
+
+    QCOMPARE(downloadedPayload, expectedPayload);
+
+    QSignalSpy downloadDisconnectedSpy(downloadSocket.data(), &QWebSocket::disconnected);
+    downloadSocket->close();
+    downloadDisconnectedSpy.wait(1000);
+
+    QSignalSpy apiDisconnectedSpy(apiSocket.data(), &QWebSocket::disconnected);
+    apiSocket->close();
+    apiDisconnectedSpy.wait(1000);
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

@@ -64,6 +64,7 @@ public:
     Q_INVOKABLE JsonReply *SetBackupConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateBackup(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateAndDownloadBackup(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *DownloadBackupFile(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *GetMqttServerConfigurations(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetMqttServerConfiguration(const QVariantMap &params) const;
@@ -110,6 +111,7 @@ private slots:
 
 private:
     BackupFiles backupFiles() const;
+    QString resolveBackupFilePath(const QString &fileName, NymeaConfiguration::ConfigurationError *error = nullptr) const;
     void updateBackupDestinationDirectoryWatcher();
     void emitBackupFilesChangedIfNeeded();
 

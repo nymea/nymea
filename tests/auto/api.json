@@ -34,6 +34,7 @@
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
             "ConfigurationErrorInvalidDestinationDir",
+            "ConfigurationErrorInvalidFileName",
             "ConfigurationErrorBluetoothHardwareNotAvailable",
             "ConfigurationErrorInvalidCertificate",
             "ConfigurationErrorUnsupported",
@@ -685,6 +686,19 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.DownloadBackupFile": {
+            "description": "Generate a download entry for an existing configuration backup file.",
+            "params": {
+                "fileName": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError",
+                "downloadId": "String",
+                "fileName": "String",
+                "size": "Int"
             }
         },
         "Configuration.GetAvailableLanguages": {

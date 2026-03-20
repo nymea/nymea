@@ -287,6 +287,16 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     returns.insert("size", enumValueName(Int));
     registerMethod("CreateAndDownloadBackup", description, params, returns);
 
+    params.clear();
+    returns.clear();
+    description = "Generate a download entry for an existing configuration backup file.";
+    params.insert("fileName", enumValueName(String));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    returns.insert("downloadId", enumValueName(String));
+    returns.insert("fileName", enumValueName(String));
+    returns.insert("size", enumValueName(Int));
+    registerMethod("DownloadBackupFile", description, params, returns);
+
     // MQTT
     params.clear();
     returns.clear();
@@ -789,6 +799,33 @@ JsonReply *ConfigurationHandler::CreateAndDownloadBackup(const QVariantMap &para
     return createReply(returns);
 }
 
+JsonReply *ConfigurationHandler::DownloadBackupFile(const QVariantMap &params, const JsonContext &context) const
+{
+    const QString fileName = params.value("fileName").toString();
+
+    NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError;
+    const QString archivePath = resolveBackupFilePath(fileName, &error);
+    if (archivePath.isEmpty()) {
+        return createReply(statusToReply(error));
+    }
+
+    QFile archiveFile(archivePath);
+    if (!archiveFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcJsonRpc()) << "Failed to open backup archive for download:" << archivePath << archiveFile.errorString();
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
+    }
+
+    const auto downloadInfo = NymeaCore::instance()->serverManager()->transferManager()->createDownload(QFileInfo(archiveFile).fileName(),
+                                                                                                         archiveFile.readAll(),
+                                                                                                         context);
+
+    QVariantMap returns = statusToReply(NymeaConfiguration::ConfigurationErrorNoError);
+    returns.insert("downloadId", downloadInfo.downloadId);
+    returns.insert("fileName", downloadInfo.fileName);
+    returns.insert("size", downloadInfo.size);
+    return createReply(returns);
+}
+
 JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
 {
     Q_UNUSED(params)
@@ -1011,6 +1048,32 @@ QVariantMap ConfigurationHandler::packBackupConfiguration()
 BackupFiles ConfigurationHandler::backupFiles() const
 {
     return NymeaCore::instance()->backupManager()->backupFiles(NymeaCore::instance()->configuration()->backupDestinationDirectory());
+}
+
+QString ConfigurationHandler::resolveBackupFilePath(const QString &fileName, NymeaConfiguration::ConfigurationError *error) const
+{
+    if (error) {
+        *error = NymeaConfiguration::ConfigurationErrorNoError;
+    }
+
+    const QFileInfo fileInfo(fileName);
+    if (fileName.isEmpty() || fileInfo.fileName() != fileName || fileName == "." || fileName == "..") {
+        if (error) {
+            *error = NymeaConfiguration::ConfigurationErrorInvalidFileName;
+        }
+        return QString();
+    }
+
+    foreach (const BackupFile &backupFile, backupFiles()) {
+        if (backupFile.fileName() == fileName) {
+            return QDir(NymeaCore::instance()->configuration()->backupDestinationDirectory()).absoluteFilePath(fileName);
+        }
+    }
+
+    if (error) {
+        *error = NymeaConfiguration::ConfigurationErrorBackupFailed;
+    }
+    return QString();
 }
 
 void ConfigurationHandler::updateBackupDestinationDirectoryWatcher()

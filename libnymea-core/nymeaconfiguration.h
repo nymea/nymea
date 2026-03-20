@@ -119,6 +119,7 @@ public:
         ConfigurationErrorInvalidPort,
         ConfigurationErrorInvalidHostAddress,
         ConfigurationErrorInvalidDestinationDir,
+        ConfigurationErrorInvalidFileName,
         ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate,
         ConfigurationErrorUnsupported,

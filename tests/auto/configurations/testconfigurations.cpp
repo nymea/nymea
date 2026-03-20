@@ -27,6 +27,7 @@
 #include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
 
+#include <QDateTime>
 #include <QFileInfo>
 #include <QHostAddress>
 #include <QRegularExpression>
@@ -56,6 +57,8 @@ private slots:
     void testBackupFiles();
     void testCreateBackupUsesUniqueFileNames();
     void testBackupRetentionKeepsCreatedArchive();
+    void testBackupConfigurationAutoBackupSettings();
+    void testAutomaticBackup();
     void testDownloadBackupFile();
     void testDeleteBackupFile();
     void testCreateAndDownloadBackup();
@@ -70,6 +73,7 @@ private slots:
 
 private:
     QVariantMap loadBasicConfiguration();
+    QVariantMap loadBackupConfiguration();
     QVariantList loadBackupFiles();
     QWebSocket *openSocket();
     QVariant sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params = QVariantMap(), QVariantMap *notification = nullptr);
@@ -141,6 +145,8 @@ void TestConfigurations::testBackupFiles()
     QVariantMap params;
     params.insert("destinationDirectory", backupDirectoryPath);
     params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response);
 
@@ -283,6 +289,100 @@ void TestConfigurations::testBackupRetentionKeepsCreatedArchive()
     QCOMPARE(QFileInfo(secondArchivePath).fileName(), backupFiles.first());
 }
 
+void TestConfigurations::testBackupConfigurationAutoBackupSettings()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-auto-config";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear auto-config backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create auto-config backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 7);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 3);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    QVariantMap backupConfiguration = loadBackupConfiguration();
+    QCOMPARE(backupConfiguration.value("destinationDirectory").toString(), backupDirectoryPath);
+    QCOMPARE(backupConfiguration.value("maxCount").toInt(), 7);
+    QCOMPARE(backupConfiguration.value("autoBackupEnabled").toBool(), false);
+    QCOMPARE(backupConfiguration.value("autoBackupInterval").toInt(), 3);
+
+    restartServer();
+
+    backupConfiguration = loadBackupConfiguration();
+    QCOMPARE(backupConfiguration.value("destinationDirectory").toString(), backupDirectoryPath);
+    QCOMPARE(backupConfiguration.value("maxCount").toInt(), 7);
+    QCOMPARE(backupConfiguration.value("autoBackupEnabled").toBool(), false);
+    QCOMPARE(backupConfiguration.value("autoBackupInterval").toInt(), 3);
+}
+
+void TestConfigurations::testAutomaticBackup()
+{
+    auto setBackupConfiguration = [this](const QString &destinationDirectory, int maxCount, bool autoBackupEnabled, int autoBackupInterval) {
+        QVariantMap params;
+        params.insert("destinationDirectory", destinationDirectory);
+        params.insert("maxCount", maxCount);
+        params.insert("autoBackupEnabled", autoBackupEnabled);
+        params.insert("autoBackupInterval", autoBackupInterval);
+        QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+        verifyConfigurationError(response);
+    };
+
+    const QString initialBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-initial";
+    QDir initialBackupDirectory(initialBackupDirectoryPath);
+    if (initialBackupDirectory.exists()) {
+        QVERIFY2(initialBackupDirectory.removeRecursively(), "Could not clear initial auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(initialBackupDirectoryPath), "Could not create initial auto backup directory.");
+
+    setBackupConfiguration(initialBackupDirectoryPath, 10, true, 1);
+    QTRY_VERIFY_WITH_TIMEOUT([this]() {
+        return loadBackupFiles().count() == 1;
+    }(), 5000);
+    setBackupConfiguration(initialBackupDirectoryPath, 10, false, 1);
+
+    const QString overdueBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-overdue";
+    QDir overdueBackupDirectory(overdueBackupDirectoryPath);
+    if (overdueBackupDirectory.exists()) {
+        QVERIFY2(overdueBackupDirectory.removeRecursively(), "Could not clear overdue auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(overdueBackupDirectoryPath), "Could not create overdue auto backup directory.");
+
+    QFile overdueBackupFile(overdueBackupDirectory.filePath("nymea-configuration-manual-20000101000000.tar.gz"));
+    QVERIFY2(overdueBackupFile.open(QIODevice::WriteOnly), "Could not create overdue backup file.");
+    overdueBackupFile.write("stale");
+    overdueBackupFile.close();
+
+    setBackupConfiguration(overdueBackupDirectoryPath, 10, true, 1);
+    QTRY_VERIFY_WITH_TIMEOUT([this]() {
+        return loadBackupFiles().count() == 2;
+    }(), 5000);
+    setBackupConfiguration(overdueBackupDirectoryPath, 10, false, 1);
+
+    const QString recentBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-recent";
+    QDir recentBackupDirectory(recentBackupDirectoryPath);
+    if (recentBackupDirectory.exists()) {
+        QVERIFY2(recentBackupDirectory.removeRecursively(), "Could not clear recent auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(recentBackupDirectoryPath), "Could not create recent auto backup directory.");
+
+    const QString recentTimestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+    QFile recentBackupFile(recentBackupDirectory.filePath(QString("nymea-configuration-manual-%1.tar.gz").arg(recentTimestamp)));
+    QVERIFY2(recentBackupFile.open(QIODevice::WriteOnly), "Could not create recent backup file.");
+    recentBackupFile.write("recent");
+    recentBackupFile.close();
+
+    setBackupConfiguration(recentBackupDirectoryPath, 10, true, 24);
+    QTest::qWait(1500);
+    QCOMPARE(loadBackupFiles().count(), 1);
+    setBackupConfiguration(recentBackupDirectoryPath, 10, false, 24);
+}
+
 void TestConfigurations::testDownloadBackupFile()
 {
     const QString backupDirectoryPath = "/tmp/nymea-tests/backups-download-existing";
@@ -295,6 +395,8 @@ void TestConfigurations::testDownloadBackupFile()
     QVariantMap params;
     params.insert("destinationDirectory", backupDirectoryPath);
     params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response);
 
@@ -396,6 +498,8 @@ void TestConfigurations::testDeleteBackupFile()
     QVariantMap params;
     params.insert("destinationDirectory", backupDirectoryPath);
     params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response);
 
@@ -437,6 +541,8 @@ void TestConfigurations::testCreateAndDownloadBackup()
     QVariantMap params;
     params.insert("destinationDirectory", backupDirectoryPath);
     params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response);
 
@@ -919,6 +1025,13 @@ QVariantMap TestConfigurations::loadBasicConfiguration()
     QVariant response = injectAndWait("Configuration.GetConfigurations");
     QVariantMap configurationMap = response.toMap().value("params").toMap();
     return configurationMap.value("basicConfiguration").toMap();
+}
+
+QVariantMap TestConfigurations::loadBackupConfiguration()
+{
+    QVariant response = injectAndWait("Configuration.GetConfigurations");
+    QVariantMap configurationMap = response.toMap().value("params").toMap();
+    return configurationMap.value("backupConfigurations").toMap();
 }
 
 QVariantList TestConfigurations::loadBackupFiles()

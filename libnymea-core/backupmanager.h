@@ -29,6 +29,7 @@
 #include <QList>
 #include <QMetaType>
 #include <QObject>
+#include <QTimer>
 #include <QVariant>
 
 class BackupFile
@@ -81,6 +82,11 @@ public:
 
     bool automaticBackupEnabled() const;
     void setAutomaticBackupEnabled(bool automaticBackupEnabled);
+    int automaticBackupInterval() const;
+    void setAutomaticBackupInterval(int automaticBackupInterval);
+    void setSourceDirectory(const QString &sourceDirectory);
+    void setDestinationDirectory(const QString &destinationDirectory);
+    void setMaxBackups(int maxBackups);
 
     BackupFiles backupFiles(const QString &destinationDir, const QString &archivePrefix = "nymea-configuration") const;
     bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration", QString *archivePath = nullptr);
@@ -90,7 +96,16 @@ signals:
     void automaticBackupEnabledChanged(bool automaticBackupEnabled);
 
 private:
+    void reevaluateAutomaticBackup();
+    void triggerAutomaticBackup();
+    qint64 automaticBackupIntervalMs() const;
+
     bool m_automaticBackupEnabled = false;
+    int m_automaticBackupInterval = 24;
+    QString m_sourceDirectory;
+    QString m_destinationDirectory;
+    int m_maxBackups = 5;
+    QTimer *m_automaticBackupTimer = nullptr;
 };
 
 #endif // BACKUPMANAGER_H

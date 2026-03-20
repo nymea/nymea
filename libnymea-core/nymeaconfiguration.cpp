@@ -634,6 +634,51 @@ void NymeaConfiguration::setBackupMaxCount(int maxCount)
     }
 }
 
+bool NymeaConfiguration::autoBackupEnabled() const
+{
+    m_settings->beginGroup("Backup");
+    bool value = m_settings->value("autoBackupEnabled", false).toBool();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setAutoBackupEnabled(bool enabled)
+{
+    qCDebug(dcConfiguration()) << "Set auto backup enabled" << enabled;
+    bool currentValue = autoBackupEnabled();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("autoBackupEnabled", enabled);
+    m_settings->endGroup();
+
+    if (currentValue != enabled) {
+        emit autoBackupEnabledChanged(enabled);
+    }
+}
+
+int NymeaConfiguration::autoBackupInterval() const
+{
+    m_settings->beginGroup("Backup");
+    int value = m_settings->value("autoBackupInterval", 24).toInt();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setAutoBackupInterval(int interval)
+{
+    interval = qMax(1, interval);
+    qCDebug(dcConfiguration()) << "Set auto backup interval" << interval << "hours";
+    int currentValue = autoBackupInterval();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("autoBackupInterval", interval);
+    m_settings->endGroup();
+
+    if (currentValue != interval) {
+        emit autoBackupIntervalChanged(interval);
+    }
+}
+
 void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 {
     qCDebug(dcConfiguration()) << "Server uuid:" << uuid.toString();

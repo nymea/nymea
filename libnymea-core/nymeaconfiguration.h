@@ -164,6 +164,12 @@ public:
     int backupMaxCount() const;
     void setBackupMaxCount(int maxCount);
 
+    bool autoBackupEnabled() const;
+    void setAutoBackupEnabled(bool enabled);
+
+    int autoBackupInterval() const;
+    void setAutoBackupInterval(int interval);
+
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
     void setTcpServerConfiguration(const ServerConfiguration &config);
@@ -258,6 +264,8 @@ signals:
 
     void backupDestinationDirectoryChanged(const QString &destinationDirectory);
     void backupMaxCountChanged(int maxCount);
+    void autoBackupEnabledChanged(bool autoBackupEnabled);
+    void autoBackupIntervalChanged(int autoBackupInterval);
 };
 
 } // namespace nymeaserver

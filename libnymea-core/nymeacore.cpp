@@ -96,6 +96,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_configuration = new NymeaConfiguration(this);
 
     m_backupManager = new BackupManager(this);
+    m_backupManager->setSourceDirectory(m_configuration->path());
+    m_backupManager->setDestinationDirectory(m_configuration->backupDestinationDirectory());
+    m_backupManager->setMaxBackups(m_configuration->backupMaxCount());
+    m_backupManager->setAutomaticBackupInterval(m_configuration->autoBackupInterval());
+    m_backupManager->setAutomaticBackupEnabled(m_configuration->autoBackupEnabled());
 
     qCDebug(dcCore()) << "Creating Time Manager";
     // Migration path: nymea < 0.18 doesn't use system time zone but stores its own time zone in the config
@@ -180,6 +185,10 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), m_serverManager, m_logEngine, this);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
+    connect(m_configuration, &NymeaConfiguration::backupDestinationDirectoryChanged, m_backupManager, &BackupManager::setDestinationDirectory);
+    connect(m_configuration, &NymeaConfiguration::backupMaxCountChanged, m_backupManager, &BackupManager::setMaxBackups);
+    connect(m_configuration, &NymeaConfiguration::autoBackupIntervalChanged, m_backupManager, &BackupManager::setAutomaticBackupInterval);
+    connect(m_configuration, &NymeaConfiguration::autoBackupEnabledChanged, m_backupManager, &BackupManager::setAutomaticBackupEnabled);
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
     connect(m_thingManager, &ThingManagerImplementation::thingRemoved, m_userManager, &UserManager::onThingRemoved);
 

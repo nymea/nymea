@@ -31,8 +31,10 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
-#include <QUuid>
 #include <QRegularExpression>
+#include <QUuid>
+
+#include <limits>
 
 NYMEA_LOGGING_CATEGORY(dcBackup, "Backup")
 
@@ -144,7 +146,11 @@ void BackupFiles::put(const QVariant &variant)
 
 BackupManager::BackupManager(QObject *parent)
     : QObject{parent}
-{}
+{
+    m_automaticBackupTimer = new QTimer(this);
+    m_automaticBackupTimer->setSingleShot(true);
+    connect(m_automaticBackupTimer, &QTimer::timeout, this, &BackupManager::reevaluateAutomaticBackup);
+}
 
 bool BackupManager::automaticBackupEnabled() const
 {
@@ -158,6 +164,49 @@ void BackupManager::setAutomaticBackupEnabled(bool automaticBackupEnabled)
 
     m_automaticBackupEnabled = automaticBackupEnabled;
     emit automaticBackupEnabledChanged(m_automaticBackupEnabled);
+    reevaluateAutomaticBackup();
+}
+
+int BackupManager::automaticBackupInterval() const
+{
+    return m_automaticBackupInterval;
+}
+
+void BackupManager::setAutomaticBackupInterval(int automaticBackupInterval)
+{
+    automaticBackupInterval = qMax(1, automaticBackupInterval);
+    if (m_automaticBackupInterval == automaticBackupInterval)
+        return;
+
+    m_automaticBackupInterval = automaticBackupInterval;
+    reevaluateAutomaticBackup();
+}
+
+void BackupManager::setSourceDirectory(const QString &sourceDirectory)
+{
+    if (m_sourceDirectory == sourceDirectory)
+        return;
+
+    m_sourceDirectory = sourceDirectory;
+    reevaluateAutomaticBackup();
+}
+
+void BackupManager::setDestinationDirectory(const QString &destinationDirectory)
+{
+    if (m_destinationDirectory == destinationDirectory)
+        return;
+
+    m_destinationDirectory = destinationDirectory;
+    reevaluateAutomaticBackup();
+}
+
+void BackupManager::setMaxBackups(int maxBackups)
+{
+    if (m_maxBackups == maxBackups)
+        return;
+
+    m_maxBackups = maxBackups;
+    reevaluateAutomaticBackup();
 }
 
 BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QString &archivePrefix) const
@@ -309,4 +358,50 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
 
     qCInfo(dcBackup()) << "Restored backup" << fileName << "successfully into" << destinationDir;
     return true;
+}
+
+void BackupManager::reevaluateAutomaticBackup()
+{
+    m_automaticBackupTimer->stop();
+
+    if (!m_automaticBackupEnabled || m_sourceDirectory.isEmpty() || m_destinationDirectory.isEmpty()) {
+        return;
+    }
+
+    const BackupFiles files = backupFiles(m_destinationDirectory);
+    if (files.isEmpty()) {
+        triggerAutomaticBackup();
+        return;
+    }
+
+    const QDateTime nextBackup = files.first().timestamp().toUTC().addMSecs(automaticBackupIntervalMs());
+    const qint64 delayMs = QDateTime::currentDateTimeUtc().msecsTo(nextBackup);
+    if (delayMs <= 0) {
+        triggerAutomaticBackup();
+        return;
+    }
+
+    m_automaticBackupTimer->start(static_cast<int>(qMin(delayMs, static_cast<qint64>(std::numeric_limits<int>::max()))));
+}
+
+void BackupManager::triggerAutomaticBackup()
+{
+    if (!m_automaticBackupEnabled) {
+        return;
+    }
+
+    QString archivePath;
+    if (createBackup(m_sourceDirectory, m_destinationDirectory, m_maxBackups, "nymea-configuration", &archivePath)) {
+        qCInfo(dcBackup()) << "Created automatic backup:" << archivePath;
+        reevaluateAutomaticBackup();
+        return;
+    }
+
+    qCWarning(dcBackup()) << "Failed to create automatic backup. Retrying later.";
+    m_automaticBackupTimer->start(static_cast<int>(qMin(automaticBackupIntervalMs(), static_cast<qint64>(std::numeric_limits<int>::max()))));
+}
+
+qint64 BackupManager::automaticBackupIntervalMs() const
+{
+    return static_cast<qint64>(m_automaticBackupInterval) * 60 * 60 * 1000;
 }

@@ -741,6 +741,8 @@
             "permissionScope": "PermissionScopeNone",
             "returns": {
                 "backupConfigurations": {
+                    "autoBackupEnabled": "Bool",
+                    "autoBackupInterval": "Int",
                     "destinationDirectory": "String",
                     "maxCount": "Uint"
                 },
@@ -809,10 +811,12 @@
             }
         },
         "Configuration.SetBackupConfiguration": {
-            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept.",
+            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept. autoBackupEnabled controls periodic configuration backups and autoBackupInterval defines the interval in hours.",
             "params": {
                 "destinationDirectory": "String",
-                "maxCount": "Uint"
+                "maxCount": "Uint",
+                "autoBackupEnabled": "Bool",
+                "autoBackupInterval": "Int"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
@@ -2478,6 +2482,8 @@
         "Configuration.BackupConfigurationChanged": {
             "description": "Emitted whenever the backup configuration changes.",
             "params": {
+                "autoBackupEnabled": "Bool",
+                "autoBackupInterval": "Int",
                 "destinationDirectory": "String",
                 "maxCount": "Uint"
             }

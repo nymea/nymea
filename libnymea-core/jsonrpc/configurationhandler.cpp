@@ -131,6 +131,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     QVariantMap backupConfiguration;
     backupConfiguration.insert("destinationDirectory", enumValueName(String));
     backupConfiguration.insert("maxCount", enumValueName(Uint));
+    backupConfiguration.insert("autoBackupEnabled", enumValueName(Bool));
+    backupConfiguration.insert("autoBackupInterval", enumValueName(Int));
 
     QVariantList tcpServerConfigurations;
     tcpServerConfigurations.append(objectRef<ServerConfiguration>());
@@ -262,9 +264,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     returns.clear();
     description = "Set the backup configuration. The destination directory is the location where "
                   "the archives will be saved, the maxCount is the number of backups which will be "
-                  "kept. If maxCount is 0, all backups will be kept.";
+                  "kept. If maxCount is 0, all backups will be kept. The autoBackupEnabled property controls "
+                  "periodic configuration backups and autoBackupInterval defines the interval in hours.";
     params.insert("destinationDirectory", enumValueName(String));
     params.insert("maxCount", enumValueName(Uint));
+    params.insert("autoBackupEnabled", enumValueName(Bool));
+    params.insert("autoBackupInterval", enumValueName(Int));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetBackupConfiguration", description, params, returns);
 
@@ -292,9 +297,9 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     description = "Generate a download entry for an existing configuration backup file.";
     params.insert("fileName", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    returns.insert("downloadId", enumValueName(String));
-    returns.insert("fileName", enumValueName(String));
-    returns.insert("size", enumValueName(Int));
+    returns.insert("o:downloadId", enumValueName(String));
+    returns.insert("o:fileName", enumValueName(String));
+    returns.insert("o:size", enumValueName(Int));
     registerMethod("DownloadBackupFile", description, params, returns);
 
     params.clear();
@@ -397,6 +402,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     description = "Emitted whenever the backup configuration changes.";
     params.insert("destinationDirectory", enumValueName(String));
     params.insert("maxCount", enumValueName(Uint));
+    params.insert("autoBackupEnabled", enumValueName(Bool));
+    params.insert("autoBackupInterval", enumValueName(Int));
     registerNotification("BackupConfigurationChanged", description, params);
 
     params.clear();
@@ -462,6 +469,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     connect(config, &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
     connect(config, &NymeaConfiguration::backupDestinationDirectoryChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
     connect(config, &NymeaConfiguration::backupMaxCountChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
+    connect(config, &NymeaConfiguration::autoBackupEnabledChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
+    connect(config, &NymeaConfiguration::autoBackupIntervalChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
 
     m_backupDestinationDirectoryWatcher = new QFileSystemWatcher(this);
     connect(m_backupDestinationDirectoryWatcher, &QFileSystemWatcher::directoryChanged, this, &ConfigurationHandler::onBackupFilesDirectoryChanged);
@@ -748,8 +757,21 @@ JsonReply *ConfigurationHandler::DeleteTunnelProxyServerConfiguration(const QVar
 
 JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &params) const
 {
-    QString destinationDirectory = params.value("destinationDirectory").toString();
-    uint maxCount = params.value("maxCount").toUInt();
+    NymeaConfiguration *configuration = NymeaCore::instance()->configuration();
+
+    QString destinationDirectory = params.contains("destinationDirectory")
+            ? params.value("destinationDirectory").toString()
+            : configuration->backupDestinationDirectory();
+    uint maxCount = params.contains("maxCount")
+            ? params.value("maxCount").toUInt()
+            : static_cast<uint>(configuration->backupMaxCount());
+    bool autoBackupEnabled = params.contains("autoBackupEnabled")
+            ? params.value("autoBackupEnabled").toBool()
+            : configuration->autoBackupEnabled();
+    int autoBackupInterval = params.contains("autoBackupInterval")
+            ? params.value("autoBackupInterval").toInt()
+            : configuration->autoBackupInterval();
+
     QDir destinationDir(destinationDirectory);
     if (!destinationDir.exists()) {
         // Try to make the directory
@@ -759,8 +781,13 @@ JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &param
         }
     }
 
-    NymeaCore::instance()->configuration()->setBackupDestinationDirectory(destinationDirectory);
-    NymeaCore::instance()->configuration()->setBackupMaxCount(maxCount);
+    if (configuration->autoBackupEnabled() && !autoBackupEnabled) {
+        configuration->setAutoBackupEnabled(false);
+    }
+    configuration->setBackupDestinationDirectory(destinationDirectory);
+    configuration->setBackupMaxCount(maxCount);
+    configuration->setAutoBackupInterval(autoBackupInterval);
+    configuration->setAutoBackupEnabled(autoBackupEnabled);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -1067,6 +1094,8 @@ QVariantMap ConfigurationHandler::packBackupConfiguration()
     QVariantMap configuration;
     configuration.insert("destinationDirectory", NymeaCore::instance()->configuration()->backupDestinationDirectory());
     configuration.insert("maxCount", NymeaCore::instance()->configuration()->backupMaxCount());
+    configuration.insert("autoBackupEnabled", NymeaCore::instance()->configuration()->autoBackupEnabled());
+    configuration.insert("autoBackupInterval", NymeaCore::instance()->configuration()->autoBackupInterval());
     return configuration;
 }
 

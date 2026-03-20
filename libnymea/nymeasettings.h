@@ -86,6 +86,7 @@ public:
     bool isWritable() const;
     void remove(const QString &key);
     void setValue(const QString & key, const QVariant &value);
+    void sync();
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
 
 private:

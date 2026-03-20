@@ -389,6 +389,11 @@ void NymeaSettings::setValue(const QString &key, const QVariant &value)
     m_settings->setValue(key, value);
 }
 
+void NymeaSettings::sync()
+{
+    m_settings->sync();
+}
+
 /*! Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue. */
 QVariant NymeaSettings::value(const QString &key, const QVariant &defaultValue) const
 {

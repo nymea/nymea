@@ -119,7 +119,7 @@ NymeaCore *NymeaCore::instance()
 
 void NymeaCore::restart(ShutdownReason reason)
 {
-    destroy(reason);
+    instance()->destroy(reason);
     instance()->init(s_additionalInterfaces, s_disableLogEngine);
 }
 

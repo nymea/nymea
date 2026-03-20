@@ -576,7 +576,7 @@ void TestConfigurations::testRestoreBackupFile()
 
     waitForServerRestart();
 
-    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), restoredServerName);
+    QTRY_COMPARE_WITH_TIMEOUT(loadBasicConfiguration().value("serverName").toString(), restoredServerName, 5000);
 }
 
 void TestConfigurations::testCreateAndDownloadBackup()

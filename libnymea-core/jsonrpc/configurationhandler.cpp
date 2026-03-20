@@ -804,6 +804,7 @@ JsonReply *ConfigurationHandler::CreateBackup(const QVariantMap &params) const
 {
     Q_UNUSED(params);
     qCDebug(dcJsonRpc()) << "Request to create a configuration backup received.";
+    NymeaCore::instance()->configuration()->sync();
     bool success = NymeaCore::instance()->backupManager()->createBackup(NymeaCore::instance()->configuration()->path(),
                                                                         NymeaCore::instance()->configuration()->backupDestinationDirectory(),
                                                                         NymeaCore::instance()->configuration()->backupMaxCount());
@@ -814,6 +815,7 @@ JsonReply *ConfigurationHandler::CreateAndDownloadBackup(const QVariantMap &para
 {
     Q_UNUSED(params)
     qCDebug(dcJsonRpc()) << "Request to create and download a configuration backup received.";
+    NymeaCore::instance()->configuration()->sync();
 
     QString archivePath;
     const bool success = NymeaCore::instance()->backupManager()->createBackup(NymeaCore::instance()->configuration()->path(),

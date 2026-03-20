@@ -449,7 +449,12 @@ void NymeaTestBase::waitForServerRestart()
 
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
-    injectAndWait("JSONRPC.Hello");
+
+    QVariant response;
+    QTRY_VERIFY_WITH_TIMEOUT([&]() {
+        response = injectAndWait("JSONRPC.Hello");
+        return response.toMap().value("status").toString() == QString("success");
+    }(), 5000);
 }
 
 void NymeaTestBase::clearLoggingDatabase(const QString &source)

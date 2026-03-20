@@ -568,6 +568,12 @@ void NymeaConfiguration::setSslCertificate(const QString &sslCertificate, const 
     m_settings->endGroup();
 }
 
+void NymeaConfiguration::sync()
+{
+    m_settings->sync();
+    m_mqttPoliciesSettings->sync();
+}
+
 bool NymeaConfiguration::debugServerEnabled() const
 {
     m_settings->beginGroup("nymead");

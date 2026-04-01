@@ -176,6 +176,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
 
     qCDebug(dcCore) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(m_platform,
+                                                          m_configuration,
                                                           m_serverManager->mqttBroker(),
                                                           m_zigbeeManager,
                                                           m_zwaveManager,

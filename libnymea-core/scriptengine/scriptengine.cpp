@@ -456,7 +456,7 @@ QString ScriptEngine::baseName(const QUuid &id)
 
 void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    QFileInfo fi(context.file);
+    QFileInfo fi(context.file ? QString::fromUtf8(context.file) : QString());
     QUuid scriptId(fi.baseName());
     if (!m_scripts.contains(scriptId)) {
         return;
@@ -466,7 +466,7 @@ void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &con
 
 void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (strcmp(context.category, "qml") != 0 && strcmp(context.category, "ScriptRuntime") != 0) {
+    if (qstrcmp(context.category, "qml") != 0 && qstrcmp(context.category, "ScriptRuntime") != 0) {
         s_upstreamMessageHandler(type, context, message);
         return;
     }
@@ -486,7 +486,7 @@ void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &c
     QLoggingCategory *category = new QLoggingCategory("ScriptEngine", type);
     s_oldCategoryFilter(category);
     if (category->isEnabled(type)) {
-        QFileInfo fi(context.file);
+        QFileInfo fi(context.file ? QString::fromUtf8(context.file) : QString());
         s_upstreamMessageHandler(type, newContext, fi.fileName() + ":" + QString::number(context.line) + ": " + message);
     }
     delete category;

@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     applicationDescription.append(QString("nymead %1 %2 %3 nymea GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 3.\n\n"
-                                          "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING).arg(JSON_PROTOCOL_VERSION));
+                                          "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9), COPYRIGHT_YEAR_STRING, JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -164,11 +164,11 @@ int main(int argc, char *argv[])
     foreach (const QString &category, nymeaSettings.childKeys()) {
         bool enable = nymeaSettings.value(category, false).toBool();
         if (enable && category.endsWith("debug")) {
-            loggingRules << QString("%1=%2").arg(category).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "info")).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "warning")).arg("true");
+            loggingRules << QString("%1=%2").arg(category, "true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "info"), "true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "warning"), "true");
         } else {
-            loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
+            loggingRules << QString("%1=%2").arg(category, nymeaSettings.value(category, "false").toString());
         }
     }
     nymeaSettings.endGroup();
@@ -184,11 +184,11 @@ int main(int argc, char *argv[])
         }
         debugArea.remove(QRegularExpression("(Warnings|Info)$"));
         if (enable && !isWarning && !isInfo) {
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("debug").arg("true"));
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("info").arg("true"));
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("warning").arg("true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "debug", "true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "info", "true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "warning", "true"));
         } else {
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : (isInfo ? "info" : "debug")).arg(enable ? "true": "false"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, isWarning ? "warning" : (isInfo ? "info" : "debug"), enable ? "true": "false"));
         }
     }
 

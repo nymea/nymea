@@ -137,8 +137,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
 /*! Destructor of the NymeaSettings.*/
 NymeaSettings::~NymeaSettings()
 {
-    m_settings->sync();
-    delete m_settings;
+    if (m_settings) {
+        m_settings->sync();
+    }
 }
 
 QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)

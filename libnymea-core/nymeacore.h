@@ -135,6 +135,7 @@ private:
     static bool s_disableLogEngine;
     static PendingRestartAction s_pendingRestartAction;
     static QString s_pendingRestoreBackupPath;
+    bool m_initialized = false;
 
     Platform *m_platform = nullptr;
 

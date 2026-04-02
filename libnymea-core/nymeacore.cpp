@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -125,6 +125,12 @@ void NymeaCore::restart(ShutdownReason reason)
 
 void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
 {
+    if (m_initialized) {
+        qCWarning(dcCore()) << "NymeaCore is already initialized.";
+        return;
+    }
+    m_initialized = true;
+
     s_additionalInterfaces = additionalInterfaces;
     s_disableLogEngine = disableLogEngine;
 
@@ -245,30 +251,51 @@ NymeaCore::~NymeaCore()
         m_timeManager->disconnect(this);
     }
 
-    m_thingManager->disconnect(this);
-    m_ruleEngine->disconnect(this);
+    if (m_thingManager) {
+        m_thingManager->disconnect(this);
+    }
+    if (m_ruleEngine) {
+        m_ruleEngine->disconnect(this);
+    }
 
     // Then stop magic from happening
-    qCDebug(dcCore) << "Shutting down \"Rule Engine\"";
-    delete m_ruleEngine;
+    if (m_ruleEngine) {
+        qCDebug(dcCore) << "Shutting down \"Rule Engine\"";
+        delete m_ruleEngine;
+        m_ruleEngine = nullptr;
+    }
 
-    qCDebug(dcCore()) << "Shutting down \"Experiences\"";
-    delete m_experienceManager;
+    if (m_experienceManager) {
+        qCDebug(dcCore()) << "Shutting down \"Experiences\"";
+        delete m_experienceManager;
+        m_experienceManager = nullptr;
+    }
 
     // Next, ThingManager, so plugins don't access any resources any more.
-    qCDebug(dcCore) << "Shutting down \"Thing Manager\"";
-    delete m_thingManager;
+    if (m_thingManager) {
+        qCDebug(dcCore) << "Shutting down \"Thing Manager\"";
+        delete m_thingManager;
+        m_thingManager = nullptr;
+    }
 
     // Destroy resources used by things
-    qCDebug(dcCore) << "Shutting down \"Server Manager\"";
-    delete m_serverManager;
-
-    qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
-    delete m_hardwareManager;
+    if (m_hardwareManager) {
+        qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
+        delete m_hardwareManager;
+        m_hardwareManager = nullptr;
+    }
+    if (m_serverManager) {
+        qCDebug(dcCore) << "Shutting down \"Server Manager\"";
+        delete m_serverManager;
+        m_serverManager = nullptr;
+    }
 
     // Now go ahead and clean up stuff.
-    qCDebug(dcCore) << "Shutting down \"Log Engine\"";
-    delete m_logEngine;
+    if (m_logEngine) {
+        qCDebug(dcCore) << "Shutting down \"Log Engine\"";
+        delete m_logEngine;
+        m_logEngine = nullptr;
+    }
 
     qCDebug(dcCore) << "Done shutting down NymeaCore";
 }

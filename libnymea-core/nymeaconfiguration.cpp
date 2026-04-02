@@ -696,15 +696,7 @@ void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 
 QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
 {
-    QString publicFolderPath;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        // FIXME: one could point to sensible data by changing the SNAP env to i.e /etc
-        publicFolderPath = QString::fromLocal8Bit(qgetenv("SNAP")) + "/nymea-webinterface";
-    } else {
-        publicFolderPath = "/usr/share/nymea-webinterface/public/";
-    }
-
-    return publicFolderPath;
+    return "/usr/share/nymea-webinterface/public/";
 }
 
 void NymeaConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)

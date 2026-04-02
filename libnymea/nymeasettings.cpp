@@ -83,11 +83,11 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     m_role(role)
 {
     /*
-        Since 1.12.0 we consider the /etc/nymea folder as read only from a deamon perspective.
+        Since 1.15.0 we consider the /etc/nymea folder as read only from a deamon perspective.
         The /etc/nymea/ directory should be used for default settings the system is using in order to
         generate the first configuration in /var/lib/nymea/
 
-        It is up to the platform maintainer to provide specific default configurations or just use the defaults.
+        It is up to the platform maintainer to provide specific default configurations or just use the deamon defaults by not providing any.
 
         1. Check env, if that is specified, we use that as settings storage, yet check if there are any defaults to load
         2. Check if we have the setting file in /var/lib/nymea, if so use that RW
@@ -201,9 +201,7 @@ QString NymeaSettings::settingsPath()
     QString settingsPrefix = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
-    } else if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+    if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
         path = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
     } else if (settingsPrefix.contains("nymea-test")) {
         path = "/tmp/" + settingsPrefix;
@@ -222,9 +220,7 @@ QString NymeaSettings::defaultSettingsPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP")) + "/etc/" + organisationName;
-    } else if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
+    if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
         path = QString::fromLocal8Bit(qgetenv("NYMEA_DEFAULT_CONFIG_PATH"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
@@ -241,10 +237,8 @@ QString NymeaSettings::translationsPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path =  QString::fromLocal8Bit(qgetenv("SNAP")) + "/usr/share/nymea/translations";
-    } else if (organisationName == "nymea-test") {
-        path =  "/tmp/" + organisationName;
+    if (!qEnvironmentVariableIsEmpty("NYMEA_TRANSLATIONS_PATH")) {
+        path = QString::fromLocal8Bit(qgetenv("NYMEA_TRANSLATIONS_PATH"));
     } else {
         path = QString("/usr/share/nymea/translations");
     }
@@ -263,9 +257,7 @@ QString NymeaSettings::storagePath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
-    } else if (organisationName == "nymea-test") {
+    if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else if (NymeaSettings::isRoot()) {
         path = "/var/lib/" + organisationName;
@@ -281,9 +273,7 @@ QString NymeaSettings::cachePath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
-    } else if (organisationName == "nymea-test") {
+    if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName + "/cache";
     } else if (NymeaSettings::isRoot()) {
         path = "/var/cache/" + organisationName;

@@ -522,6 +522,9 @@ void ServerManager::tunnelProxyServerConfigurationRemoved(const QString &id)
 
 bool ServerManager::registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType)
 {
+    if (!m_platform->zeroConfController() || !m_platform->zeroConfController()->available())
+        return false;
+
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);

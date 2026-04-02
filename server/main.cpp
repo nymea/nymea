@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -130,6 +130,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Note: evaluate the NYMEA_CONFIG_PATH before any configuration access occurres like reading logging rules.
+    if (parser.isSet(configurationOption)) {
+        QString configPath = parser.value(configurationOption);
+        qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
+        if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+            QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
+            if (configPathEnv != configPath) {
+                qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
+            }
+        }
+
+        qputenv("NYMEA_CONFIG_PATH", configPath.toUtf8());
+    }
+
+
     /* The logging rules will be evaluated sequentially
      *  1. All debug and info categories off (with -q also warnings)
      *  2. Enable all warning info and debug categories if requested from command line (-p)
@@ -239,19 +254,6 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "Snap app data   :" << qgetenv("SNAP_DATA");
             qCInfo(dcApplication()) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
             qCInfo(dcApplication()) << "Snap app common :" << qgetenv("SNAP_COMMON");
-        }
-
-        if (parser.isSet(configurationOption)) {
-            QString configPath = parser.value(configurationOption);
-            qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
-            if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
-                QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
-                if (configPathEnv != configPath) {
-                    qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
-                }
-            }
-
-            qputenv("NYMEA_CONFIG_PATH", configPath.toUtf8());
         }
 
         // create core instance

@@ -53,23 +53,42 @@ void TransferServerImplementation::processData(const QUuid &clientId, const QByt
         return;
     }
 
-    ClientState &state = m_clients[clientId];
-    state.buffer.append(data);
-    int splitIndex = state.buffer.indexOf("}\n{");
+    TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
+    if (!interface) {
+        interface = m_clients.value(clientId).transport;
+    }
+    QByteArray buffer = m_clients.value(clientId).buffer;
+    buffer.append(data);
+
+    int splitIndex = buffer.indexOf("}\n{");
     while (splitIndex > -1) {
-        processPacket(state.transport, clientId, state.buffer.left(splitIndex + 1));
-        state.buffer = state.buffer.right(state.buffer.length() - splitIndex - 2);
-        splitIndex = state.buffer.indexOf("}\n{");
+        processPacket(interface, clientId, buffer.left(splitIndex + 1));
+        if (!m_clients.contains(clientId)) {
+            return;
+        }
+
+        buffer = buffer.right(buffer.length() - splitIndex - 2);
+        splitIndex = buffer.indexOf("}\n{");
     }
 
-    if (state.buffer.trimmed().endsWith('}')) {
-        processPacket(state.transport, clientId, state.buffer);
-        state.buffer.clear();
+    if (buffer.trimmed().endsWith('}')) {
+        processPacket(interface, clientId, buffer);
+        if (!m_clients.contains(clientId)) {
+            return;
+        }
+
+        buffer.clear();
     }
+
+    m_clients[clientId].buffer = buffer;
 }
 
 void TransferServerImplementation::processPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data)
 {
+    if (!interface) {
+        return;
+    }
+
     QJsonParseError error;
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
@@ -87,7 +106,12 @@ void TransferServerImplementation::processPacket(TransportInterface *interface, 
 
     const QString method = message.value("method").toString();
     const QVariantMap params = message.value("params").toMap();
-    ClientState &state = m_clients[clientId];
+    auto clientIt = m_clients.find(clientId);
+    if (clientIt == m_clients.end()) {
+        return;
+    }
+
+    ClientState &state = clientIt.value();
 
     if (method == QLatin1String("Transfer.Connect")) {
         const QString transferId = params.value("transferId").toString();

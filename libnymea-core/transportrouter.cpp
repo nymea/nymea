@@ -219,14 +219,26 @@ RoutedTransportInterface *TransportRouter::proxyTransport(TransportInterface *tr
 
 void TransportRouter::routeClient(const QUuid &clientId, Protocol protocol, const QByteArray &firstPacket)
 {
-    ClientState &state = m_clients[clientId];
-    state.protocol = protocol;
-    if (state.timeoutTimer) {
-        state.timeoutTimer->deleteLater();
-        state.timeoutTimer = nullptr;
+    if (!m_clients.contains(clientId)) {
+        return;
     }
 
-    RoutedTransportInterface *proxy = proxyTransport(state.transport, protocol == Protocol::Transfer);
+    TransportInterface *transport = nullptr;
+    QTimer *timeoutTimer = nullptr;
+    {
+        ClientState &state = m_clients[clientId];
+        state.protocol = protocol;
+        timeoutTimer = state.timeoutTimer;
+        state.timeoutTimer = nullptr;
+        state.buffer.clear();
+        transport = state.transport;
+    }
+
+    if (timeoutTimer) {
+        timeoutTimer->deleteLater();
+    }
+
+    RoutedTransportInterface *proxy = proxyTransport(transport, protocol == Protocol::Transfer);
     if (!proxy) {
         qCWarning(dcTransportRouter()) << "No proxy transport registered for routed client";
         terminateUnroutedClient(clientId);
@@ -235,7 +247,6 @@ void TransportRouter::routeClient(const QUuid &clientId, Protocol protocol, cons
 
     proxy->forwardClientConnected(clientId);
     proxy->forwardDataAvailable(clientId, firstPacket);
-    state.buffer.clear();
 }
 
 void TransportRouter::terminateUnroutedClient(const QUuid &clientId)

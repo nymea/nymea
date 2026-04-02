@@ -94,6 +94,7 @@ public:
 
 signals:
     void automaticBackupEnabledChanged(bool automaticBackupEnabled);
+    void backupFilesChanged();
 
 private:
     void reevaluateAutomaticBackup();

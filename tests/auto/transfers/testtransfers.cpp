@@ -2,6 +2,7 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "servers/mocktcpserver.h"
 
 #include <QJsonDocument>
 #include <QScopedPointer>
@@ -16,6 +17,8 @@ class TestTransfers : public NymeaTestBase
 private slots:
     void initTestCase();
     void testUploadDownloadRoundtrip();
+    void testTransferConnectWithInvalidTokenTerminatesCleanly();
+    void testDownloadCompletionTerminatesConnectionCleanly();
     void testStartDownloadRejectsUnknownDownloadId();
 
 public slots:
@@ -30,6 +33,7 @@ public slots:
 private:
     QWebSocket *openSocket();
     QVariant sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params = QVariantMap(), QVariantMap *notification = nullptr);
+    QVariant sendMockTransferAndWait(const QUuid &clientId, int id, const QString &method, const QVariantMap &params = QVariantMap());
     QVariantMap waitForNotification(QSignalSpy &spy, const QString &notificationName);
 };
 
@@ -150,6 +154,98 @@ void TestTransfers::testUploadDownloadRoundtrip()
     QCOMPARE(downloadedPayload, payload);
 }
 
+void TestTransfers::testTransferConnectWithInvalidTokenTerminatesCleanly()
+{
+    const QUuid transferClientId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(transferClientId);
+
+    QSignalSpy terminatedSpy(m_mockTcpServer, &MockTcpServer::connectionTerminated);
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
+    QVariantMap params;
+    params.insert("transferId", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.insert("transferToken", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    const QVariant response = sendMockTransferAndWait(transferClientId, 1, "Transfer.Connect", params);
+
+    QCOMPARE(response.toMap().value("status").toString(), QString("error"));
+    QCOMPARE(response.toMap().value("error").toString(), QString("Invalid transfer token"));
+    QCOMPARE(terminatedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(terminatedSpy.takeFirst().at(0).toUuid(), transferClientId);
+    QCOMPARE(disconnectedSpy.takeFirst().at(0).toUuid(), transferClientId);
+}
+
+void TestTransfers::testDownloadCompletionTerminatesConnectionCleanly()
+{
+    QVariantMap params;
+    params.insert("fileName", "reentrant-download.bin");
+    params.insert("size", 4);
+    QVariant response = injectAndWait("Transfers.CreateUpload", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    const QVariantMap uploadInfo = response.toMap().value("params").toMap();
+    const QString uploadTransferId = uploadInfo.value("transferId").toString();
+    const QString uploadTransferToken = uploadInfo.value("transferToken").toString();
+    QVERIFY(!uploadTransferId.isEmpty());
+    QVERIFY(!uploadTransferToken.isEmpty());
+
+    const QUuid uploadClientId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(uploadClientId);
+
+    params.clear();
+    params.insert("transferId", uploadTransferId);
+    params.insert("transferToken", uploadTransferToken);
+    response = sendMockTransferAndWait(uploadClientId, 10, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("upload"));
+
+    params.clear();
+    params.insert("data", QByteArray("data").toBase64());
+    response = sendMockTransferAndWait(uploadClientId, 11, "Transfer.UploadChunk", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    response = sendMockTransferAndWait(uploadClientId, 12, "Transfer.FinishUpload");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    const QString downloadId = response.toMap().value("params").toMap().value("downloadId").toString();
+    QVERIFY(!downloadId.isEmpty());
+
+    params.clear();
+    params.insert("downloadId", downloadId);
+    response = injectAndWait("Transfers.StartDownload", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    const QVariantMap downloadInfo = response.toMap().value("params").toMap();
+    const QString downloadTransferId = downloadInfo.value("transferId").toString();
+    const QString downloadTransferToken = downloadInfo.value("transferToken").toString();
+    QVERIFY(!downloadTransferId.isEmpty());
+    QVERIFY(!downloadTransferToken.isEmpty());
+
+    const QUuid downloadClientId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(downloadClientId);
+
+    QSignalSpy terminatedSpy(m_mockTcpServer, &MockTcpServer::connectionTerminated);
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
+    params.clear();
+    params.insert("transferId", downloadTransferId);
+    params.insert("transferToken", downloadTransferToken);
+    response = sendMockTransferAndWait(downloadClientId, 20, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("download"));
+
+    params.clear();
+    params.insert("maxBytes", 4096);
+    response = sendMockTransferAndWait(downloadClientId, 21, "Transfer.RequestChunk", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(QByteArray::fromBase64(response.toMap().value("params").toMap().value("data").toByteArray()), QByteArray("data"));
+    QVERIFY(response.toMap().value("params").toMap().value("finished").toBool());
+    QCOMPARE(terminatedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(terminatedSpy.takeFirst().at(0).toUuid(), downloadClientId);
+    QCOMPARE(disconnectedSpy.takeFirst().at(0).toUuid(), downloadClientId);
+}
+
 void TestTransfers::testStartDownloadRejectsUnknownDownloadId()
 {
     QScopedPointer<QWebSocket> apiSocket(openSocket());
@@ -211,6 +307,42 @@ QVariant TestTransfers::sendAndWait(QWebSocket *socket, int id, const QString &m
                 continue;
             }
 
+            if (response.value("id").toInt() == id) {
+                return response;
+            }
+        }
+        spy.clear();
+    }
+
+    return QVariant();
+}
+
+QVariant TestTransfers::sendMockTransferAndWait(const QUuid &clientId, int id, const QString &method, const QVariantMap &params)
+{
+    QVariantMap call;
+    call.insert("id", id);
+    call.insert("method", method);
+    if (!params.isEmpty()) {
+        call.insert("params", params);
+    }
+
+    const QByteArray payload = QJsonDocument::fromVariant(call).toJson(QJsonDocument::Compact);
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::outgoingData);
+    m_mockTcpServer->injectData(clientId, payload + '\n');
+
+    while (spy.count() > 0 || spy.wait()) {
+        for (int i = 0; i < spy.count(); ++i) {
+            if (spy.at(i).at(0).toUuid() != clientId) {
+                continue;
+            }
+
+            QJsonParseError error;
+            const QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).at(1).toByteArray(), &error);
+            if (error.error != QJsonParseError::NoError) {
+                continue;
+            }
+
+            const QVariantMap response = jsonDoc.toVariant().toMap();
             if (response.value("id").toInt() == id) {
                 return response;
             }

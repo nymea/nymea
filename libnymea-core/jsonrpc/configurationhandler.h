@@ -33,6 +33,7 @@
 #include "nymeaconfiguration.h"
 
 class QFileSystemWatcher;
+class QTimer;
 
 namespace nymeaserver {
 
@@ -66,7 +67,7 @@ public:
     Q_INVOKABLE JsonReply *CreateBackup(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateAndDownloadBackup(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *DownloadBackupFile(const QVariantMap &params, const JsonContext &context) const;
-    Q_INVOKABLE JsonReply *DeleteBackupFile(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *DeleteBackupFile(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RestoreBackupFile(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *UploadAndRestoreBackup(const QVariantMap &params, const JsonContext &context) const;
 
@@ -125,7 +126,9 @@ private:
     static QVariantMap packBackupConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
     QFileSystemWatcher *m_backupDestinationDirectoryWatcher = nullptr;
+    QTimer *m_backupFilesPollingTimer = nullptr;
     BackupFiles m_backupFiles;
+    bool m_backupDestinationDirectoryWatcherWarningShown = false;
     mutable QHash<QString, QString> m_restoreUploadPaths;
 };
 

@@ -498,6 +498,11 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
 
     m_backupDestinationDirectoryWatcher = new QFileSystemWatcher(this);
     connect(m_backupDestinationDirectoryWatcher, &QFileSystemWatcher::directoryChanged, this, &ConfigurationHandler::onBackupFilesDirectoryChanged);
+    connect(NymeaCore::instance()->backupManager(), &BackupManager::backupFilesChanged, this, &ConfigurationHandler::emitBackupFilesChangedIfNeeded);
+
+    m_backupFilesPollingTimer = new QTimer(this);
+    m_backupFilesPollingTimer->setInterval(60 * 1000);
+    connect(m_backupFilesPollingTimer, &QTimer::timeout, this, &ConfigurationHandler::emitBackupFilesChangedIfNeeded);
 
     updateBackupDestinationDirectoryWatcher();
     m_backupFiles = backupFiles();
@@ -886,7 +891,7 @@ JsonReply *ConfigurationHandler::DownloadBackupFile(const QVariantMap &params, c
     return createReply(returns);
 }
 
-JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params) const
+JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params)
 {
     const QString fileName = params.value("fileName").toString();
 
@@ -901,6 +906,7 @@ JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params) con
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
     }
 
+    emitBackupFilesChangedIfNeeded();
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -1235,15 +1241,37 @@ void ConfigurationHandler::updateBackupDestinationDirectoryWatcher()
     }
 
     if (watchedDirectory.isEmpty()) {
+        m_backupFilesPollingTimer->stop();
+        m_backupDestinationDirectoryWatcherWarningShown = false;
         return;
     }
 
     if (!QDir(watchedDirectory).exists()) {
+        m_backupFilesPollingTimer->stop();
+        m_backupDestinationDirectoryWatcherWarningShown = false;
         return;
     }
 
-    if (!m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
-        m_backupDestinationDirectoryWatcher->addPath(watchedDirectory);
+    if (m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
+        m_backupFilesPollingTimer->stop();
+        m_backupDestinationDirectoryWatcherWarningShown = false;
+        return;
+    }
+
+    if (m_backupDestinationDirectoryWatcher->addPath(watchedDirectory)) {
+        m_backupFilesPollingTimer->stop();
+        m_backupDestinationDirectoryWatcherWarningShown = false;
+        return;
+    }
+
+    if (!m_backupFilesPollingTimer->isActive()) {
+        m_backupFilesPollingTimer->start();
+    }
+
+    if (!m_backupDestinationDirectoryWatcherWarningShown) {
+        qCWarning(dcJsonRpc()) << "Failed to watch backup destination directory for changes:" << watchedDirectory
+                               << "Falling back to polling for backup file updates. This usually indicates the Linux inotify watch limit has been reached.";
+        m_backupDestinationDirectoryWatcherWarningShown = true;
     }
 }
 

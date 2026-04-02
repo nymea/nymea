@@ -283,8 +283,10 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
         QFileInfoList files = dst.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks,
                                                 QDir::Time); // sorted by time (newest first)
-        if (files.size() <= maxBackups)
+        if (files.size() <= maxBackups) {
+            emit backupFilesChanged();
             return true;
+        }
 
         const QString createdArchiveAbsolutePath = QFileInfo(createdArchivePath).absoluteFilePath();
         int remainingFiles = files.size();
@@ -305,6 +307,7 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         }
     }
 
+    emit backupFilesChanged();
     return true;
 }
 

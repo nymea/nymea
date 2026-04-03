@@ -172,8 +172,6 @@ void TransferServerImplementation::processPacket(TransportInterface *interface, 
         }
 
         QVariantMap ret;
-        qCDebug(dcTransfer()) << "Transfer upload chunk received:" << m_transferManager->transferOffset(state.transferId) << "/"
-                              << m_transferManager->transferSize(state.transferId);
         ret.insert("bytesReceived", m_transferManager->transferOffset(state.transferId));
         sendResponse(interface, clientId, commandId, ret);
         return;
@@ -197,7 +195,7 @@ void TransferServerImplementation::processPacket(TransportInterface *interface, 
         if (info.restoreTriggered)
             ret.insert("restoreTriggered", true);
 
-        qCDebug(dcTransfer()) << "Transfer donwload finished:" << info.fileName << info.size;
+        qCDebug(dcTransfer()) << "Transfer finished:" << info.fileName << info.size;
         sendResponse(interface, clientId, commandId, ret);
         return;
     }
@@ -212,8 +210,6 @@ void TransferServerImplementation::processPacket(TransportInterface *interface, 
             sendErrorResponse(interface, clientId, commandId, errorString);
             return;
         }
-
-        qCDebug(dcTransfer()) << "Transfer download chunk:" << chunk.size();
 
         QVariantMap ret;
         ret.insert("data", chunk.toBase64());

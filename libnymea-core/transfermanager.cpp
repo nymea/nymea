@@ -31,6 +31,18 @@
 
 namespace nymeaserver {
 
+namespace {
+
+int transferProgressPercent(qint64 offset, qint64 size)
+{
+    if (size <= 0)
+        return -1;
+
+    return static_cast<int>(qMin(static_cast<qint64>(100), (offset * 100) / size));
+}
+
+}
+
 TransferManager::TransferManager(QObject *parent)
     : QObject(parent)
 {}
@@ -225,6 +237,12 @@ bool TransferManager::appendUploadData(const QString &transferId, const QByteArr
     }
 
     session.offset += data.size();
+    const int progressPercent = transferProgressPercent(session.offset, session.size);
+    if (progressPercent >= 0) {
+        qCDebug(dcTransfer()) << "Upload progress:" << session.fileName << session.offset << "/" << session.size << QString("%1%").arg(progressPercent);
+    } else {
+        qCDebug(dcTransfer()) << "Upload progress:" << session.fileName << session.offset << "bytes";
+    }
 
     return true;
 }
@@ -307,6 +325,8 @@ QByteArray TransferManager::readDownloadChunk(const QString &transferId, int max
 
     const QByteArray chunk = session.data.mid(session.offset, maxSize);
     session.offset += chunk.size();
+    qCDebug(dcTransfer()) << "Download progress:" << session.fileName << session.offset << "/" << session.data.size()
+                          << QString("%1%").arg(transferProgressPercent(session.offset, session.data.size()));
     if (finished)
         *finished = session.offset >= session.data.size();
 

@@ -32,6 +32,8 @@
 #include <QTimer>
 #include <QVariant>
 
+class QFileSystemWatcher;
+
 class BackupFile
 {
     Q_GADGET
@@ -100,6 +102,9 @@ private:
     void reevaluateAutomaticBackup();
     void triggerAutomaticBackup();
     qint64 automaticBackupIntervalMs() const;
+    void updateBackupDestinationDirectoryWatcher();
+    void emitBackupFilesChangedIfNeeded();
+    void onBackupDestinationDirectoryChanged(const QString &path);
 
     bool m_automaticBackupEnabled = false;
     int m_automaticBackupInterval = 24;
@@ -107,6 +112,8 @@ private:
     QString m_destinationDirectory;
     int m_maxBackups = 5;
     QTimer *m_automaticBackupTimer = nullptr;
+    QFileSystemWatcher *m_backupDestinationDirectoryWatcher = nullptr;
+    BackupFiles m_backupFiles;
 };
 
 #endif // BACKUPMANAGER_H

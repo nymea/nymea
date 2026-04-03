@@ -72,7 +72,6 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
-#include <QFileSystemWatcher>
 #include <QTimer>
 #include <QUuid>
 
@@ -495,17 +494,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     connect(config, &NymeaConfiguration::backupMaxCountChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
     connect(config, &NymeaConfiguration::autoBackupEnabledChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
     connect(config, &NymeaConfiguration::autoBackupIntervalChanged, this, &ConfigurationHandler::onBackupConfigurationChanged);
-
-    m_backupDestinationDirectoryWatcher = new QFileSystemWatcher(this);
-    connect(m_backupDestinationDirectoryWatcher, &QFileSystemWatcher::directoryChanged, this, &ConfigurationHandler::onBackupFilesDirectoryChanged);
-    connect(NymeaCore::instance()->backupManager(), &BackupManager::backupFilesChanged, this, &ConfigurationHandler::emitBackupFilesChangedIfNeeded);
-
-    m_backupFilesPollingTimer = new QTimer(this);
-    m_backupFilesPollingTimer->setInterval(60 * 1000);
-    connect(m_backupFilesPollingTimer, &QTimer::timeout, this, &ConfigurationHandler::emitBackupFilesChangedIfNeeded);
-
-    updateBackupDestinationDirectoryWatcher();
-    m_backupFiles = backupFiles();
+    connect(NymeaCore::instance()->backupManager(), &BackupManager::backupFilesChanged, this, &ConfigurationHandler::onBackupFilesChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -891,7 +880,7 @@ JsonReply *ConfigurationHandler::DownloadBackupFile(const QVariantMap &params, c
     return createReply(returns);
 }
 
-JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params)
+JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params) const
 {
     const QString fileName = params.value("fileName").toString();
 
@@ -905,8 +894,6 @@ JsonReply *ConfigurationHandler::DeleteBackupFile(const QVariantMap &params)
         qCWarning(dcJsonRpc()) << "Failed to remove backup archive:" << archivePath;
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorBackupFailed));
     }
-
-    emitBackupFilesChangedIfNeeded();
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -1036,16 +1023,15 @@ void ConfigurationHandler::onBasicConfigurationChanged()
 void ConfigurationHandler::onBackupConfigurationChanged()
 {
     qCDebug(dcJsonRpc()) << "Notification: Backup configuration changed";
-    updateBackupDestinationDirectoryWatcher();
     emit BackupConfigurationChanged(packBackupConfiguration());
-    emitBackupFilesChangedIfNeeded();
 }
 
-void ConfigurationHandler::onBackupFilesDirectoryChanged(const QString &path)
+void ConfigurationHandler::onBackupFilesChanged()
 {
-    qCDebug(dcJsonRpc()) << "Backup directory changed:" << path;
-    updateBackupDestinationDirectoryWatcher();
-    emitBackupFilesChangedIfNeeded();
+    qCDebug(dcJsonRpc()) << "Notification: Backup files changed";
+    QVariantMap params;
+    params.insert("backupFiles", pack(backupFiles()));
+    emit BackupFilesChanged(params);
 }
 
 void ConfigurationHandler::onRestoreUploadFinished(const QString &transferId, const QString &filePath)
@@ -1226,68 +1212,6 @@ bool ConfigurationHandler::isSafeBackupFileName(const QString &fileName)
             && !fileName.contains('\\')
             && fileName != "."
             && fileName != "..";
-}
-
-void ConfigurationHandler::updateBackupDestinationDirectoryWatcher()
-{
-    const QString destinationDirectory = NymeaCore::instance()->configuration()->backupDestinationDirectory();
-    const QString watchedDirectory = destinationDirectory.isEmpty() ? QString() : QDir(destinationDirectory).absolutePath();
-
-    const QStringList watchedDirectories = m_backupDestinationDirectoryWatcher->directories();
-    for (const QString &directory: watchedDirectories) {
-        if (directory != watchedDirectory) {
-            m_backupDestinationDirectoryWatcher->removePath(directory);
-        }
-    }
-
-    if (watchedDirectory.isEmpty()) {
-        m_backupFilesPollingTimer->stop();
-        m_backupDestinationDirectoryWatcherWarningShown = false;
-        return;
-    }
-
-    if (!QDir(watchedDirectory).exists()) {
-        m_backupFilesPollingTimer->stop();
-        m_backupDestinationDirectoryWatcherWarningShown = false;
-        return;
-    }
-
-    if (m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
-        m_backupFilesPollingTimer->stop();
-        m_backupDestinationDirectoryWatcherWarningShown = false;
-        return;
-    }
-
-    if (m_backupDestinationDirectoryWatcher->addPath(watchedDirectory)) {
-        m_backupFilesPollingTimer->stop();
-        m_backupDestinationDirectoryWatcherWarningShown = false;
-        return;
-    }
-
-    if (!m_backupFilesPollingTimer->isActive()) {
-        m_backupFilesPollingTimer->start();
-    }
-
-    if (!m_backupDestinationDirectoryWatcherWarningShown) {
-        qCWarning(dcJsonRpc()) << "Failed to watch backup destination directory for changes:" << watchedDirectory
-                               << "Falling back to polling for backup file updates. This usually indicates the Linux inotify watch limit has been reached.";
-        m_backupDestinationDirectoryWatcherWarningShown = true;
-    }
-}
-
-void ConfigurationHandler::emitBackupFilesChangedIfNeeded()
-{
-    const BackupFiles currentBackupFiles = backupFiles();
-    if (currentBackupFiles == m_backupFiles) {
-        return;
-    }
-
-    qCDebug(dcJsonRpc()) << "Notification: Backup files changed";
-    m_backupFiles = currentBackupFiles;
-
-    QVariantMap params;
-    params.insert("backupFiles", pack(m_backupFiles));
-    emit BackupFilesChanged(params);
 }
 
 QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const

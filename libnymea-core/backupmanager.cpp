@@ -29,6 +29,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
+#include <QFileSystemWatcher>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QUuid>
@@ -141,6 +142,9 @@ BackupManager::BackupManager(QObject *parent)
     m_automaticBackupTimer = new QTimer(this);
     m_automaticBackupTimer->setSingleShot(true);
     connect(m_automaticBackupTimer, &QTimer::timeout, this, &BackupManager::reevaluateAutomaticBackup);
+
+    m_backupDestinationDirectoryWatcher = new QFileSystemWatcher(this);
+    connect(m_backupDestinationDirectoryWatcher, &QFileSystemWatcher::directoryChanged, this, &BackupManager::onBackupDestinationDirectoryChanged);
 }
 
 bool BackupManager::automaticBackupEnabled() const
@@ -188,6 +192,8 @@ void BackupManager::setDestinationDirectory(const QString &destinationDirectory)
         return;
 
     m_destinationDirectory = destinationDirectory;
+    updateBackupDestinationDirectoryWatcher();
+    emitBackupFilesChangedIfNeeded();
     reevaluateAutomaticBackup();
 }
 
@@ -273,12 +279,16 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     if (archivePath)
         *archivePath = createdArchivePath;
 
+    if (QDir(destinationDir).absolutePath() == QDir(m_destinationDirectory).absolutePath()) {
+        updateBackupDestinationDirectoryWatcher();
+    }
+
     if (maxBackups > 0) {
         const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
         QFileInfoList files = dst.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks,
                                                 QDir::Time); // sorted by time (newest first)
         if (files.size() <= maxBackups) {
-            emit backupFilesChanged();
+            emitBackupFilesChangedIfNeeded();
             return true;
         }
 
@@ -301,7 +311,7 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         }
     }
 
-    emit backupFilesChanged();
+    emitBackupFilesChangedIfNeeded();
     return true;
 }
 
@@ -405,4 +415,47 @@ void BackupManager::triggerAutomaticBackup()
 qint64 BackupManager::automaticBackupIntervalMs() const
 {
     return static_cast<qint64>(m_automaticBackupInterval) * 60 * 60 * 1000;
+}
+
+void BackupManager::updateBackupDestinationDirectoryWatcher()
+{
+    const QString watchedDirectory = m_destinationDirectory.isEmpty() ? QString() : QDir(m_destinationDirectory).absolutePath();
+
+    const QStringList watchedDirectories = m_backupDestinationDirectoryWatcher->directories();
+    foreach (const QString &directory, watchedDirectories) {
+        if (directory != watchedDirectory) {
+            m_backupDestinationDirectoryWatcher->removePath(directory);
+        }
+    }
+
+    if (watchedDirectory.isEmpty()) {
+        return;
+    }
+
+    if (!QDir(watchedDirectory).exists()) {
+        return;
+    }
+
+    if (!m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
+        m_backupDestinationDirectoryWatcher->addPath(watchedDirectory);
+    }
+}
+
+void BackupManager::emitBackupFilesChangedIfNeeded()
+{
+    const BackupFiles currentBackupFiles = backupFiles(m_destinationDirectory);
+    if (currentBackupFiles == m_backupFiles) {
+        return;
+    }
+
+    qCDebug(dcBackup()) << "Backup files changed";
+    m_backupFiles = currentBackupFiles;
+    emit backupFilesChanged();
+}
+
+void BackupManager::onBackupDestinationDirectoryChanged(const QString &path)
+{
+    qCDebug(dcBackup()) << "Backup destination directory changed:" << path;
+    updateBackupDestinationDirectoryWatcher();
+    emitBackupFilesChangedIfNeeded();
 }

@@ -32,9 +32,6 @@
 #include "jsonrpc/jsonhandler.h"
 #include "nymeaconfiguration.h"
 
-class QFileSystemWatcher;
-class QTimer;
-
 namespace nymeaserver {
 
 class ConfigurationHandler : public JsonHandler
@@ -67,7 +64,7 @@ public:
     Q_INVOKABLE JsonReply *CreateBackup(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateAndDownloadBackup(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *DownloadBackupFile(const QVariantMap &params, const JsonContext &context) const;
-    Q_INVOKABLE JsonReply *DeleteBackupFile(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *DeleteBackupFile(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RestoreBackupFile(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *UploadAndRestoreBackup(const QVariantMap &params, const JsonContext &context) const;
 
@@ -100,7 +97,7 @@ signals:
 private slots:
     void onBasicConfigurationChanged();
     void onBackupConfigurationChanged();
-    void onBackupFilesDirectoryChanged(const QString &path);
+    void onBackupFilesChanged();
     void onRestoreUploadFinished(const QString &transferId, const QString &filePath);
     void onTcpServerConfigurationChanged(const QString &id);
     void onTcpServerConfigurationRemoved(const QString &id);
@@ -119,16 +116,10 @@ private:
     BackupFiles backupFiles() const;
     QString resolveBackupFilePath(const QString &fileName, NymeaConfiguration::ConfigurationError *error = nullptr) const;
     static bool isSafeBackupFileName(const QString &fileName);
-    void updateBackupDestinationDirectoryWatcher();
-    void emitBackupFilesChangedIfNeeded();
 
     static QVariantMap packBasicConfiguration();
     static QVariantMap packBackupConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
-    QFileSystemWatcher *m_backupDestinationDirectoryWatcher = nullptr;
-    QTimer *m_backupFilesPollingTimer = nullptr;
-    BackupFiles m_backupFiles;
-    bool m_backupDestinationDirectoryWatcherWarningShown = false;
     mutable QHash<QString, QString> m_restoreUploadPaths;
 };
 

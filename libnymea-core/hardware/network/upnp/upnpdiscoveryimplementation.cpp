@@ -53,6 +53,49 @@
 
 namespace nymeaserver {
 
+namespace {
+
+QByteArray buildSearchResponseMessage(const QByteArray &location, const QByteArray &uuid, const QByteArray &searchTarget)
+{
+    return QByteArray("HTTP/1.1 200 OK\r\n"
+                      "CACHE-CONTROL: max-age=1900\r\n"
+                      "DATE: ") +
+            QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() +
+            QByteArray(" GMT\r\n"
+                       "EXT:\r\n"
+                       "LOCATION: ") + location +
+            QByteArray("\r\n"
+                       "SERVER: nymea/") + QByteArray(NYMEA_VERSION_STRING) +
+            QByteArray(" UPnP/1.1 \r\n"
+                       "ST: ") + searchTarget +
+            QByteArray("\r\n"
+                       "USN: uuid:") + uuid +
+            QByteArray("::") + searchTarget +
+            QByteArray("\r\n"
+                       "\r\n");
+}
+
+QByteArray buildNotifyMessage(const QByteArray &location, const QByteArray &uuid, const QByteArray &notificationType, const QByteArray &notificationSubType)
+{
+    return QByteArray("NOTIFY * HTTP/1.1\r\n"
+                      "HOST:239.255.255.250:1900\r\n"
+                      "CACHE-CONTROL: max-age=1900\r\n"
+                      "LOCATION: ") + location +
+            QByteArray("\r\n"
+                       "NT:") + notificationType +
+            QByteArray("\r\n"
+                       "USN:uuid:") + uuid +
+            QByteArray("::") + notificationType +
+            QByteArray("\r\n"
+                       "NTS: ") + notificationSubType +
+            QByteArray("\r\n"
+                       "SERVER: nymea/") + QByteArray(NYMEA_VERSION_STRING) +
+            QByteArray(" UPnP/1.1 \r\n"
+                       "\r\n");
+}
+
+}
+
 /*! Construct the hardware resource UpnpDiscoveryImplementation with the given \a parent. */
 UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, QObject *parent) :
     UpnpDiscovery(parent),
@@ -187,26 +230,11 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
                 // check subnet
                 if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
-                    QString locationString = locationStringForHostAddress(entry.ip(), webServerConfig);
-
-                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                    QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
-                                                                      "CACHE-CONTROL: max-age=1900\r\n"
-                                                                      "DATE: " +
-                                                                      QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() +
-                                                                      " GMT\r\n"
-                                                                      "EXT:\r\n"
-                                                                      "LOCATION: " + locationString.toUtf8() +
-                                                                      "\r\n"
-                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) +
-                                                                      " UPnP/1.1 \r\n"
-                                                                      "ST: upnp:rootdevice\r\n"
-                                                                      "USN: uuid:" + uuid +
-                                                                      "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "\r\n");
+                    const QByteArray location = locationStringForHostAddress(entry.ip(), webServerConfig).toUtf8();
 
                     qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);
-                    m_socket->writeDatagram(rootdeviceResponseMessage, host, port);
+                    m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "upnp:rootdevice"), host, port);
+                    m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1"), host, port);
                 }
             }
         }
@@ -440,20 +468,10 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
         foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-                    QString locationString = locationStringForHostAddress(entry.ip(), config);
+                    const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
 
-                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                    QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                          "HOST:239.255.255.250:1900\r\n"
-                                                          "CACHE-CONTROL: max-age=1900\r\n"
-                                                          "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                   "NTS: ssdp:byebye\r\n"
-                                                                   "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                                               "\r\n");
-
-                    sendToMulticast(byebyeMessage);
+                    sendToMulticast(buildNotifyMessage(location, uuid, "upnp:rootdevice", "ssdp:byebye"));
+                    sendToMulticast(buildNotifyMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1", "ssdp:byebye"));
                 }
             }
         }
@@ -474,20 +492,10 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
         foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-                    QString locationString = locationStringForHostAddress(entry.ip(), config);
+                    const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
 
-                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                    QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                         "HOST:239.255.255.250:1900\r\n"
-                                                         "CACHE-CONTROL: max-age=1900\r\n"
-                                                         "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                                     "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                                     "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "NTS: ssdp:alive\r\n"
-                                                                  "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                                              "\r\n");
-
-                    sendToMulticast(aliveMessage);
+                    sendToMulticast(buildNotifyMessage(location, uuid, "upnp:rootdevice", "ssdp:alive"));
+                    sendToMulticast(buildNotifyMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1", "ssdp:alive"));
                 }
             }
         }

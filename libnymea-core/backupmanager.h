@@ -60,7 +60,7 @@ private:
 };
 Q_DECLARE_METATYPE(BackupFile)
 
-class BackupFiles: public QList<BackupFile>
+class BackupFiles : public QList<BackupFile>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)

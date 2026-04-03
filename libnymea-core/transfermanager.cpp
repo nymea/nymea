@@ -1,5 +1,27 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright (C) 2013 - 2024, nymea GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
+*
+* This file is part of nymea.
+*
+* nymea is free software: you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public License
+* as published by the Free Software Foundation, either version 3
+* of the License, or (at your option) any later version.
+*
+* nymea is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with nymea. If not, see <https://www.gnu.org/licenses/>.
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "transfermanager.h"
 #include "loggingcategories.h"
 
@@ -56,6 +78,8 @@ TransferManager::TransferSessionInfo TransferManager::createRestoreUpload(const 
     info.transferToken = session.transferToken;
     info.fileName = session.fileName;
     info.size = session.size;
+
+    qCDebug(dcTransfer()) << "Creating restore upload: ID:" << info.transferId << "token:" << info.transferToken << info.fileName << "size:" << info.fileName;
     return info;
 }
 
@@ -82,6 +106,8 @@ TransferManager::DownloadInfo TransferManager::createDownload(const QString &fil
     info.downloadId = entry.downloadId;
     info.fileName = entry.fileName;
     info.size = entry.data.size();
+
+    qCDebug(dcTransfer()) << "Creating download ID" << info.downloadId << info.fileName << "size:" << info.size;
     return info;
 }
 
@@ -89,9 +115,9 @@ TransferManager::TransferSessionInfo TransferManager::createDownloadTransfer(con
 {
     TransferSessionInfo info;
     const DownloadEntry entry = m_downloads.value(downloadId);
-    if (entry.downloadId.isEmpty() || !matchesOwner(entry, context)) {
+    if (entry.downloadId.isEmpty() || !matchesOwner(entry, context))
         return info;
-    }
+
 
     TransferSession session;
     session.transferId = QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -147,24 +173,24 @@ qint64 TransferManager::transferOffset(const QString &transferId) const
 bool TransferManager::appendUploadData(const QString &transferId, const QByteArray &data, QString *errorString)
 {
     if (!m_transferSessions.contains(transferId)) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Unknown transfer");
-        }
+
         return false;
     }
 
     TransferSession &session = m_transferSessions[transferId];
     if (session.direction != Direction::Upload) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Transfer is not an upload");
-        }
+
         return false;
     }
 
     if (session.size > 0 && session.offset + data.size() > session.size) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Upload exceeds announced size");
-        }
+
         return false;
     }
 
@@ -172,24 +198,24 @@ bool TransferManager::appendUploadData(const QString &transferId, const QByteArr
         QFileInfo targetFileInfo(session.targetFilePath);
         const QString targetDirectoryPath = targetFileInfo.absolutePath();
         if (!QDir(targetDirectoryPath).exists() && !QDir().mkpath(targetDirectoryPath)) {
-            if (errorString) {
+            if (errorString)
                 *errorString = QStringLiteral("Failed to create upload destination directory");
-            }
+
             return false;
         }
 
         QFile targetFile(session.targetFilePath);
         if (!targetFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
-            if (errorString) {
+            if (errorString)
                 *errorString = targetFile.errorString();
-            }
+
             return false;
         }
 
         if (targetFile.write(data) != data.size()) {
-            if (errorString) {
+            if (errorString)
                 *errorString = targetFile.errorString();
-            }
+
             return false;
         }
 
@@ -207,24 +233,24 @@ TransferManager::FinishedUploadInfo TransferManager::finishUpload(const QString 
 {
     FinishedUploadInfo info;
     if (!m_transferSessions.contains(transferId)) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Unknown transfer");
-        }
+
         return info;
     }
 
     const TransferSession session = m_transferSessions.value(transferId);
     if (session.direction != Direction::Upload) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Transfer is not an upload");
-        }
+
         return info;
     }
 
     if (session.size > 0 && session.offset != session.size) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Upload incomplete");
-        }
+
         return info;
     }
 
@@ -235,9 +261,9 @@ TransferManager::FinishedUploadInfo TransferManager::finishUpload(const QString 
         if (!QFileInfo::exists(session.targetFilePath)) {
             QFile targetFile(session.targetFilePath);
             if (!targetFile.open(QIODevice::WriteOnly)) {
-                if (errorString) {
+                if (errorString)
                     *errorString = targetFile.errorString();
-                }
+
                 return info;
             }
             targetFile.close();
@@ -253,50 +279,48 @@ TransferManager::FinishedUploadInfo TransferManager::finishUpload(const QString 
     }
 
     m_transferSessions.remove(transferId);
-    if (info.restoreTriggered) {
+    if (info.restoreTriggered)
         emit restoreUploadFinished(session.transferId, session.targetFilePath);
-    }
 
     return info;
 }
 
 QByteArray TransferManager::readDownloadChunk(const QString &transferId, int maxSize, bool *finished, QString *errorString)
 {
-    if (finished) {
+    if (finished)
         *finished = false;
-    }
 
     if (!m_transferSessions.contains(transferId)) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Unknown transfer");
-        }
+
         return QByteArray();
     }
 
     TransferSession &session = m_transferSessions[transferId];
     if (session.direction != Direction::Download) {
-        if (errorString) {
+        if (errorString)
             *errorString = QStringLiteral("Transfer is not a download");
-        }
+
         return QByteArray();
     }
 
     const QByteArray chunk = session.data.mid(session.offset, maxSize);
     session.offset += chunk.size();
-    if (finished) {
+    if (finished)
         *finished = session.offset >= session.data.size();
-    }
-    if (finished && *finished) {
+
+    if (finished && *finished)
         m_transferSessions.remove(transferId);
-    }
+
     return chunk;
 }
 
 bool TransferManager::matchesOwner(const DownloadEntry &entry, const JsonContext &context) const
 {
-    if (!entry.ownerToken.isEmpty()) {
+    if (!entry.ownerToken.isEmpty())
         return entry.ownerToken == context.token();
-    }
+
     return entry.ownerClientId == context.clientId();
 }
 

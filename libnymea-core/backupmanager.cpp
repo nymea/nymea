@@ -26,13 +26,13 @@
 #include "loggingcategories.h"
 #include "version.h"
 
-#include <algorithm>
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QUuid>
+#include <algorithm>
 
 #include <limits>
 
@@ -78,19 +78,16 @@ bool parseBackupFileInfo(const QFileInfo &fileInfo, const QString &archivePrefix
     return true;
 }
 
-}
+} // namespace
 
-BackupFile::BackupFile()
-{
-}
+BackupFile::BackupFile() {}
 
-BackupFile::BackupFile(const QString &fileName, const QString &serverVersion, const QDateTime &timestamp, double size):
-    m_fileName(fileName),
-    m_serverVersion(serverVersion),
-    m_timestamp(timestamp),
-    m_size(size)
-{
-}
+BackupFile::BackupFile(const QString &fileName, const QString &serverVersion, const QDateTime &timestamp, double size)
+    : m_fileName(fileName)
+    , m_serverVersion(serverVersion)
+    , m_timestamp(timestamp)
+    , m_size(size)
+{}
 
 QString BackupFile::fileName() const
 {
@@ -114,10 +111,7 @@ double BackupFile::size() const
 
 bool BackupFile::operator==(const BackupFile &other) const
 {
-    return m_fileName == other.fileName()
-            && m_serverVersion == other.serverVersion()
-            && m_timestamp == other.timestamp()
-            && m_size == other.size();
+    return m_fileName == other.fileName() && m_serverVersion == other.serverVersion() && m_timestamp == other.timestamp() && m_size == other.size();
 }
 
 bool BackupFile::operator!=(const BackupFile &other) const
@@ -125,14 +119,11 @@ bool BackupFile::operator!=(const BackupFile &other) const
     return !operator==(other);
 }
 
-BackupFiles::BackupFiles()
-{
-}
+BackupFiles::BackupFiles() {}
 
-BackupFiles::BackupFiles(const QList<BackupFile> &other):
-    QList<BackupFile>(other)
-{
-}
+BackupFiles::BackupFiles(const QList<BackupFile> &other)
+    : QList<BackupFile>(other)
+{}
 
 QVariant BackupFiles::get(int index) const
 {
@@ -214,13 +205,13 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
     BackupFiles backupFiles;
 
     const QDir dir(destinationDir);
-    if (!dir.exists()) {
+    if (!dir.exists())
         return backupFiles;
-    }
+
 
     const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
     const QFileInfoList fileInfos = dir.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks, QDir::Name);
-    for (const QFileInfo &fileInfo: fileInfos) {
+    for (const QFileInfo &fileInfo : fileInfos) {
         BackupFile backupFile;
         if (parseBackupFileInfo(fileInfo, archivePrefix, &backupFile)) {
             backupFiles.append(backupFile);
@@ -228,9 +219,9 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
     }
 
     std::sort(backupFiles.begin(), backupFiles.end(), [](const BackupFile &left, const BackupFile &right) {
-        if (left.timestamp() != right.timestamp()) {
+        if (left.timestamp() != right.timestamp())
             return left.timestamp() > right.timestamp();
-        }
+
 
         return left.fileName() > right.fileName();
     });
@@ -240,6 +231,7 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
 
 bool BackupManager::createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups, const QString &archivePrefix, QString *archivePath)
 {
+    qCInfo(dcBackup()) << "Creating a backup from" << sourceDir;
     QFileInfo srcInfo(sourceDir);
     if (!srcInfo.exists() || !srcInfo.isDir()) {
         qCWarning(dcBackup()) << "Source directory doesn't exist or isn't a directory:" << sourceDir;
@@ -259,6 +251,7 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     const QString archiveBaseName = QString("%1-%2-%3-%4.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp, uniqueSuffix);
     const QString createdArchivePath = QDir(destinationDir).filePath(archiveBaseName);
 
+    qCInfo(dcBackup()) << "Writing backup file" << createdArchivePath;
     QString absSrc = QDir(sourceDir).absolutePath();
     QStringList args;
     args << "-czf" << createdArchivePath << "-C" << absSrc << ".";
@@ -275,9 +268,10 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         return false;
     }
 
-    if (archivePath) {
+    qCInfo(dcBackup()) << "Backup archive file written successfully" << createdArchivePath;
+
+    if (archivePath)
         *archivePath = createdArchivePath;
-    }
 
     if (maxBackups > 0) {
         const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
@@ -313,6 +307,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
 
 bool BackupManager::restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup)
 {
+    qCInfo(dcBackup()) << "Restoring backup from" << fileName;
+
     QFileInfo arcInfo(fileName);
     if (!arcInfo.exists() || !arcInfo.isFile()) {
         qCWarning(dcBackup()) << "Archive not found:" << fileName;
@@ -336,6 +332,7 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
 
         } else {
             // Remove existing directory to ensure a clean restore
+            qCInfo(dcBackup()) << "Removing current settings before restoring" << destinationDir;
             QDir dir(destinationDir);
             if (!dir.removeRecursively()) {
                 qCWarning(dcBackup()) << "Failed to clear existing target directory:" << destinationDir;
@@ -344,6 +341,7 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
         }
     }
 
+    qCInfo(dcBackup()) << "Recreate settings directory" << destinationDir;
     if (!QDir().mkpath(destinationDir)) {
         qCWarning(dcBackup()) << "Failed to create target directory:" << destinationDir;
         return false;
@@ -353,6 +351,7 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
     QStringList args;
     args << "-xzf" << arcInfo.absoluteFilePath() << "-C" << absTarget;
 
+    qCInfo(dcBackup()) << "Extracting backup" << fileName << "into" << destinationDir;
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
         qCWarning(dcBackup()) << "tar failed with exit code" << exitCode << "during restore. Command: tar" << args.join(' ');
@@ -367,9 +366,9 @@ void BackupManager::reevaluateAutomaticBackup()
 {
     m_automaticBackupTimer->stop();
 
-    if (!m_automaticBackupEnabled || m_sourceDirectory.isEmpty() || m_destinationDirectory.isEmpty()) {
+    if (!m_automaticBackupEnabled || m_sourceDirectory.isEmpty() || m_destinationDirectory.isEmpty())
         return;
-    }
+
 
     const BackupFiles files = backupFiles(m_destinationDirectory);
     if (files.isEmpty()) {
@@ -389,9 +388,8 @@ void BackupManager::reevaluateAutomaticBackup()
 
 void BackupManager::triggerAutomaticBackup()
 {
-    if (!m_automaticBackupEnabled) {
+    if (!m_automaticBackupEnabled)
         return;
-    }
 
     QString archivePath;
     if (createBackup(m_sourceDirectory, m_destinationDirectory, m_maxBackups, "nymea-configuration", &archivePath)) {

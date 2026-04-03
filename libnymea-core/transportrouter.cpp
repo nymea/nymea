@@ -1,5 +1,27 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright (C) 2013 - 2024, nymea GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
+*
+* This file is part of nymea.
+*
+* nymea is free software: you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public License
+* as published by the Free Software Foundation, either version 3
+* of the License, or (at your option) any later version.
+*
+* nymea is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with nymea. If not, see <https://www.gnu.org/licenses/>.
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "transportrouter.h"
 #include "loggingcategories.h"
 
@@ -8,11 +30,10 @@
 
 namespace nymeaserver {
 
-RoutedTransportInterface::RoutedTransportInterface(TransportInterface *backend, QObject *parent) :
-    TransportInterface(backend->configuration(), parent),
-    m_backend(backend)
-{
-}
+RoutedTransportInterface::RoutedTransportInterface(TransportInterface *backend, QObject *parent)
+    : TransportInterface(backend->configuration(), parent)
+    , m_backend(backend)
+{}
 
 void RoutedTransportInterface::sendData(const QUuid &clientId, const QByteArray &data)
 {
@@ -54,10 +75,9 @@ void RoutedTransportInterface::forwardDataAvailable(const QUuid &clientId, const
     emit dataAvailable(clientId, data);
 }
 
-TransportRouter::TransportRouter(QObject *parent) :
-    QObject(parent)
-{
-}
+TransportRouter::TransportRouter(QObject *parent)
+    : QObject(parent)
+{}
 
 RoutedTransportInterface *TransportRouter::registerTransportInterface(TransportInterface *transport, bool transferTransport)
 {
@@ -69,17 +89,16 @@ RoutedTransportInterface *TransportRouter::registerTransportInterface(TransportI
 
     TransportPair &pair = m_transports[transport];
     RoutedTransportInterface *&proxy = transferTransport ? pair.transferTransport : pair.jsonRpcTransport;
-    if (!proxy) {
+    if (!proxy)
         proxy = new RoutedTransportInterface(transport, this);
-    }
+
     return proxy;
 }
 
 RoutedTransportInterface *TransportRouter::transportProxy(TransportInterface *transport, bool transferTransport) const
 {
-    if (!m_transports.contains(transport)) {
+    if (!m_transports.contains(transport))
         return nullptr;
-    }
 
     const TransportPair pair = m_transports.value(transport);
     return transferTransport ? pair.transferTransport : pair.jsonRpcTransport;
@@ -107,10 +126,9 @@ void TransportRouter::unregisterTransportInterface(TransportInterface *transport
 
 void TransportRouter::onClientConnected(const QUuid &clientId)
 {
-    auto *transport = qobject_cast<TransportInterface *>(sender());
-    if (!transport) {
+    TransportInterface *transport = qobject_cast<TransportInterface *>(sender());
+    if (!transport)
         return;
-    }
 
     ClientState state;
     state.transport = transport;
@@ -126,9 +144,8 @@ void TransportRouter::onClientConnected(const QUuid &clientId)
 
 void TransportRouter::onClientDisconnected(const QUuid &clientId)
 {
-    if (!m_clients.contains(clientId)) {
+    if (!m_clients.contains(clientId))
         return;
-    }
 
     const ClientState state = m_clients.value(clientId);
     if (state.protocol != Protocol::Unknown) {
@@ -144,9 +161,8 @@ void TransportRouter::onClientDisconnected(const QUuid &clientId)
 
 void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &data)
 {
-    if (!m_clients.contains(clientId)) {
+    if (!m_clients.contains(clientId))
         return;
-    }
 
     ClientState &state = m_clients[clientId];
     if (state.protocol != Protocol::Unknown) {
@@ -182,9 +198,8 @@ void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &d
             return;
         }
 
-        if (!state.buffer.trimmed().endsWith('}')) {
+        if (!state.buffer.trimmed().endsWith('}'))
             return;
-        }
 
         qCWarning(dcTransportRouter()) << "Failed to parse protocol selector from client" << clientId << error.errorString();
         terminateUnroutedClient(clientId);
@@ -209,9 +224,8 @@ void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &d
 
 RoutedTransportInterface *TransportRouter::proxyTransport(TransportInterface *transport, bool transferTransport) const
 {
-    if (!m_transports.contains(transport)) {
+    if (!m_transports.contains(transport))
         return nullptr;
-    }
 
     const TransportPair pair = m_transports.value(transport);
     return transferTransport ? pair.transferTransport : pair.jsonRpcTransport;
@@ -219,24 +233,21 @@ RoutedTransportInterface *TransportRouter::proxyTransport(TransportInterface *tr
 
 void TransportRouter::routeClient(const QUuid &clientId, Protocol protocol, const QByteArray &firstPacket)
 {
-    if (!m_clients.contains(clientId)) {
+    if (!m_clients.contains(clientId))
         return;
-    }
 
     TransportInterface *transport = nullptr;
     QTimer *timeoutTimer = nullptr;
-    {
-        ClientState &state = m_clients[clientId];
-        state.protocol = protocol;
-        timeoutTimer = state.timeoutTimer;
-        state.timeoutTimer = nullptr;
-        state.buffer.clear();
-        transport = state.transport;
-    }
 
-    if (timeoutTimer) {
+    ClientState &state = m_clients[clientId];
+    state.protocol = protocol;
+    timeoutTimer = state.timeoutTimer;
+    state.timeoutTimer = nullptr;
+    state.buffer.clear();
+    transport = state.transport;
+
+    if (timeoutTimer)
         timeoutTimer->deleteLater();
-    }
 
     RoutedTransportInterface *proxy = proxyTransport(transport, protocol == Protocol::Transfer);
     if (!proxy) {
@@ -251,14 +262,12 @@ void TransportRouter::routeClient(const QUuid &clientId, Protocol protocol, cons
 
 void TransportRouter::terminateUnroutedClient(const QUuid &clientId)
 {
-    if (!m_clients.contains(clientId)) {
+    if (!m_clients.contains(clientId))
         return;
-    }
 
     const ClientState state = m_clients.value(clientId);
-    if (state.transport) {
+    if (state.transport)
         state.transport->terminateClientConnection(clientId);
-    }
 }
 
 void TransportRouter::cleanupClient(const QUuid &clientId)
@@ -270,4 +279,4 @@ void TransportRouter::cleanupClient(const QUuid &clientId)
     }
 }
 
-}
+} // namespace nymeaserver

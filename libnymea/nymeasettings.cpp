@@ -239,6 +239,8 @@ QString NymeaSettings::translationsPath()
     QString path;
     if (!qEnvironmentVariableIsEmpty("NYMEA_TRANSLATIONS_PATH")) {
         path = QString::fromLocal8Bit(qgetenv("NYMEA_TRANSLATIONS_PATH"));
+    } else if (organisationName == "nymea-test") {
+        return "/tmp/" + organisationName;
     } else {
         path = QString("/usr/share/nymea/translations");
     }

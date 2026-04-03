@@ -218,7 +218,11 @@ void TransportRouter::onDataAvailable(const QUuid &clientId, const QByteArray &d
     }
 
     if (!trailingData.isEmpty() && m_clients.contains(clientId)) {
-        onDataAvailable(clientId, trailingData);
+        QTimer::singleShot(0, this, [this, clientId, trailingData]() {
+            if (m_clients.contains(clientId)) {
+                onDataAvailable(clientId, trailingData);
+            }
+        });
     }
 }
 

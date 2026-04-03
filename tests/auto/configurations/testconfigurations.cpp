@@ -158,7 +158,7 @@ void TestConfigurations::testBackupFiles()
     response = injectAndWait("Configuration.CreateBackup");
     verifyConfigurationError(response);
 
-    QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for first backup notification.");
+    QVERIFY2(notificationSpy.count() > 0 || notificationSpy.wait(2000), "Timed out waiting for first backup notification.");
     QVariantList notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
     QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for first backup.");
 
@@ -171,7 +171,7 @@ void TestConfigurations::testBackupFiles()
     response = injectAndWait("Configuration.CreateBackup");
     verifyConfigurationError(response);
 
-    QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for second backup notification.");
+    QVERIFY2(notificationSpy.count() > 0 || notificationSpy.wait(2000), "Timed out waiting for second backup notification.");
     notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
     QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for second backup.");
 

@@ -607,15 +607,6 @@
             "returns": {
             }
         },
-        "Configuration.CreateBackup": {
-            "description": "Create a backup of the current configuration. It will be stored in the configured destination directory. Also the maxCout configuration will be considered.",
-            "params": {
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "configurationError": "$ref:ConfigurationError"
-            }
-        },
         "Configuration.CreateAndDownloadBackup": {
             "description": "Create a backup of the current configuration and generate a download entry for the dedicated transfer connection.",
             "params": {
@@ -626,6 +617,25 @@
                 "downloadId": "String",
                 "fileName": "String",
                 "size": "Int"
+            }
+        },
+        "Configuration.CreateBackup": {
+            "description": "Create a backup of the current configuration. It will be stored in the configured destination directory. Also the maxCout configuration will be considered.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.DeleteBackupFile": {
+            "description": "Delete an existing configuration backup file.",
+            "params": {
+                "fileName": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.DeleteMqttPolicy": {
@@ -652,16 +662,6 @@
             "description": "Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.",
             "params": {
                 "id": "String"
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "configurationError": "$ref:ConfigurationError"
-            }
-        },
-        "Configuration.DeleteBackupFile": {
-            "description": "Delete an existing configuration backup file.",
-            "params": {
-                "fileName": "String"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
@@ -706,9 +706,9 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError",
-                "downloadId": "String",
-                "fileName": "String",
-                "size": "Int"
+                "o:downloadId": "String",
+                "o:fileName": "String",
+                "o:size": "Int"
             }
         },
         "Configuration.GetAvailableLanguages": {
@@ -810,19 +810,6 @@
                 ]
             }
         },
-        "Configuration.SetBackupConfiguration": {
-            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept. autoBackupEnabled controls periodic configuration backups and autoBackupInterval defines the interval in hours.",
-            "params": {
-                "destinationDirectory": "String",
-                "maxCount": "Uint",
-                "autoBackupEnabled": "Bool",
-                "autoBackupInterval": "Int"
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "configurationError": "$ref:ConfigurationError"
-            }
-        },
         "Configuration.RestoreBackupFile": {
             "description": "Restore an existing configuration backup file. Clients should warn the user before calling this method because the current configuration data will be wiped, the server will restart immediately afterwards and it will come back up using the restored backup.",
             "params": {
@@ -833,19 +820,17 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
-        "Configuration.UploadAndRestoreBackup": {
-            "description": "Create an upload session for a configuration backup archive. The uploaded file will be stored temporarily under /tmp, the current configuration will be wiped after the upload finishes and the server will restart immediately using the restored backup. Clients should warn the user before calling this method because all current configuration data will be lost.",
+        "Configuration.SetBackupConfiguration": {
+            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept. The autoBackupEnabled property controls periodic configuration backups and autoBackupInterval defines the interval in hours.",
             "params": {
-                "fileName": "String",
-                "size": "Int"
+                "autoBackupEnabled": "Bool",
+                "autoBackupInterval": "Int",
+                "destinationDirectory": "String",
+                "maxCount": "Uint"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
-                "configurationError": "$ref:ConfigurationError",
-                "o:fileName": "String",
-                "o:size": "Int",
-                "o:transferId": "String",
-                "o:transferToken": "String"
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetDebugServerEnabled": {
@@ -962,6 +947,21 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.UploadAndRestoreBackup": {
+            "description": "Create an upload session for a configuration backup archive. The uploaded file will be stored temporarily under /tmp, the current configuration will be wiped after the upload finishes and the server will restart immediately using the restored backup. Clients should warn the user before calling this method because all current configuration data will be lost.",
+            "params": {
+                "fileName": "String",
+                "size": "Int"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError",
+                "o:fileName": "String",
+                "o:size": "Int",
+                "o:transferId": "String",
+                "o:transferToken": "String"
             }
         },
         "Debug.GetLoggingCategories": {

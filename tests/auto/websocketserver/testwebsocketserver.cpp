@@ -184,10 +184,16 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
     }
 
     QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
-    socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
+    QVariantMap helloCall;
+    helloCall.insert("id", 0);
+    helloCall.insert("method", "JSONRPC.Hello");
+    helloCall.insert("token", m_apiToken);
+    socket->sendTextMessage(QString::fromUtf8(QJsonDocument::fromVariant(helloCall).toJson(QJsonDocument::Compact)));
     spy.wait();
 
     spy.clear();
+    call.insert("token", m_apiToken);
+    jsonDoc = QJsonDocument::fromVariant(call);
     socket->sendTextMessage(QString(jsonDoc.toJson(QJsonDocument::Compact)));
     spy.wait();
 
@@ -230,11 +236,23 @@ QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
 
     QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
 
-    socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
+    QVariantMap helloCall;
+    helloCall.insert("id", 0);
+    helloCall.insert("method", "JSONRPC.Hello");
+    helloCall.insert("token", m_apiToken);
+    socket->sendTextMessage(QString::fromUtf8(QJsonDocument::fromVariant(helloCall).toJson(QJsonDocument::Compact)));
     spy.wait();
 
     spy.clear();
-    socket->sendTextMessage(QString(data));
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    if (error.error == QJsonParseError::NoError && jsonDoc.isObject()) {
+        QVariantMap call = jsonDoc.toVariant().toMap();
+        call.insert("token", m_apiToken);
+        socket->sendTextMessage(QString::fromUtf8(QJsonDocument::fromVariant(call).toJson(QJsonDocument::Compact)));
+    } else {
+        socket->sendTextMessage(QString::fromUtf8(data));
+    }
     spy.wait();
 
     socket->close();
@@ -242,7 +260,6 @@ QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
 
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string
-        QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
         if (error.error != QJsonParseError::NoError) {
             qWarning() << "JSON parser error" << error.errorString();

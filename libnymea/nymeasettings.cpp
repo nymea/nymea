@@ -254,7 +254,18 @@ QString NymeaSettings::scriptsPath()
 /*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */
 QString NymeaSettings::storagePath()
 {
-    return settingsPath();
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    QString path;
+    if (organisationName == "nymea-test") {
+        path = "/tmp/" + organisationName;
+    } else if (NymeaSettings::isRoot()) {
+        path = "/var/lib/" + organisationName;
+    } else {
+        path = QDir::homePath() + "/.local/share/" + organisationName;
+    }
+
+    return QDir(path).absolutePath();
 }
 
 QString NymeaSettings::cachePath()

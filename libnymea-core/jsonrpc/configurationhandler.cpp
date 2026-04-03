@@ -790,6 +790,11 @@ JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &param
             ? params.value("autoBackupInterval").toInt()
             : configuration->autoBackupInterval();
 
+    if (destinationDirectory.trimmed().isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination directory must not be empty.";
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
+    }
+
     QDir destinationDir(destinationDirectory);
     if (!destinationDir.exists()) {
         // Try to make the directory

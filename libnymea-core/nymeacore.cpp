@@ -484,15 +484,20 @@ bool NymeaCore::performPendingRestartAction()
         return true;
     }
 
-    bool success = wipePersistentData();
     if (pendingRestartAction == PendingRestartActionRestoreBackup) {
         BackupManager backupManager;
-        if (!backupManager.restoreBackup(pendingRestoreBackupPath, NymeaSettings::settingsPath())) {
-            qCWarning(dcCore()) << "Failed to restore backup during restart:" << pendingRestoreBackupPath;
-            success = false;
+        bool success = backupManager.restoreBackup(pendingRestoreBackupPath, NymeaSettings::settingsPath());
+        if (success) {
+            success = removeDirectoryContents(NymeaSettings::cachePath());
         }
+        if (!success) {
+            qCWarning(dcCore()) << "Failed to restore backup during restart:" << pendingRestoreBackupPath;
+            qCWarning(dcCore()) << "Pending restart action did not complete successfully.";
+        }
+        return success;
     }
 
+    const bool success = wipePersistentData();
     if (!success) {
         qCWarning(dcCore()) << "Pending restart action did not complete successfully.";
     }

@@ -63,9 +63,9 @@ bool parseBackupFileInfo(const QFileInfo &fileInfo, const QString &archivePrefix
         timestampString = backupMatch.captured(2);
     } else {
         const QRegularExpressionMatch legacyBackupMatch = legacyBackupPattern.match(fileInfo.fileName());
-        if (!legacyBackupMatch.hasMatch()) {
+        if (!legacyBackupMatch.hasMatch())
             return false;
-        }
+
         timestampString = legacyBackupMatch.captured(1);
     }
 
@@ -77,6 +77,12 @@ bool parseBackupFileInfo(const QFileInfo &fileInfo, const QString &archivePrefix
 
     *backupFile = BackupFile(fileInfo.fileName(), serverVersion, timestamp, static_cast<double>(fileInfo.size()));
     return true;
+}
+
+bool validateBackupArchive(const QString &archivePath)
+{
+    const int exitCode = QProcess::execute("tar", QStringList() << "-tzf" << archivePath);
+    return exitCode == 0;
 }
 
 } // namespace
@@ -214,7 +220,6 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
     if (!dir.exists())
         return backupFiles;
 
-
     const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
     const QFileInfoList fileInfos = dir.entryInfoList({pattern}, QDir::Files | QDir::NoSymLinks, QDir::Name);
     for (const QFileInfo &fileInfo : fileInfos) {
@@ -227,7 +232,6 @@ BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QStr
     std::sort(backupFiles.begin(), backupFiles.end(), [](const BackupFile &left, const BackupFile &right) {
         if (left.timestamp() != right.timestamp())
             return left.timestamp() > right.timestamp();
-
 
         return left.fileName() > right.fileName();
     });
@@ -279,9 +283,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     if (archivePath)
         *archivePath = createdArchivePath;
 
-    if (QDir(destinationDir).absolutePath() == QDir(m_destinationDirectory).absolutePath()) {
+    if (QDir(destinationDir).absolutePath() == QDir(m_destinationDirectory).absolutePath())
         updateBackupDestinationDirectoryWatcher();
-    }
 
     if (maxBackups > 0) {
         const QString pattern = QString("%1-*.tar.gz").arg(archivePrefix);
@@ -298,9 +301,8 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         // Delete the oldest backups first but never the archive we just created.
         for (int i = files.size() - 1; i >= 0 && remainingFiles > maxBackups; --i) {
             const QString path = files.at(i).absoluteFilePath();
-            if (path == createdArchiveAbsolutePath) {
+            if (path == createdArchiveAbsolutePath)
                 continue;
-            }
 
             if (!QFile::remove(path)) {
                 qCWarning(dcBackup()) << "Warning: failed to remove old backup: " << path;
@@ -325,50 +327,68 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
         return false;
     }
 
-    QFileInfo tgtInfo(destinationDir);
-    if (tgtInfo.exists()) {
-        if (!tgtInfo.isDir()) {
-            qCWarning(dcBackup()) << "Target exists and is not a directory:" << destinationDir;
-            return false;
-        }
-
-        if (safetyBackup) {
-            const QString stamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
-            const QString bakDir = destinationDir + ".bak-" + stamp;
-            if (!QDir().rename(destinationDir, bakDir)) {
-                qCWarning(dcBackup()) << "Failed to move existing target to backup:" << bakDir;
-                return false;
-            }
-
-        } else {
-            // Remove existing directory to ensure a clean restore
-            qCInfo(dcBackup()) << "Removing current settings before restoring" << destinationDir;
-            QDir dir(destinationDir);
-            if (!dir.removeRecursively()) {
-                qCWarning(dcBackup()) << "Failed to clear existing target directory:" << destinationDir;
-                return false;
-            }
-        }
-    }
-
-    qCInfo(dcBackup()) << "Recreate settings directory" << destinationDir;
-    if (!QDir().mkpath(destinationDir)) {
-        qCWarning(dcBackup()) << "Failed to create target directory:" << destinationDir;
+    const QString destinationPath = QDir(destinationDir).absolutePath();
+    const QString archivePath = arcInfo.absoluteFilePath();
+    const QString archiveParentPath = arcInfo.absoluteDir().absolutePath();
+    if (archiveParentPath == destinationPath || archiveParentPath.startsWith(destinationPath + QDir::separator())) {
+        qCWarning(dcBackup()) << "Refusing to restore from archive stored inside target directory:" << archivePath << destinationPath;
         return false;
     }
 
-    const QString absTarget = QDir(destinationDir).absolutePath();
-    QStringList args;
-    args << "-xzf" << arcInfo.absoluteFilePath() << "-C" << absTarget;
+    if (!validateBackupArchive(archivePath)) {
+        qCWarning(dcBackup()) << "Backup archive validation failed:" << archivePath;
+        return false;
+    }
 
-    qCInfo(dcBackup()) << "Extracting backup" << fileName << "into" << destinationDir;
+    const QString restoreId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const QString stagedDirectoryPath = destinationPath + ".restore-" + restoreId;
+    if (!QDir().mkpath(stagedDirectoryPath)) {
+        qCWarning(dcBackup()) << "Failed to create staging directory for restore:" << stagedDirectoryPath;
+        return false;
+    }
+
+    const QString stagedTargetPath = QDir(stagedDirectoryPath).absolutePath();
+    QStringList args;
+    args << "-xzf" << archivePath << "-C" << stagedTargetPath;
+
+    qCInfo(dcBackup()) << "Extracting backup" << fileName << "into" << stagedTargetPath;
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
         qCWarning(dcBackup()) << "tar failed with exit code" << exitCode << "during restore. Command: tar" << args.join(' ');
+        QDir(stagedDirectoryPath).removeRecursively();
         return false;
     }
 
-    qCInfo(dcBackup()) << "Restored backup" << fileName << "successfully into" << destinationDir;
+    QFileInfo tgtInfo(destinationPath);
+    QString backupDirectoryPath;
+    if (tgtInfo.exists()) {
+        if (!tgtInfo.isDir()) {
+            qCWarning(dcBackup()) << "Target exists and is not a directory:" << destinationPath;
+            QDir(stagedDirectoryPath).removeRecursively();
+            return false;
+        }
+
+        backupDirectoryPath = destinationPath + ".bak-" + QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+        if (!QDir().rename(destinationPath, backupDirectoryPath)) {
+            qCWarning(dcBackup()) << "Failed to move existing target to backup:" << backupDirectoryPath;
+            QDir(stagedDirectoryPath).removeRecursively();
+            return false;
+        }
+    }
+
+    if (!QDir().rename(stagedDirectoryPath, destinationPath)) {
+        qCWarning(dcBackup()) << "Failed to move restored data into place:" << stagedDirectoryPath << destinationPath;
+        if (!backupDirectoryPath.isEmpty() && !QDir().rename(backupDirectoryPath, destinationPath))
+            qCWarning(dcBackup()) << "Failed to roll back previous settings directory:" << backupDirectoryPath << destinationPath;
+
+        QDir(stagedDirectoryPath).removeRecursively();
+        return false;
+    }
+
+    if (!backupDirectoryPath.isEmpty() && !safetyBackup && !QDir(backupDirectoryPath).removeRecursively())
+        qCWarning(dcBackup()) << "Failed to remove previous settings backup after successful restore:" << backupDirectoryPath;
+
+    qCInfo(dcBackup()) << "Restored backup" << fileName << "successfully into" << destinationPath;
     return true;
 }
 
@@ -378,7 +398,6 @@ void BackupManager::reevaluateAutomaticBackup()
 
     if (!m_automaticBackupEnabled || m_sourceDirectory.isEmpty() || m_destinationDirectory.isEmpty())
         return;
-
 
     const BackupFiles files = backupFiles(m_destinationDirectory);
     if (files.isEmpty()) {
@@ -428,13 +447,11 @@ void BackupManager::updateBackupDestinationDirectoryWatcher()
         }
     }
 
-    if (watchedDirectory.isEmpty()) {
+    if (watchedDirectory.isEmpty())
         return;
-    }
 
-    if (!QDir(watchedDirectory).exists()) {
+    if (!QDir(watchedDirectory).exists())
         return;
-    }
 
     if (!m_backupDestinationDirectoryWatcher->directories().contains(watchedDirectory)) {
         m_backupDestinationDirectoryWatcher->addPath(watchedDirectory);
@@ -444,9 +461,8 @@ void BackupManager::updateBackupDestinationDirectoryWatcher()
 void BackupManager::emitBackupFilesChangedIfNeeded()
 {
     const BackupFiles currentBackupFiles = backupFiles(m_destinationDirectory);
-    if (currentBackupFiles == m_backupFiles) {
+    if (currentBackupFiles == m_backupFiles)
         return;
-    }
 
     qCDebug(dcBackup()) << "Backup files changed";
     m_backupFiles = currentBackupFiles;

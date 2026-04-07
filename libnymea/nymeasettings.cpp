@@ -83,15 +83,14 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     m_role(role)
 {
     /*
-        Since 1.15.0 we consider the package provided defaults as read only from a daemon perspective.
-        The default settings directory should be used for default settings the system is using in order to
-        generate the first configuration in /var/lib/nymea/
+        Since 1.15.0 the /etc/nymea folder will not be used any more.
+        All files from previouse /etc/nymea should be moved to /var/lib/nymea. Default files to seed the system from should be placed in /usr/share/nymea/defaults
 
         It is up to the platform maintainer to provide specific default configurations or just use the deamon defaults by not providing any.
 
         1. Check env, if that is specified, we use that as settings storage, yet check if there are any defaults to load
         2. Check if we have the setting file in /var/lib/nymea, if so use that RW
-        3. If there no config file in RW, load read only from the default settings path and save to /var/lib/nymea
+        3. If there no config file in RW, load read only from RO /usr/share/nymea/defaults and save to /var/lib/nymea
     */
 
     QString fileName;
@@ -225,7 +224,7 @@ QString NymeaSettings::defaultSettingsPath()
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else {
-        path = QString("/usr/share/%1/defaults").arg(organisationName);
+        path = "/usr/share/" + organisationName + "/defaults";
     }
 
     return QDir(path).absolutePath();
@@ -242,7 +241,7 @@ QString NymeaSettings::translationsPath()
     } else if (organisationName == "nymea-test") {
         return "/tmp/" + organisationName;
     } else {
-        path = QString("/usr/share/nymea/translations");
+        path = QString("/usr/share/" + organisationName + "/translations");
     }
 
     return QDir(path).absolutePath();

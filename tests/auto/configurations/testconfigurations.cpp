@@ -28,6 +28,7 @@
 #include "servers/mocktcpserver.h"
 
 #include <QDateTime>
+#include <QFile>
 #include <QFileInfo>
 #include <QHostAddress>
 #include <QRegularExpression>
@@ -72,6 +73,7 @@ private slots:
     void testDebugServerConfiguration();
 
     void testDisableInsecureInterfacesEnv();
+    void testConfigurationMigrationFromDefaultPath();
 
 private:
     QVariantMap loadBasicConfiguration();
@@ -252,6 +254,112 @@ void TestConfigurations::testCreateBackupUsesUniqueFileNames()
 
     const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
     QCOMPARE(backupFiles.count(), 2);
+}
+
+void TestConfigurations::testConfigurationMigrationFromDefaultPath()
+{
+    class EnvironmentGuard
+    {
+    public:
+        EnvironmentGuard(const char *name):
+            m_name(name),
+            m_hadValue(qEnvironmentVariableIsSet(name)),
+            m_value(qgetenv(name))
+        {
+        }
+
+        ~EnvironmentGuard()
+        {
+            if (m_hadValue) {
+                qputenv(m_name, m_value);
+            } else {
+                qunsetenv(m_name);
+            }
+        }
+
+    private:
+        const char *m_name;
+        bool m_hadValue = false;
+        QByteArray m_value;
+    };
+
+    class OrganisationNameGuard
+    {
+    public:
+        OrganisationNameGuard():
+            m_previousOrganisationName(QCoreApplication::instance()->organizationName())
+        {
+        }
+
+        ~OrganisationNameGuard()
+        {
+            QCoreApplication::instance()->setOrganizationName(m_previousOrganisationName);
+        }
+
+    private:
+        QString m_previousOrganisationName;
+    };
+
+    EnvironmentGuard configPathGuard("NYMEA_CONFIG_PATH");
+    EnvironmentGuard defaultConfigPathGuard("NYMEA_DEFAULT_CONFIG_PATH");
+    OrganisationNameGuard organisationNameGuard;
+
+    QCoreApplication::instance()->setOrganizationName("nymea");
+    qunsetenv("NYMEA_DEFAULT_CONFIG_PATH");
+    QCOMPARE(NymeaSettings::defaultSettingsPath(), QString("/usr/share/nymea/defaults"));
+    QCoreApplication::instance()->setOrganizationName("nymea-test");
+
+    QTemporaryDir runtimeDirectory;
+    QVERIFY2(runtimeDirectory.isValid(), "Could not create temporary runtime directory.");
+
+    QTemporaryDir defaultDirectory;
+    QVERIFY2(defaultDirectory.isValid(), "Could not create temporary default directory.");
+
+    qputenv("NYMEA_CONFIG_PATH", runtimeDirectory.path().toUtf8());
+    qputenv("NYMEA_DEFAULT_CONFIG_PATH", defaultDirectory.path().toUtf8());
+
+    const QString runtimeConfigurationFile = runtimeDirectory.filePath("nymead.conf");
+    const QString defaultConfigurationFile = defaultDirectory.filePath("nymead.conf");
+
+    QFile defaultConfig(defaultConfigurationFile);
+    QVERIFY2(defaultConfig.open(QIODevice::WriteOnly | QIODevice::Text), "Could not create default configuration file.");
+    defaultConfig.write("[nymead]\nname=seeded-from-defaults\n");
+    defaultConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        QCOMPARE(settings.fileName(), runtimeConfigurationFile);
+
+        settings.beginGroup("nymead");
+        QCOMPARE(settings.value("name").toString(), QString("seeded-from-defaults"));
+        settings.endGroup();
+    }
+
+    QVERIFY2(QFileInfo::exists(runtimeConfigurationFile), "The runtime configuration file was not created.");
+
+    QFile migratedConfig(runtimeConfigurationFile);
+    QVERIFY2(migratedConfig.open(QIODevice::ReadOnly | QIODevice::Text), "Could not read migrated configuration file.");
+    QVERIFY2(QString::fromUtf8(migratedConfig.readAll()).contains("seeded-from-defaults"), "The migrated configuration file does not contain the default value.");
+    migratedConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        settings.beginGroup("nymead");
+        settings.setValue("name", "runtime-value");
+        settings.endGroup();
+        settings.sync();
+    }
+
+    QVERIFY2(defaultConfig.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate), "Could not update default configuration file.");
+    defaultConfig.write("[nymead]\nname=changed-default\n");
+    defaultConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        settings.beginGroup("nymead");
+        QCOMPARE(settings.value("name").toString(), QString("runtime-value"));
+        settings.endGroup();
+    }
 }
 
 void TestConfigurations::testBackupRetentionKeepsCreatedArchive()

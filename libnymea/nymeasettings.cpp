@@ -83,15 +83,15 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     m_role(role)
 {
     /*
-        Since 1.15.0 we consider the /etc/nymea folder as read only from a deamon perspective.
-        The /etc/nymea/ directory should be used for default settings the system is using in order to
+        Since 1.15.0 we consider the package provided defaults as read only from a daemon perspective.
+        The default settings directory should be used for default settings the system is using in order to
         generate the first configuration in /var/lib/nymea/
 
         It is up to the platform maintainer to provide specific default configurations or just use the deamon defaults by not providing any.
 
         1. Check env, if that is specified, we use that as settings storage, yet check if there are any defaults to load
         2. Check if we have the setting file in /var/lib/nymea, if so use that RW
-        3. If there no config file in RW, load read only from /etc/nymea/ and save to /var/lib/nymea
+        3. If there no config file in RW, load read only from the default settings path and save to /var/lib/nymea
     */
 
     QString fileName;
@@ -214,7 +214,7 @@ QString NymeaSettings::settingsPath()
     return QDir(path).absolutePath();
 }
 
-/*! Returns the path to the folder where the default NymeaSettings can be loaded i.e. \tt{/etc/nymea}. This location should be considered read only. */
+/*! Returns the path to the folder where the default NymeaSettings can be loaded i.e. \tt{/usr/share/nymea/defaults}. This location should be considered read only. */
 QString NymeaSettings::defaultSettingsPath()
 {
     QString organisationName = QCoreApplication::instance()->organizationName();
@@ -225,7 +225,7 @@ QString NymeaSettings::defaultSettingsPath()
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else {
-        path = "/etc/" + organisationName;
+        path = QString("/usr/share/%1/defaults").arg(organisationName);
     }
 
     return QDir(path).absolutePath();

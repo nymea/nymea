@@ -52,6 +52,7 @@ public:
     Q_ENUM(SettingsRole)
 
     explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
+    explicit NymeaSettings(const QString &fileName, QObject *parent = nullptr);
     ~NymeaSettings();
 
     SettingsRole settingsRole() const;
@@ -92,6 +93,7 @@ public:
 private:
     QSettings *m_settings = nullptr;
     SettingsRole m_role = SettingsRoleNone;
+    QString m_fileName;
 
 };
 

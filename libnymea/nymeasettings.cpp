@@ -76,11 +76,10 @@
 #include <QSettings>
 #include <QCoreApplication>
 
-
 /*! Constructs a \l{NymeaSettings} instance with the given \a role and \a parent. */
-NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
-    QObject(parent),
-    m_role(role)
+NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent)
+    : QObject(parent)
+    , m_role(role)
 {
     /*
         Since 1.15.0 the /etc/nymea folder will not be used any more.
@@ -93,43 +92,52 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         3. If there no config file in RW, load read only from RO /usr/share/nymea/defaults and save to /var/lib/nymea
     */
 
-    QString fileName;
     switch (role) {
     case SettingsRoleNone:
         break;
     case SettingsRoleThings:
-        fileName = "things.conf";
+        m_fileName = "things.conf";
         break;
     case SettingsRoleRules:
-        fileName = "rules.conf";
+        m_fileName = "rules.conf";
         break;
     case SettingsRolePlugins:
-        fileName = "plugins.conf";
+        m_fileName = "plugins.conf";
         break;
     case SettingsRoleGlobal:
-        fileName = "nymead.conf";
+        m_fileName = "nymead.conf";
         break;
     case SettingsRoleTags:
-        fileName = "tags.conf";
+        m_fileName = "tags.conf";
         break;
     case SettingsRoleMqttPolicies:
-        fileName = "mqttpolicies.conf";
+        m_fileName = "mqttpolicies.conf";
         break;
     case SettingsRoleIOConnections:
-        fileName = "ioconnections.conf";
+        m_fileName = "ioconnections.conf";
         break;
     case SettingsRoleZigbee:
-        fileName = "zigbee.conf";
+        m_fileName = "zigbee.conf";
         break;
     case SettingsRoleModbusRtu:
-        fileName = "modbusrtu.conf";
+        m_fileName = "modbusrtu.conf";
         break;
     case SettingsRoleZWave:
-        fileName = "zwave.conf";
+        m_fileName = "zwave.conf";
         break;
     }
 
-    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + fileName;
+    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + m_fileName;
+    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat);
+}
+
+/*! Constructs a \l{NymeaSettings} instance with the given \a fileName and \a parent. Use this constructor for custom files which could provide
+ *  a platform default. For nymea internal files use the SettingsRole based constructor. */
+NymeaSettings::NymeaSettings(const QString &fileName, QObject *parent)
+    : QObject(parent)
+    , m_fileName(fileName)
+{
+    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + m_fileName;
     m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat);
 }
 

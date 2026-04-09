@@ -2,55 +2,25 @@
 
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                         #
-#  Copyright (C) 2015 - 2024 nymea GmbH <contact@nymea.io>                #
-#  Copyright (C) 2024 - 2026 chargebyte austria GmbH <contact@nymea.io>   #
-#                                                                         #
-#  This file is part of nymea.                                            #
-#                                                                         #
-#  nymea is free software: you can redistribute it and/or modify          #
-#  it under the terms of the GNU General Public License as published by   #
-#  the Free Software Foundation, either version 3 of the License, or      #
-#  (at your option) any later version.                                    #
-#                                                                         #
-#  nymea is distributed in the hope that it will be useful,               #
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of         #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the           #
-#  GNU General Public License for more details.                           #
-#                                                                         #
-#  You should have received a copy of the GNU General Public License      #
-#  along with nymea. If not, see <https://www.gnu.org/licenses/>.         #
-#                                                                         #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 set -e
 
 LEGACY_CONFIG_DIR="/etc/nymea"
 RUNTIME_CONFIG_DIR="/var/lib/nymea"
-BACKUP_CONFIG_DIR="/etc/nymea-backup"
 MIGRATION_VERSION_FILE="${RUNTIME_CONFIG_DIR}/.migration-version"
 MIGRATION_VERSION="1"
 
 migrate_legacy_configuration()
 {
-    if [ -e "${MIGRATION_VERSION_FILE}" ] || [ ! -d "${LEGACY_CONFIG_DIR}" ]; then
+    if [ -e "${MIGRATION_VERSION_FILE}" ]; then
         return
     fi
 
     mkdir -p "${RUNTIME_CONFIG_DIR}"
-    cp -a "${LEGACY_CONFIG_DIR}/." "${RUNTIME_CONFIG_DIR}/"
-
-    backup_dir="${BACKUP_CONFIG_DIR}"
-    if [ -e "${backup_dir}" ]; then
-        index=1
-        while [ -e "${BACKUP_CONFIG_DIR}.${index}" ]; do
-            index=$((index + 1))
-        done
-        backup_dir="${BACKUP_CONFIG_DIR}.${index}"
+    if [ -d "${LEGACY_CONFIG_DIR}" ]; then
+        cp -a "${LEGACY_CONFIG_DIR}/." "${RUNTIME_CONFIG_DIR}/"
+        find "${LEGACY_CONFIG_DIR}" -mindepth 1 -exec rm -rf -- {} +
     fi
 
-    mv "${LEGACY_CONFIG_DIR}" "${backup_dir}"
     printf '%s\n' "${MIGRATION_VERSION}" > "${MIGRATION_VERSION_FILE}"
 }
 

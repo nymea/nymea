@@ -1,3 +1,14 @@
+nymea (1.15.0) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * Update nymead settings behavior
+  * Fix Qt 6 Clang build issues
+  * Fix invalid QML element name Action warning
+  * Add data transport interface and provide backup data up/download
+  * Update UPnP discovery and make it work with generic discovery agents
+
+ -- jenkins <developer@nymea.io>  Tue, 14 Apr 2026 14:23:55 +0200
+
 nymea (1.14.2) noble; urgency=medium
 
   [ Simon Stürz ]

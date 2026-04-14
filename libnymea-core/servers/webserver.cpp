@@ -592,6 +592,10 @@ bool WebServer::stopServer()
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
     QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
+    QString serialNumber = QString::fromLocal8Bit(qgetenv("DEVICE_SERIAL")).trimmed();
+    if (serialNumber.isEmpty()) {
+        serialNumber = QString::fromUtf8(uuid);
+    }
 
     QByteArray data;
     QXmlStreamWriter writer(&data);
@@ -619,33 +623,10 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("modelName", "nymead");
     writer.writeTextElement("modelNumber", NYMEA_VERSION_STRING);
     writer.writeTextElement("modelURL", "http://nymea.io"); // (optional)
+    writer.writeTextElement("serialNumber", serialNumber);
     writer.writeTextElement("UDN", "uuid:" + uuid);
 
     writer.writeStartElement("iconList");
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "8");
-    writer.writeTextElement("height", "8");
-    writer.writeTextElement("depth", "8");
-    writer.writeTextElement("url", "/icons/nymea-logo-8x8.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "16");
-    writer.writeTextElement("height", "16");
-    writer.writeTextElement("depth", "8");
-    writer.writeTextElement("url", "/icons/nymea-logo-16x16.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "22");
-    writer.writeTextElement("height", "22");
-    writer.writeTextElement("depth", "8");
-    writer.writeTextElement("url", "/icons/nymea-logo-22x22.png");
-    writer.writeEndElement(); // icon
 
     writer.writeStartElement("icon");
     writer.writeTextElement("mimetype", "image/png");
@@ -673,14 +654,6 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     writer.writeStartElement("icon");
     writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "120");
-    writer.writeTextElement("height", "120");
-    writer.writeTextElement("depth", "8");
-    writer.writeTextElement("url", "/icons/nymea-logo-120x120.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "128");
     writer.writeTextElement("height", "128");
     writer.writeTextElement("depth", "8");
@@ -695,45 +668,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("url", "/icons/nymea-logo-256x256.png");
     writer.writeEndElement(); // icon
 
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "512");
-    writer.writeTextElement("height", "512");
-    writer.writeTextElement("depth", "8");
-    writer.writeTextElement("url", "/icons/nymea-logo-512x512.png");
-    writer.writeEndElement(); // icon
-
     writer.writeEndElement(); // iconList
-
-    writer.writeStartElement("serviceList");
-
-    int counter = 1;
-    int sslCounter = 1;
-    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
-        if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || QHostAddress(config.address) == address) {
-            writer.writeStartElement("service");
-            writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter : counter));
-            writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter++ : counter++));
-            QString url = QString("%1%2:%3").arg(config.sslEnabled ? "wss://" : "ws://").arg(address.toString()).arg(config.port);
-            writer.writeTextElement("SCPDURL", url);
-            writer.writeEndElement(); // service
-        }
-    }
-
-    counter = 1;
-    sslCounter = 1;
-    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
-        if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || QHostAddress(config.address) == address) {
-            writer.writeStartElement("service");
-            writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter : counter));
-            writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter++ : counter++));
-            QString url = QString("%1%2:%3").arg(config.sslEnabled ? "nymeas://" : "nymea://").arg(address.toString()).arg(config.port);
-            writer.writeTextElement("SCPDURL", url);
-            writer.writeEndElement(); // service
-        }
-    }
-
-    writer.writeEndElement(); // serviceList
 
     writer.writeEndElement(); // device
     writer.writeEndElement(); // root

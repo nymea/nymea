@@ -176,7 +176,7 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
     writeExtern();
 
     // Include our API version in plugininfo.h so we can know against which library this plugin was built.
-    write(QString("extern \"C\" const QString libnymea_api_version() { return QString(\"%1\");}").arg(LIBNYMEA_API_VERSION));
+    write(QString("extern \"C\" const char *libnymea_api_version() { return \"%1\"; }").arg(LIBNYMEA_API_VERSION));
     write();
 
     // Declare a logging category for this plugin

@@ -30,9 +30,32 @@
 #include <QJsonDocument>
 #include <QColor>
 #include <QDateTime>
-#include <QRegularExpression>
 
 namespace nymeaserver {
+
+namespace {
+
+bool hasTaggedPrefix(const QString &key, const QString &tag)
+{
+    int offset = 0;
+    while (offset + 2 <= key.length() && key.at(offset + 1) == QLatin1Char(':')) {
+        if (key.mid(offset, 2) == tag) {
+            return true;
+        }
+        offset += 2;
+    }
+    return false;
+}
+
+QString stripTaggedPrefixes(QString key)
+{
+    while (key.length() >= 2 && key.at(1) == QLatin1Char(':')) {
+        key.remove(0, 2);
+    }
+    return key;
+}
+
+}
 
 bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
 {
@@ -108,16 +131,13 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
 {
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
-        QRegularExpression isOptional = QRegularExpression("^([a-z]:)*o:.*");
-        if (isOptional.match(key).hasMatch()) {
+        if (hasTaggedPrefix(key, QStringLiteral("o:"))) {
             continue;
         }
-        QRegularExpression isReadOnly = QRegularExpression("^([a-z]:)*r:.*");
-        if (isReadOnly.match(key).hasMatch() && openMode.testFlag(QIODevice::WriteOnly)) {
+        if (hasTaggedPrefix(key, QStringLiteral("r:")) && openMode.testFlag(QIODevice::WriteOnly)) {
             continue;
         }
-        QString trimmedKey = key;
-        trimmedKey.remove(QRegularExpression("^(o:|r:|d:)*"));
+        const QString trimmedKey = stripTaggedPrefixes(key);
         if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }
@@ -128,8 +148,8 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Is the key allowed in here?
         QVariant expectedValue = definition.value(key);
         foreach (const QString &definitionKey, definition.keys()) {
-            QRegularExpression regExp = QRegularExpression("(o:|r:|d:)" + key);
-            if (regExp.match(definitionKey).hasMatch()) {
+            const QString normalizedDefinitionKey = stripTaggedPrefixes(definitionKey);
+            if (normalizedDefinitionKey == key && definitionKey != key) {
                 expectedValue = definition.value(definitionKey);
                 break;
             }

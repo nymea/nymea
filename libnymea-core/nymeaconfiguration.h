@@ -119,6 +119,7 @@ public:
         ConfigurationErrorInvalidPort,
         ConfigurationErrorInvalidHostAddress,
         ConfigurationErrorInvalidDestinationDir,
+        ConfigurationErrorInvalidFileName,
         ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate,
         ConfigurationErrorUnsupported,
@@ -151,6 +152,7 @@ public:
     QString sslCertificate() const;
     QString sslCertificateKey() const;
     void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
+    void sync();
 
     // Debug server
     bool debugServerEnabled() const;
@@ -162,6 +164,12 @@ public:
 
     int backupMaxCount() const;
     void setBackupMaxCount(int maxCount);
+
+    bool autoBackupEnabled() const;
+    void setAutoBackupEnabled(bool enabled);
+
+    int autoBackupInterval() const;
+    void setAutoBackupInterval(int interval);
 
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
@@ -257,6 +265,8 @@ signals:
 
     void backupDestinationDirectoryChanged(const QString &destinationDirectory);
     void backupMaxCountChanged(int maxCount);
+    void autoBackupEnabledChanged(bool autoBackupEnabled);
+    void autoBackupIntervalChanged(int autoBackupInterval);
 };
 
 } // namespace nymeaserver

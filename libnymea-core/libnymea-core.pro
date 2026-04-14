@@ -103,6 +103,7 @@ HEADERS += nymeacore.h \
     scriptengine/scriptinterfacestate.h \
     scriptengine/scriptstate.h \
     transportinterface.h \
+    transportrouter.h \
     nymeaconfiguration.h \
     servermanager.h \
     servers/tcpserver.h \
@@ -121,9 +122,12 @@ HEADERS += nymeacore.h \
     jsonrpc/networkmanagerhandler.h \
     jsonrpc/tagshandler.h \
     jsonrpc/appdatahandler.h \
+    jsonrpc/transfershandler.h \
     jsonrpc/systemhandler.h \
     jsonrpc/scriptshandler.h \
     jsonrpc/usershandler.h \
+    transfermanager.h \
+    transferserverimplementation.h \
     time/timemanager.h \
     usermanager/userautorizer.h \
     usermanager/userinfo.h \
@@ -205,6 +209,7 @@ SOURCES += nymeacore.cpp \
     scriptengine/scriptinterfacestate.cpp \
     scriptengine/scriptstate.cpp \
     transportinterface.cpp \
+    transportrouter.cpp \
     nymeaconfiguration.cpp \
     servermanager.cpp \
     servers/tcpserver.cpp \
@@ -223,9 +228,12 @@ SOURCES += nymeacore.cpp \
     jsonrpc/networkmanagerhandler.cpp \
     jsonrpc/tagshandler.cpp \
     jsonrpc/appdatahandler.cpp \
+    jsonrpc/transfershandler.cpp \
     jsonrpc/systemhandler.cpp \
     jsonrpc/scriptshandler.cpp \
     jsonrpc/usershandler.cpp \
+    transfermanager.cpp \
+    transferserverimplementation.cpp \
     time/timemanager.cpp \
     usermanager/userautorizer.cpp \
     usermanager/userinfo.cpp \

@@ -25,10 +25,10 @@
 #ifndef TRANSPORTINTERFACE_H
 #define TRANSPORTINTERFACE_H
 
-#include <QVariant>
-#include <QString>
 #include <QList>
+#include <QString>
 #include <QUuid>
+#include <QVariant>
 
 #include "nymeaconfiguration.h"
 
@@ -66,6 +66,6 @@ private:
     ServerConfiguration m_config;
 };
 
-}
+} // namespace nymeaserver
 
 #endif // TRANSPORTINTERFACE_H

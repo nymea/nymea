@@ -76,69 +76,79 @@
 #include <QSettings>
 #include <QCoreApplication>
 
-
 /*! Constructs a \l{NymeaSettings} instance with the given \a role and \a parent. */
-NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
-    QObject(parent),
-    m_role(role)
+NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent)
+    : QObject(parent)
+    , m_role(role)
 {
     /*
-        Since 1.12.0 we consider the /etc/nymea folder as read only from a deamon perspective.
-        The /etc/nymea/ directory should be used for default settings the system is using in order to
-        generate the first configuration in /var/lib/nymea/
+        Since 1.15.0 the /etc/nymea folder will not be used any more.
+        All files from previouse /etc/nymea should be moved to /var/lib/nymea. Default files to seed the system from should be placed in /usr/share/nymea/defaults
 
-        It is up to the platform maintainer to provide specific default configurations or just use the defaults.
+        It is up to the platform maintainer to provide specific default configurations or just use the deamon defaults by not providing any.
 
         1. Check env, if that is specified, we use that as settings storage, yet check if there are any defaults to load
         2. Check if we have the setting file in /var/lib/nymea, if so use that RW
-        3. If there no config file in RW, load read only from /etc/nymea/ and save to /var/lib/nymea
+        3. If there no config file in RW, load read only from RO /usr/share/nymea/defaults and save to /var/lib/nymea
     */
 
-    QString fileName;
     switch (role) {
     case SettingsRoleNone:
         break;
     case SettingsRoleThings:
-        fileName = "things.conf";
+        m_fileName = "things.conf";
         break;
     case SettingsRoleRules:
-        fileName = "rules.conf";
+        m_fileName = "rules.conf";
         break;
     case SettingsRolePlugins:
-        fileName = "plugins.conf";
+        m_fileName = "plugins.conf";
         break;
     case SettingsRoleGlobal:
-        fileName = "nymead.conf";
+        m_fileName = "nymead.conf";
         break;
     case SettingsRoleTags:
-        fileName = "tags.conf";
+        m_fileName = "tags.conf";
         break;
     case SettingsRoleMqttPolicies:
-        fileName = "mqttpolicies.conf";
+        m_fileName = "mqttpolicies.conf";
         break;
     case SettingsRoleIOConnections:
-        fileName = "ioconnections.conf";
+        m_fileName = "ioconnections.conf";
         break;
     case SettingsRoleZigbee:
-        fileName = "zigbee.conf";
+        m_fileName = "zigbee.conf";
         break;
     case SettingsRoleModbusRtu:
-        fileName = "modbusrtu.conf";
+        m_fileName = "modbusrtu.conf";
         break;
     case SettingsRoleZWave:
-        fileName = "zwave.conf";
+        m_fileName = "zwave.conf";
         break;
     }
 
-    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + fileName;
-    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat, this);
+    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + m_fileName;
+    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat);
+}
+
+/*! Constructs a \l{NymeaSettings} instance with the given \a fileName and \a parent. Use this constructor for custom files which could provide
+ *  a platform default. For nymea internal files use the SettingsRole based constructor. */
+NymeaSettings::NymeaSettings(const QString &fileName, QObject *parent)
+    : QObject(parent)
+    , m_fileName(fileName)
+{
+    const QString settingsFilePath = NymeaSettings::settingsPath() + QDir::separator() + m_fileName;
+    m_settings = new QSettings(NymeaSettings::privodeFromDefaultFilePath(settingsFilePath), QSettings::IniFormat);
 }
 
 /*! Destructor of the NymeaSettings.*/
 NymeaSettings::~NymeaSettings()
 {
-    m_settings->sync();
-    delete m_settings;
+    if (m_settings) {
+        m_settings->sync();
+        delete m_settings;
+        m_settings = nullptr;
+    }
 }
 
 QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)
@@ -156,7 +166,7 @@ QString NymeaSettings::privodeFromDefaultFilePath(const QString &filePath)
 
             QString destinationPath = settingsFileInfo.absolutePath();
             if (!(QDir(destinationPath).exists())) {
-                if (!QDir().mkdir(destinationPath)) {
+                if (!QDir().mkpath(destinationPath)) {
                     qCWarning(dcSystem()) << "Unable to create directory for storing configuration" << destinationPath;
                 } else {
                     qCDebug(dcSystem()) << "Created successfully directory for storing configuration" << destinationPath;
@@ -198,9 +208,7 @@ QString NymeaSettings::settingsPath()
     QString settingsPrefix = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
-    } else if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+    if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
         path = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
     } else if (settingsPrefix.contains("nymea-test")) {
         path = "/tmp/" + settingsPrefix;
@@ -213,20 +221,18 @@ QString NymeaSettings::settingsPath()
     return QDir(path).absolutePath();
 }
 
-/*! Returns the path to the folder where the default NymeaSettings can be loaded i.e. \tt{/etc/nymea}. This location should be considered read only. */
+/*! Returns the path to the folder where the default NymeaSettings can be loaded i.e. \tt{/usr/share/nymea/defaults}. This location should be considered read only. */
 QString NymeaSettings::defaultSettingsPath()
 {
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP")) + "/etc/" + organisationName;
-    } else if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
+    if (!qEnvironmentVariableIsEmpty("NYMEA_DEFAULT_CONFIG_PATH")) {
         path = QString::fromLocal8Bit(qgetenv("NYMEA_DEFAULT_CONFIG_PATH"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else {
-        path = "/etc/" + organisationName;
+        path = "/usr/share/" + organisationName + "/defaults";
     }
 
     return QDir(path).absolutePath();
@@ -238,12 +244,12 @@ QString NymeaSettings::translationsPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path =  QString::fromLocal8Bit(qgetenv("SNAP")) + "/usr/share/nymea/translations";
+    if (!qEnvironmentVariableIsEmpty("NYMEA_TRANSLATIONS_PATH")) {
+        path = QString::fromLocal8Bit(qgetenv("NYMEA_TRANSLATIONS_PATH"));
     } else if (organisationName == "nymea-test") {
-        path =  "/tmp/" + organisationName;
+        return "/tmp/" + organisationName;
     } else {
-        path = QString("/usr/share/nymea/translations");
+        path = QString("/usr/share/" + organisationName + "/translations");
     }
 
     return QDir(path).absolutePath();
@@ -257,8 +263,18 @@ QString NymeaSettings::scriptsPath()
 /*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */
 QString NymeaSettings::storagePath()
 {
-    // For backwards compatibility
-    return NymeaSettings::settingsPath();
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    QString path;
+    if (organisationName == "nymea-test") {
+        path = "/tmp/" + organisationName;
+    } else if (NymeaSettings::isRoot()) {
+        path = "/var/lib/" + organisationName;
+    } else {
+        path = QDir::homePath() + "/.local/share/" + organisationName;
+    }
+
+    return QDir(path).absolutePath();
 }
 
 QString NymeaSettings::cachePath()
@@ -266,9 +282,7 @@ QString NymeaSettings::cachePath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     QString path;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        path = QString::fromLocal8Bit(qgetenv("SNAP_DATA"));
-    } else if (organisationName == "nymea-test") {
+    if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName + "/cache";
     } else if (NymeaSettings::isRoot()) {
         path = "/var/cache/" + organisationName;
@@ -375,6 +389,11 @@ void NymeaSettings::remove(const QString &key)
 void NymeaSettings::setValue(const QString &key, const QVariant &value)
 {
     m_settings->setValue(key, value);
+}
+
+void NymeaSettings::sync()
+{
+    m_settings->sync();
 }
 
 /*! Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue. */

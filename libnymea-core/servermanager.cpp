@@ -37,22 +37,26 @@
 */
 
 #include "servermanager.h"
-#include "nymeacore.h"
 #include "certificategenerator.h"
+#include "loggingcategories.h"
+#include "nymeacore.h"
 #include "nymeasettings.h"
 #include "platform/platform.h"
 #include "platform/platformzeroconfcontroller.h"
 #include "version.h"
-#include "loggingcategories.h"
 
 #include "jsonrpc/jsonrpcserverimplementation.h"
-#include "servers/mocktcpserver.h"
-#include "servers/tcpserver.h"
-#include "servers/websocketserver.h"
-#include "servers/webserver.h"
+#include "jsonrpc/transfershandler.h"
 #include "servers/bluetoothserver.h"
+#include "servers/mocktcpserver.h"
 #include "servers/mqttbroker.h"
+#include "servers/tcpserver.h"
 #include "servers/tunnelproxyserver.h"
+#include "servers/webserver.h"
+#include "servers/websocketserver.h"
+#include "transfermanager.h"
+#include "transferserverimplementation.h"
+#include "transportrouter.h"
 
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
@@ -64,11 +68,11 @@
 
 namespace nymeaserver {
 
-ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configuration, const QStringList &additionalInterfaces, QObject *parent) :
-    QObject(parent),
-    m_platform(platform),
-    m_nymeaConfiguration(configuration),
-    m_sslConfiguration(QSslConfiguration())
+ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configuration, const QStringList &additionalInterfaces, QObject *parent)
+    : QObject(parent)
+    , m_platform(platform)
+    , m_nymeaConfiguration(configuration)
+    , m_sslConfiguration(QSslConfiguration())
 {
     // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
     if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
@@ -105,7 +109,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             }
         }
         if (certsLoaded) {
-             // iOS still requires a 1.2+ fallback for local connections, the rest seems to work with 1.3
+            // iOS still requires a 1.2+ fallback for local connections, the rest seems to work with 1.3
             m_sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
@@ -115,9 +119,15 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     // Interfaces
     m_jsonServer = new JsonRPCServerImplementation(m_sslConfiguration, this);
 
+    m_transferManager = new TransferManager(this);
+    m_transferServer = new TransferServerImplementation(m_transferManager, this);
+    m_transportRouter = new TransportRouter(this);
+    m_jsonServer->registerHandler(new TransfersHandler(m_transferManager, m_jsonServer));
+
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
-    m_jsonServer->registerTransportInterface(tcpServer);
+    m_mockTcpServer = tcpServer;
+    registerCoreTransport(tcpServer);
     tcpServer->startServer();
 
     foreach (const QString &interfaceString, additionalInterfaces) {
@@ -133,16 +143,16 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             config.sslEnabled = additionalInterface.scheme().startsWith("nymeas");
             config.authenticationEnabled = false;
             server = new TcpServer(config, m_sslConfiguration, this);
-            m_jsonServer->registerTransportInterface(server);
-            m_tcpServers.insert(config.id, qobject_cast<TcpServer*>(server));
+            registerCoreTransport(server);
+            m_tcpServers.insert(config.id, qobject_cast<TcpServer *>(server));
             serverType = "tcp";
             serviceType = "_jsonrpc._tcp";
         } else if (additionalInterface.scheme().startsWith("ws")) {
             config.sslEnabled = additionalInterface.scheme().startsWith("wss");
             config.authenticationEnabled = false;
             server = new WebSocketServer(config, m_sslConfiguration, this);
-            m_jsonServer->registerTransportInterface(server);
-            m_webSocketServers.insert(config.id, qobject_cast<WebSocketServer*>(server));
+            registerCoreTransport(server);
+            m_webSocketServers.insert(config.id, qobject_cast<WebSocketServer *>(server));
             serverType = "ws";
             serviceType = "_ws._tcp";
         }
@@ -153,12 +163,15 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
         if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
-            qCWarning(dcServerManager()) << "Loaded insecure TCP server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            qCWarning(dcServerManager())
+                << "Loaded insecure TCP server configuration"
+                << config
+                << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
             continue;
         }
 
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(tcpServer);
+        registerCoreTransport(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
             qCDebug(dcServerManager()) << "Started TCP server" << tcpServer->serverUrl().toString();
@@ -168,12 +181,15 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
-            qCWarning(dcServerManager()) << "Loaded insecure WebSocket server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            qCWarning(dcServerManager())
+                << "Loaded insecure WebSocket server configuration"
+                << config
+                << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
             continue;
         }
 
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(webSocketServer);
+        registerCoreTransport(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
             qCDebug(dcServerManager()) << "Started WebSocket server" << webSocketServer->serverUrl().toString();
@@ -183,10 +199,11 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     qCDebug(dcBluetoothServer()) << "Creating Bluetooth server.";
     m_bluetoothServer = new BluetoothServer(this);
-    m_jsonServer->registerTransportInterface(m_bluetoothServer);
+    registerCoreTransport(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {
         if (m_disableInsecureInterfaces) {
-            qCWarning(dcServerManager()) << "The bluetooth RFCOM server is enabled, but insecure server interfaces have been disabled explicitly. Not starting the bluetooth server.";
+            qCWarning(dcServerManager())
+                << "The bluetooth RFCOM server is enabled, but insecure server interfaces have been disabled explicitly. Not starting the bluetooth server.";
         } else {
             m_bluetoothServer->startServer();
         }
@@ -194,18 +211,21 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const TunnelProxyServerConfiguration &config, configuration->tunnelProxyServerConfigurations()) {
         if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled || config.ignoreSslErrors)) {
-            qCWarning(dcServerManager()) << "Loaded insecure tunnelproxy server configuration" << config << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
+            qCWarning(dcServerManager())
+                << "Loaded insecure tunnelproxy server configuration"
+                << config
+                << "but insecure interfaces to the core are explicit disabled. This interface will not be started.";
             continue;
         }
 
         TunnelProxyServer *tunnelProxyServer = new TunnelProxyServer(configuration->serverName(), configuration->serverUuid(), config, this);
         qCDebug(dcServerManager()) << "Creating tunnel proxy server using" << config;
         m_tunnelProxyServers.insert(config.id, tunnelProxyServer);
-        connect(tunnelProxyServer, &TunnelProxyServer::runningChanged, this, [this, tunnelProxyServer](bool running){
+        connect(tunnelProxyServer, &TunnelProxyServer::runningChanged, this, [this, tunnelProxyServer](bool running) {
             if (running) {
-                m_jsonServer->registerTransportInterface(tunnelProxyServer);
+                registerCoreTransport(tunnelProxyServer);
             } else {
-                m_jsonServer->unregisterTransportInterface(tunnelProxyServer);
+                unregisterCoreTransport(tunnelProxyServer);
             }
         });
 
@@ -262,6 +282,42 @@ JsonRPCServerImplementation *ServerManager::jsonServer() const
     return m_jsonServer;
 }
 
+TransferManager *ServerManager::transferManager() const
+{
+    return m_transferManager;
+}
+
+void ServerManager::registerCoreTransport(TransportInterface *transport)
+{
+    if (m_registeredCoreTransports.contains(transport)) {
+        return;
+    }
+
+    TransportInterface *jsonTransport = m_transportRouter->registerTransportInterface(transport, false);
+    TransportInterface *transferTransport = m_transportRouter->registerTransportInterface(transport, true);
+    m_jsonServer->registerTransportInterface(jsonTransport);
+    m_transferServer->registerTransportInterface(transferTransport);
+    m_registeredCoreTransports.insert(transport);
+}
+
+void ServerManager::unregisterCoreTransport(TransportInterface *transport)
+{
+    if (!m_registeredCoreTransports.contains(transport)) {
+        return;
+    }
+
+    TransportInterface *jsonTransport = m_transportRouter->transportProxy(transport, false);
+    TransportInterface *transferTransport = m_transportRouter->transportProxy(transport, true);
+    if (jsonTransport) {
+        m_jsonServer->unregisterTransportInterface(jsonTransport);
+    }
+    if (transferTransport) {
+        m_transferServer->unregisterTransportInterface(transferTransport);
+    }
+    m_transportRouter->unregisterTransportInterface(transport);
+    m_registeredCoreTransports.remove(transport);
+}
+
 /*! Returns the pointer to the created \l{BluetoothServer} in this \l{ServerManager}. */
 BluetoothServer *ServerManager::bluetoothServer() const
 {
@@ -299,7 +355,6 @@ void ServerManager::unregisterWebServerResource(WebServerResource *resource)
 
     foreach (WebServer *webserver, m_webServers)
         webserver->unregisterResource(resource);
-
 }
 
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
@@ -307,14 +362,21 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     ServerConfiguration config = NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id);
     TcpServer *server = m_tcpServers.value(id);
     if (server) {
-        qCDebug(dcServerManager()) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qCDebug(dcServerManager())
+            << "Restarting TCP server for"
+            << config.address
+            << config.port
+            << "SSL"
+            << (config.sslEnabled ? "enabled" : "disabled")
+            << "Authentication"
+            << (config.authenticationEnabled ? "enabled" : "disabled");
         unregisterZeroConfService(config.id, "tcp");
         server->stopServer();
         server->setConfiguration(config);
     } else {
         qCDebug(dcServerManager()) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
         server = new TcpServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(server);
+        registerCoreTransport(server);
         m_tcpServers.insert(config.id, server);
     }
     if (server->startServer()) {
@@ -329,7 +391,7 @@ void ServerManager::tcpServerConfigurationRemoved(const QString &id)
         return;
     }
     TcpServer *server = m_tcpServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     unregisterZeroConfService(id, "tcp");
     server->stopServer();
     server->deleteLater();
@@ -340,14 +402,21 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
     WebSocketServer *server = m_webSocketServers.value(id);
     ServerConfiguration config = NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id);
     if (server) {
-        qCDebug(dcServerManager()) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qCDebug(dcServerManager())
+            << "Restarting WebSocket server for"
+            << config.address
+            << config.port
+            << "SSL"
+            << (config.sslEnabled ? "enabled" : "disabled")
+            << "Authentication"
+            << (config.authenticationEnabled ? "enabled" : "disabled");
         unregisterZeroConfService(id, "ws");
         server->stopServer();
         server->setConfiguration(config);
     } else {
         qCDebug(dcServerManager()) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
         server = new WebSocketServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(server);
+        registerCoreTransport(server);
         m_webSocketServers.insert(server->configuration().id, server);
     }
     if (server->startServer()) {
@@ -362,7 +431,7 @@ void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
         return;
     }
     WebSocketServer *server = m_webSocketServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     unregisterZeroConfService(id, "ws");
     server->stopServer();
     server->deleteLater();
@@ -373,12 +442,25 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
     WebServerConfiguration config = NymeaCore::instance()->configuration()->webServerConfigurations().value(id);
     WebServer *server = m_webServers.value(id);
     if (server) {
-        qCDebug(dcServerManager()) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qCDebug(dcServerManager())
+            << "Restarting Web server for"
+            << config.address
+            << config.port
+            << "SSL"
+            << (config.sslEnabled ? "enabled" : "disabled")
+            << "Authentication"
+            << (config.authenticationEnabled ? "enabled" : "disabled");
         unregisterZeroConfService(id, "http");
         server->stopServer();
         server->setConfiguration(config);
     } else {
-        qCDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address << config.port << "(SSL:" << config.sslEnabled << ")";
+        qCDebug(dcServerManager())
+            << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on"
+            << config.address
+            << config.port
+            << "(SSL:"
+            << config.sslEnabled
+            << ")";
         server = new WebServer(config, m_sslConfiguration, this);
         m_webServers.insert(config.id, server);
         foreach (WebServerResource *resource, m_webServerResources) {
@@ -450,11 +532,11 @@ void ServerManager::tunnelProxyServerConfigurationChanged(const QString &id)
         qCDebug(dcServerManager()) << "Creating tunnel proxy server using" << config;
         server = new TunnelProxyServer(m_nymeaConfiguration->serverName(), m_nymeaConfiguration->serverUuid(), config, this);
         m_tunnelProxyServers.insert(server->configuration().id, server);
-        connect(server, &TunnelProxyServer::runningChanged, this, [this, server](bool running){
+        connect(server, &TunnelProxyServer::runningChanged, this, [this, server](bool running) {
             if (running) {
-                m_jsonServer->registerTransportInterface(server);
+                registerCoreTransport(server);
             } else {
-                m_jsonServer->unregisterTransportInterface(server);
+                unregisterCoreTransport(server);
             }
         });
     }
@@ -469,13 +551,16 @@ void ServerManager::tunnelProxyServerConfigurationRemoved(const QString &id)
         return;
     }
     TunnelProxyServer *server = m_tunnelProxyServers.take(id);
-    m_jsonServer->unregisterTransportInterface(server);
+    unregisterCoreTransport(server);
     server->stopServer();
     server->deleteLater();
 }
 
 bool ServerManager::registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType)
 {
+    if (!m_platform->zeroConfController() || !m_platform->zeroConfController()->available())
+        return false;
+
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
@@ -485,7 +570,11 @@ bool ServerManager::registerZeroConfService(const ServerConfiguration &configura
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration.sslEnabled ? "true" : "false");
     QString name = "nymea-" + serverType + "-" + configuration.id;
-    if (!m_platform->zeroConfController()->servicePublisher()->registerService(name, QHostAddress(configuration.address), static_cast<quint16>(configuration.port), serviceType, txt)) {
+    if (!m_platform->zeroConfController()->servicePublisher()->registerService(name,
+                                                                               QHostAddress(configuration.address),
+                                                                               static_cast<quint16>(configuration.port),
+                                                                               serviceType,
+                                                                               txt)) {
         qCWarning(dcServerManager()) << "Could not register ZeroConf service for" << configuration;
         return false;
     }
@@ -532,7 +621,8 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
 
     m_certificate = QSslCertificate(&certificateFile);
     if (m_certificate.isNull()) {
-        qCWarning(dcServerManager()) << "SSL certificate" << certificateFileName << "is not valid.";;
+        qCWarning(dcServerManager()) << "SSL certificate" << certificateFileName << "is not valid.";
+        ;
         return false;
     }
 
@@ -571,4 +661,4 @@ void ServerManager::setServerName(const QString &serverName)
     }
 }
 
-}
+} // namespace nymeaserver

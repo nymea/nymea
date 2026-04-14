@@ -25,11 +25,11 @@
 #ifndef MODBUSRTUMANAGER_H
 #define MODBUSRTUMANAGER_H
 
+#include <QFileInfo>
 #include <QHash>
-#include <QUuid>
 #include <QObject>
 #include <QTimer>
-#include <QFileInfo>
+#include <QUuid>
 
 #include "hardware/modbus/modbusrtumaster.h"
 #include "hardware/serialport/serialportmonitor.h"
@@ -50,7 +50,7 @@ public:
         ModbusRtuErrorResourceBusy,
         ModbusRtuErrorNotSupported,
         ModbusRtuErrorInvalidTimeoutValue,
-        ModbusRtuErrorConnectionFailed
+        ModbusRtuErrorConnectionFailed,
     };
     Q_ENUM(ModbusRtuError)
 
@@ -63,8 +63,16 @@ public:
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
     ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
 
-    QPair<ModbusRtuError, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
-    ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
+    QPair<ModbusRtuError, QUuid> addNewModbusRtuMaster(
+        const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
+    ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid,
+                                              const QString &serialPort,
+                                              qint32 baudrate,
+                                              QSerialPort::Parity parity,
+                                              QSerialPort::DataBits dataBits,
+                                              QSerialPort::StopBits stopBits,
+                                              int numberOfRetries,
+                                              int timeout);
     ModbusRtuError removeModbusRtuMaster(const QUuid &modbusUuid);
 
     // Returns the platform specific list of available serial ports for modbus RTU
@@ -72,19 +80,20 @@ public:
     bool serialPortAvailable(const QString &systemLocation) const;
 
 signals:
-    void serialPortAdded(const SerialPort &serialPort);
-    void serialPortRemoved(const SerialPort &serialPort);
+    void serialPortAdded(const nymeaserver::SerialPort &serialPort);
+    void serialPortRemoved(const nymeaserver::SerialPort &serialPort);
 
     void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
     void modbusRtuMasterRemoved(ModbusRtuMaster *modbusRtuMaster);
     void modbusRtuMasterChanged(ModbusRtuMaster *modbusRtuMaster);
 
 private slots:
-    void onSerialPortAdded(const SerialPort &serialPort);
-    void onSerialPortRemoved(const SerialPort &serialPort);
+    void onSerialPortAdded(const nymeaserver::SerialPort &serialPort);
+    void onSerialPortRemoved(const nymeaserver::SerialPort &serialPort);
 
 private:
-    typedef struct ModbusRtuPlatformConfiguration {
+    typedef struct ModbusRtuPlatformConfiguration
+    {
         QString name;
         QString description;
         QString serialPort;
@@ -104,9 +113,8 @@ private:
     void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 
     void addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusRtuMaster);
-
 };
 
-}
+} // namespace nymeaserver
 
 #endif // MODBUSRTUMANAGER_H

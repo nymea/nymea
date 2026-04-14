@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -23,11 +23,11 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "modbusrtumanager.h"
-#include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "nymeasettings.h"
 
-#include "modbusrtumasterimpl.h"
 #include "hardware/serialport/serialportmonitor.h"
+#include "modbusrtumasterimpl.h"
 #include "qglobal.h"
 
 #include <QFile>
@@ -38,9 +38,9 @@ NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
 
 namespace nymeaserver {
 
-ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent) :
-    QObject(parent),
-    m_serialPortMonitor(serialPortMonitor)
+ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent)
+    : QObject(parent)
+    , m_serialPortMonitor(serialPortMonitor)
 {
     if (!supported())
         return;
@@ -157,7 +157,8 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
     return nullptr;
 }
 
-QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
+QPair<ModbusRtuManager::ModbusRtuError, QUuid> ModbusRtuManager::addNewModbusRtuMaster(
+    const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -189,7 +190,14 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
     return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorNoError, modbusUuid);
 }
 
-ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
+ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid,
+                                                                              const QString &serialPort,
+                                                                              qint32 baudrate,
+                                                                              QSerialPort::Parity parity,
+                                                                              QSerialPort::DataBits dataBits,
+                                                                              QSerialPort::StopBits stopBits,
+                                                                              int numberOfRetries,
+                                                                              int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot reconfigure modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -264,11 +272,13 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const Q
 void ModbusRtuManager::loadPlatformConfiguration()
 {
     // First check if there are manually set user platfom settings in the config path
-    if (loadedPlatformConfiguration(QFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "modbus-rtu-platform.conf")))
+    QFileInfo settingsConfigFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "modbus-rtu-platform.conf");
+    if (settingsConfigFileInfo.exists() && loadedPlatformConfiguration(settingsConfigFileInfo))
         return;
 
     // Check if there are any defaults to load from
-    if(loadedPlatformConfiguration(QFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + "modbus-rtu-platform.conf")))
+    QFileInfo defaultSettingsConfigFileInfo(QFileInfo(NymeaSettings::defaultSettingsPath() + QDir::separator() + "modbus-rtu-platform.conf"));
+    if (defaultSettingsConfigFileInfo.exists() && loadedPlatformConfiguration(defaultSettingsConfigFileInfo))
         return;
 
     qCDebug(dcModbusRtu()) << "No platform configuration applied";
@@ -279,8 +289,7 @@ bool ModbusRtuManager::loadedPlatformConfiguration(const QFileInfo &configuratio
     qCDebug(dcModbusRtu()) << "Loading modbus RTU platform configuration from" << configurationFileInfo.absoluteFilePath();
     QFile platformConfigurationFile(configurationFileInfo.absoluteFilePath());
     if (!platformConfigurationFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file"
-                                 << configurationFileInfo.absoluteFilePath() << ":"
+        qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file" << configurationFileInfo.absoluteFilePath() << ":"
                                  << platformConfigurationFile.errorString();
         return false;
     }
@@ -291,8 +300,7 @@ bool ModbusRtuManager::loadedPlatformConfiguration(const QFileInfo &configuratio
     QJsonParseError jsonError;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &jsonError);
     if (jsonError.error != QJsonParseError::NoError) {
-        qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file"
-                                 << configurationFileInfo.absoluteFilePath() << ":"
+        qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file" << configurationFileInfo.absoluteFilePath() << ":"
                                  << jsonError.errorString();
         return false;
     }
@@ -316,9 +324,9 @@ bool ModbusRtuManager::loadedPlatformConfiguration(const QFileInfo &configuratio
         return false;
     } else {
         qCDebug(dcModbusRtu()) << "Loaded successfully" << m_platformConfigurations.count() << "platform configurations";
-        foreach(const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
-            qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") "
-                                             << "Serial port: " << config.serialPort << " usable: " << config.usable;
+        foreach (const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
+            qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") Serial port: " << config.serialPort
+                                             << " usable: " << config.usable;
         }
 
         return true;
@@ -373,7 +381,7 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     qCDebug(dcModbusRtu()) << "Adding" << modbusMaster;
     m_modbusRtuMasters.insert(modbusMaster->modbusUuid(), modbusMaster);
 
-    connect(modbusMaster, &ModbusRtuMaster::connectedChanged, this, [=](bool connected){
+    connect(modbusMaster, &ModbusRtuMaster::connectedChanged, this, [=](bool connected) {
         qCDebug(dcModbusRtu()) << modbusMaster << (connected ? "connected" : "disconnected");
         emit modbusRtuMasterChanged(modbusMaster);
     });
@@ -381,4 +389,4 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     emit modbusRtuMasterAdded(modbusMaster);
 }
 
-}
+} // namespace nymeaserver

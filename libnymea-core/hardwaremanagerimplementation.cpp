@@ -45,7 +45,7 @@
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, NymeaConfiguration *configuration, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
     HardwareManager(parent),
     m_platform(platform)
 {
@@ -63,7 +63,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     m_networkManager = new NetworkAccessManagerImpl(m_networkAccessManager, this);
 
     // UPnP discovery
-    m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, this);
+    m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, configuration, this);
 
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);

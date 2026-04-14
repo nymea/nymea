@@ -110,6 +110,7 @@ protected:
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo = QString());
 
     JsonReply *createReply(const QVariantMap &data) const;
+    JsonReply *createErrorReply(const QString &error) const;
     JsonReply *createAsyncReply(const QString &method) const;
 
 private:

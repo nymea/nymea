@@ -110,7 +110,7 @@ ThingManagerImplementation::~ThingManagerImplementation()
 
     foreach (Thing *thing, m_configuredThings) {
         storeThingStates(thing);
-        delete thing;
+        thing->deleteLater();
     }
 
     foreach (IntegrationPlugin *plugin, m_integrationPlugins) {
@@ -2603,6 +2603,7 @@ void ThingManagerImplementation::storeThingStates(Thing *thing)
 
 void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId &stateTypeId)
 {
+
     QSettings settings(statesCacheFile(thing->id()), QSettings::IniFormat);
     qCDebug(dcThingManager()) << "Caching state:" << thing->name() << thing->thingClass().stateTypes().findById(stateTypeId).name();
     settings.beginGroup(stateTypeId.toString());

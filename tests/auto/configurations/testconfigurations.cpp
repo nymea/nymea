@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -22,20 +22,31 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
+#include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
-#include "../plugins/mock/extern-plugininfo.h"
+
+#include <QDateTime>
+#include <QFile>
+#include <QFileInfo>
+#include <QHostAddress>
+#include <QRegularExpression>
+#include <QScopedPointer>
+#include <QTemporaryDir>
+#include <QTime>
+#include <QWebSocket>
+#include <limits>
 
 using namespace nymeaserver;
 
-class TestConfigurations: public NymeaTestBase
+class TestConfigurations : public NymeaTestBase
 {
     Q_OBJECT
 
 private:
-    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError)
+    {
         verifyError(response, "configurationError", enumValueName(error));
     }
 
@@ -44,17 +55,41 @@ protected slots:
 
 private slots:
     void getConfigurations();
+    void testBackupFiles();
+    void testCreateBackupUsesUniqueFileNames();
+    void testBackupRetentionKeepsCreatedArchive();
+    void testBackupConfigurationAutoBackupSettings();
+    void testAutomaticBackup();
+    void testDownloadBackupFile();
+    void testDeleteBackupFile();
+    void testRestoreBackupFile();
+    void testUploadAndRestoreBackup();
+    void testCreateAndDownloadBackup();
 
     void testServerName();
     void testLanguages();
+    void testLocationNotifications();
 
     void testDebugServerConfiguration();
 
     void testDisableInsecureInterfacesEnv();
+    void testConfigurationMigrationFromDefaultPath();
 
 private:
     QVariantMap loadBasicConfiguration();
+    QVariantMap loadBackupConfiguration();
+    QVariantList loadBackupFiles();
+    QWebSocket *openSocket();
+    QVariant sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params = QVariantMap(), QVariantMap *notification = nullptr);
 
+public slots:
+    void sslErrors(const QList<QSslError> &)
+    {
+        QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
+        if (socket) {
+            socket->ignoreSslErrors();
+        }
+    }
 };
 
 void TestConfigurations::initTestCase()
@@ -70,6 +105,20 @@ void TestConfigurations::initTestCase()
     }
 
     NymeaTestBase::initTestCase("*.debug=false\nApplication.debug=true\nTests.debug=true\nServerManager.debug=true");
+
+    ServerConfiguration config;
+    foreach (const ServerConfiguration &existingConfig, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
+        if (existingConfig.port == 4444 && (QHostAddress(existingConfig.address) == QHostAddress("127.0.0.1") || QHostAddress(existingConfig.address) == QHostAddress("0.0.0.0"))) {
+            config = existingConfig;
+            break;
+        }
+    }
+
+    config.address = "127.0.0.1";
+    config.port = 4444;
+    config.sslEnabled = true;
+    config.authenticationEnabled = false;
+    NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 }
 
 void TestConfigurations::getConfigurations()
@@ -86,6 +135,748 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("webSocketServerConfigurations"));
 }
 
+void TestConfigurations::testBackupFiles()
+{
+    enableNotifications({"Configuration"});
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+    notificationSpy.clear();
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVERIFY2(notificationSpy.count() > 0 || notificationSpy.wait(2000), "Timed out waiting for first backup notification.");
+    QVariantList notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
+    QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for first backup.");
+
+    QVariantList backupFilesNotification = notifications.first().toMap().value("params").toMap().value("backupFiles").toList();
+    QCOMPARE(backupFilesNotification.count(), 1);
+
+    QTest::qWait(1100);
+
+    notificationSpy.clear();
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVERIFY2(notificationSpy.count() > 0 || notificationSpy.wait(2000), "Timed out waiting for second backup notification.");
+    notifications = checkNotifications(notificationSpy, "Configuration.BackupFilesChanged");
+    QVERIFY2(notifications.count() == 1, "Expected exactly one Configuration.BackupFilesChanged notification for second backup.");
+
+    backupFilesNotification = notifications.first().toMap().value("params").toMap().value("backupFiles").toList();
+    QCOMPARE(backupFilesNotification.count(), 2);
+
+    QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 2);
+    QCOMPARE(backupFilesNotification, backupFiles);
+
+    qint64 previousTimestamp = std::numeric_limits<qint64>::max();
+    foreach (const QVariant &backupFileVariant, backupFiles) {
+        const QVariantMap backupFile = backupFileVariant.toMap();
+        QVERIFY2(backupFile.contains("fileName"), "Backup file entry does not contain fileName.");
+        QVERIFY2(backupFile.contains("serverVersion"), "Backup file entry does not contain serverVersion.");
+        QVERIFY2(backupFile.contains("timestamp"), "Backup file entry does not contain timestamp.");
+        QVERIFY2(backupFile.contains("size"), "Backup file entry does not contain size.");
+
+        const QString fileName = backupFile.value("fileName").toString();
+        const QString serverVersion = backupFile.value("serverVersion").toString();
+        const qint64 timestamp = backupFile.value("timestamp").toLongLong();
+        const double size = backupFile.value("size").toDouble();
+
+        QVERIFY2(!serverVersion.isEmpty(), "Backup serverVersion should not be empty.");
+        QVERIFY2(timestamp > 0, "Backup timestamp should be greater than 0.");
+        QVERIFY2(size > 0, "Backup size should be greater than 0.");
+        QVERIFY2(timestamp <= previousTimestamp, "Backup files should be returned sorted by timestamp descending.");
+        previousTimestamp = timestamp;
+
+        const QRegularExpression fileNamePattern(QString("^nymea-configuration-%1-(\\d{14})(?:-[0-9a-fA-F-]+)?\\.tar\\.gz$").arg(QRegularExpression::escape(serverVersion)));
+        const QRegularExpressionMatch fileNameMatch = fileNamePattern.match(fileName);
+        QVERIFY2(fileNameMatch.hasMatch(), qPrintable(QString("Unexpected backup file name: %1").arg(fileName)));
+
+        const QString timestampString = fileNameMatch.captured(1);
+        const QDateTime fileNameTimestamp(QDate::fromString(timestampString.left(8), "yyyyMMdd"), QTime::fromString(timestampString.mid(8, 6), "hhmmss"), Qt::UTC);
+        QVERIFY2(fileNameTimestamp.isValid(), qPrintable(QString("Could not parse backup timestamp from file name: %1").arg(fileName)));
+        QCOMPARE(fileNameTimestamp.toSecsSinceEpoch(), timestamp);
+
+        QFileInfo fileInfo(backupDirectory.filePath(fileName));
+        QVERIFY2(fileInfo.exists(), qPrintable(QString("Backup file does not exist on disk: %1").arg(fileInfo.absoluteFilePath())));
+        QCOMPARE(fileInfo.fileName(), fileName);
+        QCOMPARE(static_cast<double>(fileInfo.size()), size);
+    }
+
+    disableNotifications();
+}
+
+void TestConfigurations::testCreateBackupUsesUniqueFileNames()
+{
+    QTemporaryDir sourceDirectory;
+    QVERIFY2(sourceDirectory.isValid(), "Could not create temporary source directory.");
+
+    QFile sourceFile(sourceDirectory.filePath("config.json"));
+    QVERIFY2(sourceFile.open(QIODevice::WriteOnly), "Could not create temporary source file.");
+    sourceFile.write("{\"test\":true}\n");
+    sourceFile.close();
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-unique";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear unique backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create unique backup directory.");
+
+    while (QTime::currentTime().msec() > 50) {
+        QTest::qWait(5);
+    }
+
+    QString firstArchivePath;
+    QString secondArchivePath;
+    BackupManager *backupManager = NymeaCore::instance()->backupManager();
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &firstArchivePath), "Failed to create first backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 10, "nymea-configuration", &secondArchivePath), "Failed to create second backup archive.");
+
+    QVERIFY2(!firstArchivePath.isEmpty(), "First backup path should not be empty.");
+    QVERIFY2(!secondArchivePath.isEmpty(), "Second backup path should not be empty.");
+    QVERIFY2(firstArchivePath != secondArchivePath, "Backups created in the same second should use unique archive paths.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 2);
+}
+
+void TestConfigurations::testConfigurationMigrationFromDefaultPath()
+{
+    class EnvironmentGuard
+    {
+    public:
+        EnvironmentGuard(const char *name):
+            m_name(name),
+            m_hadValue(qEnvironmentVariableIsSet(name)),
+            m_value(qgetenv(name))
+        {
+        }
+
+        ~EnvironmentGuard()
+        {
+            if (m_hadValue) {
+                qputenv(m_name, m_value);
+            } else {
+                qunsetenv(m_name);
+            }
+        }
+
+    private:
+        const char *m_name;
+        bool m_hadValue = false;
+        QByteArray m_value;
+    };
+
+    class OrganisationNameGuard
+    {
+    public:
+        OrganisationNameGuard():
+            m_previousOrganisationName(QCoreApplication::instance()->organizationName())
+        {
+        }
+
+        ~OrganisationNameGuard()
+        {
+            QCoreApplication::instance()->setOrganizationName(m_previousOrganisationName);
+        }
+
+    private:
+        QString m_previousOrganisationName;
+    };
+
+    EnvironmentGuard configPathGuard("NYMEA_CONFIG_PATH");
+    EnvironmentGuard defaultConfigPathGuard("NYMEA_DEFAULT_CONFIG_PATH");
+    OrganisationNameGuard organisationNameGuard;
+
+    QCoreApplication::instance()->setOrganizationName("nymea");
+    qunsetenv("NYMEA_DEFAULT_CONFIG_PATH");
+    QCOMPARE(NymeaSettings::defaultSettingsPath(), QString("/usr/share/nymea/defaults"));
+    QCoreApplication::instance()->setOrganizationName("nymea-test");
+
+    QTemporaryDir runtimeDirectory;
+    QVERIFY2(runtimeDirectory.isValid(), "Could not create temporary runtime directory.");
+
+    QTemporaryDir defaultDirectory;
+    QVERIFY2(defaultDirectory.isValid(), "Could not create temporary default directory.");
+
+    qputenv("NYMEA_CONFIG_PATH", runtimeDirectory.path().toUtf8());
+    qputenv("NYMEA_DEFAULT_CONFIG_PATH", defaultDirectory.path().toUtf8());
+
+    const QString runtimeConfigurationFile = runtimeDirectory.filePath("nymead.conf");
+    const QString defaultConfigurationFile = defaultDirectory.filePath("nymead.conf");
+
+    QFile defaultConfig(defaultConfigurationFile);
+    QVERIFY2(defaultConfig.open(QIODevice::WriteOnly | QIODevice::Text), "Could not create default configuration file.");
+    defaultConfig.write("[nymead]\nname=seeded-from-defaults\n");
+    defaultConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        QCOMPARE(settings.fileName(), runtimeConfigurationFile);
+
+        settings.beginGroup("nymead");
+        QCOMPARE(settings.value("name").toString(), QString("seeded-from-defaults"));
+        settings.endGroup();
+    }
+
+    QVERIFY2(QFileInfo::exists(runtimeConfigurationFile), "The runtime configuration file was not created.");
+
+    QFile migratedConfig(runtimeConfigurationFile);
+    QVERIFY2(migratedConfig.open(QIODevice::ReadOnly | QIODevice::Text), "Could not read migrated configuration file.");
+    QVERIFY2(QString::fromUtf8(migratedConfig.readAll()).contains("seeded-from-defaults"), "The migrated configuration file does not contain the default value.");
+    migratedConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        settings.beginGroup("nymead");
+        settings.setValue("name", "runtime-value");
+        settings.endGroup();
+        settings.sync();
+    }
+
+    QVERIFY2(defaultConfig.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate), "Could not update default configuration file.");
+    defaultConfig.write("[nymead]\nname=changed-default\n");
+    defaultConfig.close();
+
+    {
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+        settings.beginGroup("nymead");
+        QCOMPARE(settings.value("name").toString(), QString("runtime-value"));
+        settings.endGroup();
+    }
+}
+
+void TestConfigurations::testBackupRetentionKeepsCreatedArchive()
+{
+    QTemporaryDir sourceDirectory;
+    QVERIFY2(sourceDirectory.isValid(), "Could not create temporary source directory.");
+
+    QFile sourceFile(sourceDirectory.filePath("config.json"));
+    QVERIFY2(sourceFile.open(QIODevice::WriteOnly), "Could not create temporary source file.");
+    sourceFile.write("{\"test\":true}\n");
+    sourceFile.close();
+
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-retention";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear retention backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create retention backup directory.");
+
+    while (QTime::currentTime().msec() > 50) {
+        QTest::qWait(5);
+    }
+
+    QString firstArchivePath;
+    QString secondArchivePath;
+    BackupManager *backupManager = NymeaCore::instance()->backupManager();
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 1, "nymea-configuration", &firstArchivePath),
+             "Failed to create first retained backup archive.");
+    QVERIFY2(backupManager->createBackup(sourceDirectory.path(), backupDirectoryPath, 1, "nymea-configuration", &secondArchivePath),
+             "Failed to create second retained backup archive.");
+
+    QVERIFY2(QFileInfo::exists(secondArchivePath), "The newly created backup archive should still exist after retention cleanup.");
+    QVERIFY2(!QFileInfo::exists(firstArchivePath), "The older backup archive should be removed when maxBackups is reached.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 1);
+    QCOMPARE(QFileInfo(secondArchivePath).fileName(), backupFiles.first());
+}
+
+void TestConfigurations::testBackupConfigurationAutoBackupSettings()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-auto-config";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear auto-config backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create auto-config backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 7);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 3);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    QVariantMap backupConfiguration = loadBackupConfiguration();
+    QCOMPARE(backupConfiguration.value("destinationDirectory").toString(), backupDirectoryPath);
+    QCOMPARE(backupConfiguration.value("maxCount").toInt(), 7);
+    QCOMPARE(backupConfiguration.value("autoBackupEnabled").toBool(), false);
+    QCOMPARE(backupConfiguration.value("autoBackupInterval").toInt(), 3);
+
+    restartServer();
+
+    backupConfiguration = loadBackupConfiguration();
+    QCOMPARE(backupConfiguration.value("destinationDirectory").toString(), backupDirectoryPath);
+    QCOMPARE(backupConfiguration.value("maxCount").toInt(), 7);
+    QCOMPARE(backupConfiguration.value("autoBackupEnabled").toBool(), false);
+    QCOMPARE(backupConfiguration.value("autoBackupInterval").toInt(), 3);
+}
+
+void TestConfigurations::testAutomaticBackup()
+{
+    auto setBackupConfiguration = [this](const QString &destinationDirectory, int maxCount, bool autoBackupEnabled, int autoBackupInterval) {
+        QVariantMap params;
+        params.insert("destinationDirectory", destinationDirectory);
+        params.insert("maxCount", maxCount);
+        params.insert("autoBackupEnabled", autoBackupEnabled);
+        params.insert("autoBackupInterval", autoBackupInterval);
+        QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+        verifyConfigurationError(response);
+    };
+
+    const QString initialBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-initial";
+    QDir initialBackupDirectory(initialBackupDirectoryPath);
+    if (initialBackupDirectory.exists()) {
+        QVERIFY2(initialBackupDirectory.removeRecursively(), "Could not clear initial auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(initialBackupDirectoryPath), "Could not create initial auto backup directory.");
+
+    setBackupConfiguration(initialBackupDirectoryPath, 10, true, 1);
+    QTRY_VERIFY_WITH_TIMEOUT([this]() {
+        return loadBackupFiles().count() == 1;
+    }(), 5000);
+    setBackupConfiguration(initialBackupDirectoryPath, 10, false, 1);
+
+    const QString overdueBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-overdue";
+    QDir overdueBackupDirectory(overdueBackupDirectoryPath);
+    if (overdueBackupDirectory.exists()) {
+        QVERIFY2(overdueBackupDirectory.removeRecursively(), "Could not clear overdue auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(overdueBackupDirectoryPath), "Could not create overdue auto backup directory.");
+
+    QFile overdueBackupFile(overdueBackupDirectory.filePath("nymea-configuration-manual-20000101000000.tar.gz"));
+    QVERIFY2(overdueBackupFile.open(QIODevice::WriteOnly), "Could not create overdue backup file.");
+    overdueBackupFile.write("stale");
+    overdueBackupFile.close();
+
+    setBackupConfiguration(overdueBackupDirectoryPath, 10, true, 1);
+    QTRY_VERIFY_WITH_TIMEOUT([this]() {
+        return loadBackupFiles().count() == 2;
+    }(), 5000);
+    setBackupConfiguration(overdueBackupDirectoryPath, 10, false, 1);
+
+    const QString recentBackupDirectoryPath = "/tmp/nymea-tests/backups-auto-recent";
+    QDir recentBackupDirectory(recentBackupDirectoryPath);
+    if (recentBackupDirectory.exists()) {
+        QVERIFY2(recentBackupDirectory.removeRecursively(), "Could not clear recent auto backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(recentBackupDirectoryPath), "Could not create recent auto backup directory.");
+
+    const QString recentTimestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+    QFile recentBackupFile(recentBackupDirectory.filePath(QString("nymea-configuration-manual-%1.tar.gz").arg(recentTimestamp)));
+    QVERIFY2(recentBackupFile.open(QIODevice::WriteOnly), "Could not create recent backup file.");
+    recentBackupFile.write("recent");
+    recentBackupFile.close();
+
+    setBackupConfiguration(recentBackupDirectoryPath, 10, true, 24);
+    QTest::qWait(1500);
+    QCOMPARE(loadBackupFiles().count(), 1);
+    setBackupConfiguration(recentBackupDirectoryPath, 10, false, 24);
+}
+
+void TestConfigurations::testDownloadBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-download-existing";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear download-existing backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create download-existing backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+
+    params.clear();
+    params.insert("fileName", QString("../%1").arg(fileName));
+    response = injectAndWait("Configuration.DownloadBackupFile", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidFileName);
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.DownloadBackupFile", params);
+    verifyConfigurationError(response);
+
+    const QVariantMap downloadBackupResponse = response.toMap().value("params").toMap();
+    const QString downloadId = downloadBackupResponse.value("downloadId").toString();
+    const qint64 size = downloadBackupResponse.value("size").toLongLong();
+
+    QVERIFY2(!downloadId.isEmpty(), "DownloadBackupFile did not return a downloadId.");
+    QCOMPARE(downloadBackupResponse.value("fileName").toString(), fileName);
+    QVERIFY2(size > 0, "DownloadBackupFile did not return a valid size.");
+
+    QFile backupFile(backupDirectory.filePath(fileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open existing backup file.");
+    const QByteArray expectedPayload = backupFile.readAll();
+    QCOMPARE(expectedPayload.size(), size);
+
+    QScopedPointer<QWebSocket> apiSocket(openSocket());
+    QVERIFY(!apiSocket.isNull());
+
+    response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    params.clear();
+    params.insert("downloadId", downloadId);
+    response = sendAndWait(apiSocket.data(), 2, "Transfers.StartDownload", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    const QVariantMap downloadInfo = response.toMap().value("params").toMap();
+    const QString downloadTransferId = downloadInfo.value("transferId").toString();
+    const QString downloadTransferToken = downloadInfo.value("transferToken").toString();
+    QCOMPARE(downloadInfo.value("fileName").toString(), fileName);
+    QCOMPARE(downloadInfo.value("size").toLongLong(), size);
+    QVERIFY(!downloadTransferId.isEmpty());
+    QVERIFY(!downloadTransferToken.isEmpty());
+
+    QScopedPointer<QWebSocket> downloadSocket(openSocket());
+    QVERIFY(!downloadSocket.isNull());
+
+    params.clear();
+    params.insert("transferId", downloadTransferId);
+    params.insert("transferToken", downloadTransferToken);
+    response = sendAndWait(downloadSocket.data(), 10, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("download"));
+
+    QByteArray downloadedPayload;
+    bool finished = false;
+    int downloadCommandId = 11;
+    while (!finished) {
+        params.clear();
+        params.insert("maxBytes", 4096);
+        response = sendAndWait(downloadSocket.data(), downloadCommandId++, "Transfer.RequestChunk", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        const QVariantMap chunkParams = response.toMap().value("params").toMap();
+        downloadedPayload.append(QByteArray::fromBase64(chunkParams.value("data").toByteArray()));
+        finished = chunkParams.value("finished").toBool();
+    }
+
+    QCOMPARE(downloadedPayload, expectedPayload);
+
+    QSignalSpy downloadDisconnectedSpy(downloadSocket.data(), &QWebSocket::disconnected);
+    downloadSocket->close();
+    downloadDisconnectedSpy.wait(1000);
+
+    QSignalSpy apiDisconnectedSpy(apiSocket.data(), &QWebSocket::disconnected);
+    apiSocket->close();
+    apiDisconnectedSpy.wait(1000);
+}
+
+void TestConfigurations::testDeleteBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-delete";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear delete backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create delete backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+    QVERIFY2(QFileInfo::exists(backupDirectory.filePath(fileName)), "Created backup file should exist before deletion.");
+
+    params.clear();
+    params.insert("fileName", QString("../%1").arg(fileName));
+    response = injectAndWait("Configuration.DeleteBackupFile", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidFileName);
+    QVERIFY2(QFileInfo::exists(backupDirectory.filePath(fileName)), "Backup file should still exist after invalid delete request.");
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.DeleteBackupFile", params);
+    verifyConfigurationError(response);
+
+    QVERIFY2(!QFileInfo::exists(backupDirectory.filePath(fileName)), "Backup file should be removed after delete request.");
+    backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 0);
+}
+
+void TestConfigurations::testRestoreBackupFile()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-restore";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear restore backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create restore backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    const QString restoredServerName = QString("Restored server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", restoredServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+    const QString fileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+
+    const QString changedServerName = QString("Changed server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", changedServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), changedServerName);
+
+    params.clear();
+    params.insert("fileName", fileName);
+    response = injectAndWait("Configuration.RestoreBackupFile", params);
+    verifyConfigurationError(response);
+
+    waitForServerRestart();
+
+    QTRY_COMPARE_WITH_TIMEOUT(loadBasicConfiguration().value("serverName").toString(), restoredServerName, 5000);
+}
+
+void TestConfigurations::testUploadAndRestoreBackup()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-upload-restore";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear upload restore backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create upload restore backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    const QString restoredServerName = QString("Uploaded restore server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", restoredServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateBackup");
+    verifyConfigurationError(response);
+
+    const QVariantList backupFiles = loadBackupFiles();
+    QCOMPARE(backupFiles.count(), 1);
+    const QString backupFileName = backupFiles.first().toMap().value("fileName").toString();
+    QVERIFY2(!backupFileName.isEmpty(), "Created backup file name should not be empty.");
+
+    QFile backupFile(backupDirectory.filePath(backupFileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open created backup file.");
+    const QByteArray backupPayload = backupFile.readAll();
+    QVERIFY2(!backupPayload.isEmpty(), "Created backup file payload should not be empty.");
+
+    const QString changedServerName = QString("Changed after upload restore %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    params.clear();
+    params.insert("serverName", changedServerName);
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+    QCOMPARE(loadBasicConfiguration().value("serverName").toString(), changedServerName);
+
+    QScopedPointer<QWebSocket> apiSocket(openSocket());
+    QVERIFY(!apiSocket.isNull());
+
+    response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    params.clear();
+    params.insert("fileName", backupFileName);
+    params.insert("size", backupPayload.size());
+    response = sendAndWait(apiSocket.data(), 2, "Configuration.UploadAndRestoreBackup", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    verifyConfigurationError(response);
+
+    const QVariantMap uploadInfo = response.toMap().value("params").toMap();
+    const QString uploadTransferId = uploadInfo.value("transferId").toString();
+    const QString uploadTransferToken = uploadInfo.value("transferToken").toString();
+    QCOMPARE(uploadInfo.value("fileName").toString(), backupFileName);
+    QCOMPARE(uploadInfo.value("size").toLongLong(), backupPayload.size());
+    QVERIFY(!uploadTransferId.isEmpty());
+    QVERIFY(!uploadTransferToken.isEmpty());
+
+    QScopedPointer<QWebSocket> uploadSocket(openSocket());
+    QVERIFY(!uploadSocket.isNull());
+
+    params.clear();
+    params.insert("transferId", uploadTransferId);
+    params.insert("transferToken", uploadTransferToken);
+    response = sendAndWait(uploadSocket.data(), 10, "Transfer.Connect", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("upload"));
+
+    int transferCommandId = 11;
+    const int chunkSize = 4096;
+    for (int offset = 0; offset < backupPayload.size(); offset += chunkSize) {
+        params.clear();
+        params.insert("data", backupPayload.mid(offset, chunkSize).toBase64());
+        response = sendAndWait(uploadSocket.data(), transferCommandId++, "Transfer.UploadChunk", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    }
+
+    response = sendAndWait(uploadSocket.data(), transferCommandId, "Transfer.FinishUpload");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVERIFY(response.toMap().value("params").toMap().value("restoreTriggered").toBool());
+
+    waitForServerRestart();
+
+    QTRY_COMPARE_WITH_TIMEOUT(loadBasicConfiguration().value("serverName").toString(), restoredServerName, 5000);
+}
+
+void TestConfigurations::testCreateAndDownloadBackup()
+{
+    const QString backupDirectoryPath = "/tmp/nymea-tests/backups-download";
+    QDir backupDirectory(backupDirectoryPath);
+    if (backupDirectory.exists()) {
+        QVERIFY2(backupDirectory.removeRecursively(), "Could not clear download backup directory.");
+    }
+    QVERIFY2(QDir().mkpath(backupDirectoryPath), "Could not create download backup directory.");
+
+    QVariantMap params;
+    params.insert("destinationDirectory", backupDirectoryPath);
+    params.insert("maxCount", 10);
+    params.insert("autoBackupEnabled", false);
+    params.insert("autoBackupInterval", 24);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response);
+
+    response = injectAndWait("Configuration.CreateAndDownloadBackup");
+    verifyConfigurationError(response);
+
+    const QVariantMap createDownloadResponse = response.toMap().value("params").toMap();
+    const QString downloadId = createDownloadResponse.value("downloadId").toString();
+    const QString fileName = createDownloadResponse.value("fileName").toString();
+    const qint64 size = createDownloadResponse.value("size").toLongLong();
+
+    QVERIFY2(!downloadId.isEmpty(), "CreateAndDownloadBackup did not return a downloadId.");
+    QVERIFY2(!fileName.isEmpty(), "CreateAndDownloadBackup did not return a fileName.");
+    QVERIFY2(size > 0, "CreateAndDownloadBackup did not return a valid size.");
+
+    const QStringList backupFiles = backupDirectory.entryList(QStringList() << "nymea-configuration-*.tar.gz", QDir::Files, QDir::Time);
+    QCOMPARE(backupFiles.count(), 1);
+    QCOMPARE(fileName, backupFiles.first());
+
+    QFile backupFile(backupDirectory.filePath(fileName));
+    QVERIFY2(backupFile.open(QIODevice::ReadOnly), "Could not open created backup file.");
+    const QByteArray expectedPayload = backupFile.readAll();
+    QCOMPARE(expectedPayload.size(), size);
+
+    {
+        QScopedPointer<QWebSocket> apiSocket(openSocket());
+        QVERIFY(!apiSocket.isNull());
+
+        response = sendAndWait(apiSocket.data(), 1, "JSONRPC.Hello");
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        params.clear();
+        params.insert("downloadId", downloadId);
+        response = sendAndWait(apiSocket.data(), 2, "Transfers.StartDownload", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+        const QVariantMap downloadInfo = response.toMap().value("params").toMap();
+        const QString downloadTransferId = downloadInfo.value("transferId").toString();
+        const QString downloadTransferToken = downloadInfo.value("transferToken").toString();
+        QCOMPARE(downloadInfo.value("fileName").toString(), fileName);
+        QCOMPARE(downloadInfo.value("size").toLongLong(), size);
+        QVERIFY(!downloadTransferId.isEmpty());
+        QVERIFY(!downloadTransferToken.isEmpty());
+
+        QScopedPointer<QWebSocket> downloadSocket(openSocket());
+        QVERIFY(!downloadSocket.isNull());
+
+        params.clear();
+        params.insert("transferId", downloadTransferId);
+        params.insert("transferToken", downloadTransferToken);
+        response = sendAndWait(downloadSocket.data(), 10, "Transfer.Connect", params);
+        QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+        QCOMPARE(response.toMap().value("params").toMap().value("direction").toString(), QString("download"));
+
+        QByteArray downloadedPayload;
+        bool finished = false;
+        int downloadCommandId = 11;
+        while (!finished) {
+            params.clear();
+            params.insert("maxBytes", 4096);
+            response = sendAndWait(downloadSocket.data(), downloadCommandId++, "Transfer.RequestChunk", params);
+            QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+            const QVariantMap chunkParams = response.toMap().value("params").toMap();
+            downloadedPayload.append(QByteArray::fromBase64(chunkParams.value("data").toByteArray()));
+            finished = chunkParams.value("finished").toBool();
+        }
+
+        QCOMPARE(downloadedPayload, expectedPayload);
+
+        QSignalSpy downloadDisconnectedSpy(downloadSocket.data(), &QWebSocket::disconnected);
+        downloadSocket->close();
+        downloadDisconnectedSpy.wait(1000);
+
+        params.clear();
+        QSignalSpy apiDisconnectedSpy(apiSocket.data(), &QWebSocket::disconnected);
+        apiSocket->close();
+        apiDisconnectedSpy.wait(1000);
+    }
+
+    qApp->processEvents();
+}
+
 void TestConfigurations::testServerName()
 {
     enableNotifications({"Configuration"});
@@ -100,7 +891,9 @@ void TestConfigurations::testServerName()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set name unchanged
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("serverName", serverName);
     response = injectAndWait("Configuration.SetServerName", params);
     verifyConfigurationError(response);
@@ -112,7 +905,9 @@ void TestConfigurations::testServerName()
 
     // Set new server name
     QString newServerName = QString("Test server %1").arg(QUuid::createUuid().toString());
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("serverName", newServerName);
 
     notificationSpy.clear();
@@ -120,7 +915,7 @@ void TestConfigurations::testServerName()
     verifyConfigurationError(response);
 
     // Check notification not emitted
-    notificationSpy.wait(500);
+    notificationSpy.wait();
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
     QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
@@ -157,7 +952,8 @@ void TestConfigurations::testLanguages()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Set language unchanged
-    QVariant response; QVariantMap params;
+    QVariant response;
+    QVariantMap params;
     params.insert("language", basicConfigurationMap.value("language"));
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
@@ -176,34 +972,36 @@ void TestConfigurations::testLanguages()
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
         // create a new spy for each run as we restart the server and kill the old one in this loop
-         QSignalSpy notificationSpy2 (m_mockTcpServer, &MockTcpServer::outgoingData);
+        QSignalSpy notificationSpy2(m_mockTcpServer, &MockTcpServer::outgoingData);
 
         // Get current configurations
         basicConfigurationMap = loadBasicConfiguration();
 
         // Set language
-        params.clear(); response.clear();
+        params.clear();
+        response.clear();
         params.insert("language", languageVariant);
         QVariant response = injectAndWait("Configuration.SetLanguage", params);
         verifyConfigurationError(response);
 
         // Check notification
         notificationSpy2.wait(500);
-        QVariantList languageChangedNotifications = checkNotifications(notificationSpy2, "Configuration.LanguageChanged");
+        QVariantList configurationChangedNotifications = checkNotifications(notificationSpy2, "Configuration.BasicConfigurationChanged");
 
         // If the language did not change no notification should be emitted
         if (basicConfigurationMap.value("language").toString() == languageVariant.toString()) {
-            QVERIFY2(languageChangedNotifications.count() == 0, "Got Configuration.LanguageChanged notification but should have not.");
+            QVERIFY2(configurationChangedNotifications.count() == 0, "Got Configuration.BasicConfigurationChanged notification but should have not.");
         } else {
-            QVERIFY2(languageChangedNotifications.count() == 1, "Should get only one Configuration.LanguageChanged notification");
-            QVariantMap notificationMap = languageChangedNotifications.first().toMap().value("params").toMap();
-            QVERIFY2(notificationMap.contains("language"), "Notification does not contain language");
-            QVERIFY2(notificationMap.value("language").toString() == languageVariant.toString(), "Notification does not contain the new language");
+            QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+            QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
+            QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
+            QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
+            QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
+            QVERIFY2(basicConfigurationNotificationMap.value("language").toString() == languageVariant.toString(), "Notification does not contain the new language");
 
             // Restart the server and check if the language will be loaded correctly
             restartServer();
             enableNotifications({"Configuration"});
-
 
             // Get configuration
             basicConfigurationMap = loadBasicConfiguration();
@@ -213,12 +1011,57 @@ void TestConfigurations::testLanguages()
     }
 
     // Reset the language to en_US
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("language", "en_US");
 
     // Set language
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
+
+    disableNotifications();
+}
+
+void TestConfigurations::testLocationNotifications()
+{
+    enableNotifications({"Configuration"});
+
+    const QVariantMap currentBasicConfiguration = loadBasicConfiguration();
+    const QVariantMap currentLocation = currentBasicConfiguration.value("location").toMap();
+
+    const double newLatitude = currentLocation.value("latitude").toDouble() + 1.234567;
+    const double newLongitude = currentLocation.value("longitude").toDouble() - 2.345678;
+    const QString newName = QString("Test location %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+
+    QVariantMap params;
+    params.insert("location",
+                  QVariantMap{
+                      {"latitude", newLatitude},
+                      {"longitude", newLongitude},
+                      {"name", newName},
+                  });
+    const QVariant response = injectAndWait("Configuration.SetLocation", params);
+    verifyConfigurationError(response);
+
+    if (notificationSpy.count() == 0)
+        QVERIFY2(notificationSpy.wait(2000), "Timed out waiting for Configuration.BasicConfigurationChanged notification.");
+
+    const QVariantList configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
+    QCOMPARE(configurationChangedNotifications.count(), 1);
+
+    const QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+    const QVariantMap basicConfiguration = notificationContent.value("basicConfiguration").toMap();
+    const QVariantMap notifiedLocation = basicConfiguration.value("location").toMap();
+    QCOMPARE(notifiedLocation.value("latitude").toDouble(), newLatitude);
+    QCOMPARE(notifiedLocation.value("longitude").toDouble(), newLongitude);
+    QCOMPARE(notifiedLocation.value("name").toString(), newName);
+
+    const QVariantMap storedLocation = loadBasicConfiguration().value("location").toMap();
+    QCOMPARE(storedLocation.value("latitude").toDouble(), newLatitude);
+    QCOMPARE(storedLocation.value("longitude").toDouble(), newLongitude);
+    QCOMPARE(storedLocation.value("name").toString(), newName);
 
     disableNotifications();
 }
@@ -236,7 +1079,9 @@ void TestConfigurations::testDebugServerConfiguration()
     QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Unchanged debug server
-    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    QVariantMap params;
+    QVariant response;
+    QVariantList configurationChangedNotifications;
     params.insert("enabled", debugServerEnabled);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -248,7 +1093,9 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Enable debug server
     bool newValue = true;
-    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.clear();
+    response.clear();
+    configurationChangedNotifications.clear();
     params.insert("enabled", newValue);
 
     qCDebug(dcTests()) << "Enabling debug server";
@@ -291,9 +1138,7 @@ void TestConfigurations::testDebugServerConfiguration()
 
     // Webserver request
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply *reply, const QList<QSslError> &) { reply->ignoreSslErrors(); });
     QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
 
     // Check if debug interface is reachable
@@ -311,7 +1156,8 @@ void TestConfigurations::testDebugServerConfiguration()
     reply->deleteLater();
 
     // Disable debug server
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("enabled", false);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
     verifyConfigurationError(response);
@@ -363,7 +1209,8 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     insecureTunnelProxyConfig.insert("authenticationEnabled", false);
     insecureTunnelProxyConfig.insert("ignoreSslErrors", true);
 
-    QVariantMap params; QVariant response;
+    QVariantMap params;
+    QVariant response;
 
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
@@ -384,33 +1231,39 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     // FIXME: make sure the insecure servers are not running
 
     // Remove the insecure configs and try to add them again and expect them to fail
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTcpServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteWebSocketServerConfiguration", params);
     verifyConfigurationError(response);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("id", id);
     response = injectAndWait("Configuration.DeleteTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response);
 
     // Make sure we cannot add insecure interfaces beside localhost
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTcpConfig);
     response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureWebSocketConfig);
     response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
 
-    params.clear(); response.clear();
+    params.clear();
+    response.clear();
     params.insert("configuration", insecureTunnelProxyConfig);
     response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
@@ -423,6 +1276,77 @@ QVariantMap TestConfigurations::loadBasicConfiguration()
     QVariant response = injectAndWait("Configuration.GetConfigurations");
     QVariantMap configurationMap = response.toMap().value("params").toMap();
     return configurationMap.value("basicConfiguration").toMap();
+}
+
+QVariantMap TestConfigurations::loadBackupConfiguration()
+{
+    QVariant response = injectAndWait("Configuration.GetConfigurations");
+    QVariantMap configurationMap = response.toMap().value("params").toMap();
+    return configurationMap.value("backupConfigurations").toMap();
+}
+
+QVariantList TestConfigurations::loadBackupFiles()
+{
+    QVariant response = injectAndWait("Configuration.GetBackupFiles");
+    QVariantMap responseMap = response.toMap().value("params").toMap();
+    return responseMap.value("backupFiles").toList();
+}
+
+QWebSocket *TestConfigurations::openSocket()
+{
+    QWebSocket *socket = new QWebSocket("nymea configuration tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestConfigurations::sslErrors);
+
+    QSignalSpy connectedSpy(socket, &QWebSocket::connected);
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
+    if (!connectedSpy.wait()) {
+        socket->deleteLater();
+        return nullptr;
+    }
+
+    return socket;
+}
+
+QVariant TestConfigurations::sendAndWait(QWebSocket *socket, int id, const QString &method, const QVariantMap &params, QVariantMap *notification)
+{
+    QVariantMap call;
+    call.insert("id", id);
+    call.insert("method", method);
+    if (!method.startsWith("Transfer.")) {
+        call.insert("token", m_apiToken);
+    }
+    if (!params.isEmpty()) {
+        call.insert("params", params);
+    }
+
+    const QByteArray payload = QJsonDocument::fromVariant(call).toJson(QJsonDocument::Compact);
+    QSignalSpy spy(socket, &QWebSocket::textMessageReceived);
+    socket->sendTextMessage(QString::fromUtf8(payload));
+
+    while (spy.count() > 0 || spy.wait()) {
+        for (int i = 0; i < spy.count(); ++i) {
+            QJsonParseError error;
+            const QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).at(0).toByteArray(), &error);
+            if (error.error != QJsonParseError::NoError) {
+                continue;
+            }
+
+            const QVariantMap response = jsonDoc.toVariant().toMap();
+            if (response.contains("notification")) {
+                if (notification) {
+                    *notification = response;
+                }
+                continue;
+            }
+
+            if (response.value("id").toInt() == id) {
+                return response;
+            }
+        }
+        spy.clear();
+    }
+
+    return QVariant();
 }
 
 #include "testconfigurations.moc"

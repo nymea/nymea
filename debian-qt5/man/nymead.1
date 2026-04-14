@@ -1,6 +1,6 @@
 .\" Manpage for nymead.
 .\" Contact chargebyte austria GmbH <contact@nymea.io> to correct errors or typos.
-.TH man 1 "March 2019" "1.10" "nymead man page"
+.TH man 1 "April 2026" "1.10" "nymead man page"
 .SH NAME
 nymead \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
@@ -22,79 +22,81 @@ Displays version information.
 \fB\-n\fR, \fB\-\-no\-daemon\fR
 Run nymead in the foreground, not as daemon.
 .TP
-\fB\-p\fR, \fB\-\-print\-all\fR
-Enables all debug categories. Single debug categories can be disabled again 
-with -d parameter.
+\fB\-q\fR, \fB\-\-quiet\fR
+Disables logging all debug, info and warning categories.
 .TP
-\fB\-l\fR, \fB\-\-log\fR
+\fB\-p\fR, \fB\-\-print\-all\fR
+Enables all info and debug categories except *Traffic and *Debug categories.
+.TP
+\fB\-l\fR, \fB\-\-log\fR, \fB<logfile>\fR
 Specify a log file to write to, if this option is not specified, 
 logs will be printed to the standard output.
+.TP
+\fB\-\-no\-colors\fR
+Log output is colorized by default. Use this option to disable colors.
 .TP
 \fB\-\-session\fR
 If specified, all D-Bus interfaces will be bound to the session bus 
 instead of the system bus.
 .TP
-\fB\-d\fR, \fB\-\-debug\fR, \fB\<[No\]DebugCategory>\fR
-Debug categories to enable. In order to disable a category which is enabled by 
-default, you can add \"No\" to the category. Warnings from all 
-categories will be printed unless they are explicitly muted with "NoWarnings".
+\fB\-d\fR, \fB\-\-debug\-category\fR, \fB<[No]DebugCategory[Warnings|Info]>\fR
+Debug categories to enable. Prefix with "No" to disable. Suffix with "Info"
+or "Warnings" to address info and warning messages. Enabling a debug category
+will implicitly enable the according info category.
 .RS
 .TP
-\fBMain\ debug\ categories:\fR
-.IP \fIAWS\fR\ (default\ disabled)
-Print the debug messages from the AWS connection.
-.IP \fIAWSTraffic\fR\ (default\ disabled)
-Print the debug messages from the AWS connection traffic.
-.IP \fIApplication\fR\ (default\ enabled)
-Print the debug messages from the core application.
-.IP \fIPlatformZeroConfi\fR\ (default\ disabled)
-Print the debug messages from the ZeroConf resource.
-.IP \fIBluetooth\fR\ (default\ disabled)
-Print the debug messages from the bluetooth resource.
-.IP \fICloud\fR\ (default\ enabled)
-Print the debug messages from the Cloud connections in nymea.
-.IP \fICoap\fR\ (default\ disabled)
-Print the debug messages from the COaP resource.
-.IP \fIConnection\fR\ (default\ enabled)
-Print the debug messages from the TCP connections in nymea.
-.IP \fIDeviceManager\fR\ (default\ enabled)
-Print the debug messages from the device manager.
-.IP \fIHardware\fR\ (default\ disabled)
-Print the debug messages from hardware resources in nymea.
-.IP \fIJsonRpc\fR\ (default\ disabled)
-Print the debug messages from JSON-RPC API.
-.IP \fIJsonRpcTraffic\fR\ (default\ disabled)
-Print the debug messages from JSON-RPC API traffic.
-.IP \fILogEngine\fR\ (default\ disabled)
-Print the debug messages from logging engine.
-.IP \fINetworkManager\fR\ (default\ disabled)
-Print the debug messages from network manager.
-.IP \fIOAuth2\fR\ (default\ disabled)
-Print the debug messages of the OAuth2 resource.
-.IP \fIRest\fR\ (default\ disabled)
-Print the debug messages from REST API.
-.IP \fIRuleEngine\fR\ (default\ enabled)
-Print the debug messages from the rule engine.
-.IP \fIRuleEngineDebug\fR\ (default\ disabled)
-Print the debug messages from the rule engine with more details.
-.IP \fITcpServer\fR\ (default\ disabled)
-Print the debug messages from the TCP server.
-.IP \fITcpServerTraffic\fR\ (default\ disabled)
-Print the debug messages from the TCP server traffic.
-.IP \fITimeManager\fR\ (default\ disabled)
-Print the debug messages from the time manager.
-.IP \fIUPnP\fR\ (default\ disabled)
-Print the debug messages from the UPnP resource.
-.IP \fIUserManager\fR\ (default\ enabled)
-Print the debug messages from the user manager.
-.IP \fIWarning\fR\ (default\ enabled)
-Print warnings.
-.IP \fIWebServer\fR\ (default\ disabled)
-Print the debug messages from the web server.
-.IP \fIWebSocketServer\fR\ (default\ disabled)
-Print the debug messages from the websocket server.
-.IP \fIWebSocketServerTraffic\fR\ (default\ disabled)
-Print the debug messages from the websocket server traffic.
+\fBBuilt\-in\ debug\ categories:\fR
+.IP
+\fIThing\fR,
+\fIThingManager\fR,
+\fISystem\fR,
+\fIPlatform\fR,
+\fIPlatformUpdate\fR,
+\fIPlatformZeroConf\fR,
+\fIExperiences\fR,
+\fITimeManager\fR,
+\fIHardware\fR,
+\fIServerManager\fR,
+\fITcpServer\fR,
+\fITcpServerTraffic\fR,
+\fIWebServer\fR,
+\fIWebServerTraffic\fR,
+\fIDebugServer\fR,
+\fIWebSocketServer\fR,
+\fIWebSocketServerTraffic\fR,
+\fIJsonRpc\fR,
+\fIJsonRpcTraffic\fR,
+\fIRest\fR,
+\fIOAuth2\fR,
+\fIUPnP\fR,
+\fIBluetooth\fR,
+\fICloud\fR,
+\fICloudTraffic\fR,
+\fINetworkManager\fR,
+\fIUserManager\fR,
+\fIBluetoothServer\fR,
+\fIBluetoothServerTraffic\fR,
+\fIMqtt\fR,
+\fITranslations\fR,
+\fICoap\fR,
+\fII2C\fR,
+\fIJsIntegrations\fR,
+\fITransfer\fR,
+\fITransferTraffic\fR,
+\fITransportRouter\fR
+.RE
+.TP
+\fB\-i\fR, \fB\-\-interface\fR, \fB<interfaceString>\fR
+Additional interfaces to listen on. In nymea URI format (for example
+\fInymeas://127.0.0.2:7777\fR). Such interfaces will not require any
+authentication as they are intended to be used for automated testing only.
+.TP
+\fB\-m\fR, \fB\-\-no\-logengine\fR
+Disable the influx DB log engine.
+.TP
+\fB\-c\fR, \fB\-\-configuration\fR, \fB<path>\fR
+Use the given path for storing configurations. This option overrides the
+\fBNYMEA_CONFIG_PATH\fR environment variable.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
 Since nymea loads the plugins dynamically, the list of supported
@@ -106,41 +108,96 @@ To start nymead in the foreground and read the debug messages from the Hardware:
 .IP
 $ nymead -n -d Hardware
 .TP
-To start nymead in the foreground, disable debug messages from the DeviceManager and enable debug messages for JsonRpc and LogEngine:
+To start nymead in the foreground, disable debug messages from the ThingManager and enable debug messages for JsonRpc and Rest:
 .IP
-$ nymead -n -d NoDeviceManager -d JsonRpc -d LogEngine
+$ nymead -n -d NoThingManager -d JsonRpc -d Rest
 .TP
 To start nymead in the foreground, enable all debug messages except WebSocketServerTraffic and TcpServerTraffic:
 .IP
 $ nymead -n -p -d NoWebSocketServerTraffic -d NoTcpServerTraffic
 .SH FILES
-The server config file: \fI/etc/nymea/nymead.conf\fR
+The server config file: \fI/var/lib/nymea/nymead.conf\fR
 .br
-The devices config file: \fI/etc/nymea/devices.conf\fR
+The things config file: \fI/var/lib/nymea/things.conf\fR
 .br
-The rules config file: \fI/etc/nymea/rules.conf\fR
+The rules config file: \fI/var/lib/nymea/rules.conf\fR
 .br
-The plugins config file: \fI/etc/nymea/plugins.conf\fR
+The plugins config file: \fI/var/lib/nymea/plugins.conf\fR
 .br
-The log file: \fI/var/log/nymead.log\fR
+The packaged default config directory: \fI/usr/share/nymea/defaults\fR
 .br
-The logging database: \fI/var/log/nymead.sqlite\fR
+The log file if enabled: \fI/var/log/nymead.log\fR
 .br
 The systemd unit file: \fI/lib/systemd/system/nymead.service\fR
 .br
 The plugins directory: \fI/usr/lib/<arch-triplet>/nymea/plugins/\fR
+.SH ENVIRONMENT
+.TP
+\fBNYMEA_CONFIG_PATH\fR
+Overrides the runtime configuration directory. This is the directory where
+nymead reads and writes its live configuration files. The
+\fB\-\-configuration\fR option overrides this variable.
+.TP
+\fBNYMEA_DEFAULT_CONFIG_PATH\fR
+Overrides the read-only default configuration directory used to seed missing
+configuration files.
+.TP
+\fBNYMEA_TRANSLATIONS_PATH\fR
+Overrides the directory used to load translation files.
+.TP
+\fBNYMEA_INSECURE_INTERFACES_DISABLED\fR
+If set to a value other than \fB0\fR, nymead disables insecure core
+interfaces, including unauthenticated or unencrypted interfaces.
+.TP
+\fBNYMEA_PLUGINS_PATH\fR
+Colon-separated list of integration plugin directories. If set, it replaces
+the built-in default integration plugin search path.
+.TP
+\fBNYMEA_PLUGINS_EXTRA_PATH\fR
+Colon-separated list of additional integration plugin directories searched
+before the default integration plugin path.
+.TP
+\fBNYMEA_PLATFORM_PLUGINS_PATH\fR
+Colon-separated list of platform plugin directories. If set, it replaces the
+built-in default platform plugin search path.
+.TP
+\fBNYMEA_PLATFORM_PLUGINS_EXTRA_PATH\fR
+Colon-separated list of additional platform plugin directories searched before
+the default platform plugin path.
+.TP
+\fBNYMEA_APIKEYS_PLUGINS_PATH\fR
+Colon-separated list of API keys provider plugin directories. If set, it
+replaces the built-in default API keys provider search path.
+.TP
+\fBNYMEA_APIKEYS_PLUGINS_EXTRA_PATH\fR
+Colon-separated list of additional API keys provider plugin directories
+searched before the default API keys provider path.
+.TP
+\fBNYMEA_EXPERIENCE_PLUGINS_PATH\fR
+Colon-separated list of experience plugin directories. If set, it replaces the
+built-in default experience plugin search path.
+.TP
+\fBNYMEA_EXPERIENCE_PLUGINS_EXTRA_PATH\fR
+Colon-separated list of additional experience plugin directories searched
+before the default experience plugin path.
+.TP
+\fBNYMEA_ZWAVE_PLUGIN_PATH\fR
+Colon-separated list of Z-Wave backend plugin directories searched before the
+built-in default Z-Wave backend locations.
+.TP
+\fBDEVICE_SERIAL\fR
+Provides a fallback device serial number if the active platform plugin does
+not implement one.
 .SH SEE ALSO
-Full developer documentation at: <https://doc.nymea.io>
-.br
-Wiki: <https://wiki.nymea.io>
+Full developer documentation at: <https://nymea.io>
 .SH "REPORTING BUGS"
 Issue tracker on github: <https://github.com/nymea/nymea/issues>
 .SH AUTHOR
-Written by Simon Stürz and Michael Zanetti
+Mainly written by Simon Stürz and Michael Zanetti
 .SH COPYRIGHT
 Copyright \(co 2013-2024 nymea GmbH.
 .br
-Copyright \(co 2024-2025 chargebyte austria GmbH.
+Copyright \(co 2024-2026 chargebyte austria GmbH.
 .br
 
 License GPLv3+: GNU GPL version 3 or later <https://www.gnu.org/licenses/gpl-3.0.html>.

@@ -44,12 +44,15 @@
 
 namespace nymeaserver {
 
+class NymeaConfiguration;
+class WebServerConfiguration;
+
 class UpnpDiscoveryImplementation : public UpnpDiscovery
 {
     Q_OBJECT
 
 public:
-    explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent = nullptr);
+    explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, QObject *parent = nullptr);
     ~UpnpDiscoveryImplementation();
 
     UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) override;
@@ -66,6 +69,7 @@ private:
     QTimer *m_notificationTimer = nullptr;
 
     QNetworkAccessManager *m_networkAccessManager = nullptr;
+    NymeaConfiguration *m_configuration = nullptr;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
     QHash<QNetworkReply*, UpnpDeviceDescriptor> m_informationRequestList;
@@ -75,6 +79,9 @@ private:
 
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
     void respondToSearchRequest(QHostAddress host, int port);
+    QByteArray serverUuid() const;
+    bool preferredWebServerConfiguration(WebServerConfiguration &config) const;
+    QString locationStringForHostAddress(const QHostAddress &hostAddress, const WebServerConfiguration &config) const;
 
 protected:
     void setEnabled(bool enabled) override;

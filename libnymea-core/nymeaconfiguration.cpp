@@ -22,22 +22,22 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
 #include "nymeaconfiguration.h"
+#include "loggingcategories.h"
 
-#include <QTimeZone>
 #include <QCoreApplication>
-#include <QFile>
 #include <QDir>
+#include <QFile>
+#include <QTimeZone>
 
 NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
 
 namespace nymeaserver {
 
-NymeaConfiguration::NymeaConfiguration(QObject *parent) :
-    QObject{parent},
-    m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)},
-    m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
+NymeaConfiguration::NymeaConfiguration(QObject *parent)
+    : QObject{parent}
+    , m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)}
+    , m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
 {
     // Init server uuid if we don't have one.
     QUuid id = serverUuid();
@@ -313,16 +313,19 @@ QString NymeaConfiguration::locationName() const
 void NymeaConfiguration::setLocation(double latitude, double longitude, const QString &name)
 {
     m_settings->beginGroup("nymead");
-    if (m_settings->value("locationLatitude").toDouble() != latitude ||
-        m_settings->value("locationLongitude").toDouble() != longitude ||
-        m_settings->value("locationName").toString() != name) {
-
+    const bool changed = m_settings->value("locationLatitude").toDouble() != latitude
+                         || m_settings->value("locationLongitude").toDouble() != longitude
+                         || m_settings->value("locationName").toString() != name;
+    if (changed) {
         m_settings->setValue("locationLatitude", latitude);
         m_settings->setValue("locationLongitude", longitude);
         m_settings->setValue("locationName", name);
-        emit locationChanged();
     }
     m_settings->endGroup();
+
+    if (changed) {
+        emit locationChanged();
+    }
 }
 
 QLocale NymeaConfiguration::locale() const
@@ -330,7 +333,7 @@ QLocale NymeaConfiguration::locale() const
     m_settings->beginGroup("nymead");
     QString value = m_settings->value("language", "en_US").toString();
     m_settings->endGroup();
-    return value;
+    return QLocale(value);
 }
 
 void NymeaConfiguration::setLocale(const QLocale &locale)
@@ -565,6 +568,12 @@ void NymeaConfiguration::setSslCertificate(const QString &sslCertificate, const 
     m_settings->endGroup();
 }
 
+void NymeaConfiguration::sync()
+{
+    m_settings->sync();
+    m_mqttPoliciesSettings->sync();
+}
+
 bool NymeaConfiguration::debugServerEnabled() const
 {
     m_settings->beginGroup("nymead");
@@ -590,7 +599,7 @@ void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 QString NymeaConfiguration::backupDestinationDirectory() const
 {
     m_settings->beginGroup("Backup");
-    QString value = m_settings->value("destinationDirectory", "/var/backup/").toString();
+    QString value = m_settings->value("destinationDirectory", "/var/backups/").toString();
     m_settings->endGroup();
     return value;
 }
@@ -631,6 +640,51 @@ void NymeaConfiguration::setBackupMaxCount(int maxCount)
     }
 }
 
+bool NymeaConfiguration::autoBackupEnabled() const
+{
+    m_settings->beginGroup("Backup");
+    bool value = m_settings->value("autoBackupEnabled", false).toBool();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setAutoBackupEnabled(bool enabled)
+{
+    qCDebug(dcConfiguration()) << "Set auto backup enabled" << enabled;
+    bool currentValue = autoBackupEnabled();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("autoBackupEnabled", enabled);
+    m_settings->endGroup();
+
+    if (currentValue != enabled) {
+        emit autoBackupEnabledChanged(enabled);
+    }
+}
+
+int NymeaConfiguration::autoBackupInterval() const
+{
+    m_settings->beginGroup("Backup");
+    int value = m_settings->value("autoBackupInterval", 24).toInt();
+    m_settings->endGroup();
+    return value;
+}
+
+void NymeaConfiguration::setAutoBackupInterval(int interval)
+{
+    interval = qMax(1, interval);
+    qCDebug(dcConfiguration()) << "Set auto backup interval" << interval << "hours";
+    int currentValue = autoBackupInterval();
+
+    m_settings->beginGroup("Backup");
+    m_settings->setValue("autoBackupInterval", interval);
+    m_settings->endGroup();
+
+    if (currentValue != interval) {
+        emit autoBackupIntervalChanged(interval);
+    }
+}
+
 void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 {
     qCDebug(dcConfiguration()) << "Server uuid:" << uuid.toString();
@@ -642,15 +696,7 @@ void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 
 QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
 {
-    QString publicFolderPath;
-    if (!qEnvironmentVariableIsEmpty("SNAP")) {
-        // FIXME: one could point to sensible data by changing the SNAP env to i.e /etc
-        publicFolderPath = QString::fromLocal8Bit(qgetenv("SNAP")) + "/nymea-webinterface";
-    } else {
-        publicFolderPath = "/usr/share/nymea-webinterface/public/";
-    }
-
-    return publicFolderPath;
+    return "/usr/share/nymea-webinterface/public/";
 }
 
 void NymeaConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)
@@ -756,7 +802,7 @@ void NymeaConfiguration::deleteMqttPolicy(const QString &clientId)
     m_mqttPoliciesSettings->remove(clientId);
 }
 
-QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
+QDebug operator<<(QDebug debug, const ServerConfiguration &configuration)
 {
     debug.nospace() << "ServerConfiguration(" << configuration.address;
     debug.nospace() << ", " << configuration.id;
@@ -765,7 +811,7 @@ QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
     return debug.maybeSpace();
 }
 
-QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
+QDebug operator<<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
 {
     debug.nospace() << "TunnelProxyServerConfiguration(" << configuration.id;
     debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
@@ -788,4 +834,4 @@ QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configura
     return debug.maybeSpace();
 }
 
-}
+} // namespace nymeaserver

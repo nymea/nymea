@@ -38,7 +38,7 @@
 */
 
 
-#include "nymeasettings.h"
+#include "nymeaconfiguration.h"
 #include "loggingcategories.h"
 #include "version.h"
 
@@ -49,15 +49,15 @@
 #include <QNetworkInterface>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QRegularExpression>
 #include <QStringView>
 
 namespace nymeaserver {
 
 /*! Construct the hardware resource UpnpDiscoveryImplementation with the given \a parent. */
-UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent) :
+UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, QObject *parent) :
     UpnpDiscovery(parent),
-    m_networkAccessManager(networkAccessManager)
+    m_networkAccessManager(networkAccessManager),
+    m_configuration(configuration)
 {
     m_notificationTimer = new QTimer(this);
     m_notificationTimer->setInterval(30000);
@@ -124,44 +124,60 @@ void UpnpDiscoveryImplementation::requestDeviceInformation(const QNetworkRequest
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
-void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int port)
+QByteArray UpnpDiscoveryImplementation::serverUuid() const
 {
-    // TODO: Once DeviceManager (and with that this can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
-    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegularExpression("[{}]")).toUtf8();
-    globalSettings.endGroup();
+    if (!m_configuration) {
+        return QUuid().toString(QUuid::WithoutBraces).toUtf8();
+    }
 
-    globalSettings.beginGroup("WebServer");
-    int serverPort = -1;
-    bool useSSL = false;
-    foreach (const QString &group, globalSettings.childGroups()) {
-        globalSettings.beginGroup(group);
-        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
-        bool ssl = globalSettings.value("sslEnabled", true).toBool();
-        int port = globalSettings.value("port", -1).toInt();
-        globalSettings.endGroup();
+    return m_configuration->serverUuid().toString(QUuid::WithoutBraces).toUtf8();
+}
+
+bool UpnpDiscoveryImplementation::preferredWebServerConfiguration(WebServerConfiguration &config) const
+{
+    if (!m_configuration) {
+        return false;
+    }
+
+    bool haveConfig = false;
+    foreach (const WebServerConfiguration &candidate, m_configuration->webServerConfigurations()) {
+        if (candidate.port == 0) {
+            continue;
+        }
 
         // We prefer unencrypted WebServers in this case. Most UPnP clients will bail out on our certificate...
         // However, if there is none without encryption, still use one with, so that at least our own clients find it.
-        if (serverPort == -1) { // Don't have a better option yet. Use this.
-            serverPort = port;
-            useSSL = ssl;
-            continue;
-        }
-        if (!ssl && useSSL) { // There is one without ssl. Use that.
-            serverPort = port;
-            useSSL = false;
-            break;
+        if (!haveConfig || (!candidate.sslEnabled && config.sslEnabled)) {
+            config = candidate;
+            haveConfig = true;
+            if (!config.sslEnabled) {
+                break;
+            }
         }
     }
-    globalSettings.endGroup();
 
-    if (serverPort == -1) {
+    return haveConfig;
+}
+
+QString UpnpDiscoveryImplementation::locationStringForHostAddress(const QHostAddress &hostAddress, const WebServerConfiguration &config) const
+{
+    return QString("%1://%2:%3/server.xml")
+            .arg(config.sslEnabled ? "https" : "http")
+            .arg(hostAddress.toString())
+            .arg(config.port);
+}
+
+void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int port)
+{
+    QByteArray uuid = serverUuid();
+    WebServerConfiguration webServerConfig;
+    bool haveWebServerConfig = preferredWebServerConfiguration(webServerConfig);
+
+    if (!haveWebServerConfig) {
         qCDebug(dcUpnp()) << "No matching WebServer configuration found. Discarding UPnP request! UPnP requires a plaintext webserver.";
         return;
     }
-    if (useSSL) {
+    if (webServerConfig.sslEnabled) {
         qCDebug(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
     }
 
@@ -171,12 +187,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
                 // check subnet
                 if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
-                    QString locationString;
-                    if (useSSL) {
-                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    } else {
-                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    }
+                    QString locationString = locationStringForHostAddress(entry.ip(), webServerConfig);
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
@@ -417,30 +428,19 @@ void UpnpDiscoveryImplementation::notificationTimeout()
 
 void UpnpDiscoveryImplementation::sendByeByeMessage()
 {
-    // TODO: Once DeviceManager (and with that this can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
-    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
-    globalSettings.endGroup();
+    if (!m_configuration) {
+        return;
+    }
 
-    globalSettings.beginGroup("WebServer");
-    foreach (const QString &group, globalSettings.childGroups()) {
-        globalSettings.beginGroup(group);
-        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
-        int serverPort = globalSettings.value("port", -1).toInt();
-        bool useSsl = globalSettings.value("sslEnabled", true).toBool();
-        globalSettings.endGroup();
+    QByteArray uuid = serverUuid();
+
+    foreach (const WebServerConfiguration &config, m_configuration->webServerConfigurations()) {
+        QHostAddress serverInterface = QHostAddress(config.address);
 
         foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-
-                    QString locationString;
-                    if (useSsl) {
-                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    } else {
-                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    }
+                    QString locationString = locationStringForHostAddress(entry.ip(), config);
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
@@ -458,35 +458,23 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
             }
         }
     }
-    globalSettings.endGroup();
 }
 
 void UpnpDiscoveryImplementation::sendAliveMessage()
 {
-    // TODO: Once DeviceManager (and with that this) can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
-    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
-    globalSettings.endGroup();
+    if (!m_configuration) {
+        return;
+    }
 
-    globalSettings.beginGroup("WebServer");
-    foreach (const QString &group, globalSettings.childGroups()) {
-        globalSettings.beginGroup(group);
-        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
-        int serverPort = globalSettings.value("port", -1).toInt();
-        bool useSsl = globalSettings.value("sslEnabled", true).toBool();
-        globalSettings.endGroup();
+    QByteArray uuid = serverUuid();
+
+    foreach (const WebServerConfiguration &config, m_configuration->webServerConfigurations()) {
+        QHostAddress serverInterface = QHostAddress(config.address);
 
         foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
             foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-
-                    QString locationString;
-                    if (useSsl) {
-                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    } else {
-                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
-                    }
+                    QString locationString = locationStringForHostAddress(entry.ip(), config);
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
@@ -504,7 +492,6 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
             }
         }
     }
-    globalSettings.endGroup();
 }
 
 void UpnpDiscoveryImplementation::discoverTimeout()

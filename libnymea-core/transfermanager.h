@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright (C) 2013 - 2024, nymea GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
+*
+* This file is part of nymea.
+*
+* nymea is free software: you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public License
+* as published by the Free Software Foundation, either version 3
+* of the License, or (at your option) any later version.
+*
+* nymea is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with nymea. If not, see <https://www.gnu.org/licenses/>.
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#ifndef TRANSFERMANAGER_H
+#define TRANSFERMANAGER_H
+
+#include <QByteArray>
+#include <QHash>
+#include <QObject>
+#include <QUuid>
+#include <QVariantMap>
+
+#include "jsonrpc/jsoncontext.h"
+
+namespace nymeaserver {
+
+class TransferManager : public QObject
+{
+    Q_OBJECT
+public:
+    enum class Direction {
+        Upload,
+        Download
+    };
+
+    struct TransferSessionInfo
+    {
+        QString transferId;
+        QString transferToken;
+        QString fileName;
+        qint64 size = 0;
+    };
+
+    struct DownloadInfo
+    {
+        QString downloadId;
+        QString fileName;
+        qint64 size = 0;
+    };
+
+    struct FinishedUploadInfo
+    {
+        QString downloadId;
+        QString fileName;
+        qint64 size = 0;
+        bool restoreTriggered = false;
+    };
+
+    explicit TransferManager(QObject *parent = nullptr);
+
+    TransferSessionInfo createUpload(const QString &fileName, qint64 size, const JsonContext &context);
+    TransferSessionInfo createRestoreUpload(const QString &fileName, qint64 size, const QString &targetFilePath, const JsonContext &context);
+    DownloadInfo createDownload(const QString &fileName, const QByteArray &data, const JsonContext &context, bool emitNotification = false);
+    TransferSessionInfo createDownloadTransfer(const QString &downloadId, const JsonContext &context);
+
+    bool uploadTransferExists(const QString &transferId) const;
+    bool validateTransferToken(const QString &transferId, const QString &transferToken) const;
+    Direction transferDirection(const QString &transferId) const;
+
+    qint64 transferSize(const QString &transferId) const;
+    QString transferFileName(const QString &transferId) const;
+    qint64 transferOffset(const QString &transferId) const;
+
+    bool appendUploadData(const QString &transferId, const QByteArray &data, QString *errorString = nullptr);
+    FinishedUploadInfo finishUpload(const QString &transferId, QString *errorString = nullptr);
+
+    QByteArray readDownloadChunk(const QString &transferId, int maxSize, bool *finished, QString *errorString = nullptr);
+
+signals:
+    void downloadAvailable(const QUuid &clientId, const QVariantMap &params);
+    void restoreUploadFinished(const QString &transferId, const QString &filePath);
+
+private:
+    enum class UploadAction {
+        CreateDownload,
+        RestoreBackup
+    };
+
+    struct TransferSession
+    {
+        QString transferId;
+        QString transferToken;
+        Direction direction = Direction::Upload;
+        UploadAction uploadAction = UploadAction::CreateDownload;
+        QString fileName;
+        QString targetFilePath;
+        qint64 size = 0;
+        qint64 offset = 0;
+        QByteArray data;
+        QString downloadId;
+        QUuid ownerClientId;
+        QByteArray ownerToken;
+    };
+
+    struct DownloadEntry
+    {
+        QString downloadId;
+        QString fileName;
+        QByteArray data;
+        QUuid ownerClientId;
+        QByteArray ownerToken;
+    };
+
+    bool matchesOwner(const DownloadEntry &entry, const JsonContext &context) const;
+
+    QHash<QString, TransferSession> m_transferSessions;
+    QHash<QString, DownloadEntry> m_downloads;
+};
+
+} // namespace nymeaserver
+
+#endif // TRANSFERMANAGER_H

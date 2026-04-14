@@ -700,6 +700,12 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         connect(reply, &JsonReply::finished, this, &JsonRPCServerImplementation::asyncReplyFinished);
         reply->startWait();
     } else {
+        if (reply->responseType() == JsonReply::ResponseTypeError) {
+            sendErrorResponse(interface, clientId, commandId, reply->errorString());
+            reply->deleteLater();
+            return;
+        }
+
         JsonValidator validator;
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || validator.validateReturns(reply->data(), targetNamespace + '.' + method, m_api).success(),
                    validator.result().where().toUtf8(),

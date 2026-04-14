@@ -25,8 +25,10 @@
 #ifndef CONFIGURATIONHANDLER_H
 #define CONFIGURATIONHANDLER_H
 
+#include <QHash>
 #include <QObject>
 
+#include "backupmanager.h"
 #include "jsonrpc/jsonhandler.h"
 #include "nymeaconfiguration.h"
 
@@ -41,6 +43,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetConfigurations(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetBackupFiles(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetAvailableLanguages(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetServerName(const QVariantMap &params) const;
@@ -59,6 +62,11 @@ public:
 
     Q_INVOKABLE JsonReply *SetBackupConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *CreateBackup(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *CreateAndDownloadBackup(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *DownloadBackupFile(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *DeleteBackupFile(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *RestoreBackupFile(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *UploadAndRestoreBackup(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *GetMqttServerConfigurations(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetMqttServerConfiguration(const QVariantMap &params) const;
@@ -79,6 +87,7 @@ signals:
     void TunnelProxyServerConfigurationChanged(const QVariantMap &params);
     void TunnelProxyServerConfigurationRemoved(const QVariantMap &params);
     void BackupConfigurationChanged(const QVariantMap &params);
+    void BackupFilesChanged(const QVariantMap &params);
 
     void MqttServerConfigurationChanged(const QVariantMap &params);
     void MqttServerConfigurationRemoved(const QVariantMap &params);
@@ -88,6 +97,8 @@ signals:
 private slots:
     void onBasicConfigurationChanged();
     void onBackupConfigurationChanged();
+    void onBackupFilesChanged();
+    void onRestoreUploadFinished(const QString &transferId, const QString &filePath);
     void onTcpServerConfigurationChanged(const QString &id);
     void onTcpServerConfigurationRemoved(const QString &id);
     void onWebServerConfigurationChanged(const QString &id);
@@ -102,9 +113,14 @@ private slots:
     void onMqttPolicyRemoved(const QString &clientId);
 
 private:
+    BackupFiles backupFiles() const;
+    QString resolveBackupFilePath(const QString &fileName, NymeaConfiguration::ConfigurationError *error = nullptr) const;
+    static bool isSafeBackupFileName(const QString &fileName);
+
     static QVariantMap packBasicConfiguration();
     static QVariantMap packBackupConfiguration();
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
+    mutable QHash<QString, QString> m_restoreUploadPaths;
 };
 
 } // namespace nymeaserver

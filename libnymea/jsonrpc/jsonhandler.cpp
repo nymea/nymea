@@ -174,6 +174,11 @@ JsonReply *JsonHandler::createReply(const QVariantMap &data) const
     return JsonReply::createReply(const_cast<JsonHandler*>(this), data);
 }
 
+JsonReply *JsonHandler::createErrorReply(const QString &error) const
+{
+    return JsonReply::createErrorReply(const_cast<JsonHandler *>(this), error);
+}
+
 JsonReply *JsonHandler::createAsyncReply(const QString &method) const
 {
     return JsonReply::createAsyncReply(const_cast<JsonHandler*>(this), method);

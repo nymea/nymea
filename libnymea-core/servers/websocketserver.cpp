@@ -43,10 +43,10 @@
     The URL for the secure websocket (TLS 1.2):
     \code wss://localhost:4444\endcode
 
-    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/nymea/nymead.conf file.
+    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /var/lib/nymea/nymead.conf file.
 
     \note For \tt wss you need to have a certificate and configure it in the \tt SSL-configuration
-    section of the \tt /etc/nymea/nymead.conf file.
+    section of the \tt /var/lib/nymea/nymead.conf file.
 
     \sa WebServer, TcpServer, TransportInterface
 */
@@ -156,9 +156,15 @@ void WebSocketServer::onClientConnected()
 void WebSocketServer::onClientDisconnected()
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    QUuid clientId = m_clientList.key(client);
+    const QUuid clientId = m_clientList.key(client);
+    if (clientId.isNull()) {
+        qCDebug(dcWebSocketServer()) << "Ignoring disconnect from unmanaged websocket client.";
+        return;
+    }
+
     qCDebug(dcWebSocketServer()) << "Client" << clientId.toString() << "disconnected. (Remote address:" << client->peerAddress().toString() << ")" ;
-    m_clientList.take(clientId)->deleteLater();
+    m_clientList.remove(clientId);
+    client->deleteLater();
     emit clientDisconnected(clientId);
 }
 

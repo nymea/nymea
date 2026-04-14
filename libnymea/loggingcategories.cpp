@@ -61,13 +61,14 @@ NYMEA_LOGGING_CATEGORY(dcCloud, "Cloud")
 NYMEA_LOGGING_CATEGORY(dcCloudTraffic, "CloudTraffic")
 NYMEA_LOGGING_CATEGORY(dcNetworkManager, "NetworkManager")
 NYMEA_LOGGING_CATEGORY(dcUserManager, "UserManager")
-NYMEA_LOGGING_CATEGORY(dcAWS, "AWS")
-NYMEA_LOGGING_CATEGORY(dcAWSTraffic, "AWSTraffic")
 NYMEA_LOGGING_CATEGORY(dcBluetoothServer, "BluetoothServer")
 NYMEA_LOGGING_CATEGORY(dcBluetoothServerTraffic, "BluetoothServerTraffic")
 NYMEA_LOGGING_CATEGORY(dcMqtt, "Mqtt")
 NYMEA_LOGGING_CATEGORY(dcTranslations, "Translations")
 NYMEA_LOGGING_CATEGORY(dcI2C, "I2C")
+NYMEA_LOGGING_CATEGORY(dcTransfer, "Transfer")
+NYMEA_LOGGING_CATEGORY(dcTransferTraffic, "TransferTraffic")
+NYMEA_LOGGING_CATEGORY(dcTransportRouter, "TransportRouter")
 
 
 static QFile s_logFile;

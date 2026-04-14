@@ -11,6 +11,7 @@ SUBDIRS = \
         mqttbroker \
         plugins \
         pythonplugins \
+        transfers \
         rules \
         scripts \
         tags \

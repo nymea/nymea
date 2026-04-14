@@ -3,7 +3,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright (C) 2013 - 2024, nymea GmbH
-* Copyright (C) 2024 - 2025, chargebyte austria GmbH
+* Copyright (C) 2024 - 2026, chargebyte austria GmbH
 *
 * This file is part of nymea.
 *
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     // check if there are local translations
     if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
         if (!translator.load(QLocale::system(), application.applicationName(), "-", NymeaSettings::translationsPath(), ".qm"))
-            qCDebug(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << NymeaSettings::translationsPath();
+            qCDebug(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << "\n" << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << "\n" << NymeaSettings::translationsPath();
 
 
 
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     applicationDescription.append(QString("nymead %1 %2 %3 nymea GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 3.\n\n"
-                                          "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING).arg(JSON_PROTOCOL_VERSION));
+                                          "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9), COPYRIGHT_YEAR_STRING, JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -130,6 +130,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Note: evaluate the NYMEA_CONFIG_PATH before any configuration access occurres like reading logging rules.
+    if (parser.isSet(configurationOption)) {
+        QString configPath = parser.value(configurationOption);
+        qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
+        if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
+            QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
+            if (configPathEnv != configPath) {
+                qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
+            }
+        }
+
+        qputenv("NYMEA_CONFIG_PATH", configPath.toUtf8());
+    }
+
+
     /* The logging rules will be evaluated sequentially
      *  1. All debug and info categories off (with -q also warnings)
      *  2. Enable all warning info and debug categories if requested from command line (-p)
@@ -164,11 +179,11 @@ int main(int argc, char *argv[])
     foreach (const QString &category, nymeaSettings.childKeys()) {
         bool enable = nymeaSettings.value(category, false).toBool();
         if (enable && category.endsWith("debug")) {
-            loggingRules << QString("%1=%2").arg(category).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "info")).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "warning")).arg("true");
+            loggingRules << QString("%1=%2").arg(category, "true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "info"), "true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "warning"), "true");
         } else {
-            loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
+            loggingRules << QString("%1=%2").arg(category, nymeaSettings.value(category, "false").toString());
         }
     }
     nymeaSettings.endGroup();
@@ -184,11 +199,11 @@ int main(int argc, char *argv[])
         }
         debugArea.remove(QRegularExpression("(Warnings|Info)$"));
         if (enable && !isWarning && !isInfo) {
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("debug").arg("true"));
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("info").arg("true"));
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("warning").arg("true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "debug", "true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "info", "true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, "warning", "true"));
         } else {
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : (isInfo ? "info" : "debug")).arg(enable ? "true": "false"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea, isWarning ? "warning" : (isInfo ? "info" : "debug"), enable ? "true": "false"));
         }
     }
 
@@ -239,19 +254,6 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "Snap app data   :" << qgetenv("SNAP_DATA");
             qCInfo(dcApplication()) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
             qCInfo(dcApplication()) << "Snap app common :" << qgetenv("SNAP_COMMON");
-        }
-
-        if (parser.isSet(configurationOption)) {
-            QString configPath = parser.value(configurationOption);
-            qCInfo(dcApplication()) << "Using custom configuration localtion" << configPath;
-            if (!qEnvironmentVariableIsEmpty("NYMEA_CONFIG_PATH")) {
-                QString configPathEnv = QString::fromLocal8Bit(qgetenv("NYMEA_CONFIG_PATH"));
-                if (configPathEnv != configPath) {
-                    qCWarning(dcApplication()) << "The configuration param is overriding the configured" << configPathEnv << "with" << configPath;
-                }
-            }
-
-            qputenv("NYMEA_CONFIG_PATH", configPath.toUtf8());
         }
 
         // create core instance

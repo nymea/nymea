@@ -1,5 +1,5 @@
 {
-    "description": "An extended energy storage can be controlled using the charging power. The 'chargingPower' state follows the usual convention that a positive value is charging (consuming) energy and a negative value discharging (returning) energy. Usualy there are limits for min/max charging and discharging. The limit values must have the same sign as the charging/discharging signs (+ charging, - discharging). The 'chargingCapabilities' indicate how the energystorage can be used and must be set.",
+    "description": "An extended energy storage can be controlled using the charging power. The 'chargingPower' state follows the usual convention that a positive value is charging (consuming) energy and a negative value discharging (returning) energy. Usualy there are limits for min/max charging and discharging. The limit values must have the same sign as the charging/discharging signs (+ charging, - discharging) and are optional depending on the capabilities. The 'chargingCapabilities' indicate how the energystorage can be used and must be set.",
     "extends": ["energystorage"],
     "states": [
         {
@@ -24,12 +24,14 @@
             "name": "minChargingPower",
             "type": "double",
             "unit": "Watt",
+            "optional": true,
             "logged": false
         },
         {
             "name": "maxDischargingPower",
             "type": "double",
             "unit": "Watt",
+            "optional": true,
             "logged": false
         },
         {

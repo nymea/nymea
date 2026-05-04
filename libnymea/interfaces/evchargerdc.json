@@ -1,4 +1,4 @@
 {
-    "description": "A DC electrical vehicle charger. .",
-    "extends": ["charger", "extendedenergystorage"]
+    "description": "A DC electrical vehicle charger.",
+    "extends": ["charger", "powerflowcontroller"]
 }

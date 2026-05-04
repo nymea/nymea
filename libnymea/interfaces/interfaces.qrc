@@ -73,6 +73,7 @@
         <file>extendedshutter.json</file>
         <file>smartlock.json</file>
         <file>system.json</file>
+        <file>acchargeablevehicle.json</file>
         <file>electricvehicle.json</file>
         <file>smartmeter.json</file>
         <file>smartmeterconsumer.json</file>
@@ -103,7 +104,11 @@
         <file>networkdevice.json</file>
         <file>valve.json</file>
         <file>extendedenergystorage.json</file>
+        <file>hlccharger.json</file>
+        <file>hlcvehicle.json</file>
+        <file>powerflowcontroller.json</file>
         <file>charger.json</file>
         <file>evchargerdc.json</file>
+        <file>vehiclebattery.json</file>
     </qresource>
 </RCC>

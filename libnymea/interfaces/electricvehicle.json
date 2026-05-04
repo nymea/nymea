@@ -1,34 +1,3 @@
 {
-    "description": "Interface for electric vehicles. Some cars require a minimum charging current to start charging (typically 6 A), and may also enforce a maximum charging current even if the charger supports more.",
-    "extends": ["battery"],
-    "states": [
-        {
-            "name": "capacity",
-            "type": "double",
-            "unit": "KiloWattHour"
-        },
-        {
-            "name": "minChargingCurrent",
-            "type": "uint",
-            "unit": "Ampere",
-            "minValue": 6,
-            "maxValue": 16,
-            "optional": true
-        },
-        {
-            "name": "maxChargingCurrent",
-            "type": "uint",
-            "unit": "Ampere",
-            "minValue": 16,
-            "maxValue": 80,
-            "optional": true
-        },
-        {
-            "name": "phaseCount",
-            "type": "uint",
-            "minValue": 1,
-            "maxValue": 3,
-            "optional": true
-        }
-    ]
+    "description": "Base interface for electric vehicles."
 }

@@ -1,0 +1,22 @@
+{
+    "description": "Interface for vehicle-side HLC session state.",
+    "states": [
+        {
+            "name": "pluggedIn",
+            "type": "bool",
+            "logged": true
+        },
+        {
+            "name": "connectedChargerThingId",
+            "type": "QString",
+            "optional": true,
+            "logged": false
+        },
+        {
+            "name": "hlcSessionActive",
+            "type": "bool",
+            "optional": true,
+            "logged": true
+        }
+    ]
+}

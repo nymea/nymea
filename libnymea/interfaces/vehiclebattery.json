@@ -1,0 +1,32 @@
+{
+    "description": "Interface for electric vehicle battery and charging session telemetry.",
+    "states": [
+        {
+            "name": "batteryLevel",
+            "type": "int",
+            "minValue": 0,
+            "maxValue": 100,
+            "unit": "Percentage",
+            "optional": true,
+            "logged": true
+        },
+        {
+            "name": "batteryCritical",
+            "type": "bool",
+            "optional": true,
+            "logged": true
+        },
+        {
+            "name": "chargingState",
+            "type": "QString",
+            "allowedValues": ["idle", "charging", "discharging"],
+            "optional": true
+        },
+        {
+            "name": "capacity",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "optional": true
+        }
+    ]
+}

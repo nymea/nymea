@@ -16,6 +16,13 @@
             "type": "QString",
             "optional": true,
             "logged": false
+        },
+        {
+            "name": "maxChargingPower",
+            "type": "double",
+            "unit": "Watt",
+            "optional": true,
+            "logged": false
         }
     ]
 }

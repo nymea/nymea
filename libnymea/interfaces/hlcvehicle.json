@@ -17,6 +17,14 @@
             "type": "bool",
             "optional": true,
             "logged": true
+        },
+        {
+            "name": "maxChargingPower",
+            "type": "double",
+            "unit": "Watt",
+            "optional": true,
+            "writable": true,
+            "logged": false
         }
     ]
 }

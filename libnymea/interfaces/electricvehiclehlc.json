@@ -1,0 +1,12 @@
+{
+    "description": "Interface for vehicle-side HLC session state.",
+    "extends": ["electricvehicle"],
+    "states": [
+        {
+            "name": "hlcSessionActive",
+            "type": "bool",
+            "optional": true,
+            "logged": true
+        }
+    ]
+}

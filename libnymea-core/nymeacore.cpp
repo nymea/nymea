@@ -148,6 +148,8 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_backupManager->setMaxBackups(m_configuration->backupMaxCount());
     m_backupManager->setAutomaticBackupInterval(m_configuration->autoBackupInterval());
     m_backupManager->setAutomaticBackupEnabled(m_configuration->autoBackupEnabled());
+    m_backupManager->setInfluxBackupEnabled(!disableLogEngine);
+    m_backupManager->setInfluxDatabaseConfiguration(m_configuration->logDBHost(), m_configuration->logDBName(), m_configuration->logDBUser(), m_configuration->logDBPassword());
 
     qCDebug(dcCore()) << "Creating Time Manager";
     // Migration path: nymea < 0.18 doesn't use system time zone but stores its own time zone in the config

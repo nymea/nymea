@@ -1,3 +1,12 @@
+nymea (1.15.1) noble; urgency=medium
+
+  [ Simon Stürz ]
+  * Valve interface
+  * NetworkDeciceDiscovery: Fix crash on empty MAC address
+  * Update mac-addresses database
+
+ -- jenkins <developer@nymea.io>  Sat, 06 Jun 2026 21:07:26 +0200
+
 nymea (1.15.0) noble; urgency=medium
 
   [ Simon Stürz ]

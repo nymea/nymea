@@ -157,7 +157,8 @@ QString NetworkDeviceInfo::thingParamValueMacAddress() const
     QString macString;
     switch (m_monitorMode) {
     case MonitorModeMac:
-        macString = m_macAddressInfos.constFirst().macAddress().toString();
+        if (!m_macAddressInfos.isEmpty() && m_macAddressInfos.constFirst().isValid())
+            macString = m_macAddressInfos.constFirst().macAddress().toString();
         break;
     default:
         // In any other case we don't want to store the mac address since we can not relai on it

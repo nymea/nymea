@@ -25,6 +25,7 @@
 #include "nymeatestbase.h"
 
 #include <network/macaddress.h>
+#include <network/networkdeviceinfo.h>
 
 using namespace nymeaserver;
 
@@ -47,6 +48,8 @@ private slots:
 
     void macAddressValidation_data();
     void macAddressValidation();
+
+    void networkDeviceInfoThingParamValueMacAddress();
 
 };
 
@@ -122,6 +125,24 @@ void TestMacAddress::macAddressValidation()
     QCOMPARE(mac.isValid(), isValid);
     QCOMPARE(mac.isNull(), isNull);
     QCOMPARE(mac.toString(), toString);
+}
+
+void TestMacAddress::networkDeviceInfoThingParamValueMacAddress()
+{
+    NetworkDeviceInfo emptyInfo;
+    emptyInfo.setMonitorMode(NetworkDeviceInfo::MonitorModeMac);
+    QCOMPARE(emptyInfo.thingParamValueMacAddress(), QString());
+
+    NetworkDeviceInfo invalidMacInfo(QString("invalid"));
+    invalidMacInfo.setMonitorMode(NetworkDeviceInfo::MonitorModeMac);
+    QCOMPARE(invalidMacInfo.thingParamValueMacAddress(), QString());
+
+    NetworkDeviceInfo macInfo(m_alphaNumericMacString);
+    macInfo.setMonitorMode(NetworkDeviceInfo::MonitorModeMac);
+    QCOMPARE(macInfo.thingParamValueMacAddress(), m_alphaNumericMacString);
+
+    macInfo.setMonitorMode(NetworkDeviceInfo::MonitorModeHostName);
+    QCOMPARE(macInfo.thingParamValueMacAddress(), QString());
 }
 
 #include "testmacaddress.moc"

@@ -185,6 +185,42 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
     return QVariant();
 }
 
+QVariantMap NymeaTestBase::discoverThingsAndWait(const QVariantMap &params, int expectedCount)
+{
+    enableNotifications({"Integrations"});
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+
+    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QUuid discoveryId = response.toMap().value("params").toMap().value("discoveryId").toUuid();
+
+    QVariantList thingDiscoveredNotifications;
+    QVariantList discoveryFinishedNotifications;
+    for (int i = 0; i < 20; i++) {
+        thingDiscoveredNotifications = checkNotifications(clientSpy, "Integrations.ThingDiscovered");
+        discoveryFinishedNotifications = checkNotifications(clientSpy, "Integrations.DiscoveryFinished");
+        if ((expectedCount < 0 || thingDiscoveredNotifications.count() >= expectedCount) && discoveryFinishedNotifications.count() >= 1) {
+            break;
+        }
+        clientSpy.wait(500);
+    }
+
+    QVariantList thingDescriptors;
+    foreach (const QVariant &notificationVariant, thingDiscoveredNotifications) {
+        QVariantMap notificationParams = notificationVariant.toMap().value("params").toMap();
+        if (notificationParams.value("discoveryId").toUuid() == discoveryId) {
+            thingDescriptors.append(notificationParams.value("thingDescriptor"));
+        }
+    }
+
+    QVariantMap result;
+    result.insert("response", response);
+    result.insert("thingDescriptors", thingDescriptors);
+    if (!discoveryFinishedNotifications.isEmpty()) {
+        result.insert("discoveryFinished", discoveryFinishedNotifications.first().toMap().value("params"));
+    }
+    return result;
+}
+
 QVariant NymeaTestBase::checkNotification(const QSignalSpy &spy, const QString &notification)
 {
     //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;

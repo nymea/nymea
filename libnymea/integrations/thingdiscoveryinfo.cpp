@@ -81,11 +81,14 @@ Thing::ThingError ThingDiscoveryInfo::status() const
 void ThingDiscoveryInfo::addThingDescriptor(const ThingDescriptor &thingDescriptor)
 {
     m_thingDescriptors.append(thingDescriptor);
+    emit thingDiscovered(thingDescriptor);
 }
 
 void ThingDiscoveryInfo::addThingDescriptors(const ThingDescriptors &thingDescriptors)
 {
-    m_thingDescriptors.append(thingDescriptors);
+    foreach (const ThingDescriptor &thingDescriptor, thingDescriptors) {
+        addThingDescriptor(thingDescriptor);
+    }
 }
 
 ThingDescriptors ThingDiscoveryInfo::thingDescriptors() const

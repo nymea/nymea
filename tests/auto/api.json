@@ -1056,15 +1056,14 @@
             }
         },
         "Integrations.DiscoverThings": {
-            "description": "Performs a thing discovery for things of the given thingClassId and returns the results. This function may take a while to return. Note that this method will include all the found things, that is, including things that may already have been added. Those things will have thingId set to the id of the already added thing. Such results may be used to reconfigure existing things and might be filtered in cases where only unknown things are of interest.",
+            "description": "Starts a thing discovery for things of the given thingClassId and returns a discoveryId. Discovered things will be emitted as ThingDiscovered notifications. When the discovery has finished, a DiscoveryFinished notification will be emitted. The discovery may include things that may already have been added. Those things will have thingId set to the id of the already added thing. Such results may be used to reconfigure existing things and might be filtered in cases where only unknown things are of interest.",
             "params": {
                 "o:discoveryParams": "$ref:ParamList",
                 "thingClassId": "Uuid"
             },
             "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
-                "o:displayMessage": "String",
-                "o:thingDescriptors": "$ref:ThingDescriptors",
+                "discoveryId": "Uuid",
                 "thingError": "$ref:ThingError"
             }
         },
@@ -2627,6 +2626,14 @@
                 "name": "String"
             }
         },
+        "Integrations.DiscoveryFinished": {
+            "description": "Emitted whenever a thing discovery has finished.",
+            "params": {
+                "discoveryId": "Uuid",
+                "o:displayMessage": "String",
+                "thingError": "$ref:ThingError"
+            }
+        },
         "Integrations.EventTriggered": {
             "description": "Emitted whenever an Event is triggered.",
             "params": {
@@ -2675,6 +2682,13 @@
             "description": "Emitted whenever the params or name of a thing are changed (by EditThing or ReconfigureThing).",
             "params": {
                 "thing": "$ref:Thing"
+            }
+        },
+        "Integrations.ThingDiscovered": {
+            "description": "Emitted whenever a thing has been discovered during a discovery.",
+            "params": {
+                "discoveryId": "Uuid",
+                "thingDescriptor": "$ref:ThingDescriptor"
             }
         },
         "Integrations.ThingRemoved": {

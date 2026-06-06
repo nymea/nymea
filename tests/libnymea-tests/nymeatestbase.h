@@ -51,6 +51,7 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap(), const QUuid &clientId = QUuid(), const QByteArray &tokenOverride = "default");
+    QVariantMap discoverThingsAndWait(const QVariantMap &params, int expectedCount = -1);
     QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
     QVariantList checkNotifications(const QSignalSpy &spy, const QString &notification);
 

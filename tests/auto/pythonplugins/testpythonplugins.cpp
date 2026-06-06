@@ -108,12 +108,14 @@ void TestPythonPlugins::testDiscoverPairAndRemoveThing()
     QVariantMap params;
     params.insert("thingClassId", pyMockDiscoveryPairingThingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, 2);
+    QVariant response = discoveryResult.value("response");
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response, Thing::ThingErrorNoError);
-    QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 2);
+    QCOMPARE(thingDescriptors.count(), 2);
 
-    ThingDescriptorId descriptorId = response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toUuid();
+    ThingDescriptorId descriptorId = thingDescriptors.first().toMap().value("id").toUuid();
 
     // Pair
     params.clear();

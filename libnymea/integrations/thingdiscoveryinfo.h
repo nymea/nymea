@@ -59,6 +59,7 @@ public slots:
     void finish(Thing::ThingError status, const QString &displayMessage = QString());
 
 signals:
+    void thingDiscovered(const ThingDescriptor &thingDescriptor);
     void finished();
     void aborted();
 

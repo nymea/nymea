@@ -747,19 +747,47 @@ void TestIntegrations::discoverThings()
     QFETCH(Thing::ThingError, error);
     QFETCH(QVariantList, discoveryParams);
 
+    enableNotifications({"Integrations"});
+    QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+
     QVariantMap params;
     params.insert("thingClassId", thingClassId);
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Integrations.DiscoverThings", params);
 
     verifyThingError(response, error);
-    if (error == Thing::ThingErrorNoError) {
-        QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), resultCount);
+    QVariantMap responseParams = response.toMap().value("params").toMap();
+    QVERIFY2(responseParams.contains("discoveryId"), "DiscoverThings response does not contain discoveryId");
+    QUuid discoveryId = responseParams.value("discoveryId").toUuid();
+    QVERIFY2(!discoveryId.isNull(), "DiscoverThings response contains an invalid discoveryId");
+
+    QVariantList thingDiscoveredNotifications;
+    QVariantList discoveryFinishedNotifications;
+    for (int i = 0; i < 20; i++) {
+        thingDiscoveredNotifications = checkNotifications(clientSpy, "Integrations.ThingDiscovered");
+        discoveryFinishedNotifications = checkNotifications(clientSpy, "Integrations.DiscoveryFinished");
+        if (thingDiscoveredNotifications.count() >= resultCount && discoveryFinishedNotifications.count() >= 1) {
+            break;
+        }
+        clientSpy.wait(500);
     }
+    QCOMPARE(thingDiscoveredNotifications.count(), resultCount);
+    QCOMPARE(discoveryFinishedNotifications.count(), 1);
+
+    foreach (const QVariant &notificationVariant, thingDiscoveredNotifications) {
+        QVariantMap notificationParams = notificationVariant.toMap().value("params").toMap();
+        QCOMPARE(notificationParams.value("discoveryId").toUuid(), discoveryId);
+        QVERIFY2(notificationParams.value("thingDescriptor").toMap().contains("id"), "ThingDiscovered notification does not contain a thingDescriptor");
+    }
+
+    QVariantMap discoveryFinishedParams = discoveryFinishedNotifications.first().toMap().value("params").toMap();
+    QCOMPARE(discoveryFinishedParams.value("discoveryId").toUuid(), discoveryId);
+    QCOMPARE(discoveryFinishedParams.value("thingError").toString(), enumValueName(error));
+    QVERIFY2(!discoveryFinishedParams.contains("thingDescriptors"), "DiscoveryFinished notification must not contain thingDescriptors");
 
     // If we found something, lets try to add it
     if (error == Thing::ThingErrorNoError) {
-        ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
+        ThingDescriptorId descriptorId = ThingDescriptorId(thingDiscoveredNotifications.first().toMap().value("params").toMap().value("thingDescriptor").toMap().value("id").toString());
 
         params.clear();
         params.insert("thingClassId", thingClassId);
@@ -775,6 +803,8 @@ void TestIntegrations::discoverThings()
         response = injectAndWait("Integrations.RemoveThing", params);
         verifyThingError(response);
     }
+
+    QCOMPARE(disableNotifications(), true);
 }
 
 void TestIntegrations::addPushButtonThings_data()
@@ -803,14 +833,16 @@ void TestIntegrations::addPushButtonThings()
     QVariantMap params;
     params.insert("thingClassId", thingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, 1);
+    QVariant response = discoveryResult.value("response");
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response, Thing::ThingErrorNoError);
-    QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
+    QCOMPARE(thingDescriptors.count(), 1);
 
 
     // Pair thing
-    ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
+    ThingDescriptorId descriptorId = ThingDescriptorId(thingDescriptors.first().toMap().value("id").toString());
     params.clear();
     params.insert("thingClassId", thingClassId);
     params.insert("name", "Pushbutton mock");
@@ -869,13 +901,15 @@ void TestIntegrations::addDisplayPinThings()
     QVariantMap params;
     params.insert("thingClassId", thingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, 1);
+    QVariant response = discoveryResult.value("response");
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response, Thing::ThingErrorNoError);
-    QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
+    QCOMPARE(thingDescriptors.count(), 1);
 
     // Pair thing
-    ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
+    ThingDescriptorId descriptorId = ThingDescriptorId(thingDescriptors.first().toMap().value("id").toString());
     params.clear();
     params.insert("thingClassId", thingClassId);
     params.insert("name", "Display pin mock");
@@ -1467,16 +1501,16 @@ void TestIntegrations::reconfigureByDiscovery()
     QVariantMap params;
     params.insert("thingClassId", thingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, resultCount);
+    QVariant response = discoveryResult.value("response");
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response);
     if (error == Thing::ThingErrorNoError) {
-        QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), resultCount);
+        QCOMPARE(thingDescriptors.count(), resultCount);
     }
 
     // add Discovered Thing 1 port 55555
-    QVariantList thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
-
     ThingDescriptorId descriptorId;
     foreach (const QVariant &descriptor, thingDescriptors) {
         // find the thing with port 55555
@@ -1508,14 +1542,14 @@ void TestIntegrations::reconfigureByDiscovery()
     response.clear();
     params.insert("thingClassId", thingClassId);
     params.insert("discoveryParams", discoveryParams);
-    response = injectAndWait("Integrations.DiscoverThings", params);
+    discoveryResult = discoverThingsAndWait(params, resultCount);
+    response = discoveryResult.value("response");
+    thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response, error);
     if (error == Thing::ThingErrorNoError) {
-        QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), resultCount);
+        QCOMPARE(thingDescriptors.count(), resultCount);
     }
-
-    thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
 
     // find the already added thing
     descriptorId = ThingDescriptorId(); // reset it first
@@ -1603,13 +1637,14 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
     QVariantMap params;
     params.insert("thingClassId", displayPinMockThingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, 1);
+    QVariant response = discoveryResult.value("response");
 
     verifyThingError(response);
-    QVariantList thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     qCDebug(dcTests()) << "Discovery result:" << qUtf8Printable(QJsonDocument::fromVariant(thingDescriptors).toJson(QJsonDocument::Indented));
-    QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
+    QCOMPARE(thingDescriptors.count(), 1);
 
     // add Discovered thing 1 port 55555
 
@@ -1648,9 +1683,10 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
     response.clear();
     params.insert("thingClassId", displayPinMockThingClassId);
     params.insert("discoveryParams", discoveryParams);
-    response = injectAndWait("Integrations.DiscoverThings", params);
+    discoveryResult = discoverThingsAndWait(params, 1);
+    response = discoveryResult.value("response");
 
-    thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
+    thingDescriptors = discoveryResult.value("thingDescriptors").toList();
     qCDebug(dcTests()) << "Discovery result:" << qUtf8Printable(QJsonDocument::fromVariant(thingDescriptors).toJson(QJsonDocument::Indented));
 
     verifyThingError(response, Thing::ThingErrorNoError);

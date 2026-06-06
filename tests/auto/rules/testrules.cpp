@@ -165,12 +165,18 @@ ThingId TestRules::addDisplayPinMock()
     QVariantMap params;
     params.insert("thingClassId", displayPinMockThingClassId);
     params.insert("discoveryParams", discoveryParams);
-    QVariant response = injectAndWait("Integrations.DiscoverThings", params);
+    QVariantMap discoveryResult = discoverThingsAndWait(params, 1);
+    QVariant response = discoveryResult.value("response");
+    QVariantList thingDescriptors = discoveryResult.value("thingDescriptors").toList();
 
     verifyThingError(response, Thing::ThingErrorNoError);
 
     // Pair mock
-    ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
+    if (thingDescriptors.count() != 1) {
+        qWarning() << "Expected 1 discovered thing descriptor, got" << thingDescriptors.count();
+        return ThingId();
+    }
+    ThingDescriptorId descriptorId = ThingDescriptorId(thingDescriptors.first().toMap().value("id").toString());
     params.clear();
     params.insert("thingClassId", displayPinMockThingClassId);
     params.insert("name", "Display pin mock");

@@ -29,6 +29,8 @@
 #include "usermanager/userinfo.h"
 #include "integrations/thingmanager.h"
 
+#include <QUuid>
+
 namespace nymeaserver {
 
 class IntegrationsHandler : public JsonHandler
@@ -90,6 +92,8 @@ signals:
     void EventTriggered(const QVariantMap &params, const ThingId &thingId);
     void IOConnectionAdded(const QVariantMap &params);
     void IOConnectionRemoved(const QVariantMap &params);
+    void ThingDiscovered(const QUuid &clientId, const QVariantMap &params);
+    void DiscoveryFinished(const QUuid &clientId, const QVariantMap &params);
 
     // User specific notifications depending on the thing based permissions
     void ThingRemoved(const QVariantMap &params, const nymeaserver::UserInfo &userInfo);

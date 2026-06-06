@@ -41,7 +41,9 @@
 #include "nymeacore.h"
 #include "usermanager/usermanager.h"
 
+#include <QTimer>
 #include <QDebug>
+#include <QUuid>
 #include <QJsonDocument>
 #include <QCryptographicHash>
 
@@ -199,16 +201,16 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerMethod("GetThings", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
-    description = "Performs a thing discovery for things of the given thingClassId and returns the results. "
-                  "This function may take a while to return. Note that this method will include all the found "
-                  "things, that is, including things that may already have been added. Those things will have "
-                  "thingId set to the id of the already added thing. Such results may be used to reconfigure "
-                  "existing things and might be filtered in cases where only unknown things are of interest.";
+    description = "Starts a thing discovery for things of the given thingClassId and returns a discoveryId. "
+                  "Discovered things will be emitted as ThingDiscovered notifications. When the discovery "
+                  "has finished, a DiscoveryFinished notification will be emitted. The discovery may include "
+                  "things that may already have been added. Those things will have thingId set to the id of "
+                  "the already added thing. Such results may be used to reconfigure existing things and might "
+                  "be filtered in cases where only unknown things are of interest.";
     params.insert("thingClassId", enumValueName(Uuid));
     params.insert("o:discoveryParams", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    returns.insert("o:displayMessage", enumValueName(String));
-    returns.insert("o:thingDescriptors", objectRef<ThingDescriptors>());
+    returns.insert("discoveryId", enumValueName(Uuid));
     registerMethod("DiscoverThings", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
@@ -469,6 +471,19 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         emit IOConnectionRemoved(params);
     });
 
+    params.clear(); returns.clear();
+    description = "Emitted whenever a thing has been discovered during a discovery.";
+    params.insert("discoveryId", enumValueName(Uuid));
+    params.insert("thingDescriptor", objectRef<ThingDescriptor>());
+    registerNotification("ThingDiscovered", description, params);
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever a thing discovery has finished.";
+    params.insert("discoveryId", enumValueName(Uuid));
+    params.insert("thingError", enumRef<Thing::ThingError>());
+    params.insert("o:displayMessage", enumValueName(String));
+    registerNotification("DiscoveryFinished", description, params);
+
     connect(m_thingManager, &ThingManager::pluginConfigChanged, this, &IntegrationsHandler::pluginConfigChanged);
     connect(m_thingManager, &ThingManager::thingStateChanged, this, &IntegrationsHandler::thingStateChanged);
     connect(m_thingManager, &ThingManager::thingRemoved, this, &IntegrationsHandler::thingRemovedNotification);
@@ -594,35 +609,76 @@ JsonReply *IntegrationsHandler::GetThingClasses(const QVariantMap &params, const
 JsonReply *IntegrationsHandler::DiscoverThings(const QVariantMap &params, const JsonContext &context) const
 {
     QLocale locale = context.locale();
+    QUuid clientId = context.clientId();
 
     QVariantMap returns;
 
     ThingClassId thingClassId = ThingClassId(params.value("thingClassId").toString());
     ParamList discoveryParams = unpack<ParamList>(params.value("discoveryParams"));
 
-    JsonReply *reply = createAsyncReply("DiscoverThings");
+    QUuid discoveryId = QUuid::createUuid();
     ThingDiscoveryInfo *info = m_thingManager->discoverThings(thingClassId, discoveryParams);
-    connect(info, &ThingDiscoveryInfo::finished, reply, [this, reply, info, locale](){
-        QVariantMap returns;
-        returns.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
+    IntegrationsHandler *handler = const_cast<IntegrationsHandler *>(this);
+    ThingDescriptors initialThingDescriptors = info->thingDescriptors();
 
-        if (info->status() == Thing::ThingErrorNoError) {
-            QVariantList thingDescriptorList;
-            foreach (const ThingDescriptor &thingDescriptor, info->thingDescriptors()) {
-                thingDescriptorList.append(pack(thingDescriptor));
-            }
-            returns.insert("thingDescriptors", thingDescriptorList);
+    if (info->isFinished()) {
+        Thing::ThingError status = info->status();
+        QString displayMessage;
+        if (!info->displayMessage().isEmpty()) {
+            displayMessage = info->translatedDisplayMessage(locale);
         }
 
+        QTimer::singleShot(0, handler, [handler, clientId, initialThingDescriptors, discoveryId, status, displayMessage](){
+            foreach (const ThingDescriptor &thingDescriptor, initialThingDescriptors) {
+                QVariantMap returns;
+                returns.insert("discoveryId", discoveryId);
+                returns.insert("thingDescriptor", handler->pack(thingDescriptor));
+                emit handler->ThingDiscovered(clientId, returns);
+            }
+
+            QVariantMap returns;
+            returns.insert("discoveryId", discoveryId);
+            returns.insert("thingError", enumValueName<Thing::ThingError>(status));
+            if (!displayMessage.isEmpty()) {
+                returns.insert("displayMessage", displayMessage);
+            }
+            emit handler->DiscoveryFinished(clientId, returns);
+        });
+
+        returns.insert("discoveryId", discoveryId);
+        returns.insert("thingError", enumValueName<Thing::ThingError>(status));
+        return createReply(returns);
+    }
+
+    connect(info, &ThingDiscoveryInfo::thingDiscovered, handler, [handler, clientId, discoveryId](const ThingDescriptor &thingDescriptor) {
+        QVariantMap returns;
+        returns.insert("discoveryId", discoveryId);
+        returns.insert("thingDescriptor", handler->pack(thingDescriptor));
+        emit handler->ThingDiscovered(clientId, returns);
+    });
+
+    connect(info, &ThingDiscoveryInfo::finished, handler, [handler, info, clientId, discoveryId, locale](){
+        QVariantMap returns;
+        returns.insert("discoveryId", discoveryId);
+        returns.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
         if (!info->displayMessage().isEmpty()) {
             returns.insert("displayMessage", info->translatedDisplayMessage(locale));
         }
-
-        reply->setData(returns);
-        emit reply->finished();
-
+        emit handler->DiscoveryFinished(clientId, returns);
     });
-    return reply;
+
+    QTimer::singleShot(0, handler, [handler, clientId, initialThingDescriptors, discoveryId](){
+        foreach (const ThingDescriptor &thingDescriptor, initialThingDescriptors) {
+            QVariantMap returns;
+            returns.insert("discoveryId", discoveryId);
+            returns.insert("thingDescriptor", handler->pack(thingDescriptor));
+            emit handler->ThingDiscovered(clientId, returns);
+        }
+    });
+
+    returns.insert("discoveryId", discoveryId);
+    returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError));
+    return createReply(returns);
 }
 
 JsonReply *IntegrationsHandler::GetPlugins(const QVariantMap &params, const JsonContext &context) const

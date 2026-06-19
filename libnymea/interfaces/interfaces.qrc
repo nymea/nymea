@@ -74,7 +74,6 @@
         <file>smartlock.json</file>
         <file>system.json</file>
         <file>electricvehicle.json</file>
-        <file>electricvehiclehlc.json</file>
         <file>smartmeter.json</file>
         <file>smartmeterconsumer.json</file>
         <file>smartmeterproducer.json</file>
@@ -85,7 +84,6 @@
         <file>useraccesscontrol.json</file>
         <file>heating.json</file>
         <file>evcharger.json</file>
-        <file>evchargerac.json</file>
         <file>navigationpad.json</file>
         <file>extendednavigationpad.json</file>
         <file>powerswitch.json</file>
@@ -103,10 +101,6 @@
         <file>firesensor.json</file>
         <file>childlock.json</file>
         <file>networkdevice.json</file>
-        <file>extendedenergystorage.json</file>
-        <file>hlccharger.json</file>
-        <file>powerflowcontroller.json</file>
-        <file>evchargerdc.json</file>
         <file>valve.json</file>
     </qresource>
 </RCC>

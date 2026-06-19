@@ -1,4 +1,0 @@
-{
-    "description": "A DC electrical vehicle charger.",
-    "extends": ["evcharger", "powerflowcontroller"]
-}

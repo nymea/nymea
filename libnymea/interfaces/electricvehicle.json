@@ -1,34 +1,14 @@
 {
-    "description": "Interface for electric vehicles with common battery, charging capability and session states.",
+    "description": "Interface for electric vehicles. Some cars require a minimum charging current to start charging (typically 6 A), and may also enforce a maximum charging current even if the charger supports more.",
     "extends": ["battery"],
     "states": [
         {
             "name": "capacity",
             "type": "double",
-            "unit": "KiloWattHour",
-            "optional": true
+            "unit": "KiloWattHour"
         },
         {
-            "name": "chargingInterfaces",
-            "type": "QString",
-            "allowedValues": ["ac", "dc", "acdc"],
-            "optional": true
-        },
-        {
-            "name": "activeChargingInterface",
-            "type": "QString",
-            "allowedValues": ["ac", "dc"],
-            "optional": true,
-            "logged": false
-        },
-        {
-            "name": "connectedChargerThingId",
-            "type": "QString",
-            "optional": true,
-            "logged": false
-        },
-        {
-            "name": "acMinChargingCurrent",
+            "name": "minChargingCurrent",
             "type": "uint",
             "unit": "Ampere",
             "minValue": 6,
@@ -36,7 +16,7 @@
             "optional": true
         },
         {
-            "name": "acMaxChargingCurrent",
+            "name": "maxChargingCurrent",
             "type": "uint",
             "unit": "Ampere",
             "minValue": 16,
@@ -44,16 +24,10 @@
             "optional": true
         },
         {
-            "name": "acPhaseCount",
+            "name": "phaseCount",
             "type": "uint",
             "minValue": 1,
             "maxValue": 3,
-            "optional": true
-        },
-        {
-            "name": "dcMaxChargingPower",
-            "type": "double",
-            "unit": "Watt",
             "optional": true
         }
     ]

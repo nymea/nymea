@@ -173,6 +173,9 @@ void ScriptAction::execute(const QVariantMap &params)
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);
+        QQmlContext *context = qmlEngine(this) ? qmlEngine(this)->contextForObject(this) : nullptr;
+        QString sourceName = context ? context->contextProperty("scriptName").toString() : QString();
+        action.setSourceName(sourceName.isEmpty() ? m_scriptId.toString() : sourceName);
         ParamList paramList;
         foreach (const QString &paramNameOrId, params.keys()) {
             ParamType paramType;

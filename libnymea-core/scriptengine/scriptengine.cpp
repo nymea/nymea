@@ -413,6 +413,7 @@ bool ScriptEngine::loadScript(Script *script)
     script->context = new QQmlContext(m_engine, this);
     script->context->setContextProperty("logger", QVariant::fromValue(m_logger));
     script->context->setContextProperty("scriptId", script->id().toString());
+    script->context->setContextProperty("scriptName", name);
     script->object = script->component->create(script->context);
 
     if (!script->object) {

@@ -533,6 +533,10 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
 
 TokenInfo UserManager::tokenInfo(const QByteArray &token) const
 {
+    if (token.isEmpty()) {
+        return TokenInfo();
+    }
+
     if (!validateToken(token)) {
         qCWarning(dcUserManager()) << "Token did not pass validation:" << token;
         return TokenInfo();

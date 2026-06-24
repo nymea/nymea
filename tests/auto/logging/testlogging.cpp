@@ -332,6 +332,8 @@ void TestLogging::actionLog()
             found = true;
             QCOMPARE(logEntry.value("values").toMap().value("status").toString(), enumValueName(Thing::ThingErrorNoError));
             QCOMPARE(logEntry.value("values").toMap().value("triggeredBy").toString(), enumValueName(Action::TriggeredByUser));
+            QCOMPARE(logEntry.value("values").toMap().value("actorName").toString(), QString("dummy"));
+            QVERIFY(!logEntry.value("values").toMap().contains("sourceName"));
             QJsonParseError error;
             QVariantMap actionParams = QJsonDocument::fromJson(logEntry.value("values").toMap().value("params").toByteArray(), &error).toVariant().toMap();
             QCOMPARE(error.error, QJsonParseError::NoError);
@@ -379,6 +381,8 @@ void TestLogging::actionLog()
             found = true;
             QCOMPARE(logEntry.value("values").toMap().value("status").toString(), enumValueName(Thing::ThingErrorSetupFailed));
             QCOMPARE(logEntry.value("values").toMap().value("triggeredBy").toString(), enumValueName(Action::TriggeredByUser));
+            QCOMPARE(logEntry.value("values").toMap().value("actorName").toString(), QString("dummy"));
+            QVERIFY(!logEntry.value("values").toMap().contains("sourceName"));
             QJsonParseError error;
             QVariantMap actionParams = QJsonDocument::fromJson(logEntry.value("values").toMap().value("params").toByteArray(), &error).toVariant().toMap();
             QCOMPARE(error.error, QJsonParseError::NoError);

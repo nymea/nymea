@@ -1451,12 +1451,19 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
                 params.insert(paramType.name(), action.paramValue(paramType.id()));
             }
 
-            m_actionLoggers.value(thing->id().toString() + "-" + actionType.name())->log({},
-                                                        {
-                                                            {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                                                            {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
-                                                            {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}
-                                                        });
+            QVariantMap values = {
+                {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
+                {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}
+            };
+            if (!action.actorName().isEmpty()) {
+                values.insert("actorName", action.actorName());
+            }
+            if (!action.sourceName().isEmpty()) {
+                values.insert("sourceName", action.sourceName());
+            }
+
+            m_actionLoggers.value(thing->id().toString() + "-" + actionType.name())->log({}, values);
         }
 
         emit actionExecuted(action, info->status());

@@ -172,6 +172,9 @@ void ScriptState::setValue(const QVariant &value)
     }
 
     Action action(ActionTypeId(actionTypeId), ThingId(m_thingId), Action::TriggeredByScript);
+    QQmlContext *context = qmlEngine(this) ? qmlEngine(this)->contextForObject(this) : nullptr;
+    QString sourceName = context ? context->contextProperty("scriptName").toString() : QString();
+    action.setSourceName(sourceName.isEmpty() ? m_scriptId.toString() : sourceName);
     ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
     action.setParams(params);
 

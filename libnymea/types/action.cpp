@@ -52,7 +52,9 @@ Action::Action(const Action &other):
     m_actionTypeId(other.actionTypeId()),
     m_thingId(other.thingId()),
     m_params(other.params()),
-    m_triggeredBy(other.triggeredBy())
+    m_triggeredBy(other.triggeredBy()),
+    m_actorName(other.actorName()),
+    m_sourceName(other.sourceName())
 {
 }
 
@@ -137,6 +139,30 @@ Action::TriggeredBy Action::triggeredBy() const
     return m_triggeredBy;
 }
 
+/*! Returns the user or token name which triggered this action. */
+QString Action::actorName() const
+{
+    return m_actorName;
+}
+
+/*! Sets the user or token name which triggered this action. */
+void Action::setActorName(const QString &actorName)
+{
+    m_actorName = actorName;
+}
+
+/*! Returns the optional automation source name which triggered this action. */
+QString Action::sourceName() const
+{
+    return m_sourceName;
+}
+
+/*! Sets the optional automation source name which triggered this action. */
+void Action::setSourceName(const QString &sourceName)
+{
+    m_sourceName = sourceName;
+}
+
 /*! Copy the data to an \l{Action} from an \a other action. */
 void Action::operator =(const Action &other)
 {
@@ -144,4 +170,6 @@ void Action::operator =(const Action &other)
     m_params = other.params();
     m_thingId = other.thingId();
     m_triggeredBy = other.triggeredBy();
+    m_actorName = other.actorName();
+    m_sourceName = other.sourceName();
 }

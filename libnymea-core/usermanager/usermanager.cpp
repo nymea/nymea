@@ -69,6 +69,8 @@
 
 #include <QUuid>
 #include <QCryptographicHash>
+#include <QJsonDocument>
+#include <QJsonParseError>
 #include <QSqlQuery>
 #include <QVariant>
 #include <QSqlError>
@@ -287,6 +289,14 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     QSqlQuery dropTokensQuery(m_db);
     if (!dropTokensQuery.exec(dropTokensQueryString)) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropTokensQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    QSqlQuery dropInventoryQuery(m_db);
+    dropInventoryQuery.prepare("DELETE FROM userInventory WHERE lower(username) = :username;");
+    dropInventoryQuery.bindValue(":username", username.toLower());
+    if (!dropInventoryQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to delete user inventory for user" << username << dropInventoryQuery.lastError().databaseText() << dropInventoryQuery.lastError().driverText();
         return UserErrorBackendError;
     }
 
@@ -531,6 +541,73 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     return ret;
 }
 
+UserInventoryItems UserManager::userInventoryItems(const QString &username, const QString &type) const
+{
+    UserInventoryItems ret;
+
+    QStringList conditions;
+    if (!username.isEmpty())
+        conditions << "lower(username) = :username";
+    if (!type.isEmpty())
+        conditions << "type = :type";
+
+    QSqlQuery query(m_db);
+    query.prepare(QString("SELECT * FROM userInventory%1 ORDER BY username, type, displayName;")
+                  .arg(conditions.isEmpty() ? QString() : QString(" WHERE %1").arg(conditions.join(" AND "))));
+    if (!username.isEmpty())
+        query.bindValue(":username", username.toLower());
+    if (!type.isEmpty())
+        query.bindValue(":type", type);
+
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to query user inventory" << query.lastError().databaseText() << query.lastError().driverText();
+        return ret;
+    }
+
+    while (query.next())
+        ret.append(inventoryItemFromQuery(query));
+
+    return ret;
+}
+
+UserInventoryItem UserManager::userInventoryItem(const QUuid &inventoryItemId) const
+{
+    if (inventoryItemId.isNull())
+        return UserInventoryItem();
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM userInventory WHERE id = :id;");
+    query.bindValue(":id", inventoryItemId.toString());
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to query user inventory item" << inventoryItemId << query.lastError().databaseText() << query.lastError().driverText();
+        return UserInventoryItem();
+    }
+
+    if (!query.first())
+        return UserInventoryItem();
+
+    return inventoryItemFromQuery(query);
+}
+
+UserInventoryItem UserManager::findEnabledUserInventoryItem(const QString &type, const QString &payloadKey, const QVariant &payloadValue) const
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM userInventory WHERE type = :type AND enabled = 1;");
+    query.bindValue(":type", type);
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to query enabled user inventory items" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserInventoryItem();
+    }
+
+    while (query.next()) {
+        UserInventoryItem item = inventoryItemFromQuery(query);
+        if (item.payload().value(payloadKey) == payloadValue)
+            return item;
+    }
+
+    return UserInventoryItem();
+}
+
 TokenInfo UserManager::tokenInfo(const QByteArray &token) const
 {
     if (token.isEmpty()) {
@@ -608,6 +685,94 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
     return UserErrorNoError;
 }
 
+UserManager::UserError UserManager::addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled)
+{
+    if (!validateUsername(username) || !userInfo(username).isValid()) {
+        qCWarning(dcUserManager()) << "Error adding user inventory item. Invalid username:" << username;
+        return UserErrorInvalidUserId;
+    }
+
+    if (!validateInventoryItem(type, payload))
+        return UserErrorInvalidInventoryItem;
+
+    if (enabled && type == "rfidTag" && enabledInventoryItemExists(type, "tagHash", payload.value("tagHash"))) {
+        qCWarning(dcUserManager()) << "Refusing duplicate enabled RFID tag hash for user" << username;
+        return UserErrorDuplicateInventoryItem;
+    }
+
+    const QByteArray serializedPayload = serializeInventoryPayload(payload);
+    if (serializedPayload.isEmpty() && !payload.isEmpty())
+        return UserErrorInvalidInventoryItem;
+
+    QSqlQuery query(m_db);
+    query.prepare("INSERT INTO userInventory(id, username, type, displayName, enabled, payload) "
+                  "VALUES(:id, :username, :type, :displayName, :enabled, :payload);");
+    query.bindValue(":id", QUuid::createUuid().toString());
+    query.bindValue(":username", username.toLower());
+    query.bindValue(":type", type);
+    query.bindValue(":displayName", displayName);
+    query.bindValue(":enabled", enabled ? 1 : 0);
+    query.bindValue(":payload", QString::fromUtf8(serializedPayload));
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Error adding user inventory item:" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    emit userChanged(username.toLower());
+    return UserErrorNoError;
+}
+
+UserManager::UserError UserManager::updateUserInventoryItem(const QUuid &inventoryItemId, const QString &displayName, const QVariantMap &payload, bool enabled)
+{
+    UserInventoryItem item = userInventoryItem(inventoryItemId);
+    if (!item.isValid())
+        return UserErrorInventoryItemNotFound;
+
+    if (!validateInventoryItem(item.type(), payload))
+        return UserErrorInvalidInventoryItem;
+
+    if (enabled && item.type() == "rfidTag" && enabledInventoryItemExists(item.type(), "tagHash", payload.value("tagHash"), inventoryItemId)) {
+        qCWarning(dcUserManager()) << "Refusing duplicate enabled RFID tag hash for inventory item" << inventoryItemId;
+        return UserErrorDuplicateInventoryItem;
+    }
+
+    const QByteArray serializedPayload = serializeInventoryPayload(payload);
+    if (serializedPayload.isEmpty() && !payload.isEmpty())
+        return UserErrorInvalidInventoryItem;
+
+    QSqlQuery query(m_db);
+    query.prepare("UPDATE userInventory SET displayName = :displayName, enabled = :enabled, payload = :payload WHERE id = :id;");
+    query.bindValue(":id", inventoryItemId.toString());
+    query.bindValue(":displayName", displayName);
+    query.bindValue(":enabled", enabled ? 1 : 0);
+    query.bindValue(":payload", QString::fromUtf8(serializedPayload));
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Error updating user inventory item:" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    emit userChanged(item.username());
+    return UserErrorNoError;
+}
+
+UserManager::UserError UserManager::removeUserInventoryItem(const QUuid &inventoryItemId)
+{
+    UserInventoryItem item = userInventoryItem(inventoryItemId);
+    if (!item.isValid())
+        return UserErrorInventoryItemNotFound;
+
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM userInventory WHERE id = :id;");
+    query.bindValue(":id", inventoryItemId.toString());
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Error removing user inventory item:" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    emit userChanged(item.username());
+    return UserErrorNoError;
+}
+
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {
@@ -653,6 +818,18 @@ bool UserManager::accessToThingGranted(const ThingId &thingId, const QByteArray 
     return getAllowedThingIdsForToken(token).contains(thingId);
 }
 
+bool UserManager::accessToThingGranted(const ThingId &thingId, const QString &username) const
+{
+    UserInfo ui = userInfo(username);
+    if (!ui.isValid())
+        return false;
+
+    if (ui.scopes().testFlag(Types::PermissionScopeAccessAllThings))
+        return true;
+
+    return ui.allowedThingIds().contains(thingId);
+}
+
 QList<ThingId> UserManager::getAllowedThingIdsForToken(const QByteArray &token) const
 {
     return userInfo(tokenInfo(token).username()).allowedThingIds();
@@ -685,7 +862,7 @@ bool UserManager::initDB()
     }
 
     int currentVersion = -1;
-    int newVersion = 2;
+    int newVersion = 3;
 
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
@@ -807,7 +984,17 @@ bool UserManager::initDB()
             }
 
             qCDebug(dcUserManager()) << "Migrated successfully users table to database version 2";
-        }        
+        }
+    }
+
+    if (!m_db.tables().contains("userInventory")) {
+        qCDebug(dcUserManager()) << "No \"userInventory\" table found. Creating the table...";
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE userInventory (id VARCHAR(40) UNIQUE PRIMARY KEY, username VARCHAR(40), type VARCHAR(40), displayName VARCHAR(100), enabled INTEGER, payload TEXT);") || m_db.lastError().isValid()) {
+            dumpDBError("Error initializing user database (table userInventory).");
+            m_db.close();
+            return false;
+        }
     }
 
     if (!m_db.tables().contains("tokens")) {
@@ -942,6 +1129,88 @@ bool UserManager::validateScopes(Types::PermissionScopes scopes) const
     }
 
     return true;
+}
+
+bool UserManager::validateInventoryItem(const QString &type, const QVariantMap &payload) const
+{
+    if (type.isEmpty() || type.length() > 40)
+        return false;
+
+    const QByteArray serializedPayload = serializeInventoryPayload(payload);
+    if ((serializedPayload.isEmpty() && !payload.isEmpty()) || serializedPayload.size() > 8192)
+        return false;
+
+    if (type == "rfidTag") {
+        const QString tagHash = payload.value("tagHash").toString();
+        if (tagHash.isEmpty() || !tagHash.startsWith("sha256:"))
+            return false;
+
+        if (payload.contains("code") || payload.contains("rawCode"))
+            return false;
+
+        if (payload.contains("profile") && payload.value("profile").type() != QVariant::Map)
+            return false;
+    }
+
+    return true;
+}
+
+QByteArray UserManager::serializeInventoryPayload(const QVariantMap &payload) const
+{
+    QJsonDocument document = QJsonDocument::fromVariant(payload);
+    if (!document.isObject())
+        return QByteArray();
+
+    return document.toJson(QJsonDocument::Compact);
+}
+
+QVariantMap UserManager::deserializeInventoryPayload(const QByteArray &payload) const
+{
+    if (payload.isEmpty())
+        return QVariantMap();
+
+    QJsonParseError error;
+    QJsonDocument document = QJsonDocument::fromJson(payload, &error);
+    if (error.error != QJsonParseError::NoError || !document.isObject()) {
+        qCWarning(dcUserManager()) << "Unable to parse user inventory payload:" << error.errorString();
+        return QVariantMap();
+    }
+
+    return document.toVariant().toMap();
+}
+
+bool UserManager::enabledInventoryItemExists(const QString &type, const QString &payloadKey, const QVariant &payloadValue, const QUuid &ignoredInventoryItemId) const
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM userInventory WHERE type = :type AND enabled = 1;");
+    query.bindValue(":type", type);
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to check duplicate user inventory item" << query.lastError().databaseText() << query.lastError().driverText();
+        return false;
+    }
+
+    while (query.next()) {
+        const QUuid id(query.value("id").toString());
+        if (!ignoredInventoryItemId.isNull() && id == ignoredInventoryItemId)
+            continue;
+
+        const QVariantMap payload = deserializeInventoryPayload(query.value("payload").toByteArray());
+        if (payload.value(payloadKey) == payloadValue)
+            return true;
+    }
+
+    return false;
+}
+
+UserInventoryItem UserManager::inventoryItemFromQuery(const QSqlQuery &query) const
+{
+    UserInventoryItem item(QUuid(query.value("id").toString()));
+    item.setUsername(query.value("username").toString());
+    item.setType(query.value("type").toString());
+    item.setDisplayName(query.value("displayName").toString());
+    item.setEnabled(query.value("enabled").toBool());
+    item.setPayload(deserializeInventoryPayload(query.value("payload").toByteArray()));
+    return item;
 }
 
 void UserManager::dumpDBError(const QString &message)

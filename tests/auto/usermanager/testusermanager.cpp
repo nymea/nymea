@@ -505,6 +505,12 @@ void TestUsermanager::userInventory()
     QCOMPARE(userManager->removeUserInventoryItem(bobTags.first().inventoryItemId()), UserManager::UserErrorNoError);
     QVERIFY(!userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice").isValid());
 
+    // A mixed-case username must resolve to the existing (lower-cased) user
+    QVariantMap mixedCasePayload;
+    mixedCasePayload.insert("tagHash", "sha256:alice-2");
+    QCOMPARE(userManager->addUserInventoryItem("Alice", "rfidTag", "Alice tag 2", mixedCasePayload, true), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->userInventoryItems("alice", "rfidTag").count(), 2);
+
     QCOMPARE(userManager->removeUser("alice"), UserManager::UserErrorNoError);
     QCOMPARE(userManager->userInventoryItems("alice", "rfidTag").count(), 0);
 }

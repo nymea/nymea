@@ -456,6 +456,59 @@ void TestUsermanager::unauthenticatedCallAfterTokenRemove()
     injectAndWait("JSONRPC.Hello");
 }
 
+void TestUsermanager::userInventory()
+{
+    UserManager *userManager = NymeaCore::instance()->userManager();
+
+    QCOMPARE(userManager->createUser("alice", "Bla1234*", "", "Alice", Types::PermissionScopeAdmin), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->createUser("bob", "Bla1234*", "", "Bob", Types::PermissionScopeAdmin), UserManager::UserErrorNoError);
+
+    QVariantMap ecoProfile;
+    ecoProfile.insert("mode", "Eco");
+
+    QVariantMap payload;
+    payload.insert("tagHash", "sha256:alice");
+    payload.insert("profile", ecoProfile);
+
+    QCOMPARE(userManager->addUserInventoryItem("alice", "rfidTag", "Alice tag", payload, true), UserManager::UserErrorNoError);
+
+    UserInventoryItems aliceTags = userManager->userInventoryItems("alice", "rfidTag");
+    QCOMPARE(aliceTags.count(), 1);
+    QCOMPARE(aliceTags.first().username(), QString("alice"));
+    QCOMPARE(aliceTags.first().type(), QString("rfidTag"));
+    QCOMPARE(aliceTags.first().displayName(), QString("Alice tag"));
+    QCOMPARE(aliceTags.first().enabled(), true);
+    QCOMPARE(aliceTags.first().payload().value("tagHash").toString(), QString("sha256:alice"));
+    QVERIFY(!aliceTags.first().payload().contains("code"));
+
+    UserInventoryItem resolved = userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice");
+    QVERIFY(resolved.isValid());
+    QCOMPARE(resolved.username(), QString("alice"));
+
+    QCOMPARE(userManager->addUserInventoryItem("bob", "rfidTag", "Bob duplicate", payload, true), UserManager::UserErrorDuplicateInventoryItem);
+    QCOMPARE(userManager->addUserInventoryItem("bob", "rfidTag", "Bob disabled", payload, false), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice").username(), QString("alice"));
+
+    QVariantMap invalidPayload = payload;
+    invalidPayload.insert("code", "raw-reader-code");
+    QCOMPARE(userManager->addUserInventoryItem("alice", "rfidTag", "Invalid raw code", invalidPayload, true), UserManager::UserErrorInvalidInventoryItem);
+
+    const QUuid aliceInventoryItemId = aliceTags.first().inventoryItemId();
+    QCOMPARE(userManager->updateUserInventoryItem(aliceInventoryItemId, "Alice disabled", payload, false), UserManager::UserErrorNoError);
+    QVERIFY(!userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice").isValid());
+
+    UserInventoryItems bobTags = userManager->userInventoryItems("bob", "rfidTag");
+    QCOMPARE(bobTags.count(), 1);
+    QCOMPARE(userManager->updateUserInventoryItem(bobTags.first().inventoryItemId(), "Bob enabled", payload, true), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice").username(), QString("bob"));
+
+    QCOMPARE(userManager->removeUserInventoryItem(bobTags.first().inventoryItemId()), UserManager::UserErrorNoError);
+    QVERIFY(!userManager->findEnabledUserInventoryItem("rfidTag", "tagHash", "sha256:alice").isValid());
+
+    QCOMPARE(userManager->removeUser("alice"), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->userInventoryItems("alice", "rfidTag").count(), 0);
+}
+
 void TestUsermanager::testScopeConsitancy_data()
 {
     QTest::addColumn<QList<Types::PermissionScope>>("scopes");
@@ -718,4 +771,3 @@ void TestUsermanager::testRestrictedThingAccess()
 }
 
 QTEST_MAIN(TestUsermanager)
-

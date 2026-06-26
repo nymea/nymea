@@ -27,9 +27,12 @@
 
 #include "tokeninfo.h"
 #include "userinfo.h"
+#include "userinventoryitem.h"
 
 #include <QObject>
 #include <QSqlDatabase>
+
+class QSqlQuery;
 
 namespace nymeaserver {
 
@@ -47,7 +50,10 @@ public:
         UserErrorBadPassword,
         UserErrorTokenNotFound,
         UserErrorPermissionDenied,
-        UserErrorInconsistantScopes
+        UserErrorInconsistantScopes,
+        UserErrorInventoryItemNotFound,
+        UserErrorDuplicateInventoryItem,
+        UserErrorInvalidInventoryItem
     };
     Q_ENUM(UserError)
 
@@ -72,14 +78,21 @@ public:
     TokenInfo tokenInfo(const QByteArray &token) const;
     TokenInfo tokenInfo(const QUuid &tokenId) const;
     QList<TokenInfo> tokens(const QString &username) const;
+    UserInventoryItems userInventoryItems(const QString &username = QString(), const QString &type = QString()) const;
+    UserInventoryItem userInventoryItem(const QUuid &inventoryItemId) const;
+    UserInventoryItem findEnabledUserInventoryItem(const QString &type, const QString &payloadKey, const QVariant &payloadValue) const;
 
     UserError removeToken(const QUuid &tokenId);
+    UserError addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled = true);
+    UserError updateUserInventoryItem(const QUuid &inventoryItemId, const QString &displayName, const QVariantMap &payload, bool enabled);
+    UserError removeUserInventoryItem(const QUuid &inventoryItemId);
 
 
     bool verifyToken(const QByteArray &token);
 
     bool hasRestrictedThingAccess(const QByteArray &token) const;
     bool accessToThingGranted(const ThingId &thingId, const QByteArray &token);
+    bool accessToThingGranted(const ThingId &thingId, const QString &username) const;
     QList<ThingId> getAllowedThingIdsForToken(const QByteArray &token) const;
 
 public slots:
@@ -100,6 +113,11 @@ private:
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
     bool validateScopes(Types::PermissionScopes scopes) const;
+    bool validateInventoryItem(const QString &type, const QVariantMap &payload) const;
+    QByteArray serializeInventoryPayload(const QVariantMap &payload) const;
+    QVariantMap deserializeInventoryPayload(const QByteArray &payload) const;
+    bool enabledInventoryItemExists(const QString &type, const QString &payloadKey, const QVariant &payloadValue, const QUuid &ignoredInventoryItemId = QUuid()) const;
+    UserInventoryItem inventoryItemFromQuery(const QSqlQuery &query) const;
 
     void dumpDBError(const QString &message);
 

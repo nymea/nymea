@@ -687,7 +687,7 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 
 UserManager::UserError UserManager::addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled)
 {
-    if (!validateUsername(username) || !userInfo(username).isValid()) {
+    if (!validateUsername(username) || !userInfo(username.toLower()).isValid()) {
         qCWarning(dcUserManager()) << "Error adding user inventory item. Invalid username:" << username;
         return UserErrorInvalidUserId;
     }

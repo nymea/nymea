@@ -1,5 +1,5 @@
 {
-    "description": "Devices that read RFID/NFC tags. A reader emits tagDetected with the raw code. The RFID experience is the external authority and updates authorizedUser/authorizedTag to reflect the current accepted identity. authorizedTag contains a hash, never the raw code.",
+    "description": "Devices that read RFID/NFC tags. A reader emits tagDetected with the raw code. The RFID experience is the external authority and updates authorizedUser/authorizedTag to reflect the current accepted identity. authorizedTag contains a hash, never the raw code. After deciding, the experience invokes tagAccepted or tagRejected to drive reader feedback (e.g. LED/beep).",
     "states": [
         {
             "name": "authorizedUser",
@@ -23,6 +23,16 @@
                     "type": "QString"
                 }
             ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "tagAccepted",
+            "optional": true
+        },
+        {
+            "name": "tagRejected",
+            "optional": true
         }
     ]
 }

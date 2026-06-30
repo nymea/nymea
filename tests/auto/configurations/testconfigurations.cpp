@@ -105,6 +105,7 @@ void TestConfigurations::initTestCase()
     }
 
     NymeaTestBase::initTestCase("*.debug=false\nApplication.debug=true\nTests.debug=true\nServerManager.debug=true");
+    NymeaCore::instance()->backupManager()->setInfluxBackupEnabled(false);
 
     ServerConfiguration config;
     foreach (const ServerConfiguration &existingConfig, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {

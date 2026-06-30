@@ -1499,6 +1499,7 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
             }
             Action action(actionTypeId, thing->id(), Action::TriggeredByRule);
             action.setParams(params);
+            action.setSourceName(m_rules.value(ruleId).name());
             actions.append(action);
         } else if (ruleAction.type() == RuleAction::TypeBrowser) {
             Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
@@ -1552,6 +1553,7 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
 
                 Action action = Action(actionType.id(), thing->id(), Action::TriggeredByRule);
                 action.setParams(params);
+                action.setSourceName(m_rules.value(ruleId).name());
                 actions.append(action);
             }
         }

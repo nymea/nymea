@@ -29,6 +29,7 @@
 #include "typeutils.h"
 #include "param.h"
 
+#include <QString>
 #include <QVariantList>
 
 class LIBNYMEA_EXPORT Action
@@ -63,12 +64,20 @@ public:
 
     TriggeredBy triggeredBy() const;
 
+    QString actorName() const;
+    void setActorName(const QString &actorName);
+
+    QString sourceName() const;
+    void setSourceName(const QString &sourceName);
+
     void operator=(const Action &other);
 private:
     ActionTypeId m_actionTypeId;
     ThingId m_thingId;
     ParamList m_params;
     TriggeredBy m_triggeredBy = TriggeredByUser;
+    QString m_actorName;
+    QString m_sourceName;
 };
 
 Q_DECLARE_METATYPE(Action::TriggeredBy)

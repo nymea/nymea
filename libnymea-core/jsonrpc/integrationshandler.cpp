@@ -789,7 +789,7 @@ JsonReply *IntegrationsHandler::GetThings(const QVariantMap &params, const JsonC
     QVariantMap returns;
     QVariantList things;
 
-    if (NymeaCore::instance()->userManager()->hasRestrictedThingAccess(context.token()) && context.authenticationEnabled()) {
+    if (context.authenticationEnabled() && NymeaCore::instance()->userManager()->hasRestrictedThingAccess(context.token())) {
         // Restricted things access
         QList<ThingId> allowedThingIds = NymeaCore::instance()->userManager()->getAllowedThingIdsForToken(context.token());
         if (params.contains("thingId")) {
@@ -1081,6 +1081,14 @@ JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const J
 
     Action action(actionTypeId, thingId);
     action.setParams(actionParams);
+    if (!context.token().isEmpty()) {
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(context.token());
+        QString actorName = tokenInfo.username();
+        if (actorName.isEmpty()) {
+            actorName = tokenInfo.deviceName();
+        }
+        action.setActorName(actorName);
+    }
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 

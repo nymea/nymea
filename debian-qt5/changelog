@@ -1,3 +1,14 @@
+nymea (1.16.0) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * WIP: NetworkDeviceDiscovery: Improve network discovery speed for
+    larger ne…
+  * Add influxdb to backup
+  * Rework EV charger interface
+  * Add actorName and actorSource to an Action and loggs.
+
+ -- jenkins <developer@nymea.io>  Tue, 30 Jun 2026 10:52:28 +0200
+
 nymea (1.15.2) resolute; urgency=medium
 
   [ Simon Stürz ]

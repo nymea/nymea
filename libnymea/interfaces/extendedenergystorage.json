@@ -1,0 +1,4 @@
+{
+    "description": "An extended energy storage can be controlled using a charge/discharge power setpoint.",
+    "extends": ["energystorage", "powerflowcontroller"]
+}

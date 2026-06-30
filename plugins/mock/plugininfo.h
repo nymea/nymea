@@ -30,7 +30,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const char *libnymea_api_version() { return "9.0.0"; }
+extern "C" const char *libnymea_api_version() { return "10.0.0"; }
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")

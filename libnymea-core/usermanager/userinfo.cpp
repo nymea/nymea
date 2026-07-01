@@ -39,6 +39,11 @@ UserInfo::UserInfo(const QString &username):
 
 }
 
+bool UserInfo::isValid() const
+{
+    return !m_username.isNull();
+}
+
 QString UserInfo::username() const
 {
     return m_username;

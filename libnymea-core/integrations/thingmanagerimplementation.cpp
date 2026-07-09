@@ -1462,8 +1462,9 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
             if (!action.actorDisplayName().isEmpty()) {
                 values.insert("actorDisplayName", action.actorDisplayName());
             }
-            if (!action.actorName().isEmpty()) {
-                values.insert("actorName", action.actorName());
+            const QString actorName = !action.actorUsername().isEmpty() ? action.actorUsername() : action.actorName();
+            if (!actorName.isEmpty()) {
+                values.insert("actorName", actorName);
             }
             if (!action.sourceName().isEmpty()) {
                 values.insert("sourceName", action.sourceName());

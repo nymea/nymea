@@ -802,6 +802,15 @@ void NymeaConfiguration::deleteMqttPolicy(const QString &clientId)
     m_mqttPoliciesSettings->remove(clientId);
 }
 
+bool ServerConfiguration::isLocalhost() const
+{
+    if (address == "localhost")
+        return true;
+
+    QHostAddress hostAddress(address);
+    return !hostAddress.isNull() && hostAddress.isLoopback();
+}
+
 QDebug operator<<(QDebug debug, const ServerConfiguration &configuration)
 {
     debug.nospace() << "ServerConfiguration(" << configuration.address;

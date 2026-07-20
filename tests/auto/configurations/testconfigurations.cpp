@@ -33,6 +33,7 @@
 #include <QHostAddress>
 #include <QRegularExpression>
 #include <QScopedPointer>
+#include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QTime>
 #include <QWebSocket>
@@ -1209,6 +1210,23 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     insecureTunnelProxyConfig.insert("authenticationEnabled", false);
     insecureTunnelProxyConfig.insert("ignoreSslErrors", true);
 
+    // Create insecure but loopback-bound interfaces which must still be allowed to run
+    QString localhostId = "insecure-localhost";
+
+    QVariantMap localhostTcpConfig;
+    localhostTcpConfig.insert("id", localhostId);
+    localhostTcpConfig.insert("address", "127.0.0.1");
+    localhostTcpConfig.insert("port", 23458);
+    localhostTcpConfig.insert("sslEnabled", false);
+    localhostTcpConfig.insert("authenticationEnabled", false);
+
+    QVariantMap localhostWebSocketConfig;
+    localhostWebSocketConfig.insert("id", localhostId);
+    localhostWebSocketConfig.insert("address", "127.0.0.1");
+    localhostWebSocketConfig.insert("port", 23459);
+    localhostWebSocketConfig.insert("sslEnabled", false);
+    localhostWebSocketConfig.insert("authenticationEnabled", false);
+
     QVariantMap params;
     QVariant response;
 
@@ -1224,11 +1242,31 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response);
 
+    params.insert("configuration", localhostTcpConfig);
+    response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.insert("configuration", localhostWebSocketConfig);
+    response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
+    verifyConfigurationError(response);
+
     // Restart with disabled insecure interfaces
     qputenv("NYMEA_INSECURE_INTERFACES_DISABLED", "1");
     restartServer();
 
-    // FIXME: make sure the insecure servers are not running
+    auto isListening = [](quint16 port) {
+        QTcpSocket socket;
+        socket.connectToHost(QHostAddress::LocalHost, port);
+        return socket.waitForConnected(2000);
+    };
+
+    // Insecure interfaces bound to a non-loopback address must not be started
+    QVERIFY2(!isListening(23456), "insecure non-localhost TCP server should not be listening");
+    QVERIFY2(!isListening(23457), "insecure non-localhost WebSocket server should not be listening");
+
+    // Insecure but loopback-bound interfaces must still be started
+    QVERIFY2(isListening(23458), "insecure localhost TCP server should be listening");
+    QVERIFY2(isListening(23459), "insecure localhost WebSocket server should be listening");
 
     // Remove the insecure configs and try to add them again and expect them to fail
     params.clear();
@@ -1267,6 +1305,32 @@ void TestConfigurations::testDisableInsecureInterfacesEnv()
     params.insert("configuration", insecureTunnelProxyConfig);
     response = injectAndWait("Configuration.SetTunnelProxyServerConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorUnsupported);
+
+    // Insecure but loopback-bound interfaces must still be configurable
+    params.clear();
+    response.clear();
+    params.insert("configuration", localhostTcpConfig);
+    response = injectAndWait("Configuration.SetTcpServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.clear();
+    response.clear();
+    params.insert("configuration", localhostWebSocketConfig);
+    response = injectAndWait("Configuration.SetWebSocketServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    // Clean up the loopback configs
+    params.clear();
+    response.clear();
+    params.insert("id", localhostId);
+    response = injectAndWait("Configuration.DeleteTcpServerConfiguration", params);
+    verifyConfigurationError(response);
+
+    params.clear();
+    response.clear();
+    params.insert("id", localhostId);
+    response = injectAndWait("Configuration.DeleteWebSocketServerConfiguration", params);
+    verifyConfigurationError(response);
 
     qunsetenv("NYMEA_INSECURE_INTERFACES_DISABLED");
 }

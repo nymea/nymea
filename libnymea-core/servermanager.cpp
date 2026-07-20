@@ -162,7 +162,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
-        if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
+        if (m_disableInsecureInterfaces && !config.isLocalhost() && (!config.sslEnabled || !config.authenticationEnabled)) {
             qCWarning(dcServerManager())
                 << "Loaded insecure TCP server configuration"
                 << config
@@ -180,7 +180,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
-        if (m_disableInsecureInterfaces && (!config.sslEnabled || !config.authenticationEnabled)) {
+        if (m_disableInsecureInterfaces && !config.isLocalhost() && (!config.sslEnabled || !config.authenticationEnabled)) {
             qCWarning(dcServerManager())
                 << "Loaded insecure WebSocket server configuration"
                 << config

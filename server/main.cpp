@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 
         NymeaCore::instance()->init(parser.values(interfacesOption), parser.isSet(noLogDbOption));
 
-        int ret = application.exec();
+        const int ret = application.exec();
         closeLogFile();
         return ret;
     }

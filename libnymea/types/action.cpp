@@ -53,7 +53,8 @@ Action::Action(const Action &other):
     m_thingId(other.thingId()),
     m_params(other.params()),
     m_triggeredBy(other.triggeredBy()),
-    m_actorName(other.actorName()),
+    m_actorUsername(other.actorUsername()),
+    m_actorDisplayName(other.actorDisplayName()),
     m_sourceName(other.sourceName())
 {
 }
@@ -142,13 +143,37 @@ Action::TriggeredBy Action::triggeredBy() const
 /*! Returns the user or token name which triggered this action. */
 QString Action::actorName() const
 {
-    return m_actorName;
+    return !m_actorDisplayName.isEmpty() ? m_actorDisplayName : m_actorUsername;
 }
 
 /*! Sets the user or token name which triggered this action. */
 void Action::setActorName(const QString &actorName)
 {
-    m_actorName = actorName;
+    m_actorDisplayName = actorName;
+}
+
+/*! Returns the stable username which triggered this action, if available. */
+QString Action::actorUsername() const
+{
+    return m_actorUsername;
+}
+
+/*! Sets the stable username which triggered this action. */
+void Action::setActorUsername(const QString &actorUsername)
+{
+    m_actorUsername = actorUsername;
+}
+
+/*! Returns the display name which triggered this action. */
+QString Action::actorDisplayName() const
+{
+    return m_actorDisplayName;
+}
+
+/*! Sets the display name which triggered this action. */
+void Action::setActorDisplayName(const QString &actorDisplayName)
+{
+    m_actorDisplayName = actorDisplayName;
 }
 
 /*! Returns the optional automation source name which triggered this action. */
@@ -170,6 +195,7 @@ void Action::operator =(const Action &other)
     m_params = other.params();
     m_thingId = other.thingId();
     m_triggeredBy = other.triggeredBy();
-    m_actorName = other.actorName();
+    m_actorUsername = other.actorUsername();
+    m_actorDisplayName = other.actorDisplayName();
     m_sourceName = other.sourceName();
 }

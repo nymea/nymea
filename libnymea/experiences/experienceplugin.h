@@ -35,6 +35,7 @@ class WebServerResource;
 namespace nymeaserver {
 
 class ExperienceManager;
+class UserManager;
 }
 class ExperiencePlugin : public QObject
 {
@@ -51,14 +52,16 @@ protected:
     ThingManager *thingManager();
     JsonRPCServer *jsonRpcServer();
     LogEngine *logEngine();
+    nymeaserver::UserManager *userManager();
 
 private:
     friend class nymeaserver::ExperienceManager;
-    void initPlugin(ThingManager *thingManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine = nullptr);
+    void initPlugin(ThingManager *thingManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine = nullptr, nymeaserver::UserManager *userManager = nullptr);
 
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
     LogEngine *m_logEngine = nullptr;
+    nymeaserver::UserManager *m_userManager = nullptr;
 
 };
 

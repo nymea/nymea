@@ -114,6 +114,12 @@ signals:
 
     void userThingRestrictionsChanged(const nymeaserver::UserInfo &userInfo, const ThingId &thingId, bool accessGranted);
 
+    // Emitted for a token exactly once per revocation/expiry, only after the removal has
+    // committed. Live connections authenticated with this token must be disconnected;
+    // without this, a revoked client's notification stream would otherwise keep flowing
+    // until it disconnects on its own.
+    void tokenInvalidated(const QByteArray &token);
+
 private:
     bool initDB();
     void rotate(const QString &dbName);

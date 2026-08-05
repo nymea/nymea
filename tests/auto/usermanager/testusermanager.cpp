@@ -407,6 +407,65 @@ void TestUsermanager::lastSeenMarkedOnceOnAuthenticateAndNotAgainOnRepeatedHello
     NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
 }
 
+void TestUsermanager::activeDisconnectOnRemoveToken()
+{
+    // Regression test for the pre-existing gap: sendNotification() performs no token
+    // re-check, so without active disconnect a revoked client's stream would keep
+    // flowing until it disconnected on its own.
+    getTokens();
+
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
+    QVariantMap params;
+    params.insert("tokenId", m_tokenId);
+    QVariant response = injectAndWait("Users.RemoveToken", params);
+    // The reply for this very request, made with the token being removed, must still
+    // arrive successfully: the disconnect must not race ahead of it.
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    if (disconnectedSpy.count() == 0)
+        disconnectedSpy.wait();
+    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.first().first().toUuid(), m_clientId);
+}
+
+void TestUsermanager::activeDisconnectOnRemoveUser()
+{
+    authenticate();
+    QByteArray adminToken = m_apiToken;
+
+    QVariantMap createParams;
+    createParams.insert("username", "bob@user.test");
+    createParams.insert("password", "Bla1234*");
+    QVariant createResponse = injectAndWait("Users.CreateUser", createParams, m_clientId, adminToken);
+    QCOMPARE(createResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    QUuid bobId = QUuid::createUuid();
+    emit m_mockTcpServer->clientConnected(bobId);
+    injectAndWait("JSONRPC.Hello", QVariantMap(), bobId, "");
+
+    QVariantMap authParams;
+    authParams.insert("username", "bob@user.test");
+    authParams.insert("password", "Bla1234*");
+    authParams.insert("deviceName", "bobdevice");
+    QVariant bobAuthResponse = injectAndWait("JSONRPC.Authenticate", authParams, bobId, "");
+    QByteArray bobToken = bobAuthResponse.toMap().value("params").toMap().value("token").toByteArray();
+    QVERIFY2(!bobToken.isEmpty(), "Bob should have authenticated successfully");
+
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
+    QVariantMap removeParams;
+    removeParams.insert("username", "bob@user.test");
+    QVariant response = injectAndWait("Users.RemoveUser", removeParams, m_clientId, adminToken);
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    if (disconnectedSpy.count() == 0)
+        disconnectedSpy.wait();
+    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.first().first().toUuid(), bobId);
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

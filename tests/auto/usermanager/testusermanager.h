@@ -95,6 +95,9 @@ private slots:
 
     void lastSeenMarkedOnceOnAuthenticateAndNotAgainOnRepeatedHello();
 
+    void activeDisconnectOnRemoveToken();
+    void activeDisconnectOnRemoveUser();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

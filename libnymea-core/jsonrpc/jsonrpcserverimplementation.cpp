@@ -217,6 +217,11 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     registerNotification("PushButtonAuthFinished", description, params);
 
     connect(NymeaCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServerImplementation::onPushButtonAuthFinished);
+    // Queued: RemoveToken's own handler is synchronous and returns its reply through the
+    // same call stack that emits tokenInvalidated. A direct connection would disconnect
+    // the client before its own "success" reply is ever written. Queuing defers the
+    // disconnect to the next event loop iteration, after the current reply is sent.
+    connect(NymeaCore::instance()->userManager(), &UserManager::tokenInvalidated, this, &JsonRPCServerImplementation::onTokenInvalidated, Qt::QueuedConnection);
 
 
 
@@ -1145,6 +1150,20 @@ void JsonRPCServerImplementation::markTokenSeenIfNewlyBound(const QUuid &clientI
         qCWarning(dcJsonRpc()) << "Failed to update last-seen timestamp for token id" << info.id();
     }
     seenForClient.insert(info.id());
+}
+
+void JsonRPCServerImplementation::onTokenInvalidated(const QByteArray &token)
+{
+    // Snapshot first: terminateClientConnection() below triggers clientDisconnected(),
+    // which mutates m_clientTokens/m_clientTransports; iterating a live view would be unsafe.
+    const QList<QUuid> affectedClients = m_clientTokens.keys(token);
+    foreach (const QUuid &clientId, affectedClients) {
+        TransportInterface *interface = m_clientTransports.value(clientId, nullptr);
+        if (!interface)
+            continue;
+        qCWarning(dcJsonRpc()) << "Disconnecting client" << clientId << "because its token was revoked or expired.";
+        interface->terminateClientConnection(clientId);
+    }
 }
 
 }

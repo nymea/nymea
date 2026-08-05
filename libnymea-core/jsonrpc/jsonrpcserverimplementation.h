@@ -100,6 +100,12 @@ private slots:
 
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
+    // Disconnects every live connection authenticated with a token that was just
+    // revoked or has logically expired. sendNotification() performs no token re-check,
+    // so without this a revoked client's notification stream keeps flowing until it
+    // disconnects on its own.
+    void onTokenInvalidated(const QByteArray &token);
+
 private:
     QVariantMap m_api;
     QHash<JsonHandler *, QString> m_experiences;

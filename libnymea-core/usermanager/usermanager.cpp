@@ -295,6 +295,17 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
 
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
+    QSqlQuery selectTokensQuery(m_db);
+    selectTokensQuery.prepare("SELECT token FROM tokens WHERE lower(username) = :username;");
+    selectTokensQuery.bindValue(":username", username.toLower());
+    if (!selectTokensQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << selectTokensQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        return UserErrorBackendError;
+    }
+    QList<QByteArray> removedTokenValues;
+    while (selectTokensQuery.next())
+        removedTokenValues << selectTokensQuery.value("token").toString().toUtf8();
+
     QString dropUserQueryString = QString("DELETE FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
     QSqlQuery dropUserQuery(m_db);
     if (!dropUserQuery.exec(dropUserQueryString)) {
@@ -320,6 +331,8 @@ UserManager::UserError UserManager::removeUser(const QString &username)
         return UserErrorBackendError;
     }
 
+    foreach (const QByteArray &tokenValue, removedTokenValues)
+        emit tokenInvalidated(tokenValue);
     emit userRemoved(username);
     return UserErrorNoError;
 }
@@ -694,6 +707,15 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
+    QSqlQuery selectTokenQuery(m_db);
+    selectTokenQuery.prepare("SELECT token FROM tokens WHERE id = :id;");
+    selectTokenQuery.bindValue(":id", tokenId.toString());
+    if (!selectTokenQuery.exec() || !selectTokenQuery.first()) {
+        qCWarning(dcUserManager) << "Tried to remove token, but the token could not be found in the DB.";
+        return UserErrorTokenNotFound;
+    }
+    QByteArray tokenValue = selectTokenQuery.value("token").toString().toUtf8();
+
     QSqlQuery removeTokenQuery(m_db);
     removeTokenQuery.prepare("DELETE FROM tokens WHERE id = :id;");
     removeTokenQuery.bindValue(":id", tokenId.toString());
@@ -714,6 +736,7 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
     }
 
     qCDebug(dcUserManager) << "Token" << tokenId << "removed from DB";
+    emit tokenInvalidated(tokenValue);
     return UserErrorNoError;
 }
 

@@ -39,21 +39,29 @@ class TokenInfo
     Q_PROPERTY(QString username READ username)
     Q_PROPERTY(QDateTime creationTime READ creationTime)
     Q_PROPERTY(QString deviceName READ deviceName)
+    // Invalid QDateTime means "never expires" / "not yet observed" respectively.
+    Q_PROPERTY(QDateTime expiryTime READ expiryTime)
+    Q_PROPERTY(QDateTime lastSeen READ lastSeen)
 
 public:
     TokenInfo();
-    TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName);
+    TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName,
+              const QDateTime &expiryTime = QDateTime(), const QDateTime &lastSeen = QDateTime());
 
     QUuid id() const;
     QString username() const;
     QDateTime creationTime() const;
     QString deviceName() const;
+    QDateTime expiryTime() const;
+    QDateTime lastSeen() const;
 
 private:
     QUuid m_id;
     QString m_username;
     QDateTime m_creationTime;
     QString m_deviceName;
+    QDateTime m_expiryTime;
+    QDateTime m_lastSeen;
 };
 
 

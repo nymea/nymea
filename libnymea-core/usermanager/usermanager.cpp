@@ -547,7 +547,7 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     QList<TokenInfo> ret;
 
     QSqlQuery query(m_db);
-    query.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE lower(username) = :username;");
+    query.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE lower(username) = :username;");
     query.bindValue(":username", username.toLower());
     query.exec();
     if (m_db.lastError().type() != QSqlError::NoError) {
@@ -556,7 +556,8 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     }
 
     while (query.next()) {
-        ret << TokenInfo(query.value("id").toUuid(), query.value("username").toString(), query.value("creationdate").toDateTime(), query.value("devicename").toString());
+        ret << TokenInfo(query.value("id").toUuid(), query.value("username").toString(), query.value("creationdate").toDateTime(), query.value("devicename").toString(),
+                          query.value("expirydate").toDateTime(), query.value("lastseen").toDateTime());
     }
     return ret;
 }
@@ -640,7 +641,7 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     }
 
     QSqlQuery getTokenQuery(m_db);
-    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = :token;");
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE token = :token;");
     getTokenQuery.bindValue(":token", QString::fromUtf8(token));
     if (!getTokenQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
@@ -655,13 +656,14 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     if (!getTokenQuery.first())
         return TokenInfo();
 
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
+                      getTokenQuery.value("expirydate").toDateTime(), getTokenQuery.value("lastseen").toDateTime());
 }
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
     QSqlQuery getTokenQuery(m_db);
-    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = :id;");
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE id = :id;");
     getTokenQuery.bindValue(":id", tokenId.toString());
     if (!getTokenQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
@@ -676,7 +678,8 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
     if (!getTokenQuery.first()) {
         return TokenInfo();
     }
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
+                      getTokenQuery.value("expirydate").toDateTime(), getTokenQuery.value("lastseen").toDateTime());
 }
 
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */

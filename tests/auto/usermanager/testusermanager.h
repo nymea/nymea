@@ -91,6 +91,8 @@ private slots:
 
     void getTokens();
 
+    void tokenInfoExpiryAndLastSeenDefaultToInvalid();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

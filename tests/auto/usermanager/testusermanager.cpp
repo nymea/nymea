@@ -363,6 +363,27 @@ void TestUsermanager::getTokens()
     QCOMPARE(tokenInfoList.first().toMap().value("deviceName").toString(), QString("autotests"));
 }
 
+void TestUsermanager::tokenInfoExpiryAndLastSeenDefaultToInvalid()
+{
+    // Nothing in this repo mints a token with an expiry or marks it seen yet; a token from
+    // ordinary password authentication must round-trip both fields as invalid/absent.
+    authenticate();
+
+    TokenInfo byToken = NymeaCore::instance()->userManager()->tokenInfo(m_apiToken);
+    QVERIFY(!byToken.id().isNull());
+    QVERIFY(!byToken.expiryTime().isValid());
+    QVERIFY(!byToken.lastSeen().isValid());
+
+    TokenInfo byId = NymeaCore::instance()->userManager()->tokenInfo(byToken.id());
+    QVERIFY(!byId.expiryTime().isValid());
+    QVERIFY(!byId.lastSeen().isValid());
+
+    QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens("valid@user.test");
+    QCOMPARE(tokens.count(), 1);
+    QVERIFY(!tokens.first().expiryTime().isValid());
+    QVERIFY(!tokens.first().lastSeen().isValid());
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

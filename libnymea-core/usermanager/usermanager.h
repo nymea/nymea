@@ -111,6 +111,12 @@ public:
     // Lazily purges expired invitations before returning; empty username lists all.
     UserError invitations(QList<InvitationInfo> &result, const QString &username = QString());
     UserError removeInvitation(const QUuid &invitationId);
+    // Redeems a one-time invitation token, returning the new regular client token on
+    // success or an empty QByteArray on any failure (missing, malformed, already-used,
+    // expired, or a database error) - deliberately no distinguishable failure reasons,
+    // so this never provides a state oracle. Look-up, expiry check, invitation deletion
+    // and client-token insertion all happen in one SQLite transaction.
+    QByteArray redeemInvitation(const QByteArray &oneTimeToken, const QString &deviceName);
 
     bool verifyToken(const QByteArray &token);
 
@@ -145,6 +151,11 @@ private:
     bool validateUsername(const QString &username) const;
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
+    // Stricter than validateToken()'s broad charset regex: requires the exact canonical
+    // padded standard-Base64 shape core itself mints (44 ASCII bytes, one trailing '=',
+    // decoding to exactly 32 bytes with an exact re-encode round trip).
+    bool isCanonicalInvitationToken(const QByteArray &token) const;
+    bool isValidInvitationDeviceName(const QString &deviceName) const;
     bool validateScopes(Types::PermissionScopes scopes) const;
     bool validateInventoryItem(const QString &type, const QVariantMap &payload) const;
     QByteArray serializeInventoryPayload(const QVariantMap &payload) const;

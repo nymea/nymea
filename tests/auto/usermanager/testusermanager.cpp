@@ -630,6 +630,128 @@ void TestUsermanager::invitationsPurgesExpiredEntries()
     QCOMPARE(removedSpy.first().first().toUuid(), info.id());
 }
 
+void TestUsermanager::redeemInvitationHappyPath()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QByteArray clientToken = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!clientToken.isEmpty());
+    QVERIFY(clientToken != oneTimeToken);
+    QVERIFY(userManager->verifyToken(clientToken));
+
+    TokenInfo tokenInfo = userManager->tokenInfo(clientToken);
+    QVERIFY(!tokenInfo.id().isNull());
+    QCOMPARE(tokenInfo.username(), QString("valid@user.test"));
+    QCOMPARE(tokenInfo.deviceName(), QString("guest-phone"));
+    QVERIFY(!tokenInfo.expiryTime().isValid());
+
+    // The invitation is one-time: it must be gone from the list now.
+    QList<InvitationInfo> remaining;
+    QCOMPARE(userManager->invitations(remaining), UserManager::UserErrorNoError);
+    QCOMPARE(remaining.count(), 0);
+}
+
+void TestUsermanager::redeemInvitationSecondAttemptFails()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QByteArray firstResult = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!firstResult.isEmpty());
+
+    QByteArray secondResult = userManager->redeemInvitation(oneTimeToken, "guest-phone-2");
+    QVERIFY(secondResult.isEmpty());
+}
+
+void TestUsermanager::redeemExpiredInvitationFailsAndRemovesRow()
+{
+    // Defensive: this test relies on real elapsed wall-clock time.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
+
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 1, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QTest::qWait(1500);
+
+    QByteArray result = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(result.isEmpty());
+
+    QList<InvitationInfo> remaining;
+    QCOMPARE(userManager->invitations(remaining), UserManager::UserErrorNoError);
+    QCOMPARE(remaining.count(), 0);
+}
+
+void TestUsermanager::redeemInvitationRejectsMalformedTokenAndDeviceName()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    // Wrong-length/garbage tokens fail without ever consuming the real invitation.
+    QVERIFY(userManager->redeemInvitation("garbage", "guest-phone").isEmpty());
+    QVERIFY(userManager->redeemInvitation(oneTimeToken.left(43), "guest-phone").isEmpty());
+    QVERIFY(userManager->redeemInvitation(oneTimeToken + "A", "guest-phone").isEmpty());
+
+    // Device name outside the 1..40 UTF-8 byte contract, or containing a control character.
+    QVERIFY(userManager->redeemInvitation(oneTimeToken, "").isEmpty());
+    QVERIFY(userManager->redeemInvitation(oneTimeToken, QString(41, QChar('a'))).isEmpty());
+    QVERIFY(userManager->redeemInvitation(oneTimeToken, QString("bad") + QChar(0x0007)).isEmpty());
+
+    // The real invitation must still be redeemable after all of the above.
+    QByteArray clientToken = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!clientToken.isEmpty());
+}
+
+void TestUsermanager::redeemedTokenExpiryMeasuredFromRedemptionNotCreation()
+{
+    // Defensive: this test relies on real elapsed wall-clock time.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
+
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    // Invitation itself stays valid for a long time; the redeemed token should only
+    // live for tokenValiditySeconds starting when it is actually redeemed.
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, true, 5, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    // Let a couple of real seconds pass between invitation creation and redemption.
+    QTest::qWait(2000);
+
+    QDateTime beforeRedeem = QDateTime::currentDateTimeUtc();
+    QByteArray clientToken = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!clientToken.isEmpty());
+
+    TokenInfo tokenInfo = userManager->tokenInfo(clientToken);
+    QVERIFY(tokenInfo.expiryTime().isValid());
+    // Expiry must be ~5s after redemption time, not 5s after (the earlier) creation time.
+    qint64 secondsFromRedeemToExpiry = beforeRedeem.secsTo(tokenInfo.expiryTime());
+    QVERIFY2(secondsFromRedeemToExpiry >= 3 && secondsFromRedeemToExpiry <= 7,
+             QString("expiry %1s after redemption, expected ~5s").arg(secondsFromRedeemToExpiry).toUtf8());
+
+    QTest::qWait(3500);
+    QVERIFY(userManager->verifyToken(clientToken));
+    QTest::qWait(3000);
+    QVERIFY(!userManager->verifyToken(clientToken));
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

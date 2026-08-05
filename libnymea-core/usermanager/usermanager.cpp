@@ -995,6 +995,101 @@ void UserManager::purgeExpiredInvitations()
     }
 }
 
+/*! Redeems the one-time invitation identified by \a oneTimeToken for the given
+    \a deviceName, returning the resulting regular client token on success. Returns an
+    empty QByteArray for every failure (malformed input, unknown/already-used/expired
+    token, or a database error) without distinguishing between them, so this never
+    provides a state oracle. Lookup, expiry check, invitation deletion, and client-token
+    insertion happen in one SQLite transaction: any failure rolls back the whole
+    operation, leaving the invitation redeemable and letting no client token escape. */
+QByteArray UserManager::redeemInvitation(const QByteArray &oneTimeToken, const QString &deviceName)
+{
+    // Before any hash or query: reject malformed input up front.
+    if (!isCanonicalInvitationToken(oneTimeToken))
+        return QByteArray();
+    if (!isValidInvitationDeviceName(deviceName))
+        return QByteArray();
+
+    QByteArray tokenHash = QCryptographicHash::hash(oneTimeToken, QCryptographicHash::Sha256).toBase64();
+
+    if (!m_db.transaction()) {
+        dumpDBError("Error starting transaction for invitation redemption.");
+        return QByteArray();
+    }
+
+    QSqlQuery selectQuery(m_db);
+    selectQuery.prepare("SELECT id, username, expirydate, tokenvalidityduration FROM invitations WHERE tokenhash = :tokenhash;");
+    selectQuery.bindValue(":tokenhash", QString::fromUtf8(tokenHash));
+    if (!selectQuery.exec() || !selectQuery.first()) {
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    QUuid invitationId = QUuid(selectQuery.value("id").toString());
+    QString username = selectQuery.value("username").toString();
+    QVariant expiryDateValue = selectQuery.value("expirydate");
+    QVariant tokenValidityDurationValue = selectQuery.value("tokenvalidityduration");
+
+    if (isTokenLogicallyExpired(expiryDateValue)) {
+        // Expired: still delete it and commit that deletion within this same
+        // transaction so it doesn't linger looking redeemable, but redemption fails.
+        QSqlQuery deleteExpiredQuery(m_db);
+        deleteExpiredQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+        deleteExpiredQuery.bindValue(":id", invitationId.toString());
+        if (!deleteExpiredQuery.exec() || deleteExpiredQuery.numRowsAffected() != 1 || !m_db.commit()) {
+            m_db.rollback();
+            return QByteArray();
+        }
+        emit invitationRemoved(invitationId);
+        return QByteArray();
+    }
+
+    QSqlQuery deleteInvitationQuery(m_db);
+    deleteInvitationQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+    deleteInvitationQuery.bindValue(":id", invitationId.toString());
+    if (!deleteInvitationQuery.exec() || deleteInvitationQuery.numRowsAffected() != 1) {
+        // Gone already (a concurrent/earlier redemption or purge won the race).
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    QByteArray clientToken = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+    QDateTime localNow = NymeaCore::instance()->timeManager()->currentDateTime();
+    QVariant clientTokenExpiry;
+    if (tokenValidityDurationValue.isValid() && !tokenValidityDurationValue.isNull()) {
+        // Measured from this successful redemption, never from invitation creation.
+        QDateTime expiry = localNow.toUTC().addSecs(tokenValidityDurationValue.toUInt());
+        clientTokenExpiry = formatUtcDateTimeForStorage(expiry);
+    }
+
+    QSqlQuery insertTokenQuery(m_db);
+    insertTokenQuery.prepare("INSERT INTO tokens (id, username, token, creationdate, devicename, expirydate, lastseen) "
+                             "VALUES (:id, :username, :token, :creationdate, :devicename, :expirydate, NULL);");
+    insertTokenQuery.bindValue(":id", QUuid::createUuid().toString());
+    insertTokenQuery.bindValue(":username", username);
+    insertTokenQuery.bindValue(":token", QString::fromUtf8(clientToken));
+    // Same timezone-less local-time convention already used by authenticate()'s
+    // tokens.creationdate write; only expirydate/lastseen use the UTC-safe convention.
+    insertTokenQuery.bindValue(":creationdate", localNow.toString("yyyy-MM-dd hh:mm:ss"));
+    insertTokenQuery.bindValue(":devicename", deviceName);
+    insertTokenQuery.bindValue(":expirydate", clientTokenExpiry);
+    if (!insertTokenQuery.exec() || insertTokenQuery.lastError().isValid()) {
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    if (!m_db.commit()) {
+        dumpDBError("Error committing invitation redemption transaction.");
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    emit invitationRemoved(invitationId);
+    if (clientTokenExpiry.isValid() && m_expiryTimer)
+        rearmExpiryTimer();
+    return clientToken;
+}
+
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {
@@ -1362,6 +1457,39 @@ bool UserManager::validateToken(const QByteArray &token) const
 {
     static QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.match(token).hasMatch();
+}
+
+bool UserManager::isCanonicalInvitationToken(const QByteArray &token) const
+{
+    if (token.length() != 44)
+        return false;
+    if (token.count('=') != 1 || !token.endsWith('='))
+        return false;
+
+    QByteArray decoded = QByteArray::fromBase64(token, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    if (decoded.length() != 32)
+        return false;
+
+    // Reject non-canonical encodings a lenient decoder might still accept (e.g. non-zero
+    // padding bits) by requiring an exact re-encode round trip.
+    if (decoded.toBase64() != token)
+        return false;
+
+    return true;
+}
+
+bool UserManager::isValidInvitationDeviceName(const QString &deviceName) const
+{
+    QByteArray utf8 = deviceName.toUtf8();
+    if (utf8.isEmpty() || utf8.length() > 40)
+        return false;
+
+    foreach (const QChar &character, deviceName) {
+        if (character.category() == QChar::Other_Control || character.category() == QChar::Other_Format)
+            return false;
+    }
+
+    return true;
 }
 
 bool UserManager::validateScopes(Types::PermissionScopes scopes) const

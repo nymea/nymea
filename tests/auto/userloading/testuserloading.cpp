@@ -50,6 +50,8 @@ private slots:
     void testMigrationV3ToV4FailureRollsBackAndPreservesVersion();
     void testExpiredTokenIsRejectedByResolver();
     void testFutureExpiryTokenIsStillValid();
+    void testAlreadyExpiredTokenIsPurgedOnStartup();
+    void testSchedulerPurgesTokenWhenItExpires();
 
 };
 
@@ -397,6 +399,62 @@ void TestUserLoading::testFutureExpiryTokenIsStillValid()
     QVERIFY(!userManager->tokenInfo(QUuid("{22222222-2222-2222-2222-222222222222}")).id().isNull());
 
     QCOMPARE(userManager->tokens("admin").count(), 1);
+
+    delete userManager;
+    QVERIFY(QFile(dbName).remove());
+}
+
+void TestUserLoading::testAlreadyExpiredTokenIsPurgedOnStartup()
+{
+    QString dbName = "/tmp/nymea-test/user-db-purge-on-startup.sqlite";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+
+    QString tokenValue = "sGVzdCB0b2tlbiB2YWx1ZSBmb3IgdGVzdGluZyBwdXJwb3Nlcw==";
+    writeV4FixtureWithToken(dbName, tokenValue, "2020-01-01T00:00:00");
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+
+    // The constructor's initial rearmExpiryTimer() call purges synchronously; the row
+    // and its notification must both already be gone by the time construction returns.
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-verify-purged");
+    db.setDatabaseName(dbName);
+    QVERIFY(db.open());
+    QSqlQuery query(db);
+    QVERIFY(query.exec("SELECT COUNT(*) AS c FROM tokens;"));
+    QVERIFY(query.next());
+    QCOMPARE(query.value("c").toInt(), 0);
+    db.close();
+    QSqlDatabase::removeDatabase("test-fixture-verify-purged");
+
+    delete userManager;
+    QVERIFY(QFile(dbName).remove());
+}
+
+void TestUserLoading::testSchedulerPurgesTokenWhenItExpires()
+{
+    QString dbName = "/tmp/nymea-test/user-db-scheduler-purge.sqlite";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+
+    QString tokenValue = "sGVzdCB0b2tlbiB2YWx1ZSBmb3IgdGVzdGluZyBwdXJwb3Nlcw==";
+    // Expires shortly after construction: exercises the timer actually firing and
+    // re-arming for the nearest deadline, not just the constructor's initial purge.
+    QString soonExpiry = QDateTime::currentDateTimeUtc().addSecs(2).toString(Qt::ISODate);
+    writeV4FixtureWithToken(dbName, tokenValue, soonExpiry);
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+    // Not expired yet at construction time.
+    QVERIFY(userManager->verifyToken(tokenValue.toUtf8()));
+
+    QSignalSpy invalidatedSpy(userManager, &UserManager::tokenInvalidated);
+    QVERIFY(invalidatedSpy.wait(5000));
+    QCOMPARE(invalidatedSpy.count(), 1);
+    QCOMPARE(invalidatedSpy.first().first().toByteArray(), tokenValue.toUtf8());
+
+    QVERIFY(!userManager->verifyToken(tokenValue.toUtf8()));
 
     delete userManager;
     QVERIFY(QFile(dbName).remove());

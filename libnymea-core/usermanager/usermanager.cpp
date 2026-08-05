@@ -120,6 +120,18 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     m_pushButtonDBusService = new PushButtonDBusService("/io/nymea/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
     m_pushButtonTransaction = QPair<int, QString>(-1, QString());
+
+    if (!m_initializationFailed) {
+        m_expiryTimer = new QTimer(this);
+        m_expiryTimer->setSingleShot(true);
+        connect(m_expiryTimer, &QTimer::timeout, this, &UserManager::rearmExpiryTimer);
+        // Guarded: a standalone UserManager constructed without a fully initialized
+        // NymeaCore (as in isolated DB-loading tests) has no TimeManager to react to.
+        if (NymeaCore::instance()->timeManager()) {
+            connect(NymeaCore::instance()->timeManager(), &TimeManager::dateTimeChanged, this, &UserManager::rearmExpiryTimer);
+        }
+        rearmExpiryTimer();
+    }
 }
 
 /*! Returns true if the user database could not be opened or migrated. In that case the
@@ -334,6 +346,8 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     foreach (const QByteArray &tokenValue, removedTokenValues)
         emit tokenInvalidated(tokenValue);
     emit userRemoved(username);
+    if (!removedTokenValues.isEmpty() && m_expiryTimer)
+        rearmExpiryTimer();
     return UserErrorNoError;
 }
 
@@ -737,6 +751,8 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 
     qCDebug(dcUserManager) << "Token" << tokenId << "removed from DB";
     emit tokenInvalidated(tokenValue);
+    if (m_expiryTimer)
+        rearmExpiryTimer();
     return UserErrorNoError;
 }
 
@@ -1369,6 +1385,62 @@ bool UserManager::isTokenLogicallyExpired(const QVariant &expiryDateValue) const
         return false;
 
     return QDateTime::currentDateTimeUtc() >= expiryTime;
+}
+
+void UserManager::purgeExpiredTokens()
+{
+    QSqlQuery selectQuery(m_db);
+    if (!selectQuery.exec("SELECT id, token, expirydate FROM tokens WHERE expirydate IS NOT NULL;")) {
+        qCWarning(dcUserManager()) << "Unable to query for expired tokens" << selectQuery.lastError().databaseText() << selectQuery.lastError().driverText();
+        return;
+    }
+
+    QList<QPair<QUuid, QByteArray>> expired;
+    while (selectQuery.next()) {
+        if (isTokenLogicallyExpired(selectQuery.value("expirydate")))
+            expired << qMakePair(QUuid(selectQuery.value("id").toString()), selectQuery.value("token").toString().toUtf8());
+    }
+
+    foreach (const auto &pair, expired) {
+        const QUuid &tokenId = pair.first;
+
+        if (!m_notifiedExpiredTokenIds.contains(tokenId)) {
+            // Emitted immediately on first observation, independent of whether the
+            // physical delete below succeeds.
+            m_notifiedExpiredTokenIds.insert(tokenId);
+            emit tokenInvalidated(pair.second);
+        }
+
+        QSqlQuery deleteQuery(m_db);
+        deleteQuery.prepare("DELETE FROM tokens WHERE id = :id;");
+        deleteQuery.bindValue(":id", tokenId.toString());
+        if (deleteQuery.exec() && deleteQuery.numRowsAffected() == 1) {
+            m_notifiedExpiredTokenIds.remove(tokenId);
+        } else {
+            qCWarning(dcUserManager()) << "Failed to purge expired token" << tokenId << "- will retry on the next check.";
+        }
+    }
+}
+
+void UserManager::rearmExpiryTimer()
+{
+    purgeExpiredTokens();
+
+    QSqlQuery query(m_db);
+    if (!query.exec("SELECT MIN(expirydate) AS nextExpiry FROM tokens WHERE expirydate IS NOT NULL;") || !query.first() || query.value("nextExpiry").isNull()) {
+        m_expiryTimer->stop();
+        return;
+    }
+
+    QDateTime nextExpiry = parseStoredUtcDateTime(query.value("nextExpiry"));
+    qint64 msecsUntilExpiry = QDateTime::currentDateTimeUtc().msecsTo(nextExpiry);
+
+    // Never pass a potentially overflowing interval to QTimer (its int parameter maxes
+    // out around 24.8 days): re-check at least this often regardless of how far away the
+    // actual deadline is, recalculating against current UTC time on every wake-up.
+    constexpr qint64 maxIntervalMs = 24LL * 60 * 60 * 1000;
+    qint64 boundedMsecs = qBound<qint64>(0, msecsUntilExpiry, maxIntervalMs);
+    m_expiryTimer->start(static_cast<int>(boundedMsecs));
 }
 
 void UserManager::dumpDBError(const QString &message)

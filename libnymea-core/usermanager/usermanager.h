@@ -31,6 +31,8 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QTimer>
+#include <QSet>
 
 class QSqlQuery;
 
@@ -142,6 +144,11 @@ private:
     // comparing timestamps itself.
     bool isTokenLogicallyExpired(const QVariant &expiryDateValue) const;
 
+    // Identifies every now-expired token, emits tokenInvalidated() at most once per
+    // token id (deduplicated across repeated purge attempts), and retries physical
+    // deletion for rows that failed to delete on a previous pass.
+    void purgeExpiredTokens();
+
     void dumpDBError(const QString &message);
 
     void evaluateAllowedThingsForUser();
@@ -149,10 +156,19 @@ private:
 private slots:
     void onPushButtonPressed();
 
+    // Purges now-expired tokens, then (re-)arms m_expiryTimer for the nearest remaining
+    // tokens.expirydate. Called after startup, after removeToken()/removeUser(), on the
+    // timer's own fire, and on TimeManager::dateTimeChanged (wall-clock corrections).
+    void rearmExpiryTimer();
+
 private:
     QSqlDatabase m_db;
     bool m_hadUsersTableBeforeInit = false;
     bool m_initializationFailed = false;
+    QTimer *m_expiryTimer = nullptr;
+    // Token ids already reported via tokenInvalidated() while their physical deletion is
+    // still being retried, so a persistently failing delete never re-emits the signal.
+    QSet<QUuid> m_notifiedExpiredTokenIds;
     PushButtonDBusService *m_pushButtonDBusService = nullptr;
     int m_pushButtonTransactionIdCounter = 0;
     QPair<int, QString> m_pushButtonTransaction;

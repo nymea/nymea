@@ -132,6 +132,7 @@ private slots:
     void helloExposesInvitationsAvailable();
     void authenticateWithTokenHappyPath();
     void authenticateWithTokenFailureShape();
+    void endToEndInvitationRedemptionThenActiveDisconnectOnRevoke();
 
     void removeToken();
 

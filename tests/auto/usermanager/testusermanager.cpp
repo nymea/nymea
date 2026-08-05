@@ -1104,6 +1104,66 @@ void TestUsermanager::authenticateWithTokenFailureShape()
     QVERIFY2(!returnParams.contains("scopes"), "scopes must be absent on failure");
 }
 
+void TestUsermanager::endToEndInvitationRedemptionThenActiveDisconnectOnRevoke()
+{
+    // End-to-end: admin creates an invitation, a fresh guest client redeems it and uses
+    // the resulting token on the same connection, then the admin revokes that token and
+    // the guest's connection is actively disconnected - exercising 01's redemption path
+    // together with 00's active-disconnect mechanism in one scenario.
+    authenticate();
+    QByteArray adminToken = m_apiToken;
+
+    QVariantMap createParams;
+    createParams.insert("username", "valid@user.test");
+    QVariant createResponse = injectAndWait("Users.CreateInvitation", createParams, m_clientId, adminToken);
+    QString oneTimeToken = createResponse.toMap().value("params").toMap().value("token").toString();
+    QVERIFY(!oneTimeToken.isEmpty());
+
+    QUuid guestClientId = QUuid::createUuid();
+    emit m_mockTcpServer->clientConnected(guestClientId);
+    injectAndWait("JSONRPC.Hello", QVariantMap(), guestClientId, "");
+
+    QVariantMap redeemParams;
+    redeemParams.insert("token", oneTimeToken);
+    redeemParams.insert("deviceName", "guest-phone");
+    QVariant redeemResponse = injectAndWait("JSONRPC.AuthenticateWithToken", redeemParams, guestClientId, "");
+    QVariantMap redeemReturn = redeemResponse.toMap().value("params").toMap();
+    QVERIFY2(redeemReturn.value("success").toBool(), "Redemption should have succeeded");
+    QByteArray guestClientToken = redeemReturn.value("token").toByteArray();
+    QVERIFY(!guestClientToken.isEmpty());
+
+    // Same connection, no second Hello: the guest can already make an authenticated request.
+    QVariant getUserInfoResponse = injectAndWait("Users.GetUserInfo", QVariantMap(), guestClientId, guestClientToken);
+    QCOMPARE(getUserInfoResponse.toMap().value("status").toString(), QString("success"));
+
+    // Admin looks up the guest's token id and revokes it.
+    QVariantMap getUserTokensParams;
+    getUserTokensParams.insert("username", "valid@user.test");
+    QVariant getUserTokensResponse = injectAndWait("Users.GetUserTokens", getUserTokensParams, m_clientId, adminToken);
+    QVariantList guestTokenInfoList = getUserTokensResponse.toMap().value("params").toMap().value("tokenInfoList").toList();
+    QUuid guestTokenId;
+    foreach (const QVariant &tokenInfoVariant, guestTokenInfoList) {
+        if (tokenInfoVariant.toMap().value("deviceName").toString() == "guest-phone")
+            guestTokenId = tokenInfoVariant.toMap().value("id").toUuid();
+    }
+    QVERIFY2(!guestTokenId.isNull(), "Should have found the guest's redeemed token");
+
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+    QVariantMap removeParams;
+    removeParams.insert("tokenId", guestTokenId);
+    QVariant removeResponse = injectAndWait("Users.RemoveToken", removeParams, m_clientId, adminToken);
+    QCOMPARE(removeResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    if (disconnectedSpy.count() == 0)
+        disconnectedSpy.wait();
+    bool guestWasDisconnected = false;
+    for (int i = 0; i < disconnectedSpy.count(); i++) {
+        if (disconnectedSpy.at(i).first().toUuid() == guestClientId)
+            guestWasDisconnected = true;
+    }
+    QVERIFY2(guestWasDisconnected, "Guest connection should be actively disconnected when its redeemed token is revoked");
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

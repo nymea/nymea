@@ -142,6 +142,32 @@ bool UserManager::initializationFailed() const
     return m_initializationFailed;
 }
 
+/*! Resolves invitation availability for the process lifetime. Passing \a available as
+    false transactionally purges every pending invitation with no notification; if that
+    purge fails, this sets initializationFailed() so the caller aborts startup instead of
+    serving with a partially-disabled feature. */
+void UserManager::setInvitationsAvailable(bool available)
+{
+    m_invitationsAvailable = available;
+    if (available)
+        return;
+
+    QSqlQuery query(m_db);
+    if (!query.exec("DELETE FROM invitations;") || query.lastError().isValid()) {
+        qCCritical(dcUserManager()) << "Failed to purge pending invitations on disabled startup:" << query.lastError().databaseText() << query.lastError().driverText();
+        m_initializationFailed = true;
+        return;
+    }
+    qCDebug(dcUserManager()) << "Invitations disabled: purged" << query.numRowsAffected() << "pending invitation(s), no notification emitted.";
+}
+
+/*! Returns whether invitations are currently available, as resolved once at startup by
+    setInvitationsAvailable(). */
+bool UserManager::invitationsAvailable() const
+{
+    return m_invitationsAvailable;
+}
+
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
  *  That is, neither a user nor an anonymous token.
  *  This may be used to determine whether a first-time setup is required.
@@ -924,6 +950,9 @@ UserManager::UserError UserManager::createInvitation(const QString &username, ui
                                                        bool hasTokenValidity, uint tokenValiditySeconds,
                                                        QByteArray &oneTimeToken, InvitationInfo &info)
 {
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
     if (validitySeconds < 1 || validitySeconds > 2592000)
         return UserErrorInvalidInvitationDuration;
     if (hasTokenValidity && (tokenValiditySeconds < 1 || tokenValiditySeconds > 2592000))
@@ -969,6 +998,9 @@ UserManager::UserError UserManager::createInvitation(const QString &username, ui
     one. */
 UserManager::UserError UserManager::invitations(QList<InvitationInfo> &result, const QString &username)
 {
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
     purgeExpiredInvitations();
 
     QSqlQuery query(m_db);
@@ -997,6 +1029,9 @@ UserManager::UserError UserManager::invitations(QList<InvitationInfo> &result, c
 /*! Removes the pending invitation with the given \a invitationId. */
 UserManager::UserError UserManager::removeInvitation(const QUuid &invitationId)
 {
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
     QSqlQuery query(m_db);
     query.prepare("DELETE FROM invitations WHERE id = :id;");
     query.bindValue(":id", invitationId.toString());
@@ -1050,6 +1085,11 @@ void UserManager::purgeExpiredInvitations()
     operation, leaving the invitation redeemable and letting no client token escape. */
 QByteArray UserManager::redeemInvitation(const QByteArray &oneTimeToken, const QString &deviceName)
 {
+    // Disabled collapses into the same empty-result shape as every other failure: it
+    // must never reveal whether a supplied token once existed.
+    if (!m_invitationsAvailable)
+        return QByteArray();
+
     // Before any hash or query: reject malformed input up front.
     if (!isCanonicalInvitationToken(oneTimeToken))
         return QByteArray();

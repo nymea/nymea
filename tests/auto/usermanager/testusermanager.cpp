@@ -778,6 +778,97 @@ void TestUsermanager::removeUserCascadesInvitations()
     QCOMPARE(remaining.count(), 0);
 }
 
+void TestUsermanager::disabledInvitationsRejectAllManagementMethods()
+{
+    authenticate();
+    UserManager *userManager = NymeaCore::instance()->userManager();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+    QVERIFY(!oneTimeToken.isEmpty());
+
+    userManager->setInvitationsAvailable(false);
+
+    QByteArray disabledToken;
+    InvitationInfo disabledInfo;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, disabledToken, disabledInfo),
+             UserManager::UserErrorInvitationsDisabled);
+    QVERIFY(disabledToken.isEmpty());
+
+    QList<InvitationInfo> list;
+    QCOMPARE(userManager->invitations(list), UserManager::UserErrorInvitationsDisabled);
+    QCOMPARE(list.count(), 0);
+
+    QCOMPARE(userManager->removeInvitation(QUuid::createUuid()), UserManager::UserErrorInvitationsDisabled);
+
+    // Disabling already purged the pending invitation from above; redemption fails with
+    // the same undistinguishable empty result either way.
+    QVERIFY(userManager->redeemInvitation(oneTimeToken, "guest-phone").isEmpty());
+
+    userManager->setInvitationsAvailable(true);
+}
+
+void TestUsermanager::disablingInvitationsPurgesPendingRowsWithoutNotification()
+{
+    authenticate();
+    UserManager *userManager = NymeaCore::instance()->userManager();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QSignalSpy removedSpy(userManager, &UserManager::invitationRemoved);
+    userManager->setInvitationsAvailable(false);
+    QCOMPARE(removedSpy.count(), 0);
+    QVERIFY(!userManager->initializationFailed());
+
+    userManager->setInvitationsAvailable(true);
+    QList<InvitationInfo> list;
+    QCOMPARE(userManager->invitations(list), UserManager::UserErrorNoError);
+    QCOMPARE(list.count(), 0);
+}
+
+void TestUsermanager::reenablingAfterDisabledStartupStartsEmptyButKeepsRegularTokens()
+{
+    authenticate();
+    UserManager *userManager = NymeaCore::instance()->userManager();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+    QByteArray clientToken = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!clientToken.isEmpty());
+
+    userManager->setInvitationsAvailable(false);
+    userManager->setInvitationsAvailable(true);
+
+    // Already-redeemed regular client tokens survive a disable/re-enable cycle.
+    QVERIFY(userManager->verifyToken(clientToken));
+
+    QList<InvitationInfo> list;
+    QCOMPARE(userManager->invitations(list), UserManager::UserErrorNoError);
+    QCOMPARE(list.count(), 0);
+}
+
+void TestUsermanager::environmentVariableFormsAllDisableInvitations()
+{
+    // Presence disables regardless of value, including empty/"0"/"false"; only an unset
+    // variable means available. Exercised through a real restart so NymeaCore::init()'s
+    // own resolution logic is what gets tested, not just the setter.
+    QStringList disablingValues = {QString(""), QString("0"), QString("false"), QString("1")};
+    foreach (const QString &value, disablingValues) {
+        qputenv("NYMEA_DISABLE_INVITATIONS", value.toUtf8());
+        restartServer();
+        QVERIFY2(!NymeaCore::instance()->userManager()->invitationsAvailable(),
+                 QString("Value '%1' should disable invitations").arg(value).toUtf8().constData());
+    }
+
+    qunsetenv("NYMEA_DISABLE_INVITATIONS");
+    restartServer();
+    QVERIFY(NymeaCore::instance()->userManager()->invitationsAvailable());
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

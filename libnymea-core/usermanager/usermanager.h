@@ -70,6 +70,18 @@ public:
     // must not be used to serve any request.
     bool initializationFailed() const;
 
+    // Called exactly once by NymeaCore::init() right after construction, resolved as
+    // !qEnvironmentVariableIsSet("NYMEA_DISABLE_INVITATIONS"). Not a constructor
+    // parameter: inserting one ahead of the existing (dbName, parent) signature would
+    // silently reinterpret every existing new UserManager(dbName, this) call's parent
+    // pointer as this bool instead (any non-null pointer converts to true), dropping
+    // parenting everywhere without a compiler error. Passing false immediately and
+    // transactionally purges every pending invitation with no notification; a purge
+    // failure sets initializationFailed() so startup aborts without ever starting a
+    // JSON-RPC listener, exactly like a failed DB migration.
+    void setInvitationsAvailable(bool available);
+    bool invitationsAvailable() const;
+
     bool initRequired() const;
     UserInfoList users() const;
 
@@ -198,6 +210,9 @@ private:
     QSqlDatabase m_db;
     bool m_hadUsersTableBeforeInit = false;
     bool m_initializationFailed = false;
+    // Defaults to available: setInvitationsAvailable() is only called by NymeaCore::init(),
+    // so a standalone UserManager (as in isolated tests) is never gated.
+    bool m_invitationsAvailable = true;
     QTimer *m_expiryTimer = nullptr;
     // Token ids already reported via tokenInvalidated() while their physical deletion is
     // still being retried, so a persistently failing delete never re-emits the signal.

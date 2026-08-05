@@ -117,6 +117,11 @@ private slots:
 
     void removeUserCascadesInvitations();
 
+    void disabledInvitationsRejectAllManagementMethods();
+    void disablingInvitationsPurgesPendingRowsWithoutNotification();
+    void reenablingAfterDisabledStartupStartsEmptyButKeepsRegularTokens();
+    void environmentVariableFormsAllDisableInvitations();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

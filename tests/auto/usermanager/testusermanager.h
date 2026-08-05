@@ -129,6 +129,10 @@ private slots:
     void invitationMethodsRequireAdminScope();
     void invitationNotificationsOnlyReachAdminSubscribers();
 
+    void helloExposesInvitationsAvailable();
+    void authenticateWithTokenHappyPath();
+    void authenticateWithTokenFailureShape();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

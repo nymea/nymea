@@ -120,6 +120,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("initialSetupRequired", enumValueName(Bool));
     returns.insert("authenticationRequired", enumValueName(Bool));
     returns.insert("pushButtonAuthAvailable", enumValueName(Bool));
+    returns.insert("invitationsAvailable", enumValueName(Bool));
     returns.insert("o:experiences", QVariantList() << objectRef("Experience"));
     returns.insert("o:cacheHashes", QVariantList() << objectRef("CacheHash"));
     returns.insert("o:authenticated", enumValueName(Bool));
@@ -181,6 +182,20 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("o:username", enumValueName(String));
     returns.insert("o:scopes", flagRef<Types::PermissionScopes>());
     registerMethod("Authenticate", description, params, returns, Types::PermissionScopeNone);
+
+    params.clear(); returns.clear();
+    description = "Redeem a one-time invitation token obtained out-of-band (e.g. from a QR code or shared link) "
+                  "for a regular client token, the same as Authenticate. Provide a device name as with Authenticate. "
+                  "Only available when protocol >= 10.3 and JSONRPC.Hello.invitationsAvailable is true. Every "
+                  "failure (invitations disabled, malformed input, or an unknown/already-used/expired token) "
+                  "returns only success=false; no reason is distinguishable.";
+    params.insert("token", enumValueName(String));
+    params.insert("deviceName", enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    returns.insert("o:token", enumValueName(String));
+    returns.insert("o:username", enumValueName(String));
+    returns.insert("o:scopes", flagRef<Types::PermissionScopes>());
+    registerMethod("AuthenticateWithToken", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via Push Button method. "
@@ -267,6 +282,9 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
     handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
+    // Startup-resolved policy, sampled once by NymeaCore::init(); a client requires
+    // protocol >= 10.3 and this to be explicitly true before ever attempting redemption.
+    handshake.insert("invitationsAvailable", NymeaCore::instance()->userManager()->invitationsAvailable());
     if (!m_experiences.isEmpty()) {
         QVariantList experiences;
         foreach (JsonHandler* handler, m_experiences.keys()) {
@@ -410,6 +428,45 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, 
         m_connectionLockdownTimer.start();
     }
 
+    m_clientTokens[context.clientId()] = token;
+    markTokenSeenIfNewlyBound(context.clientId(), token);
+
+    return createReply(ret);
+}
+
+JsonReply *JsonRPCServerImplementation::AuthenticateWithToken(const QVariantMap &params, const JsonContext &context)
+{
+    QByteArray oneTimeToken = params.value("token").toByteArray();
+    QString deviceName = params.value("deviceName").toString();
+
+    // redeemInvitation() collapses every failure (disabled, malformed, unknown, expired,
+    // already-used, or a DB error) into an empty QByteArray - never reveal which.
+    QByteArray token = NymeaCore::instance()->userManager()->redeemInvitation(oneTimeToken, deviceName);
+    QVariantMap ret;
+    ret.insert("success", !token.isEmpty());
+    if (!token.isEmpty()) {
+        ret.insert("token", token);
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        ret.insert("username", userInfo.username());
+        ret.insert("scopes", Types::scopesToStringList(userInfo.scopes()));
+    }
+
+    // Same lockdown behavior as repeated bad Hello tokens / failed Authenticate: a failed
+    // redemption while already locked down drops the connection.
+    if (m_connectionLockdownTimer.isActive() && token.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Dropping client because of repeated bad invitation token redemption.";
+        TransportInterface *interface = reinterpret_cast<TransportInterface*>(property("transportInterface").toLongLong());
+        interface->terminateClientConnection(context.clientId());
+    }
+
+    if (token.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+        m_connectionLockdownTimer.start();
+    }
+
+    // Bind before returning, exactly like Authenticate: otherwise the next authenticated
+    // request on this connection is treated as an illegal token change.
     m_clientTokens[context.clientId()] = token;
     markTokenSeenIfNewlyBound(context.clientId(), token);
 
@@ -614,7 +671,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     // check if authentication is required for this transport
     if (interface->configuration().authenticationEnabled) {
         QStringList authExemptMethodsNoUser = {"JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
-        QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
+        QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.AuthenticateWithToken", "JSONRPC.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!authExemptMethodsNoUser.contains(methodString) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {

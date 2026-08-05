@@ -1046,6 +1046,64 @@ void TestUsermanager::invitationNotificationsOnlyReachAdminSubscribers()
     QVERIFY2(!guestReceived, "Non-admin client must not receive Users.InvitationAdded even when subscribed");
 }
 
+void TestUsermanager::helloExposesInvitationsAvailable()
+{
+    QVariant response = injectAndWait("JSONRPC.Hello");
+    QVariantMap returnParams = response.toMap().value("params").toMap();
+    QVERIFY2(returnParams.contains("invitationsAvailable"), "Hello must always include invitationsAvailable");
+    QCOMPARE(returnParams.value("invitationsAvailable").toBool(), NymeaCore::instance()->userManager()->invitationsAvailable());
+}
+
+void TestUsermanager::authenticateWithTokenHappyPath()
+{
+    authenticate();
+    QByteArray adminToken = m_apiToken;
+
+    QVariantMap createParams;
+    createParams.insert("username", "valid@user.test");
+    QVariant createResponse = injectAndWait("Users.CreateInvitation", createParams, m_clientId, adminToken);
+    QString oneTimeToken = createResponse.toMap().value("params").toMap().value("token").toString();
+    QVERIFY(!oneTimeToken.isEmpty());
+
+    QUuid guestClientId = QUuid::createUuid();
+    emit m_mockTcpServer->clientConnected(guestClientId);
+    injectAndWait("JSONRPC.Hello", QVariantMap(), guestClientId, "");
+
+    QVariantMap redeemParams;
+    redeemParams.insert("token", oneTimeToken);
+    redeemParams.insert("deviceName", "guest-phone");
+    QVariant redeemResponse = injectAndWait("JSONRPC.AuthenticateWithToken", redeemParams, guestClientId, "");
+    QVariantMap redeemReturn = redeemResponse.toMap().value("params").toMap();
+    QVERIFY2(redeemReturn.value("success").toBool(), "Redemption should have succeeded");
+    QByteArray clientToken = redeemReturn.value("token").toByteArray();
+    QVERIFY(!clientToken.isEmpty());
+    QCOMPARE(redeemReturn.value("username").toString(), QString("valid@user.test"));
+    QVERIFY(redeemReturn.value("scopes").toStringList().contains("PermissionScopeAdmin"));
+
+    // Same connection, same socket, no second Hello: the token must already be bound.
+    QVariant getUserInfoResponse = injectAndWait("Users.GetUserInfo", QVariantMap(), guestClientId, clientToken);
+    QCOMPARE(getUserInfoResponse.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(getUserInfoResponse.toMap().value("params").toMap().value("userInfo").toMap().value("username").toString(),
+             QString("valid@user.test"));
+}
+
+void TestUsermanager::authenticateWithTokenFailureShape()
+{
+    QUuid guestClientId = QUuid::createUuid();
+    emit m_mockTcpServer->clientConnected(guestClientId);
+    injectAndWait("JSONRPC.Hello", QVariantMap(), guestClientId, "");
+
+    QVariantMap redeemParams;
+    redeemParams.insert("token", QString("not-a-real-token"));
+    redeemParams.insert("deviceName", "guest-phone");
+    QVariant response = injectAndWait("JSONRPC.AuthenticateWithToken", redeemParams, guestClientId, "");
+    QVariantMap returnParams = response.toMap().value("params").toMap();
+    QCOMPARE(returnParams.value("success").toBool(), false);
+    QVERIFY2(!returnParams.contains("token"), "token must be absent on failure");
+    QVERIFY2(!returnParams.contains("username"), "username must be absent on failure");
+    QVERIFY2(!returnParams.contains("scopes"), "scopes must be absent on failure");
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

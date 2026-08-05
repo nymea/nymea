@@ -56,6 +56,7 @@ public:
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *AuthenticateWithToken(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 

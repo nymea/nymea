@@ -752,6 +752,32 @@ void TestUsermanager::redeemedTokenExpiryMeasuredFromRedemptionNotCreation()
     QVERIFY(!userManager->verifyToken(clientToken));
 }
 
+void TestUsermanager::removeUserCascadesInvitations()
+{
+    authenticate();
+
+    QVariantMap createParams;
+    createParams.insert("username", "bob@user.test");
+    createParams.insert("password", "Bla1234*");
+    QVariant createResponse = injectAndWait("Users.CreateUser", createParams);
+    QCOMPARE(createResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("bob@user.test", 3600, false, 0, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QSignalSpy invitationRemovedSpy(userManager, &UserManager::invitationRemoved);
+    QCOMPARE(userManager->removeUser("bob@user.test"), UserManager::UserErrorNoError);
+
+    QCOMPARE(invitationRemovedSpy.count(), 1);
+    QCOMPARE(invitationRemovedSpy.first().first().toUuid(), info.id());
+
+    QList<InvitationInfo> remaining;
+    QCOMPARE(userManager->invitations(remaining, "bob@user.test"), UserManager::UserErrorNoError);
+    QCOMPARE(remaining.count(), 0);
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

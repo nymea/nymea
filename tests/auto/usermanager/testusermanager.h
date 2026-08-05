@@ -115,6 +115,8 @@ private slots:
     void redeemInvitationRejectsMalformedTokenAndDeviceName();
     void redeemedTokenExpiryMeasuredFromRedemptionNotCreation();
 
+    void removeUserCascadesInvitations();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

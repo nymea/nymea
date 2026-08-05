@@ -305,33 +305,70 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     return UserErrorNoError;
 }
 
+/*! Removes \a username and every invitation/token/inventory row belonging to them in one
+    transaction. Any statement or commit failure rolls back everything and emits nothing;
+    invitation removals, token session revocations, and userRemoved are only emitted after
+    a successful commit. */
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
+    if (!m_db.transaction()) {
+        dumpDBError("Error starting transaction for removing user.");
+        return UserErrorBackendError;
+    }
+
     QSqlQuery selectTokensQuery(m_db);
     selectTokensQuery.prepare("SELECT token FROM tokens WHERE lower(username) = :username;");
     selectTokensQuery.bindValue(":username", username.toLower());
     if (!selectTokensQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << selectTokensQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
     QList<QByteArray> removedTokenValues;
     while (selectTokensQuery.next())
         removedTokenValues << selectTokensQuery.value("token").toString().toUtf8();
 
-    QString dropUserQueryString = QString("DELETE FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
+    QSqlQuery selectInvitationsQuery(m_db);
+    selectInvitationsQuery.prepare("SELECT id FROM invitations WHERE lower(username) = :username;");
+    selectInvitationsQuery.bindValue(":username", username.toLower());
+    if (!selectInvitationsQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << selectInvitationsQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+    QList<QUuid> removedInvitationIds;
+    while (selectInvitationsQuery.next())
+        removedInvitationIds << QUuid(selectInvitationsQuery.value("id").toString());
+
     QSqlQuery dropUserQuery(m_db);
-    if (!dropUserQuery.exec(dropUserQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropUserQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    dropUserQuery.prepare("DELETE FROM users WHERE lower(username) = :username;");
+    dropUserQuery.bindValue(":username", username.toLower());
+    if (!dropUserQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropUserQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
 
-    if (dropUserQuery.numRowsAffected() == 0)
+    if (dropUserQuery.numRowsAffected() == 0) {
+        m_db.rollback();
         return UserErrorInvalidUserId;
+    }
 
-    QString dropTokensQueryString = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
+    QSqlQuery dropInvitationsQuery(m_db);
+    dropInvitationsQuery.prepare("DELETE FROM invitations WHERE lower(username) = :username;");
+    dropInvitationsQuery.bindValue(":username", username.toLower());
+    if (!dropInvitationsQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropInvitationsQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+
     QSqlQuery dropTokensQuery(m_db);
-    if (!dropTokensQuery.exec(dropTokensQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropTokensQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    dropTokensQuery.prepare("DELETE FROM tokens WHERE lower(username) = :username;");
+    dropTokensQuery.bindValue(":username", username.toLower());
+    if (!dropTokensQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropTokensQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
 
@@ -340,9 +377,18 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     dropInventoryQuery.bindValue(":username", username.toLower());
     if (!dropInventoryQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to delete user inventory for user" << username << dropInventoryQuery.lastError().databaseText() << dropInventoryQuery.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
 
+    if (!m_db.commit()) {
+        dumpDBError("Error committing user removal transaction.");
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+
+    foreach (const QUuid &invitationId, removedInvitationIds)
+        emit invitationRemoved(invitationId);
     foreach (const QByteArray &tokenValue, removedTokenValues)
         emit tokenInvalidated(tokenValue);
     emit userRemoved(username);

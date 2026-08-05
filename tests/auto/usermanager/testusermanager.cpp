@@ -365,23 +365,46 @@ void TestUsermanager::getTokens()
 
 void TestUsermanager::tokenInfoExpiryAndLastSeenDefaultToInvalid()
 {
-    // Nothing in this repo mints a token with an expiry or marks it seen yet; a token from
-    // ordinary password authentication must round-trip both fields as invalid/absent.
+    // Nothing in this repo mints a token with an expiry yet, so that always stays absent.
+    // lastSeen, however, is marked by JSONRPC.Authenticate itself as of this commit.
     authenticate();
 
     TokenInfo byToken = NymeaCore::instance()->userManager()->tokenInfo(m_apiToken);
     QVERIFY(!byToken.id().isNull());
     QVERIFY(!byToken.expiryTime().isValid());
-    QVERIFY(!byToken.lastSeen().isValid());
+    QVERIFY(byToken.lastSeen().isValid());
 
     TokenInfo byId = NymeaCore::instance()->userManager()->tokenInfo(byToken.id());
     QVERIFY(!byId.expiryTime().isValid());
-    QVERIFY(!byId.lastSeen().isValid());
+    QVERIFY(byId.lastSeen().isValid());
 
     QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens("valid@user.test");
     QCOMPARE(tokens.count(), 1);
     QVERIFY(!tokens.first().expiryTime().isValid());
-    QVERIFY(!tokens.first().lastSeen().isValid());
+    QVERIFY(tokens.first().lastSeen().isValid());
+}
+
+void TestUsermanager::lastSeenMarkedOnceOnAuthenticateAndNotAgainOnRepeatedHello()
+{
+    authenticate();
+
+    TokenInfo afterAuth = NymeaCore::instance()->userManager()->tokenInfo(m_apiToken);
+    QVERIFY(!afterAuth.id().isNull());
+    QVERIFY(afterAuth.lastSeen().isValid());
+    QDateTime firstSeen = afterAuth.lastSeen();
+
+    // Advance the simulated clock and make another authenticated request on the same
+    // connection with the same token: lastSeen must not move again.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime().addSecs(3600));
+
+    QVariant response = injectAndWait("JSONRPC.Hello");
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Hello failed");
+
+    TokenInfo afterSecondHello = NymeaCore::instance()->userManager()->tokenInfo(m_apiToken);
+    QCOMPARE(afterSecondHello.lastSeen(), firstSeen);
+
+    // Restore real time so later tests in this binary are unaffected.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
 }
 
 void TestUsermanager::removeToken()

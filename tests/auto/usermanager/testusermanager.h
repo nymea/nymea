@@ -93,6 +93,8 @@ private slots:
 
     void tokenInfoExpiryAndLastSeenDefaultToInvalid();
 
+    void lastSeenMarkedOnceOnAuthenticateAndNotAgainOnRepeatedHello();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

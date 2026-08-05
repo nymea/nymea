@@ -88,6 +88,9 @@ public:
     UserInventoryItem findEnabledUserInventoryItem(const QString &type, const QString &payloadKey, const QVariant &payloadValue) const;
 
     UserError removeToken(const QUuid &tokenId);
+    // Diagnostic only: callers keep an already validated connection authenticated even if
+    // this returns false. Never pass the clear token value here, only its id.
+    bool markTokenSeen(const QUuid &tokenId, const QDateTime &timestamp);
     UserError addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled = true);
     UserError updateUserInventoryItem(const QUuid &inventoryItemId, const QString &displayName, const QVariantMap &payload, bool enabled);
     UserError removeUserInventoryItem(const QUuid &inventoryItemId);

@@ -717,6 +717,30 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
     return UserErrorNoError;
 }
 
+/*! Marks the token with the given \a tokenId as last seen at \a timestamp, a single prepared
+    UPDATE by token id. The clear token value is never received or logged here. The result is
+    diagnostic only: callers must keep an already validated connection authenticated even if
+    this returns false. */
+bool UserManager::markTokenSeen(const QUuid &tokenId, const QDateTime &timestamp)
+{
+    QSqlQuery query(m_db);
+    query.prepare("UPDATE tokens SET lastseen = :lastseen WHERE id = :id;");
+    query.bindValue(":lastseen", formatUtcDateTimeForStorage(timestamp));
+    query.bindValue(":id", tokenId.toString());
+
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to mark token seen for token id" << tokenId << query.lastError().databaseText() << query.lastError().driverText();
+        return false;
+    }
+
+    if (query.numRowsAffected() != 1) {
+        qCWarning(dcUserManager()) << "Marking token seen affected" << query.numRowsAffected() << "rows for token id" << tokenId;
+        return false;
+    }
+
+    return true;
+}
+
 UserManager::UserError UserManager::addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled)
 {
     if (!validateUsername(username) || !userInfo(username.toLower()).isValid()) {

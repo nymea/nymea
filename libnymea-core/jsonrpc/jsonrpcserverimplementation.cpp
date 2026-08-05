@@ -285,6 +285,7 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     }
 
     m_clientTokens[context.clientId()] = context.token();
+    markTokenSeenIfNewlyBound(context.clientId(), context.token());
 
     bool badToken = false;
     if (!context.token().isEmpty()) {
@@ -403,6 +404,7 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, 
     }
 
     m_clientTokens[context.clientId()] = token;
+    markTokenSeenIfNewlyBound(context.clientId(), token);
 
     return createReply(ret);
 }
@@ -925,6 +927,7 @@ void JsonRPCServerImplementation::onPushButtonAuthFinished(int transactionId, bo
     if (success) {
         params.insert("token", token);
         m_clientTokens[clientId] = token;
+        markTokenSeenIfNewlyBound(clientId, token);
     }
 
     emit PushButtonAuthFinished(clientId, params);
@@ -1111,6 +1114,7 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     m_clientBuffers.remove(clientId);
     m_clientLocales.remove(clientId);
     m_clientTokens.remove(clientId);
+    m_seenTokenIdsByClient.remove(clientId);
 
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
@@ -1119,6 +1123,28 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     if (m_newConnectionWaitTimers.contains(clientId)) {
         delete m_newConnectionWaitTimers.take(clientId);
     }
+}
+
+void JsonRPCServerImplementation::markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token)
+{
+    if (token.isEmpty())
+        return;
+
+    // Resolved through the same authoritative lookup used everywhere else: an
+    // invalid/unknown/expired token is never marked.
+    TokenInfo info = NymeaCore::instance()->userManager()->tokenInfo(token);
+    if (info.id().isNull())
+        return;
+
+    QSet<QUuid> &seenForClient = m_seenTokenIdsByClient[clientId];
+    if (seenForClient.contains(info.id()))
+        return;
+
+    QDateTime now = NymeaCore::instance()->timeManager()->currentDateTime().toUTC();
+    if (!NymeaCore::instance()->userManager()->markTokenSeen(info.id(), now)) {
+        qCWarning(dcJsonRpc()) << "Failed to update last-seen timestamp for token id" << info.id();
+    }
+    seenForClient.insert(info.id());
 }
 
 }

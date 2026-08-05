@@ -33,6 +33,7 @@
 #include <QObject>
 #include <QVariantMap>
 #include <QString>
+#include <QSet>
 #include <QSslConfiguration>
 
 class Thing;
@@ -75,6 +76,11 @@ private:
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
 
+    // Centralizes persistent-token last-seen marking for Hello, Authenticate and
+    // push-button completion. A no-op for an empty/invalid/expired token. Marks a given
+    // token id at most once per client connection, even across A->B->A token switches.
+    void markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token);
+
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
 private slots:
@@ -105,6 +111,9 @@ private:
     QHash<QUuid, QStringList> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
     QHash<QUuid, QByteArray> m_clientTokens;
+    // Token ids already marked as seen on each client connection, so repeated Hello
+    // and ordinary requests never issue a second UPDATE for the same (client, token).
+    QHash<QUuid, QSet<QUuid>> m_seenTokenIdsByClient;
     QHash<int, QUuid> m_pushButtonTransactions;
     QHash<QUuid, QTimer *> m_newConnectionWaitTimers;
 

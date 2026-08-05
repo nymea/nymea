@@ -868,6 +868,56 @@ UserManager::UserError UserManager::removeUserInventoryItem(const QUuid &invento
     return UserErrorNoError;
 }
 
+/*! Creates a one-time invitation for \a username, valid for \a validitySeconds (the
+    invitation's own absolute expiry, 1..2592000). When \a hasTokenValidity is true, the
+    regular token minted on redemption additionally expires \a tokenValiditySeconds after
+    a successful redemption (also 1..2592000); otherwise the redeemed token never expires.
+    On success, the clear one-time token is returned via \a oneTimeToken (this is the only
+    place it ever leaves the server - only its hash is stored) and \a info is populated. */
+UserManager::UserError UserManager::createInvitation(const QString &username, uint validitySeconds,
+                                                       bool hasTokenValidity, uint tokenValiditySeconds,
+                                                       QByteArray &oneTimeToken, InvitationInfo &info)
+{
+    if (validitySeconds < 1 || validitySeconds > 2592000)
+        return UserErrorInvalidInvitationDuration;
+    if (hasTokenValidity && (tokenValiditySeconds < 1 || tokenValiditySeconds > 2592000))
+        return UserErrorInvalidInvitationDuration;
+
+    QSqlQuery userExistsQuery(m_db);
+    userExistsQuery.prepare("SELECT username FROM users WHERE lower(username) = :username;");
+    userExistsQuery.bindValue(":username", username.toLower());
+    if (!userExistsQuery.exec() || !userExistsQuery.first()) {
+        qCWarning(dcUserManager()) << "Cannot create invitation for unknown user" << username;
+        return UserErrorInvalidUserId;
+    }
+
+    QByteArray clearToken = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+    QByteArray tokenHash = QCryptographicHash::hash(clearToken, QCryptographicHash::Sha256).toBase64();
+    QUuid invitationId = QUuid::createUuid();
+    QDateTime creationTime = NymeaCore::instance()->timeManager()->currentDateTime().toUTC();
+    QDateTime expiryTime = creationTime.addSecs(validitySeconds);
+
+    QSqlQuery insertQuery(m_db);
+    insertQuery.prepare("INSERT INTO invitations (id, username, tokenhash, creationdate, expirydate, tokenvalidityduration) "
+                         "VALUES (:id, :username, :tokenhash, :creationdate, :expirydate, :tokenvalidityduration);");
+    insertQuery.bindValue(":id", invitationId.toString());
+    insertQuery.bindValue(":username", username.toLower());
+    insertQuery.bindValue(":tokenhash", QString::fromUtf8(tokenHash));
+    insertQuery.bindValue(":creationdate", formatUtcDateTimeForStorage(creationTime));
+    insertQuery.bindValue(":expirydate", formatUtcDateTimeForStorage(expiryTime));
+    insertQuery.bindValue(":tokenvalidityduration", hasTokenValidity ? QVariant(tokenValiditySeconds) : QVariant());
+    if (!insertQuery.exec() || insertQuery.lastError().isValid()) {
+        qCWarning(dcUserManager()) << "Unable to create invitation" << insertQuery.lastError().databaseText() << insertQuery.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    info = InvitationInfo(invitationId, username.toLower(), creationTime, expiryTime,
+                           hasTokenValidity ? QVariant(tokenValiditySeconds) : QVariant());
+    oneTimeToken = clearToken;
+    emit invitationAdded(info);
+    return UserErrorNoError;
+}
+
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {

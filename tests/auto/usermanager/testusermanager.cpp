@@ -485,6 +485,77 @@ void TestUsermanager::getTokensExposesLastSeenAsEpochSecondsAndOmitsUnsetExpiryT
     QVERIFY2(!tokenInfo.contains("expiryTime"), "expiryTime should be absent when never set");
 }
 
+void TestUsermanager::createInvitationHappyPath()
+{
+    authenticate();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    UserManager::UserError error = NymeaCore::instance()->userManager()->createInvitation(
+                "valid@user.test", 3600, false, 0, oneTimeToken, info);
+    QCOMPARE(error, UserManager::UserErrorNoError);
+    QVERIFY(!oneTimeToken.isEmpty());
+    QVERIFY(!info.id().isNull());
+    QCOMPARE(info.username(), QString("valid@user.test"));
+    QVERIFY(info.expiryTime().isValid());
+    QVERIFY(qAbs(info.creationTime().secsTo(info.expiryTime()) - 3600) <= 2);
+    QVERIFY(!info.tokenValidityDuration().isValid());
+
+    // Two invitations must never share a one-time token.
+    QByteArray secondToken;
+    InvitationInfo secondInfo;
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 3600, true, 1800, secondToken, secondInfo),
+             UserManager::UserErrorNoError);
+    QVERIFY(secondToken != oneTimeToken);
+    QVERIFY(secondInfo.tokenValidityDuration().isValid());
+    QCOMPARE(secondInfo.tokenValidityDuration().toUInt(), 1800u);
+}
+
+void TestUsermanager::createInvitationForUnknownUserFails()
+{
+    authenticate();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    UserManager::UserError error = NymeaCore::instance()->userManager()->createInvitation(
+                "nobody@user.test", 3600, false, 0, oneTimeToken, info);
+    QCOMPARE(error, UserManager::UserErrorInvalidUserId);
+    QVERIFY(oneTimeToken.isEmpty());
+}
+
+void TestUsermanager::createInvitationDurationValidation()
+{
+    authenticate();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 0, false, 0, oneTimeToken, info),
+             UserManager::UserErrorInvalidInvitationDuration);
+
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 2592001, false, 0, oneTimeToken, info),
+             UserManager::UserErrorInvalidInvitationDuration);
+
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 3600, true, 0, oneTimeToken, info),
+             UserManager::UserErrorInvalidInvitationDuration);
+
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 3600, true, 2592001, oneTimeToken, info),
+             UserManager::UserErrorInvalidInvitationDuration);
+
+    // Boundaries are accepted.
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 1, true, 1, oneTimeToken, info),
+             UserManager::UserErrorNoError);
+    QCOMPARE(NymeaCore::instance()->userManager()->createInvitation(
+                 "valid@user.test", 2592000, true, 2592000, oneTimeToken, info),
+             UserManager::UserErrorNoError);
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

@@ -26,6 +26,7 @@
 #define USERMANAGER_H
 
 #include "tokeninfo.h"
+#include "invitationinfo.h"
 #include "userinfo.h"
 #include "userinventoryitem.h"
 
@@ -55,7 +56,10 @@ public:
         UserErrorInconsistantScopes,
         UserErrorInventoryItemNotFound,
         UserErrorDuplicateInventoryItem,
-        UserErrorInvalidInventoryItem
+        UserErrorInvalidInventoryItem,
+        UserErrorInvitationNotFound,
+        UserErrorInvalidInvitationDuration,
+        UserErrorInvitationsDisabled
     };
     Q_ENUM(UserError)
 
@@ -97,6 +101,13 @@ public:
     UserError updateUserInventoryItem(const QUuid &inventoryItemId, const QString &displayName, const QVariantMap &payload, bool enabled);
     UserError removeUserInventoryItem(const QUuid &inventoryItemId);
 
+    // validitySeconds and, when hasTokenValidity, tokenValiditySeconds must each be in
+    // 1..2592000 (30 days) or UserErrorInvalidInvitationDuration is returned. oneTimeToken
+    // and info are only populated on UserErrorNoError; the clear token is never stored,
+    // only its hash.
+    UserError createInvitation(const QString &username, uint validitySeconds,
+                               bool hasTokenValidity, uint tokenValiditySeconds,
+                               QByteArray &oneTimeToken, InvitationInfo &info);
 
     bool verifyToken(const QByteArray &token);
 
@@ -121,6 +132,9 @@ signals:
     // without this, a revoked client's notification stream would otherwise keep flowing
     // until it disconnects on its own.
     void tokenInvalidated(const QByteArray &token);
+
+    void invitationAdded(const nymeaserver::InvitationInfo &invitation);
+    void invitationRemoved(const QUuid &invitationId);
 
 private:
     bool initDB();

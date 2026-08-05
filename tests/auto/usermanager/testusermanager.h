@@ -100,6 +100,10 @@ private slots:
 
     void getTokensExposesLastSeenAsEpochSecondsAndOmitsUnsetExpiryTime();
 
+    void createInvitationHappyPath();
+    void createInvitationForUnknownUserFails();
+    void createInvitationDurationValidation();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

@@ -53,6 +53,10 @@ public:
     Q_INVOKABLE JsonReply *SetUserScopes(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *SetUserInfo(const QVariantMap &params, const JsonContext &context);
 
+    Q_INVOKABLE JsonReply *CreateInvitation(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetInvitations(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveInvitation(const QVariantMap &params);
+
 signals:
     void UserAdded(const QVariantMap &params);
     void UserRemoved(const QVariantMap &params);

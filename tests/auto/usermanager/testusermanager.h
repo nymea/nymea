@@ -122,6 +122,12 @@ private slots:
     void reenablingAfterDisabledStartupStartsEmptyButKeepsRegularTokens();
     void environmentVariableFormsAllDisableInvitations();
 
+    void createInvitationOverJsonRpc();
+    void createInvitationOverJsonRpcDefaultsDuration();
+    void getInvitationsOverJsonRpc();
+    void removeInvitationOverJsonRpc();
+    void invitationMethodsRequireAdminScope();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

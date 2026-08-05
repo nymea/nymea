@@ -869,6 +869,119 @@ void TestUsermanager::environmentVariableFormsAllDisableInvitations()
     QVERIFY(NymeaCore::instance()->userManager()->invitationsAvailable());
 }
 
+void TestUsermanager::createInvitationOverJsonRpc()
+{
+    authenticate();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("validityDuration", 3600);
+    params.insert("tokenValidityDuration", 1800);
+    QVariant response = injectAndWait("Users.CreateInvitation", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    QVariantMap returnParams = response.toMap().value("params").toMap();
+    QCOMPARE(returnParams.value("error").toString(), QString("UserErrorNoError"));
+    QVERIFY(!returnParams.value("token").toString().isEmpty());
+
+    QVariantMap invitation = returnParams.value("invitation").toMap();
+    QVERIFY(!invitation.value("id").toString().isEmpty());
+    QCOMPARE(invitation.value("username").toString(), QString("valid@user.test"));
+    QVERIFY(invitation.contains("creationTime"));
+    QVERIFY(invitation.contains("expiryTime"));
+    qint64 creationEpoch = invitation.value("creationTime").toLongLong();
+    qint64 expiryEpoch = invitation.value("expiryTime").toLongLong();
+    QVERIFY(qAbs((expiryEpoch - creationEpoch) - 3600) <= 2);
+    QCOMPARE(invitation.value("tokenValidityDuration").toUInt(), 1800u);
+}
+
+void TestUsermanager::createInvitationOverJsonRpcDefaultsDuration()
+{
+    authenticate();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    QVariant response = injectAndWait("Users.CreateInvitation", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    QVariantMap returnParams = response.toMap().value("params").toMap();
+    QCOMPARE(returnParams.value("error").toString(), QString("UserErrorNoError"));
+    QVariantMap invitation = returnParams.value("invitation").toMap();
+    // No tokenValidityDuration given: the redeemed token never expires, so this optional
+    // field must be entirely absent, not null/0.
+    QVERIFY2(!invitation.contains("tokenValidityDuration"), "tokenValidityDuration should be absent when unset");
+
+    qint64 creationEpoch = invitation.value("creationTime").toLongLong();
+    qint64 expiryEpoch = invitation.value("expiryTime").toLongLong();
+    QVERIFY(qAbs((expiryEpoch - creationEpoch) - 86400) <= 2);
+}
+
+void TestUsermanager::getInvitationsOverJsonRpc()
+{
+    authenticate();
+
+    QVariantMap createParams;
+    createParams.insert("username", "valid@user.test");
+    QCOMPARE(injectAndWait("Users.CreateInvitation", createParams).toMap().value("params").toMap().value("error").toString(),
+             QString("UserErrorNoError"));
+    QCOMPARE(injectAndWait("Users.CreateInvitation", createParams).toMap().value("params").toMap().value("error").toString(),
+             QString("UserErrorNoError"));
+
+    QVariant response = injectAndWait("Users.GetInvitations");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVariantMap returnParams = response.toMap().value("params").toMap();
+    QCOMPARE(returnParams.value("error").toString(), QString("UserErrorNoError"));
+    QCOMPARE(returnParams.value("invitations").toList().count(), 2);
+}
+
+void TestUsermanager::removeInvitationOverJsonRpc()
+{
+    authenticate();
+
+    QVariantMap createParams;
+    createParams.insert("username", "valid@user.test");
+    QVariant createResponse = injectAndWait("Users.CreateInvitation", createParams);
+    QString invitationId = createResponse.toMap().value("params").toMap().value("invitation").toMap().value("id").toString();
+    QVERIFY(!invitationId.isEmpty());
+
+    QVariantMap removeParams;
+    removeParams.insert("invitationId", invitationId);
+    QVariant removeResponse = injectAndWait("Users.RemoveInvitation", removeParams);
+    QCOMPARE(removeResponse.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(removeResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    QVariant listResponse = injectAndWait("Users.GetInvitations");
+    QCOMPARE(listResponse.toMap().value("params").toMap().value("invitations").toList().count(), 0);
+}
+
+void TestUsermanager::invitationMethodsRequireAdminScope()
+{
+    authenticate();
+    QByteArray adminToken = m_apiToken;
+
+    QVariantMap createGuestParams;
+    createGuestParams.insert("username", "guest@user.test");
+    createGuestParams.insert("password", "Bla1234*");
+    QStringList guestScopes;
+    guestScopes << "PermissionScopeControlThings";
+    createGuestParams.insert("scopes", guestScopes);
+    QVariant createGuestResponse = injectAndWait("Users.CreateUser", createGuestParams, m_clientId, adminToken);
+    QCOMPARE(createGuestResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    QVariantMap authParams;
+    authParams.insert("username", "guest@user.test");
+    authParams.insert("password", "Bla1234*");
+    authParams.insert("deviceName", "guestdevice");
+    QVariant authResponse = injectAndWait("JSONRPC.Authenticate", authParams, m_clientId, "");
+    QByteArray guestToken = authResponse.toMap().value("params").toMap().value("token").toByteArray();
+    QVERIFY(!guestToken.isEmpty());
+
+    QVariantMap createParams;
+    createParams.insert("username", "guest@user.test");
+    QVariant response = injectAndWait("Users.CreateInvitation", createParams, m_clientId, guestToken);
+    QCOMPARE(response.toMap().value("status").toString(), QString("unauthorized"));
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

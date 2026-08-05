@@ -37,6 +37,7 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerFlag<Types::PermissionScope, Types::PermissionScopes>();
     registerObject<UserInfo, UserInfoList>();
     registerObject<TokenInfo, TokenInfoList>();
+    registerObject<InvitationInfo, InvitationInfoList>();
 
     QVariantMap params, returns;
     QString description;
@@ -117,6 +118,33 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     params.insert("o:email", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("SetUserInfo", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Create a one-time invitation for an existing user. The one-time token is returned exactly once, "
+                  "here, and only its hash is stored; it is not retrievable again. validityDuration is the "
+                  "invitation's own absolute validity in seconds (default 86400, 1..2592000). When "
+                  "tokenValidityDuration is given (also 1..2592000), the regular token minted on redemption expires "
+                  "that many seconds after a successful redemption; if absent, the redeemed token never expires.";
+    params.insert("username", enumValueName(String));
+    params.insert("o:validityDuration", enumValueName(Uint));
+    params.insert("o:tokenValidityDuration", enumValueName(Uint));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    returns.insert("o:token", enumValueName(String));
+    returns.insert("o:invitation", objectRef<InvitationInfo>());
+    registerMethod("CreateInvitation", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Get all pending invitations, optionally filtered by username.";
+    params.insert("o:username", enumValueName(String));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    returns.insert("o:invitations", objectRef<InvitationInfoList>());
+    registerMethod("GetInvitations", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Remove a pending invitation before it is redeemed.";
+    params.insert("invitationId", enumValueName(Uuid));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("RemoveInvitation", description, params, returns);
 
     // Notifications
     params.clear();
@@ -493,6 +521,55 @@ JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContex
     }
     UserManager::UserError status = m_userManager->setUserInfo(username, email, displayName);
     returns.insert("error", enumValueName(status));
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::CreateInvitation(const QVariantMap &params)
+{
+    QString username = params.value("username").toString();
+    uint validityDuration = params.value("validityDuration", 86400).toUInt();
+    bool hasTokenValidityDuration = params.contains("tokenValidityDuration");
+    uint tokenValidityDuration = params.value("tokenValidityDuration").toUInt();
+
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    UserManager::UserError error = m_userManager->createInvitation(username, validityDuration, hasTokenValidityDuration,
+                                                                     tokenValidityDuration, oneTimeToken, info);
+
+    QVariantMap returns;
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
+    if (error == UserManager::UserErrorNoError) {
+        returns.insert("token", QString::fromUtf8(oneTimeToken));
+        returns.insert("invitation", pack(info));
+    }
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::GetInvitations(const QVariantMap &params)
+{
+    QString username = params.value("username").toString();
+
+    QList<InvitationInfo> invitationList;
+    UserManager::UserError error = m_userManager->invitations(invitationList, username);
+
+    QVariantMap returns;
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
+    if (error == UserManager::UserErrorNoError) {
+        QVariantList packed;
+        foreach (const InvitationInfo &invitation, invitationList)
+            packed << pack(invitation);
+        returns.insert("invitations", packed);
+    }
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::RemoveInvitation(const QVariantMap &params)
+{
+    QUuid invitationId = params.value("invitationId").toUuid();
+    UserManager::UserError error = m_userManager->removeInvitation(invitationId);
+
+    QVariantMap returns;
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
     return createReply(returns);
 }
 

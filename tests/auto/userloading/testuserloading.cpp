@@ -45,7 +45,7 @@ protected slots:
 private slots:
     void testLogfileRotation();
     void testMigrationFailureOnExistingUsersIsNotRotated();
-    void testFreshDatabaseIsCreatedAtVersion4();
+    void testFreshDatabaseIsCreatedAtVersion5();
     void testMigrationV3ToV4PreservesExistingData();
     void testMigrationV3ToV4FailureRollsBackAndPreservesVersion();
     void testExpiredTokenIsRejectedByResolver();
@@ -150,9 +150,9 @@ void TestUserLoading::testMigrationFailureOnExistingUsersIsNotRotated()
     QVERIFY(QFile(dbName).remove());
 }
 
-void TestUserLoading::testFreshDatabaseIsCreatedAtVersion4()
+void TestUserLoading::testFreshDatabaseIsCreatedAtVersion5()
 {
-    QString dbName = "/tmp/nymea-test/user-db-fresh-v4.sqlite";
+    QString dbName = "/tmp/nymea-test/user-db-fresh-v5.sqlite";
     if (QFile::exists(dbName))
         QVERIFY(QFile(dbName).remove());
 
@@ -172,10 +172,12 @@ void TestUserLoading::testFreshDatabaseIsCreatedAtVersion4()
     QVERIFY(tokenColumns.contains("expirydate"));
     QVERIFY(tokenColumns.contains("lastseen"));
 
+    QVERIFY(db.tables().contains("invitations"));
+
     QSqlQuery version(db);
     QVERIFY(version.exec("SELECT data FROM metadata WHERE key = 'version';"));
     QVERIFY(version.next());
-    QCOMPARE(version.value("data").toString(), QString("4"));
+    QCOMPARE(version.value("data").toString(), QString("5"));
 
     db.close();
     QSqlDatabase::removeDatabase("test-fixture-verify-fresh");
@@ -244,10 +246,14 @@ void TestUserLoading::testMigrationV3ToV4PreservesExistingData()
         QVERIFY(tokenColumns.contains("expirydate"));
         QVERIFY(tokenColumns.contains("lastseen"));
 
+        // Migration runs all the way to the current schema (v5), not just v4: the
+        // invitations table (introduced at v5) must exist alongside the migrated columns.
+        QVERIFY(db.tables().contains("invitations"));
+
         QSqlQuery version(db);
         QVERIFY(version.exec("SELECT data FROM metadata WHERE key = 'version';"));
         QVERIFY(version.next());
-        QCOMPARE(version.value("data").toString(), QString("4"));
+        QCOMPARE(version.value("data").toString(), QString("5"));
 
         QSqlQuery token(db);
         QVERIFY(token.exec("SELECT token, expirydate, lastseen FROM tokens WHERE id = "

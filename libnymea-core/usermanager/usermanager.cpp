@@ -967,7 +967,7 @@ bool UserManager::initDB()
     m_hadUsersTableBeforeInit = m_db.tables().contains("users");
 
     int currentVersion = -1;
-    int newVersion = 4;
+    int newVersion = 5;
 
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
@@ -1142,6 +1142,16 @@ bool UserManager::initDB()
             return false;
         }
         qCDebug(dcUserManager()) << "Migrated successfully tokens table to database version 4";
+    }
+
+    if (!m_db.tables().contains("invitations")) {
+        qCDebug(dcUserManager()) << "No \"invitations\" table found. Creating the table...";
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE invitations (id VARCHAR(40) UNIQUE, username VARCHAR(40), tokenhash VARCHAR(100) UNIQUE, creationdate DATETIME, expirydate DATETIME NOT NULL, tokenvalidityduration INTEGER);") || m_db.lastError().isValid()) {
+            dumpDBError("Error initializing user database (table invitations)");
+            m_db.close();
+            return false;
+        }
     }
 
     if (!m_db.tables().contains("metadata")) {

@@ -40,8 +40,11 @@ class TokenInfo
     Q_PROPERTY(QDateTime creationTime READ creationTime)
     Q_PROPERTY(QString deviceName READ deviceName)
     // Invalid QDateTime means "never expires" / "not yet observed" respectively.
-    Q_PROPERTY(QDateTime expiryTime READ expiryTime)
-    Q_PROPERTY(QDateTime lastSeen READ lastSeen)
+    // USER true + no WRITE clause -> JsonHandler reflects these as "r:o:" (read-only,
+    // optional): an invalid QDateTime is omitted from JSON entirely rather than
+    // serialized as null/0.
+    Q_PROPERTY(QDateTime expiryTime READ expiryTime USER true)
+    Q_PROPERTY(QDateTime lastSeen READ lastSeen USER true)
 
 public:
     TokenInfo();

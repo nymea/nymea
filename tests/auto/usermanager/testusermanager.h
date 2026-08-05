@@ -98,6 +98,8 @@ private slots:
     void activeDisconnectOnRemoveToken();
     void activeDisconnectOnRemoveUser();
 
+    void getTokensExposesLastSeenAsEpochSecondsAndOmitsUnsetExpiryTime();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

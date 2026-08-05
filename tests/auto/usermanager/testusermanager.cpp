@@ -466,6 +466,25 @@ void TestUsermanager::activeDisconnectOnRemoveUser()
     QCOMPARE(disconnectedSpy.first().first().toUuid(), bobId);
 }
 
+void TestUsermanager::getTokensExposesLastSeenAsEpochSecondsAndOmitsUnsetExpiryTime()
+{
+    authenticate();
+
+    QVariant response = injectAndWait("Users.GetTokens");
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QVariantList tokenInfoList = response.toMap().value("params").toMap().value("tokenInfoList").toList();
+    QCOMPARE(tokenInfoList.count(), 1);
+
+    QVariantMap tokenInfo = tokenInfoList.first().toMap();
+    QVERIFY2(tokenInfo.contains("lastSeen"), "lastSeen should be present as soon as the token has authenticated");
+    qint64 lastSeenEpoch = tokenInfo.value("lastSeen").toLongLong();
+    QVERIFY(lastSeenEpoch > 0);
+
+    // Nothing in this repo sets an expiry yet, so this optional field must be entirely
+    // absent from the wire response rather than serialized as null/0.
+    QVERIFY2(!tokenInfo.contains("expiryTime"), "expiryTime should be absent when never set");
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

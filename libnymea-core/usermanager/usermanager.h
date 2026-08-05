@@ -124,6 +124,15 @@ private:
     bool enabledInventoryItemExists(const QString &type, const QString &payloadKey, const QVariant &payloadValue, const QUuid &ignoredInventoryItemId = QUuid()) const;
     UserInventoryItem inventoryItemFromQuery(const QSqlQuery &query) const;
 
+    // Authoritative UTC handling for tokens.expirydate/lastseen, kept separate from the
+    // existing timezone-less "yyyy-MM-dd hh:mm:ss" convention used by creationdate.
+    QDateTime parseStoredUtcDateTime(const QVariant &value) const;
+    QString formatUtcDateTimeForStorage(const QDateTime &value) const;
+    // The one authoritative answer to "is this token still valid right now": absent
+    // expirydate never expires; every other caller must go through this rather than
+    // comparing timestamps itself.
+    bool isTokenLogicallyExpired(const QVariant &expiryDateValue) const;
+
     void dumpDBError(const QString &message);
 
     void evaluateAllowedThingsForUser();

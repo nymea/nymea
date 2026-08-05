@@ -556,8 +556,10 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     }
 
     while (query.next()) {
+        if (isTokenLogicallyExpired(query.value("expirydate")))
+            continue;
         ret << TokenInfo(query.value("id").toUuid(), query.value("username").toString(), query.value("creationdate").toDateTime(), query.value("devicename").toString(),
-                          query.value("expirydate").toDateTime(), query.value("lastseen").toDateTime());
+                          parseStoredUtcDateTime(query.value("expirydate")), parseStoredUtcDateTime(query.value("lastseen")));
     }
     return ret;
 }
@@ -656,8 +658,11 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     if (!getTokenQuery.first())
         return TokenInfo();
 
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate")))
+        return TokenInfo();
+
     return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
-                      getTokenQuery.value("expirydate").toDateTime(), getTokenQuery.value("lastseen").toDateTime());
+                      parseStoredUtcDateTime(getTokenQuery.value("expirydate")), parseStoredUtcDateTime(getTokenQuery.value("lastseen")));
 }
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
@@ -678,8 +683,12 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
     if (!getTokenQuery.first()) {
         return TokenInfo();
     }
+
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate")))
+        return TokenInfo();
+
     return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
-                      getTokenQuery.value("expirydate").toDateTime(), getTokenQuery.value("lastseen").toDateTime());
+                      parseStoredUtcDateTime(getTokenQuery.value("expirydate")), parseStoredUtcDateTime(getTokenQuery.value("lastseen")));
 }
 
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
@@ -820,6 +829,11 @@ bool UserManager::verifyToken(const QByteArray &token)
 
     if (!getTokenQuery.first()) {
         qCDebug(dcUserManager) << "Authorization failed for token" << token;
+        return false;
+    }
+
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate"))) {
+        qCDebug(dcUserManager) << "Token has expired" << token;
         return false;
     }
 
@@ -1271,6 +1285,43 @@ UserInventoryItem UserManager::inventoryItemFromQuery(const QSqlQuery &query) co
     item.setEnabled(query.value("enabled").toBool());
     item.setPayload(deserializeInventoryPayload(query.value("payload").toByteArray()));
     return item;
+}
+
+/*! Parses a tokens.expirydate/lastseen column value read back from the database. An
+    invalid/NULL \a value means "never expires"/"not yet observed" and yields an invalid
+    QDateTime. A populated value is always UTC, regardless of the local timezone. */
+QDateTime UserManager::parseStoredUtcDateTime(const QVariant &value) const
+{
+    if (value.isNull())
+        return QDateTime();
+
+    QDateTime dateTime = QDateTime::fromString(value.toString(), Qt::ISODate);
+    dateTime.setTimeSpec(Qt::UTC);
+    return dateTime;
+}
+
+/*! Formats \a value for storage in tokens.expirydate/lastseen, always as UTC ISO 8601.
+    An invalid \a value must not be passed here; store NULL directly instead. */
+QString UserManager::formatUtcDateTimeForStorage(const QDateTime &value) const
+{
+    return value.toUTC().toString(Qt::ISODate);
+}
+
+/*! The one authoritative answer to whether a token identified by its raw \a
+    expiryDateValue column value is still valid right now. An absent/NULL value never
+    expires. Every caller that needs to know if a token is still valid must go through
+    this rather than comparing timestamps itself.
+
+    Deliberately uses QDateTime::currentDateTimeUtc() rather than TimeManager: this is a
+    stateless per-request comparison, not a scheduled/simulatable timer, and it must work
+    from a standalone UserManager as well as from a fully initialized NymeaCore. */
+bool UserManager::isTokenLogicallyExpired(const QVariant &expiryDateValue) const
+{
+    QDateTime expiryTime = parseStoredUtcDateTime(expiryDateValue);
+    if (!expiryTime.isValid())
+        return false;
+
+    return QDateTime::currentDateTimeUtc() >= expiryTime;
 }
 
 void UserManager::dumpDBError(const QString &message)

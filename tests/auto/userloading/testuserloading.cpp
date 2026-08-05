@@ -48,6 +48,8 @@ private slots:
     void testFreshDatabaseIsCreatedAtVersion4();
     void testMigrationV3ToV4PreservesExistingData();
     void testMigrationV3ToV4FailureRollsBackAndPreservesVersion();
+    void testExpiredTokenIsRejectedByResolver();
+    void testFutureExpiryTokenIsStillValid();
 
 };
 
@@ -311,6 +313,92 @@ void TestUserLoading::testMigrationV3ToV4FailureRollsBackAndPreservesVersion()
     db.close();
     QSqlDatabase::removeDatabase("test-fixture-verify-failed");
 
+    QVERIFY(QFile(dbName).remove());
+}
+
+namespace {
+// Writes an already-v4 fixture (tokens table already has expirydate/lastseen) with one
+// real user and one real token carrying the given expirydate (empty = never expires).
+void writeV4FixtureWithToken(const QString &dbName, const QString &tokenValue, const QString &expiryDateIso)
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-writer-v4");
+    db.setDatabaseName(dbName);
+    QVERIFY(db.open());
+    QSqlQuery query(db);
+    QVERIFY(query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), "
+                        "displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT, "
+                        "allowedThingIds TEXT);"));
+    QVERIFY(query.exec("INSERT INTO users (username, email, displayName, password, salt, scopes, allowedThingIds) "
+                        "VALUES ('admin', 'admin@example.com', 'Admin', 'somehash', 'somesalt', 'Admin', '');"));
+    QVERIFY(query.exec("CREATE TABLE userInventory (id VARCHAR(40) UNIQUE PRIMARY KEY, username VARCHAR(40), "
+                        "type VARCHAR(40), displayName VARCHAR(100), enabled INTEGER, payload TEXT);"));
+    QVERIFY(query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, "
+                        "creationdate DATETIME, devicename VARCHAR(40), expirydate DATETIME, lastseen DATETIME);"));
+    // Braced, matching QUuid::createUuid().toString()'s default format used in production.
+    query.prepare("INSERT INTO tokens (id, username, token, creationdate, devicename, expirydate, lastseen) "
+                  "VALUES ('{22222222-2222-2222-2222-222222222222}', 'admin', :token, '2026-01-01T00:00:00', "
+                  "'somedevice', :expirydate, NULL);");
+    query.bindValue(":token", tokenValue);
+    query.bindValue(":expirydate", expiryDateIso.isEmpty() ? QVariant() : QVariant(expiryDateIso));
+    QVERIFY(query.exec());
+    QVERIFY(query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));"));
+    QVERIFY(query.exec("INSERT INTO metadata (key, data) VALUES ('version', '4');"));
+    db.close();
+    QSqlDatabase::removeDatabase("test-fixture-writer-v4");
+}
+}
+
+void TestUserLoading::testExpiredTokenIsRejectedByResolver()
+{
+    QString dbName = "/tmp/nymea-test/user-db-expired-token.sqlite";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+
+    // A token whose SHA-256/base64-shaped stand-in value passes validateToken()'s charset
+    // check and expired well in the past.
+    QString tokenValue = "sGVzdCB0b2tlbiB2YWx1ZSBmb3IgdGVzdGluZyBwdXJwb3Nlcw==";
+    writeV4FixtureWithToken(dbName, tokenValue, "2020-01-01T00:00:00");
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+
+    QByteArray tokenBytes = tokenValue.toUtf8();
+    QVERIFY(!userManager->verifyToken(tokenBytes));
+    QVERIFY(userManager->tokenInfo(tokenBytes).id().isNull());
+    QVERIFY(userManager->tokenInfo(QUuid("22222222-2222-2222-2222-222222222222")).id().isNull());
+    QCOMPARE(userManager->tokens("admin").count(), 0);
+
+    delete userManager;
+    QVERIFY(QFile(dbName).remove());
+}
+
+void TestUserLoading::testFutureExpiryTokenIsStillValid()
+{
+    QString dbName = "/tmp/nymea-test/user-db-future-expiry-token.sqlite";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+
+    QString tokenValue = "sGVzdCB0b2tlbiB2YWx1ZSBmb3IgdGVzdGluZyBwdXJwb3Nlcw==";
+    writeV4FixtureWithToken(dbName, tokenValue, "2099-01-01T00:00:00");
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+
+    QByteArray tokenBytes = tokenValue.toUtf8();
+    QVERIFY(userManager->verifyToken(tokenBytes));
+
+    TokenInfo info = userManager->tokenInfo(tokenBytes);
+    QVERIFY(!info.id().isNull());
+    QVERIFY(info.expiryTime().isValid());
+    QDateTime expected = QDateTime::fromString("2099-01-01T00:00:00", Qt::ISODate);
+    expected.setTimeSpec(Qt::UTC);
+    QCOMPARE(info.expiryTime(), expected);
+
+    QVERIFY(!userManager->tokenInfo(QUuid("{22222222-2222-2222-2222-222222222222}")).id().isNull());
+
+    QCOMPARE(userManager->tokens("admin").count(), 1);
+
+    delete userManager;
     QVERIFY(QFile(dbName).remove());
 }
 

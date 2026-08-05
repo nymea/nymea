@@ -887,7 +887,7 @@ bool UserManager::initDB()
     m_hadUsersTableBeforeInit = m_db.tables().contains("users");
 
     int currentVersion = -1;
-    int newVersion = 3;
+    int newVersion = 4;
 
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
@@ -1025,11 +1025,43 @@ bool UserManager::initDB()
     if (!m_db.tables().contains("tokens")) {
         qCDebug(dcUserManager()) << "No \"tokens\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40), expirydate DATETIME, lastseen DATETIME);") || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table tokens)");
             m_db.close();
             return false;
         }
+    } else if (currentVersion < 4) {
+        // NULL = never expires / not yet observed. Existing tokens are left with both
+        // unset rather than backfilled from creationdate. Both columns are added in one
+        // transaction so a failure never leaves the table with only one of them, which
+        // would otherwise wedge every future migration attempt on a duplicate-column error.
+        qCDebug(dcUserManager()) << "Migrating tokens table to database version 4";
+        if (!m_db.transaction()) {
+            dumpDBError("Error starting transaction for migrating user database (table tokens).");
+            m_db.close();
+            return false;
+        }
+        QSqlQuery query(m_db);
+        if (!query.exec("ALTER TABLE tokens ADD COLUMN expirydate DATETIME;") || m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (table tokens, expirydate).");
+            m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        query = QSqlQuery(m_db);
+        if (!query.exec("ALTER TABLE tokens ADD COLUMN lastseen DATETIME;") || m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (table tokens, lastseen).");
+            m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        if (!m_db.commit()) {
+            dumpDBError("Error migrating user database (table tokens) to version 4. Rollback.");
+            m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        qCDebug(dcUserManager()) << "Migrated successfully tokens table to database version 4";
     }
 
     if (!m_db.tables().contains("metadata")) {

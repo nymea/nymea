@@ -45,6 +45,9 @@ protected slots:
 private slots:
     void testLogfileRotation();
     void testMigrationFailureOnExistingUsersIsNotRotated();
+    void testFreshDatabaseIsCreatedAtVersion4();
+    void testMigrationV3ToV4PreservesExistingData();
+    void testMigrationV3ToV4FailureRollsBackAndPreservesVersion();
 
 };
 
@@ -139,6 +142,174 @@ void TestUserLoading::testMigrationFailureOnExistingUsersIsNotRotated()
         db.close();
     }
     QSqlDatabase::removeDatabase("test-fixture-verify");
+
+    QVERIFY(QFile(dbName).remove());
+}
+
+void TestUserLoading::testFreshDatabaseIsCreatedAtVersion4()
+{
+    QString dbName = "/tmp/nymea-test/user-db-fresh-v4.sqlite";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+    delete userManager;
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-verify-fresh");
+    db.setDatabaseName(dbName);
+    QVERIFY(db.open());
+
+    QSqlQuery columns(db);
+    QVERIFY(columns.exec("PRAGMA table_info(tokens);"));
+    QStringList tokenColumns;
+    while (columns.next())
+        tokenColumns << columns.value("name").toString();
+    QVERIFY(tokenColumns.contains("expirydate"));
+    QVERIFY(tokenColumns.contains("lastseen"));
+
+    QSqlQuery version(db);
+    QVERIFY(version.exec("SELECT data FROM metadata WHERE key = 'version';"));
+    QVERIFY(version.next());
+    QCOMPARE(version.value("data").toString(), QString("4"));
+
+    db.close();
+    QSqlDatabase::removeDatabase("test-fixture-verify-fresh");
+    QVERIFY(QFile(dbName).remove());
+}
+
+namespace {
+// Writes a schema-v3 fixture (pre-token-expiry) with one real user and one real token,
+// so migration tests exercise the same v3 -> v4 step production databases will go through.
+// If tokensTableAlreadyHasExpirydate is true, the fixture pre-empts the migration's first
+// ALTER TABLE to force it to fail with a duplicate-column error.
+void writeV3Fixture(const QString &dbName, bool tokensTableAlreadyHasExpirydate = false)
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-writer");
+    db.setDatabaseName(dbName);
+    QVERIFY(db.open());
+    QSqlQuery query(db);
+    QVERIFY(query.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), "
+                        "displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT, "
+                        "allowedThingIds TEXT);"));
+    QVERIFY(query.exec("INSERT INTO users (username, email, displayName, password, salt, scopes, allowedThingIds) "
+                        "VALUES ('admin', 'admin@example.com', 'Admin', 'somehash', 'somesalt', 'Admin', '');"));
+    QVERIFY(query.exec("CREATE TABLE userInventory (id VARCHAR(40) UNIQUE PRIMARY KEY, username VARCHAR(40), "
+                        "type VARCHAR(40), displayName VARCHAR(100), enabled INTEGER, payload TEXT);"));
+    QString tokensColumns = "id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, "
+                            "creationdate DATETIME, devicename VARCHAR(40)";
+    if (tokensTableAlreadyHasExpirydate)
+        tokensColumns += ", expirydate DATETIME";
+    QVERIFY(query.exec(QString("CREATE TABLE tokens (%1);").arg(tokensColumns)));
+    QVERIFY(query.exec("INSERT INTO tokens (id, username, token, creationdate, devicename) VALUES "
+                        "('11111111-1111-1111-1111-111111111111', 'admin', 'sometoken', "
+                        "'2026-01-01 00:00:00', 'somedevice');"));
+    QVERIFY(query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));"));
+    QVERIFY(query.exec("INSERT INTO metadata (key, data) VALUES ('version', '3');"));
+    db.close();
+    QSqlDatabase::removeDatabase("test-fixture-writer");
+}
+}
+
+void TestUserLoading::testMigrationV3ToV4PreservesExistingData()
+{
+    QString dbName = "/tmp/nymea-test/user-db-v3-to-v4.sqlite";
+    QString rotatedDbName = "/tmp/nymea-test/user-db-v3-to-v4.sqlite.1";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+    if (QFile::exists(rotatedDbName))
+        QVERIFY(QFile(rotatedDbName).remove());
+
+    writeV3Fixture(dbName);
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(!userManager->initializationFailed());
+    QVERIFY(!QFile::exists(rotatedDbName));
+    delete userManager;
+
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-verify-migrated");
+        db.setDatabaseName(dbName);
+        QVERIFY(db.open());
+
+        QSqlQuery columns(db);
+        QVERIFY(columns.exec("PRAGMA table_info(tokens);"));
+        QStringList tokenColumns;
+        while (columns.next())
+            tokenColumns << columns.value("name").toString();
+        QVERIFY(tokenColumns.contains("expirydate"));
+        QVERIFY(tokenColumns.contains("lastseen"));
+
+        QSqlQuery version(db);
+        QVERIFY(version.exec("SELECT data FROM metadata WHERE key = 'version';"));
+        QVERIFY(version.next());
+        QCOMPARE(version.value("data").toString(), QString("4"));
+
+        QSqlQuery token(db);
+        QVERIFY(token.exec("SELECT token, expirydate, lastseen FROM tokens WHERE id = "
+                            "'11111111-1111-1111-1111-111111111111';"));
+        QVERIFY(token.next());
+        QCOMPARE(token.value("token").toString(), QString("sometoken"));
+        QVERIFY(token.value("expirydate").isNull());
+        QVERIFY(token.value("lastseen").isNull());
+
+        QSqlQuery user(db);
+        QVERIFY(user.exec("SELECT username FROM users WHERE username = 'admin';"));
+        QVERIFY(user.next());
+
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("test-fixture-verify-migrated");
+
+    // Reopening an already-migrated (v4) database must succeed without touching it again.
+    UserManager *reopened = new UserManager(dbName, this);
+    QVERIFY(!reopened->initializationFailed());
+    delete reopened;
+
+    QVERIFY(QFile(dbName).remove());
+}
+
+void TestUserLoading::testMigrationV3ToV4FailureRollsBackAndPreservesVersion()
+{
+    QString dbName = "/tmp/nymea-test/user-db-v3-to-v4-failure.sqlite";
+    QString rotatedDbName = "/tmp/nymea-test/user-db-v3-to-v4-failure.sqlite.1";
+    if (QFile::exists(dbName))
+        QVERIFY(QFile(dbName).remove());
+    if (QFile::exists(rotatedDbName))
+        QVERIFY(QFile(rotatedDbName).remove());
+
+    // Pre-empt the migration's first ALTER TABLE so it fails with a duplicate-column error.
+    writeV3Fixture(dbName, /*tokensTableAlreadyHasExpirydate=*/true);
+
+    UserManager *userManager = new UserManager(dbName, this);
+    QVERIFY(userManager->initializationFailed());
+    QVERIFY(!QFile::exists(rotatedDbName));
+    delete userManager;
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test-fixture-verify-failed");
+    db.setDatabaseName(dbName);
+    QVERIFY(db.open());
+
+    // Version must not have been bumped, and the second column must never have been added.
+    QSqlQuery version(db);
+    QVERIFY(version.exec("SELECT data FROM metadata WHERE key = 'version';"));
+    QVERIFY(version.next());
+    QCOMPARE(version.value("data").toString(), QString("3"));
+
+    QSqlQuery columns(db);
+    QVERIFY(columns.exec("PRAGMA table_info(tokens);"));
+    QStringList tokenColumns;
+    while (columns.next())
+        tokenColumns << columns.value("name").toString();
+    QVERIFY(!tokenColumns.contains("lastseen"));
+
+    QSqlQuery token(db);
+    QVERIFY(token.exec("SELECT token FROM tokens WHERE id = '11111111-1111-1111-1111-111111111111';"));
+    QVERIFY(token.next());
+    QCOMPARE(token.value("token").toString(), QString("sometoken"));
+
+    db.close();
+    QSqlDatabase::removeDatabase("test-fixture-verify-failed");
 
     QVERIFY(QFile(dbName).remove());
 }

@@ -57,10 +57,21 @@ public:
     Q_INVOKABLE JsonReply *GetInvitations(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveInvitation(const QVariantMap &params);
 
+    // Called by JsonRPCServerImplementation once per currently-eligible admin client id;
+    // this handler owns packing the payload and emitting its own (QUuid, QVariantMap)
+    // signal, which JsonHandler's generic per-client routing then delivers - the same
+    // mechanism PushButtonAuthFinished already uses. JsonRPCServerImplementation owns
+    // deciding which clients are eligible, since only it has the client-token/transport
+    // state to resolve that; this handler has neither.
+    void notifyInvitationAdded(const QUuid &clientId, const InvitationInfo &invitation);
+    void notifyInvitationRemoved(const QUuid &clientId, const QUuid &invitationId);
+
 signals:
     void UserAdded(const QVariantMap &params);
     void UserRemoved(const QVariantMap &params);
     void UserChanged(const QVariantMap &params);
+    void InvitationAdded(const QUuid &clientId, const QVariantMap &params);
+    void InvitationRemoved(const QUuid &clientId, const QVariantMap &params);
 
 private:
     UserManager *m_userManager = nullptr;

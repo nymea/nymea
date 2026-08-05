@@ -982,6 +982,70 @@ void TestUsermanager::invitationMethodsRequireAdminScope()
     QCOMPARE(response.toMap().value("status").toString(), QString("unauthorized"));
 }
 
+void TestUsermanager::invitationNotificationsOnlyReachAdminSubscribers()
+{
+    authenticate();
+    QByteArray adminToken = m_apiToken;
+
+    QVariantMap adminSubscribeParams;
+    adminSubscribeParams.insert("enabled", true);
+    injectAndWait("JSONRPC.SetNotificationStatus", adminSubscribeParams, m_clientId, adminToken);
+
+    QVariantMap createGuestParams;
+    createGuestParams.insert("username", "guest2@user.test");
+    createGuestParams.insert("password", "Bla1234*");
+    QStringList guestScopes;
+    guestScopes << "PermissionScopeControlThings";
+    createGuestParams.insert("scopes", guestScopes);
+    QCOMPARE(injectAndWait("Users.CreateUser", createGuestParams, m_clientId, adminToken).toMap().value("params").toMap().value("error").toString(),
+             QString("UserErrorNoError"));
+
+    QUuid guestClientId = QUuid::createUuid();
+    emit m_mockTcpServer->clientConnected(guestClientId);
+    injectAndWait("JSONRPC.Hello", QVariantMap(), guestClientId, "");
+
+    QVariantMap guestAuthParams;
+    guestAuthParams.insert("username", "guest2@user.test");
+    guestAuthParams.insert("password", "Bla1234*");
+    guestAuthParams.insert("deviceName", "guestdevice2");
+    QVariant guestAuthResponse = injectAndWait("JSONRPC.Authenticate", guestAuthParams, guestClientId, "");
+    QByteArray guestToken = guestAuthResponse.toMap().value("params").toMap().value("token").toByteArray();
+    QVERIFY(!guestToken.isEmpty());
+
+    QVariantMap guestSubscribeParams;
+    guestSubscribeParams.insert("enabled", true);
+    injectAndWait("JSONRPC.SetNotificationStatus", guestSubscribeParams, guestClientId, guestToken);
+
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
+
+    QVariantMap createParams;
+    createParams.insert("username", "valid@user.test");
+    QVariant createResponse = injectAndWait("Users.CreateInvitation", createParams, m_clientId, adminToken);
+    QCOMPARE(createResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    // Give a (wrongly sent) notification to the guest a chance to arrive before we count.
+    QTest::qWait(300);
+
+    bool adminReceived = false;
+    bool guestReceived = false;
+    for (int i = 0; i < notificationSpy.count(); i++) {
+        QUuid recipientClientId = notificationSpy.at(i).first().toUuid();
+        QJsonParseError error;
+        QJsonDocument doc = QJsonDocument::fromJson(notificationSpy.at(i).at(1).toByteArray(), &error);
+        if (error.error != QJsonParseError::NoError)
+            continue;
+        if (doc.toVariant().toMap().value("notification").toString() != "Users.InvitationAdded")
+            continue;
+        if (recipientClientId == m_clientId)
+            adminReceived = true;
+        if (recipientClientId == guestClientId)
+            guestReceived = true;
+    }
+
+    QVERIFY2(adminReceived, "Admin client subscribed to Users should have received Users.InvitationAdded");
+    QVERIFY2(!guestReceived, "Non-admin client must not receive Users.InvitationAdded even when subscribed");
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

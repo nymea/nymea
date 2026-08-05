@@ -127,6 +127,7 @@ private slots:
     void getInvitationsOverJsonRpc();
     void removeInvitationOverJsonRpc();
     void invitationMethodsRequireAdminScope();
+    void invitationNotificationsOnlyReachAdminSubscribers();
 
     void removeToken();
 

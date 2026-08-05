@@ -163,6 +163,18 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerNotification("UserChanged", description, params);
 
     params.clear();
+    description = "Emitted when a new invitation is created. Delivered only to clients subscribed to Users with a "
+                  "currently valid Admin token; invitation metadata must not reach non-admin subscribers.";
+    params.insert("invitation", objectRef<InvitationInfo>());
+    registerNotification("InvitationAdded", description, params);
+
+    params.clear();
+    description = "Emitted when an invitation is removed - explicitly, redeemed, or expired. Delivered only to "
+                  "clients subscribed to Users with a currently valid Admin token.";
+    params.insert("invitationId", enumValueName(Uuid));
+    registerNotification("InvitationRemoved", description, params);
+
+    params.clear();
     description = "Emitted when a push button authentication reaches final state. NOTE: This notification is "
                   "special. It will only be emitted to connections that did actively request a push button "
                   "authentication, but also it will be emitted regardless of the notification settings.";
@@ -191,6 +203,20 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
 QString UsersHandler::name() const
 {
     return "Users";
+}
+
+void UsersHandler::notifyInvitationAdded(const QUuid &clientId, const InvitationInfo &invitation)
+{
+    QVariantMap params;
+    params.insert("invitation", pack(invitation));
+    emit InvitationAdded(clientId, params);
+}
+
+void UsersHandler::notifyInvitationRemoved(const QUuid &clientId, const QUuid &invitationId)
+{
+    QVariantMap params;
+    params.insert("invitationId", invitationId);
+    emit InvitationRemoved(clientId, params);
 }
 
 JsonReply *UsersHandler::CreateUser(const QVariantMap &params)

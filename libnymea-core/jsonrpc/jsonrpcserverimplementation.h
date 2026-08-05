@@ -28,6 +28,7 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
 #include "usermanager/userinfo.h"
+#include "usermanager/invitationinfo.h"
 #include "transportinterface.h"
 
 #include <QObject>
@@ -105,6 +106,20 @@ private slots:
     // so without this a revoked client's notification stream keeps flowing until it
     // disconnects on its own.
     void onTokenInvalidated(const QByteArray &token);
+
+    // UsersHandler owns packing/emitting InvitationAdded/InvitationRemoved (so the
+    // notification keeps the "Users." namespace), but has no client-token/transport
+    // state of its own; these resolve the Admin-eligible recipients and drive one call
+    // to UsersHandler per eligible client.
+    void onInvitationAdded(const nymeaserver::InvitationInfo &invitation);
+    void onInvitationRemoved(const QUuid &invitationId);
+
+private:
+    // Clients currently subscribed to the Users namespace whose bound token resolves,
+    // through the same authoritative validity path used for authenticated requests, to a
+    // user with PermissionScopeAdmin. Unauthenticated, non-admin, expired/revoked, and
+    // authentication-disabled tokenless clients are never included even if subscribed.
+    QList<QUuid> adminEligibleClientIds() const;
 
 private:
     QVariantMap m_api;

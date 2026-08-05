@@ -222,6 +222,8 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     // the client before its own "success" reply is ever written. Queuing defers the
     // disconnect to the next event loop iteration, after the current reply is sent.
     connect(NymeaCore::instance()->userManager(), &UserManager::tokenInvalidated, this, &JsonRPCServerImplementation::onTokenInvalidated, Qt::QueuedConnection);
+    connect(NymeaCore::instance()->userManager(), &UserManager::invitationAdded, this, &JsonRPCServerImplementation::onInvitationAdded);
+    connect(NymeaCore::instance()->userManager(), &UserManager::invitationRemoved, this, &JsonRPCServerImplementation::onInvitationRemoved);
 
 
 
@@ -1164,6 +1166,52 @@ void JsonRPCServerImplementation::onTokenInvalidated(const QByteArray &token)
         qCWarning(dcJsonRpc()) << "Disconnecting client" << clientId << "because its token was revoked or expired.";
         interface->terminateClientConnection(clientId);
     }
+}
+
+QList<QUuid> JsonRPCServerImplementation::adminEligibleClientIds() const
+{
+    QList<QUuid> eligible;
+    for (auto it = m_clientTokens.constBegin(); it != m_clientTokens.constEnd(); ++it) {
+        const QUuid &clientId = it.key();
+
+        if (!m_clientNotifications.value(clientId).contains("Users"))
+            continue;
+
+        const QByteArray &token = it.value();
+        if (token.isEmpty())
+            continue;
+
+        // Resolved through the same authoritative validity path used for authenticated
+        // requests: an expired/revoked/unknown token yields a null id here already.
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+        if (tokenInfo.id().isNull())
+            continue;
+
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        if (userInfo.scopes().testFlag(Types::PermissionScopeAdmin))
+            eligible << clientId;
+    }
+    return eligible;
+}
+
+void JsonRPCServerImplementation::onInvitationAdded(const InvitationInfo &invitation)
+{
+    UsersHandler *usersHandler = qobject_cast<UsersHandler *>(m_handlers.value("Users"));
+    if (!usersHandler)
+        return;
+
+    foreach (const QUuid &clientId, adminEligibleClientIds())
+        usersHandler->notifyInvitationAdded(clientId, invitation);
+}
+
+void JsonRPCServerImplementation::onInvitationRemoved(const QUuid &invitationId)
+{
+    UsersHandler *usersHandler = qobject_cast<UsersHandler *>(m_handlers.value("Users"));
+    if (!usersHandler)
+        return;
+
+    foreach (const QUuid &clientId, adminEligibleClientIds())
+        usersHandler->notifyInvitationRemoved(clientId, invitationId);
 }
 
 }

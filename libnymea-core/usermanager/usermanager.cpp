@@ -96,11 +96,23 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     }
 
     if (!initDB()) {
-        qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
-        if (QFileInfo::exists(m_db.databaseName())) {
-            rotate(m_db.databaseName());
-            if (!initDB()) {
-                qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
+        if (m_hadUsersTableBeforeInit) {
+            // A users table with potentially real accounts/tokens already existed before this
+            // attempt failed (e.g. a migration step broke partway through). Rotating here would
+            // silently make every existing user inaccessible. Leave the file exactly as it is and
+            // fail closed instead; see UserManager::initializationFailed().
+            qCCritical(dcUserManager()) << "Error initializing an existing user database. Refusing to touch it; leaving it in place for diagnosis.";
+            m_initializationFailed = true;
+        } else {
+            qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
+            if (QFileInfo::exists(m_db.databaseName())) {
+                rotate(m_db.databaseName());
+                if (!initDB()) {
+                    qCCritical(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
+                    m_initializationFailed = true;
+                }
+            } else {
+                m_initializationFailed = true;
             }
         }
     }
@@ -108,6 +120,14 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     m_pushButtonDBusService = new PushButtonDBusService("/io/nymea/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
     m_pushButtonTransaction = QPair<int, QString>(-1, QString());
+}
+
+/*! Returns true if the user database could not be opened or migrated. In that case the
+    existing file (if any) was deliberately left untouched instead of being rotated away,
+    and this UserManager must not be used to serve any request. */
+bool UserManager::initializationFailed() const
+{
+    return m_initializationFailed;
 }
 
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
@@ -860,6 +880,11 @@ bool UserManager::initDB()
         dumpDBError("Can't open user database. Init failed.");
         return false;
     }
+
+    // Recorded on every attempt (fresh install and migration retries alike) so the
+    // constructor can tell a fresh/corrupt file (nothing to lose, safe to rotate) apart
+    // from an existing database that already had real accounts (must not be rotated away).
+    m_hadUsersTableBeforeInit = m_db.tables().contains("users");
 
     int currentVersion = -1;
     int newVersion = 3;

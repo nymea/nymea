@@ -59,6 +59,11 @@ public:
 
     explicit UserManager(const QString &dbName, QObject *parent = nullptr);
 
+    // True if the database could not be opened/migrated and existing user data was
+    // therefore left untouched instead of being rotated away. A UserManager in this state
+    // must not be used to serve any request.
+    bool initializationFailed() const;
+
     bool initRequired() const;
     UserInfoList users() const;
 
@@ -128,6 +133,8 @@ private slots:
 
 private:
     QSqlDatabase m_db;
+    bool m_hadUsersTableBeforeInit = false;
+    bool m_initializationFailed = false;
     PushButtonDBusService *m_pushButtonDBusService = nullptr;
     int m_pushButtonTransactionIdCounter = 0;
     QPair<int, QString> m_pushButtonTransaction;

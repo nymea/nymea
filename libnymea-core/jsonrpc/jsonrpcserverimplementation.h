@@ -83,6 +83,13 @@ private:
     // token id at most once per client connection, even across A->B->A token switches.
     void markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token);
 
+    // Masks a top-level params.token value (the only field name ever used for a bearer
+    // token - regular client tokens and one-time invitation secrets alike) before a raw
+    // JSON payload is logged. Returns data unchanged if it doesn't parse as a JSON object.
+    // Callers should guard with the relevant category's isDebugEnabled() first so the
+    // parse/reserialize cost is only paid when the log line would actually be emitted.
+    QByteArray redactSensitiveFields(const QByteArray &data) const;
+
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
 private slots:

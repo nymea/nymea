@@ -548,7 +548,8 @@ void JsonRPCServerImplementation::sendResponse(TransportInterface *interface, co
     }
 
     QByteArray data = QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -563,7 +564,8 @@ void JsonRPCServerImplementation::sendErrorResponse(TransportInterface *interfac
     errorResponse.insert("error", error);
 
     QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -575,7 +577,8 @@ void JsonRPCServerImplementation::sendUnauthorizedResponse(TransportInterface *i
     errorResponse.insert("error", error);
 
     QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -598,7 +601,8 @@ void JsonRPCServerImplementation::setup()
 
 void JsonRPCServerImplementation::processData(const QUuid &clientId, const QByteArray &data)
 {
-    qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << redactSensitiveFields(data);
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
@@ -660,7 +664,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         token = message.value("token").toByteArray();
     } else if (message.value("token").toByteArray() != token) {
         qCWarning(dcJsonRpc()) << "Client changed token without redoing the handshake.";
-        qCDebug(dcJsonRpc()) << "Old token:" << token << "new token:" << message.value("token").toByteArray();
+        // Deliberately does not log either token value, clear or otherwise.
         sendUnauthorizedResponse(interface, clientId, commandId, "Changing the user (token) requires a new handshake. Call JSONRPC.Hello.");
         interface->terminateClientConnection(clientId);
         qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
@@ -826,7 +830,8 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
         QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
 
         qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
-        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+        if (dcJsonRpcTraffic().isDebugEnabled())
+            qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
 
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
@@ -860,7 +865,8 @@ void JsonRPCServerImplementation::sendClientNotification(const QUuid &clientId, 
     }
 
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
     qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
     m_clientTransports.value(clientId)->sendData(clientId, data);
 }
@@ -913,7 +919,8 @@ void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &para
         QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
 
         qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
-        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+        if (dcJsonRpcTraffic().isDebugEnabled())
+            qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
 
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
@@ -1209,6 +1216,23 @@ void JsonRPCServerImplementation::markTokenSeenIfNewlyBound(const QUuid &clientI
         qCWarning(dcJsonRpc()) << "Failed to update last-seen timestamp for token id" << info.id();
     }
     seenForClient.insert(info.id());
+}
+
+QByteArray JsonRPCServerImplementation::redactSensitiveFields(const QByteArray &data) const
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError || !doc.isObject())
+        return data;
+
+    QVariantMap message = doc.object().toVariantMap();
+    QVariantMap params = message.value("params").toMap();
+    if (!params.contains("token"))
+        return data;
+
+    params.insert("token", QStringLiteral("<redacted>"));
+    message.insert("params", params);
+    return QJsonDocument::fromVariant(message).toJson(QJsonDocument::Compact);
 }
 
 void JsonRPCServerImplementation::onTokenInvalidated(const QByteArray &token)

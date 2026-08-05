@@ -104,6 +104,11 @@ private slots:
     void createInvitationForUnknownUserFails();
     void createInvitationDurationValidation();
 
+    void getInvitationsListsAndFilters();
+    void removeInvitationRemovesRow();
+    void removeInvitationNotFoundFails();
+    void invitationsPurgesExpiredEntries();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

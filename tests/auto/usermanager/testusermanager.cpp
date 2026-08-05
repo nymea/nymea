@@ -556,6 +556,80 @@ void TestUsermanager::createInvitationDurationValidation()
              UserManager::UserErrorNoError);
 }
 
+void TestUsermanager::getInvitationsListsAndFilters()
+{
+    authenticate();
+
+    QVariantMap createParams;
+    createParams.insert("username", "bob@user.test");
+    createParams.insert("password", "Bla1234*");
+    QVariant createResponse = injectAndWait("Users.CreateUser", createParams);
+    QCOMPARE(createResponse.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray token;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, token, info), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, token, info), UserManager::UserErrorNoError);
+    QCOMPARE(userManager->createInvitation("bob@user.test", 3600, false, 0, token, info), UserManager::UserErrorNoError);
+
+    QList<InvitationInfo> all;
+    QCOMPARE(userManager->invitations(all), UserManager::UserErrorNoError);
+    QCOMPARE(all.count(), 3);
+
+    QList<InvitationInfo> validUserOnly;
+    QCOMPARE(userManager->invitations(validUserOnly, "valid@user.test"), UserManager::UserErrorNoError);
+    QCOMPARE(validUserOnly.count(), 2);
+    foreach (const InvitationInfo &invitation, validUserOnly)
+        QCOMPARE(invitation.username(), QString("valid@user.test"));
+}
+
+void TestUsermanager::removeInvitationRemovesRow()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray token;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, token, info), UserManager::UserErrorNoError);
+
+    QCOMPARE(userManager->removeInvitation(info.id()), UserManager::UserErrorNoError);
+
+    QList<InvitationInfo> remaining;
+    QCOMPARE(userManager->invitations(remaining), UserManager::UserErrorNoError);
+    QCOMPARE(remaining.count(), 0);
+}
+
+void TestUsermanager::removeInvitationNotFoundFails()
+{
+    authenticate();
+
+    QCOMPARE(NymeaCore::instance()->userManager()->removeInvitation(QUuid::createUuid()), UserManager::UserErrorInvitationNotFound);
+}
+
+void TestUsermanager::invitationsPurgesExpiredEntries()
+{
+    // Defensive: make sure no earlier test left a simulated time offset behind, since
+    // this test relies on real elapsed wall-clock time via QTest::qWait().
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
+
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray token;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 2, false, 0, token, info), UserManager::UserErrorNoError);
+
+    QSignalSpy removedSpy(userManager, &UserManager::invitationRemoved);
+    QTest::qWait(2500);
+
+    QList<InvitationInfo> remaining;
+    QCOMPARE(userManager->invitations(remaining), UserManager::UserErrorNoError);
+    QCOMPARE(remaining.count(), 0);
+    QCOMPARE(removedSpy.count(), 1);
+    QCOMPARE(removedSpy.first().first().toUuid(), info.id());
+}
+
 void TestUsermanager::removeToken()
 {
     getTokens();

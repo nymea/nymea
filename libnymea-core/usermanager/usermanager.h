@@ -108,6 +108,9 @@ public:
     UserError createInvitation(const QString &username, uint validitySeconds,
                                bool hasTokenValidity, uint tokenValiditySeconds,
                                QByteArray &oneTimeToken, InvitationInfo &info);
+    // Lazily purges expired invitations before returning; empty username lists all.
+    UserError invitations(QList<InvitationInfo> &result, const QString &username = QString());
+    UserError removeInvitation(const QUuid &invitationId);
 
     bool verifyToken(const QByteArray &token);
 
@@ -162,6 +165,11 @@ private:
     // token id (deduplicated across repeated purge attempts), and retries physical
     // deletion for rows that failed to delete on a previous pass.
     void purgeExpiredTokens();
+
+    // Deletes every now-expired invitation and emits invitationRemoved() once per row,
+    // only after its delete succeeds (no dedup needed: unlike tokens, an invitation has
+    // no live session to protect, so a retry next time is sufficient on delete failure).
+    void purgeExpiredInvitations();
 
     void dumpDBError(const QString &message);
 

@@ -918,6 +918,83 @@ UserManager::UserError UserManager::createInvitation(const QString &username, ui
     return UserErrorNoError;
 }
 
+/*! Returns all invitations in \a result, optionally filtered by \a username (all when
+    empty). Expired invitations are purged before listing, so the result never contains
+    one. */
+UserManager::UserError UserManager::invitations(QList<InvitationInfo> &result, const QString &username)
+{
+    purgeExpiredInvitations();
+
+    QSqlQuery query(m_db);
+    if (username.isEmpty()) {
+        query.prepare("SELECT id, username, creationdate, expirydate, tokenvalidityduration FROM invitations;");
+    } else {
+        query.prepare("SELECT id, username, creationdate, expirydate, tokenvalidityduration FROM invitations WHERE lower(username) = :username;");
+        query.bindValue(":username", username.toLower());
+    }
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to query invitations" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    while (query.next()) {
+        QVariant tokenValidityDuration = query.value("tokenvalidityduration").isNull()
+                ? QVariant() : QVariant(query.value("tokenvalidityduration").toUInt());
+        result << InvitationInfo(QUuid(query.value("id").toString()), query.value("username").toString(),
+                                  parseStoredUtcDateTime(query.value("creationdate")),
+                                  parseStoredUtcDateTime(query.value("expirydate")),
+                                  tokenValidityDuration);
+    }
+    return UserErrorNoError;
+}
+
+/*! Removes the pending invitation with the given \a invitationId. */
+UserManager::UserError UserManager::removeInvitation(const QUuid &invitationId)
+{
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM invitations WHERE id = :id;");
+    query.bindValue(":id", invitationId.toString());
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to remove invitation" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+    if (query.numRowsAffected() != 1) {
+        qCWarning(dcUserManager()) << "Tried to remove invitation, but it could not be found in the DB.";
+        return UserErrorInvitationNotFound;
+    }
+
+    emit invitationRemoved(invitationId);
+    return UserErrorNoError;
+}
+
+void UserManager::purgeExpiredInvitations()
+{
+    QSqlQuery selectQuery(m_db);
+    if (!selectQuery.exec("SELECT id, expirydate FROM invitations;")) {
+        qCWarning(dcUserManager()) << "Unable to query for expired invitations" << selectQuery.lastError().databaseText() << selectQuery.lastError().driverText();
+        return;
+    }
+
+    QList<QUuid> expiredIds;
+    while (selectQuery.next()) {
+        // isTokenLogicallyExpired() is a plain "now >= this UTC timestamp" check; it is
+        // not actually token-specific and applies equally to invitations.expirydate.
+        if (isTokenLogicallyExpired(selectQuery.value("expirydate")))
+            expiredIds << QUuid(selectQuery.value("id").toString());
+    }
+
+    foreach (const QUuid &invitationId, expiredIds) {
+        QSqlQuery deleteQuery(m_db);
+        deleteQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+        deleteQuery.bindValue(":id", invitationId.toString());
+        if (deleteQuery.exec() && deleteQuery.numRowsAffected() == 1) {
+            emit invitationRemoved(invitationId);
+        } else {
+            qCWarning(dcUserManager()) << "Failed to purge expired invitation" << invitationId << "- will retry on the next check.";
+        }
+    }
+}
+
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {

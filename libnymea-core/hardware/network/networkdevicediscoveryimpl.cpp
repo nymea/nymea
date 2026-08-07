@@ -696,8 +696,16 @@ void NetworkDeviceDiscoveryImpl::updateCache(const NetworkDeviceInfo &deviceInfo
 
 void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monitor)
 {
-    if (monitor->currentPingReply()) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Monitor has still a ping reply pending:" << monitor;
+    if (PingReply *pendingReply = monitor->currentPingReply()) {
+        // Note: pendingReply is only non-null here if the reply is genuinely still alive
+        // (QPointer), so calling abort() on it below is safe.
+        if (longerAgoThan(monitor->lastConnectionAttempt(), m_monitorPingWatchdogTimeout)) {
+            qCWarning(dcNetworkDeviceDiscovery()) << "Monitor" << monitor << "ping reply has made no progress for more than"
+                                                  << m_monitorPingWatchdogTimeout << "s. Aborting it so the monitor cannot be blocked permanently.";
+            pendingReply->abort();
+        } else {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Monitor has still a ping reply pending:" << monitor;
+        }
         return;
     }
 

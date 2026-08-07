@@ -1,3 +1,13 @@
+nymea (1.16.0) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * Rework EV charger interface
+  * Interface: add optional stepUp/stepDown actions to extendedclosable
+  * Allow insecure localhost server interfaces
+  * NetworkDeviceDiscovery: Prevent monitor from being blocked forever
+
+ -- jenkins <developer@nymea.io>  Fri, 07 Aug 2026 12:42:44 +0200
+
 nymea (1.15.2) resolute; urgency=medium
 
   [ Simon Stürz ]

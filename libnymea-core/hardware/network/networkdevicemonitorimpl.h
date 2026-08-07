@@ -26,6 +26,7 @@
 #define NETWORKDEVICEMONITORIMPL_H
 
 #include <QObject>
+#include <QPointer>
 #include <QDateTime>
 
 #include "network/pingreply.h"
@@ -86,7 +87,9 @@ private:
     QDateTime m_lastConnectionAttempt;
     uint m_pingRetries = 5;
 
-    PingReply *m_currentPingReply = nullptr;
+    // Note: QPointer so this can never dangle, regardless of whether our own
+    // finished/destroyed connections happen to run before the reply is deleted.
+    QPointer<PingReply> m_currentPingReply;
 };
 
 }

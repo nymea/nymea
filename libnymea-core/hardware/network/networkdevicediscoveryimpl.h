@@ -102,6 +102,11 @@ private:
     uint m_monitorInterval = 60; // 1 min
     uint m_cacheCleanupPeriod = 30; // days
 
+    // Safety net: force-abort a monitor's own ping reply if it has made no progress
+    // (no retry, no finish) for this long, so a monitor can never be blocked forever
+    // (e.g. starved behind a discovery storm sharing the same ping queue).
+    uint m_monitorPingWatchdogTimeout = 60; // seconds
+
     NetworkDeviceDiscoveryReplyImpl *m_currentDiscoveryReply = nullptr;
     QList<NetworkDeviceDiscoveryReplyImpl *> m_pendingDiscoveryReplies;
     QList<MacAddressDatabaseReply *> m_runningMacDatabaseReplies;

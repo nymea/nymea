@@ -52,6 +52,9 @@ public:
     bool sslEnabled = true;
     bool authenticationEnabled = true;
 
+    // Loopback interfaces are not reachable from the network and are exempt from the insecure-interface gate.
+    bool isLocalhost() const;
+
     bool operator==(const ServerConfiguration &other) const
     {
         return id == other.id && address == other.address && port == other.port && sslEnabled == other.sslEnabled && authenticationEnabled == other.authenticationEnabled;

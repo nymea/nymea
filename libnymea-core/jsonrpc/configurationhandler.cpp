@@ -639,9 +639,8 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
 
     // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
     if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
-        bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
         bool isSecured = config.sslEnabled && config.authenticationEnabled;
-        if (!isLocalhost && !isSecured) {
+        if (!config.isLocalhost() && !isSecured) {
             qCWarning(dcJsonRpc()) << "Cannot add insecure TCP server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
         }
@@ -709,9 +708,8 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
 
     // To be compliant with the EN18031 we have to make sure the user cannot configure an insecure interface to the server.
     if (qEnvironmentVariable("NYMEA_INSECURE_INTERFACES_DISABLED", "0") != "0") {
-        bool isLocalhost = config.address == "localhost" || config.address == "127.0.0.1";
         bool isSecured = config.sslEnabled && config.authenticationEnabled;
-        if (!isLocalhost && !isSecured) {
+        if (!config.isLocalhost() && !isSecured) {
             qCWarning(dcJsonRpc()) << "Cannot add insecure WebSocket server configuration" << config << "because insecure interfaces to the core are explicit disabled.";
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorUnsupported));
         }

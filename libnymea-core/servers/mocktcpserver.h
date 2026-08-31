@@ -49,6 +49,7 @@ public:
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
     void injectData(const QUuid &clientId, const QByteArray &data);
+    bool isClientConnected(const QUuid &clientId) const;
 signals:
     void outgoingData(const QUuid &clientId, const QByteArray &data);
     void connectionTerminated(const QUuid &clientId);

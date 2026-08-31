@@ -28,6 +28,7 @@
 #include <QObject>
 
 #include "jsonrpc/jsonhandler.h"
+#include "usermanager/invitationinfo.h"
 
 namespace nymeaserver {
 

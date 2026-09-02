@@ -108,12 +108,16 @@ private slots:
     void removeInvitationRemovesRow();
     void removeInvitationNotFoundFails();
     void invitationsPurgesExpiredEntries();
+    void invitationsFilterExcludesExpiredRowWhenPurgeDeleteFails();
 
     void redeemInvitationHappyPath();
     void redeemInvitationSecondAttemptFails();
     void redeemExpiredInvitationFailsAndRemovesRow();
     void redeemInvitationRejectsMalformedTokenAndDeviceName();
     void redeemedTokenExpiryMeasuredFromRedemptionNotCreation();
+
+    void tokenExpiryChecksRespectSimulatedTimeOverride();
+    void tokenFailurePathsNeverLogRawToken();
 
     void removeUserCascadesInvitations();
 

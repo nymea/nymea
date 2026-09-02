@@ -83,11 +83,14 @@ private:
     // token id at most once per client connection, even across A->B->A token switches.
     void markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token);
 
-    // Masks a top-level params.token value (the only field name ever used for a bearer
-    // token - regular client tokens and one-time invitation secrets alike) before a raw
-    // JSON payload is logged. Returns data unchanged if it doesn't parse as a JSON object.
-    // Callers should guard with the relevant category's isDebugEnabled() first so the
-    // parse/reserialize cost is only paid when the log line would actually be emitted.
+    // Masks "token"/"password"/"newPassword" values, both top-level and nested in
+    // "params" - see the field list at the top of the .cpp implementation, which must be
+    // kept in sync with any new secret-bearing JSON-RPC param. Data that doesn't parse as
+    // a JSON object is replaced with a safe length-only placeholder rather than returned
+    // verbatim, since it can't be structurally redacted but may still contain a secret
+    // substring. Traffic-logging callers should still guard with the relevant category's
+    // isDebugEnabled() first so the parse/reserialize cost is only paid when the log line
+    // would actually be emitted.
     QByteArray redactSensitiveFields(const QByteArray &data) const;
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);

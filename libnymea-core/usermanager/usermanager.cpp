@@ -737,7 +737,7 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     }
 
     if (!validateToken(token)) {
-        qCWarning(dcUserManager()) << "Token did not pass validation:" << token;
+        qCWarning(dcUserManager()) << "Token did not pass validation";
         return TokenInfo();
     }
 
@@ -1016,6 +1016,13 @@ UserManager::UserError UserManager::invitations(QList<InvitationInfo> &result, c
     }
 
     while (query.next()) {
+        // Defense in depth: purgeExpiredInvitations() above may have failed to delete a
+        // given row (swallowed per-row, logged, retried next time) - never surface an
+        // already-expired invitation regardless, mirroring the independent expiry guard
+        // tokenInfo()/verifyToken() already apply via isTokenLogicallyExpired().
+        if (isTokenLogicallyExpired(query.value("expirydate")))
+            continue;
+
         QVariant tokenValidityDuration = query.value("tokenvalidityduration").isNull()
                 ? QVariant() : QVariant(query.value("tokenvalidityduration").toUInt());
         result << InvitationInfo(QUuid(query.value("id").toString()), query.value("username").toString(),
@@ -1180,7 +1187,7 @@ QByteArray UserManager::redeemInvitation(const QByteArray &oneTimeToken, const Q
 bool UserManager::verifyToken(const QByteArray &token)
 {
     if (!validateToken(token)) {
-        qCWarning(dcUserManager) << "Token failed character validation" << token;
+        qCWarning(dcUserManager) << "Token failed character validation";
         return false;
     }
 
@@ -1199,12 +1206,12 @@ bool UserManager::verifyToken(const QByteArray &token)
     }
 
     if (!getTokenQuery.first()) {
-        qCDebug(dcUserManager) << "Authorization failed for token" << token;
+        qCDebug(dcUserManager) << "Authorization failed for token";
         return false;
     }
 
     if (isTokenLogicallyExpired(getTokenQuery.value("expirydate"))) {
-        qCDebug(dcUserManager) << "Token has expired" << token;
+        qCDebug(dcUserManager) << "Token has expired";
         return false;
     }
 
@@ -1410,7 +1417,8 @@ bool UserManager::initDB()
         }
     }
 
-    if (!m_db.tables().contains("tokens")) {
+    bool tokensTableExisted = m_db.tables().contains("tokens");
+    if (!tokensTableExisted) {
         qCDebug(dcUserManager()) << "No \"tokens\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40), expirydate DATETIME, lastseen DATETIME);") || m_db.lastError().isValid()) {
@@ -1418,17 +1426,33 @@ bool UserManager::initDB()
             m_db.close();
             return false;
         }
-    } else if (currentVersion < 4) {
-        // NULL = never expires / not yet observed. Existing tokens are left with both
-        // unset rather than backfilled from creationdate. Both columns are added in one
-        // transaction so a failure never leaves the table with only one of them, which
-        // would otherwise wedge every future migration attempt on a duplicate-column error.
-        qCDebug(dcUserManager()) << "Migrating tokens table to database version 4";
+    }
+
+    bool invitationsTableExisted = m_db.tables().contains("invitations");
+    bool metadataTableExisted = m_db.tables().contains("metadata");
+
+    // The tokens-column migration, the invitations table creation, and the schema-version
+    // bump below all migrate one pre-existing database and must commit as a single unit.
+    // Otherwise a crash between them leaves currentVersion stale on disk, so a retry
+    // re-issues an ALTER TABLE ADD COLUMN that already applied - which fails and
+    // permanently wedges startup (00-token-lifecycle.md/01-nymea-core.md: migration must
+    // be transactional and leave the schema version unchanged on failure). A brand new
+    // database (tokensTableExisted == false, nothing pre-existed to protect) doesn't need
+    // this: on failure it's still safe to rotate away per the constructor's
+    // m_hadUsersTableBeforeInit check.
+    bool needsMigrationTransaction = tokensTableExisted && (currentVersion < 4 || !invitationsTableExisted || currentVersion < newVersion);
+    if (needsMigrationTransaction) {
         if (!m_db.transaction()) {
-            dumpDBError("Error starting transaction for migrating user database (table tokens).");
+            dumpDBError("Error starting transaction for migrating user database.");
             m_db.close();
             return false;
         }
+    }
+
+    if (tokensTableExisted && currentVersion < 4) {
+        // NULL = never expires / not yet observed. Existing tokens are left with both
+        // unset rather than backfilled from creationdate.
+        qCDebug(dcUserManager()) << "Migrating tokens table to database version 4";
         QSqlQuery query(m_db);
         if (!query.exec("ALTER TABLE tokens ADD COLUMN expirydate DATETIME;") || m_db.lastError().isValid()) {
             dumpDBError("Error migrating user database (table tokens, expirydate).");
@@ -1443,30 +1467,28 @@ bool UserManager::initDB()
             m_db.close();
             return false;
         }
-        if (!m_db.commit()) {
-            dumpDBError("Error migrating user database (table tokens) to version 4. Rollback.");
-            m_db.rollback();
-            m_db.close();
-            return false;
-        }
         qCDebug(dcUserManager()) << "Migrated successfully tokens table to database version 4";
     }
 
-    if (!m_db.tables().contains("invitations")) {
+    if (!invitationsTableExisted) {
         qCDebug(dcUserManager()) << "No \"invitations\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE invitations (id VARCHAR(40) UNIQUE, username VARCHAR(40), tokenhash VARCHAR(100) UNIQUE, creationdate DATETIME, expirydate DATETIME NOT NULL, tokenvalidityduration INTEGER);") || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table invitations)");
+            if (needsMigrationTransaction)
+                m_db.rollback();
             m_db.close();
             return false;
         }
     }
 
-    if (!m_db.tables().contains("metadata")) {
+    if (!metadataTableExisted) {
         qCDebug(dcUserManager()) << "No \"metadata\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (table metadata)!");
+            if (needsMigrationTransaction)
+                m_db.rollback();
             m_db.close();
             return false;
         }
@@ -1476,21 +1498,31 @@ bool UserManager::initDB()
         query.bindValue(":version", newVersion);
         if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (setting version metadata)!");
+            if (needsMigrationTransaction)
+                m_db.rollback();
             m_db.close();
             return false;
         }
-    } else {
-        // All migrations have been done
-        if (currentVersion < newVersion) {
-            QSqlQuery query(m_db);
-            query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
-            query.bindValue(":version", newVersion);
-            if (!query.exec() || m_db.lastError().isValid()) {
-                dumpDBError("Error updating database version");
-                m_db.close();
-                return false;
-            }
-            qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
+    } else if (currentVersion < newVersion) {
+        QSqlQuery query(m_db);
+        query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
+        query.bindValue(":version", newVersion);
+        if (!query.exec() || m_db.lastError().isValid()) {
+            dumpDBError("Error updating database version");
+            if (needsMigrationTransaction)
+                m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
+    }
+
+    if (needsMigrationTransaction) {
+        if (!m_db.commit()) {
+            dumpDBError("Error committing user database migration. Rollback.");
+            m_db.rollback();
+            m_db.close();
+            return false;
         }
     }
 
@@ -1726,16 +1758,20 @@ QString UserManager::formatUtcDateTimeForStorage(const QDateTime &value) const
     expires. Every caller that needs to know if a token is still valid must go through
     this rather than comparing timestamps itself.
 
-    Deliberately uses QDateTime::currentDateTimeUtc() rather than TimeManager: this is a
-    stateless per-request comparison, not a scheduled/simulatable timer, and it must work
-    from a standalone UserManager as well as from a fully initialized NymeaCore. */
+    Goes through TimeManager so this respects TimeManager::setTime() overrides used by
+    tests, matching the clock that creationTime/expiry values were derived from
+    (createInvitation(), redeemInvitation()). Falls back to the real UTC clock only for a
+    standalone UserManager constructed without a fully initialized NymeaCore (as in
+    isolated DB-loading tests), which has no TimeManager to consult. */
 bool UserManager::isTokenLogicallyExpired(const QVariant &expiryDateValue) const
 {
     QDateTime expiryTime = parseStoredUtcDateTime(expiryDateValue);
     if (!expiryTime.isValid())
         return false;
 
-    return QDateTime::currentDateTimeUtc() >= expiryTime;
+    TimeManager *timeManager = NymeaCore::instance()->timeManager();
+    QDateTime now = timeManager ? timeManager->currentDateTime().toUTC() : QDateTime::currentDateTimeUtc();
+    return now >= expiryTime;
 }
 
 void UserManager::purgeExpiredTokens()
@@ -1784,13 +1820,19 @@ void UserManager::rearmExpiryTimer()
     }
 
     QDateTime nextExpiry = parseStoredUtcDateTime(query.value("nextExpiry"));
-    qint64 msecsUntilExpiry = QDateTime::currentDateTimeUtc().msecsTo(nextExpiry);
+    TimeManager *timeManager = NymeaCore::instance()->timeManager();
+    QDateTime now = timeManager ? timeManager->currentDateTime().toUTC() : QDateTime::currentDateTimeUtc();
+    qint64 msecsUntilExpiry = now.msecsTo(nextExpiry);
 
     // Never pass a potentially overflowing interval to QTimer (its int parameter maxes
     // out around 24.8 days): re-check at least this often regardless of how far away the
     // actual deadline is, recalculating against current UTC time on every wake-up.
     constexpr qint64 maxIntervalMs = 24LL * 60 * 60 * 1000;
-    qint64 boundedMsecs = qBound<qint64>(0, msecsUntilExpiry, maxIntervalMs);
+    // purgeExpiredTokens() just ran above: a nextExpiry that's still <= now means its
+    // delete failed there, not that it's merely due right now. Rearming at 0ms in that
+    // case would spin the event loop on a persistent DB failure; back off instead.
+    constexpr qint64 minRetryBackoffMs = 5000;
+    qint64 boundedMsecs = msecsUntilExpiry <= 0 ? minRetryBackoffMs : qBound<qint64>(0, msecsUntilExpiry, maxIntervalMs);
     m_expiryTimer->start(static_cast<int>(boundedMsecs));
 }
 

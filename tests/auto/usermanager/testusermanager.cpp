@@ -25,6 +25,7 @@
 #include "testusermanager.h"
 #include "nymeacore.h"
 #include "nymeatestbase.h"
+#include "nymeasettings.h"
 #include "usermanager/usermanager.h"
 #include "servers/mocktcpserver.h"
 #include "nymeadbusservice.h"
@@ -33,7 +34,31 @@
 
 #include "../plugins/mock/extern-plugininfo.h"
 
+#include <QCryptographicHash>
+#include <QMutex>
+#include <QScopeGuard>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+
 using namespace nymeaserver;
+
+namespace {
+// Message-handler bridge for tokenFailurePathsNeverLogRawToken(): qInstallMessageHandler()
+// only accepts a plain function pointer, so the QStringList being appended to has to be
+// reached through a static rather than a capture.
+QMutex s_capturedLogLinesMutex;
+QStringList *s_capturedLogLines = nullptr;
+
+void captureLogMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_UNUSED(type)
+    Q_UNUSED(context)
+    QMutexLocker locker(&s_capturedLogLinesMutex);
+    if (s_capturedLogLines)
+        *s_capturedLogLines << msg;
+}
+}
 
 TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
 {
@@ -679,6 +704,71 @@ void TestUsermanager::invitationsPurgesExpiredEntries()
     QCOMPARE(removedSpy.first().first().toUuid(), info.id());
 }
 
+void TestUsermanager::invitationsFilterExcludesExpiredRowWhenPurgeDeleteFails()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray token;
+    InvitationInfo info;
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, false, 0, token, info), UserManager::UserErrorNoError);
+
+    QString dbPath = NymeaSettings::privodeFromDefaultFilePath("user-db.sqlite");
+
+    // Backdate the row directly in the DB so it is already expired, independent of
+    // whatever purgeExpiredInvitations() would otherwise have caught on its own.
+    {
+        QSqlDatabase backdateDb = QSqlDatabase::addDatabase("QSQLITE", "test-invitations-backdate");
+        backdateDb.setDatabaseName(dbPath);
+        QVERIFY(backdateDb.open());
+        QSqlQuery backdateQuery(backdateDb);
+        backdateQuery.prepare("UPDATE invitations SET expirydate = :expiry WHERE id = :id;");
+        backdateQuery.bindValue(":expiry", QDateTime::currentDateTimeUtc().addSecs(-30).toString(Qt::ISODate));
+        backdateQuery.bindValue(":id", info.id().toString());
+        QVERIFY(backdateQuery.exec());
+        QCOMPARE(backdateQuery.numRowsAffected(), 1);
+        backdateDb.close();
+    }
+    QSqlDatabase::removeDatabase("test-invitations-backdate");
+
+    // Hold a write lock on the same on-disk DB file from a second connection so that
+    // purgeExpiredInvitations()'s own DELETE - run synchronously at the top of
+    // invitations() - is forced to fail with "database is locked", leaving the
+    // now-expired row physically in place. This isolates the defense-in-depth filter
+    // inside invitations()'s result loop from the normal purge-then-list path, which
+    // invitationsPurgesExpiredEntries() above already covers.
+    {
+        QSqlDatabase lockDb = QSqlDatabase::addDatabase("QSQLITE", "test-invitations-lock");
+        lockDb.setDatabaseName(dbPath);
+        QVERIFY(lockDb.open());
+        QSqlQuery lockQuery(lockDb);
+        QVERIFY(lockQuery.exec("BEGIN IMMEDIATE;"));
+
+        QList<InvitationInfo> remaining;
+        QCOMPARE(userManager->invitations(remaining), UserManager::UserErrorNoError);
+        bool expiredRowLeaked = false;
+        foreach (const InvitationInfo &invitation, remaining) {
+            if (invitation.id() == info.id())
+                expiredRowLeaked = true;
+        }
+        QVERIFY2(!expiredRowLeaked, "Expired invitation leaked from invitations() while its purge delete was blocked");
+
+        // Confirm the delete really did fail - i.e. this test is exercising the
+        // defense-in-depth filter itself, not just relying on a purge that quietly
+        // succeeded anyway.
+        QSqlQuery stillThereQuery(lockDb);
+        stillThereQuery.prepare("SELECT COUNT(*) FROM invitations WHERE id = :id;");
+        stillThereQuery.bindValue(":id", info.id().toString());
+        QVERIFY(stillThereQuery.exec());
+        QVERIFY(stillThereQuery.next());
+        QCOMPARE(stillThereQuery.value(0).toInt(), 1);
+
+        QVERIFY(lockQuery.exec("ROLLBACK;"));
+        lockDb.close();
+    }
+    QSqlDatabase::removeDatabase("test-invitations-lock");
+}
+
 void TestUsermanager::redeemInvitationHappyPath()
 {
     authenticate();
@@ -799,6 +889,79 @@ void TestUsermanager::redeemedTokenExpiryMeasuredFromRedemptionNotCreation()
     QVERIFY(userManager->verifyToken(clientToken));
     QTest::qWait(3000);
     QVERIFY(!userManager->verifyToken(clientToken));
+}
+
+void TestUsermanager::tokenExpiryChecksRespectSimulatedTimeOverride()
+{
+    // Defensive: make sure no earlier test left a simulated time offset behind.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
+
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    QByteArray oneTimeToken;
+    InvitationInfo info;
+    // Token validity is measured from redemption; give it a short window so a simulated
+    // clock jump can obviously outrun it.
+    QCOMPARE(userManager->createInvitation("valid@user.test", 3600, true, 10, oneTimeToken, info), UserManager::UserErrorNoError);
+
+    QByteArray clientToken = userManager->redeemInvitation(oneTimeToken, "guest-phone");
+    QVERIFY(!clientToken.isEmpty());
+    QVERIFY(userManager->verifyToken(clientToken));
+
+    // Jump the simulated clock well past the token's expiry - deliberately with no
+    // QTest::qWait() afterwards. This can only pass if the expiry check reads
+    // TimeManager::currentDateTime() rather than the real wall clock: the real clock has
+    // not actually advanced at all here.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime().addSecs(3600));
+
+    QVERIFY(!userManager->verifyToken(clientToken));
+    TokenInfo tokenInfo = userManager->tokenInfo(clientToken);
+    QVERIFY(tokenInfo.id().isNull());
+
+    // Reset the time override so later tests aren't affected.
+    NymeaCore::instance()->timeManager()->setTime(QDateTime::currentDateTime());
+}
+
+void TestUsermanager::tokenFailurePathsNeverLogRawToken()
+{
+    authenticate();
+
+    UserManager *userManager = NymeaCore::instance()->userManager();
+
+    QStringList capturedLogLines;
+    {
+        QMutexLocker locker(&s_capturedLogLinesMutex);
+        s_capturedLogLines = &capturedLogLines;
+    }
+    QtMessageHandler previousHandler = qInstallMessageHandler(captureLogMessageHandler);
+    auto guard = qScopeGuard([previousHandler]() {
+        qInstallMessageHandler(previousHandler);
+        QMutexLocker locker(&s_capturedLogLinesMutex);
+        s_capturedLogLines = nullptr;
+    });
+
+    // A well-formed, base64-alphabet secret generated exactly the way real tokens are -
+    // just like a genuine token, except it will never exist in the DB. Exercises the
+    // "fails the DB lookup" branch of tokenInfo()/verifyToken().
+    QByteArray unknownToken = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+
+    // Same secret value, but with a character validateToken()'s charset regex rejects -
+    // exercises the "fails validation" branch instead.
+    QByteArray malformedToken = unknownToken;
+    malformedToken[0] = ' ';
+
+    Q_UNUSED(userManager->tokenInfo(malformedToken));
+    Q_UNUSED(userManager->verifyToken(malformedToken));
+    Q_UNUSED(userManager->tokenInfo(unknownToken));
+    Q_UNUSED(userManager->verifyToken(unknownToken));
+
+    foreach (const QString &line, capturedLogLines) {
+        QVERIFY2(!line.contains(QString::fromUtf8(malformedToken)),
+                 qUtf8Printable(QString("Log line leaked the malformed token: %1").arg(line)));
+        QVERIFY2(!line.contains(QString::fromUtf8(unknownToken)),
+                 qUtf8Printable(QString("Log line leaked the unknown token: %1").arg(line)));
+    }
 }
 
 void TestUsermanager::removeUserCascadesInvitations()

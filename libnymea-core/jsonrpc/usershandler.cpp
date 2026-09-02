@@ -364,7 +364,7 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext 
     }
 
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
-    qCDebug(dcJsonRpc()) << "Fetching tokens for user" << currentToken << tokenInfo.username();
+    qCDebug(dcJsonRpc()) << "Fetching tokens for user" << tokenInfo.username();
     QList<TokenInfo> tokens = m_userManager->tokens(tokenInfo.username());
     QVariantList retList;
     foreach (const TokenInfo &tokenInfo, tokens) {

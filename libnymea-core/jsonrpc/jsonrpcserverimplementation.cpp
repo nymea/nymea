@@ -633,7 +633,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc()) << "Failed to parse JSON data" << data << ":" << error.errorString();
+        qCWarning(dcJsonRpc()) << "Failed to parse JSON data" << qUtf8Printable(redactSensitiveFields(data)) << ":" << error.errorString();
         sendErrorResponse(interface, clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
         return;
     }
@@ -643,7 +643,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     bool success;
     int commandId = message.value("id").toInt(&success);
     if (!success) {
-        qCWarning(dcJsonRpc()) << "Error parsing command. Missing \"id\":" << message;
+        qCWarning(dcJsonRpc()) << "Error parsing command. Missing \"id\":" << qUtf8Printable(redactSensitiveFields(QJsonDocument::fromVariant(message).toJson(QJsonDocument::Compact)));
         sendErrorResponse(interface, clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
@@ -731,7 +731,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     if (!validationResult.success()) {
         qCWarning(dcJsonRpc()) << "JSON RPC parameter verification failed for method" << targetNamespace + '.' + method;
         qCWarning(dcJsonRpc()) << validationResult.errorString() << "in" << validationResult.where();
-        qCWarning(dcJsonRpc()) << "Call params:" << qUtf8Printable(QJsonDocument::fromVariant(params).toJson());
+        qCWarning(dcJsonRpc()) << "Call params:" << qUtf8Printable(redactSensitiveFields(QJsonDocument::fromVariant(QVariantMap{{"params", params}}).toJson(QJsonDocument::Compact)));
         sendErrorResponse(interface, clientId, commandId, "Invalid params: " + validationResult.errorString() + " in " + validationResult.where());
         return;
     }
@@ -1220,18 +1220,38 @@ void JsonRPCServerImplementation::markTokenSeenIfNewlyBound(const QUuid &clientI
 
 QByteArray JsonRPCServerImplementation::redactSensitiveFields(const QByteArray &data) const
 {
+    // Every field name that ever carries a bearer token or a plaintext password/secret,
+    // top-level or nested in "params": "token" (regular client tokens and one-time
+    // invitation tokens alike), "password" (CreateUser/Authenticate), "newPassword"
+    // (ChangePassword/ChangeUserPassword). Keep this list in sync with any new
+    // secret-bearing JSON-RPC param.
+    static const QStringList sensitiveFieldNames = {QStringLiteral("token"), QStringLiteral("password"), QStringLiteral("newPassword")};
+
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-    if (error.error != QJsonParseError::NoError || !doc.isObject())
-        return data;
+    if (error.error != QJsonParseError::NoError || !doc.isObject()) {
+        // Can't structurally redact something that doesn't parse as a JSON object - never
+        // log it verbatim, a bearer token/password may still be present as a substring.
+        return QString("<unparseable data, %1 bytes>").arg(data.length()).toUtf8();
+    }
 
     QVariantMap message = doc.object().toVariantMap();
-    QVariantMap params = message.value("params").toMap();
-    if (!params.contains("token"))
-        return data;
+    for (const QString &fieldName : sensitiveFieldNames) {
+        if (message.contains(fieldName))
+            message.insert(fieldName, QStringLiteral("<redacted>"));
+    }
 
-    params.insert("token", QStringLiteral("<redacted>"));
-    message.insert("params", params);
+    QVariantMap params = message.value("params").toMap();
+    bool paramsChanged = false;
+    for (const QString &fieldName : sensitiveFieldNames) {
+        if (params.contains(fieldName)) {
+            params.insert(fieldName, QStringLiteral("<redacted>"));
+            paramsChanged = true;
+        }
+    }
+    if (paramsChanged)
+        message.insert("params", params);
+
     return QJsonDocument::fromVariant(message).toJson(QJsonDocument::Compact);
 }
 

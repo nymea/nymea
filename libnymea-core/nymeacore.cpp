@@ -120,14 +120,19 @@ NymeaCore *NymeaCore::instance()
 void NymeaCore::restart(ShutdownReason reason)
 {
     instance()->destroy(reason);
-    instance()->init(s_additionalInterfaces, s_disableLogEngine);
+    if (!instance()->init(s_additionalInterfaces, s_disableLogEngine)) {
+        // There is no caller left to return a failure to across an in-process restart;
+        // exit instead of continuing to serve with a partially initialized core.
+        qCCritical(dcCore()) << "Failed to reinitialize nymea after restart. Exiting.";
+        QCoreApplication::exit(EXIT_FAILURE);
+    }
 }
 
-void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
+bool NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine)
 {
     if (m_initialized) {
         qCWarning(dcCore()) << "NymeaCore is already initialized.";
-        return;
+        return true;
     }
     m_initialized = true;
 
@@ -163,6 +168,13 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
 
     qCDebug(dcCore()) << "Creating User Manager";
     m_userManager = new UserManager(NymeaSettings::privodeFromDefaultFilePath("user-db.sqlite"), this);
+    // Presence (any value, including empty/"0"/"false") disables invitations; unset means
+    // available. Sampled once here for the process lifetime - never re-read per request.
+    m_userManager->setInvitationsAvailable(!qEnvironmentVariableIsSet("NYMEA_DISABLE_INVITATIONS"));
+    if (m_userManager->initializationFailed()) {
+        qCCritical(dcCore()) << "User database could not be initialized. Refusing to start; no server listener will be opened.";
+        return false;
+    }
 
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);
@@ -234,6 +246,8 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
 #ifdef WITH_SYSTEMD
     sd_notify(0, "READY=1");
 #endif
+
+    return true;
 }
 
 /*! Destructor of the \l{NymeaCore}. */

@@ -96,11 +96,23 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     }
 
     if (!initDB()) {
-        qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
-        if (QFileInfo::exists(m_db.databaseName())) {
-            rotate(m_db.databaseName());
-            if (!initDB()) {
-                qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
+        if (m_hadUsersTableBeforeInit) {
+            // A users table with potentially real accounts/tokens already existed before this
+            // attempt failed (e.g. a migration step broke partway through). Rotating here would
+            // silently make every existing user inaccessible. Leave the file exactly as it is and
+            // fail closed instead; see UserManager::initializationFailed().
+            qCCritical(dcUserManager()) << "Error initializing an existing user database. Refusing to touch it; leaving it in place for diagnosis.";
+            m_initializationFailed = true;
+        } else {
+            qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
+            if (QFileInfo::exists(m_db.databaseName())) {
+                rotate(m_db.databaseName());
+                if (!initDB()) {
+                    qCCritical(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
+                    m_initializationFailed = true;
+                }
+            } else {
+                m_initializationFailed = true;
             }
         }
     }
@@ -108,6 +120,52 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     m_pushButtonDBusService = new PushButtonDBusService("/io/nymea/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
     m_pushButtonTransaction = QPair<int, QString>(-1, QString());
+
+    if (!m_initializationFailed) {
+        m_expiryTimer = new QTimer(this);
+        m_expiryTimer->setSingleShot(true);
+        connect(m_expiryTimer, &QTimer::timeout, this, &UserManager::rearmExpiryTimer);
+        // Guarded: a standalone UserManager constructed without a fully initialized
+        // NymeaCore (as in isolated DB-loading tests) has no TimeManager to react to.
+        if (NymeaCore::instance()->timeManager()) {
+            connect(NymeaCore::instance()->timeManager(), &TimeManager::dateTimeChanged, this, &UserManager::rearmExpiryTimer);
+        }
+        rearmExpiryTimer();
+    }
+}
+
+/*! Returns true if the user database could not be opened or migrated. In that case the
+    existing file (if any) was deliberately left untouched instead of being rotated away,
+    and this UserManager must not be used to serve any request. */
+bool UserManager::initializationFailed() const
+{
+    return m_initializationFailed;
+}
+
+/*! Resolves invitation availability for the process lifetime. Passing \a available as
+    false transactionally purges every pending invitation with no notification; if that
+    purge fails, this sets initializationFailed() so the caller aborts startup instead of
+    serving with a partially-disabled feature. */
+void UserManager::setInvitationsAvailable(bool available)
+{
+    m_invitationsAvailable = available;
+    if (available)
+        return;
+
+    QSqlQuery query(m_db);
+    if (!query.exec("DELETE FROM invitations;") || query.lastError().isValid()) {
+        qCCritical(dcUserManager()) << "Failed to purge pending invitations on disabled startup:" << query.lastError().databaseText() << query.lastError().driverText();
+        m_initializationFailed = true;
+        return;
+    }
+    qCDebug(dcUserManager()) << "Invitations disabled: purged" << query.numRowsAffected() << "pending invitation(s), no notification emitted.";
+}
+
+/*! Returns whether invitations are currently available, as resolved once at startup by
+    setInvitationsAvailable(). */
+bool UserManager::invitationsAvailable() const
+{
+    return m_invitationsAvailable;
 }
 
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
@@ -273,22 +331,70 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     return UserErrorNoError;
 }
 
+/*! Removes \a username and every invitation/token/inventory row belonging to them in one
+    transaction. Any statement or commit failure rolls back everything and emits nothing;
+    invitation removals, token session revocations, and userRemoved are only emitted after
+    a successful commit. */
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
-    QString dropUserQueryString = QString("DELETE FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
-    QSqlQuery dropUserQuery(m_db);
-    if (!dropUserQuery.exec(dropUserQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropUserQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    if (!m_db.transaction()) {
+        dumpDBError("Error starting transaction for removing user.");
         return UserErrorBackendError;
     }
 
-    if (dropUserQuery.numRowsAffected() == 0)
-        return UserErrorInvalidUserId;
+    QSqlQuery selectTokensQuery(m_db);
+    selectTokensQuery.prepare("SELECT token FROM tokens WHERE lower(username) = :username;");
+    selectTokensQuery.bindValue(":username", username.toLower());
+    if (!selectTokensQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << selectTokensQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+    QList<QByteArray> removedTokenValues;
+    while (selectTokensQuery.next())
+        removedTokenValues << selectTokensQuery.value("token").toString().toUtf8();
 
-    QString dropTokensQueryString = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
+    QSqlQuery selectInvitationsQuery(m_db);
+    selectInvitationsQuery.prepare("SELECT id FROM invitations WHERE lower(username) = :username;");
+    selectInvitationsQuery.bindValue(":username", username.toLower());
+    if (!selectInvitationsQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << selectInvitationsQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+    QList<QUuid> removedInvitationIds;
+    while (selectInvitationsQuery.next())
+        removedInvitationIds << QUuid(selectInvitationsQuery.value("id").toString());
+
+    QSqlQuery dropUserQuery(m_db);
+    dropUserQuery.prepare("DELETE FROM users WHERE lower(username) = :username;");
+    dropUserQuery.bindValue(":username", username.toLower());
+    if (!dropUserQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropUserQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+
+    if (dropUserQuery.numRowsAffected() == 0) {
+        m_db.rollback();
+        return UserErrorInvalidUserId;
+    }
+
+    QSqlQuery dropInvitationsQuery(m_db);
+    dropInvitationsQuery.prepare("DELETE FROM invitations WHERE lower(username) = :username;");
+    dropInvitationsQuery.bindValue(":username", username.toLower());
+    if (!dropInvitationsQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropInvitationsQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+
     QSqlQuery dropTokensQuery(m_db);
-    if (!dropTokensQuery.exec(dropTokensQueryString)) {
-        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropTokensQueryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+    dropTokensQuery.prepare("DELETE FROM tokens WHERE lower(username) = :username;");
+    dropTokensQuery.bindValue(":username", username.toLower());
+    if (!dropTokensQuery.exec()) {
+        qCWarning(dcUserManager()) << "Unable to execute SQL query" << dropTokensQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
 
@@ -297,10 +403,23 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     dropInventoryQuery.bindValue(":username", username.toLower());
     if (!dropInventoryQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to delete user inventory for user" << username << dropInventoryQuery.lastError().databaseText() << dropInventoryQuery.lastError().driverText();
+        m_db.rollback();
         return UserErrorBackendError;
     }
 
+    if (!m_db.commit()) {
+        dumpDBError("Error committing user removal transaction.");
+        m_db.rollback();
+        return UserErrorBackendError;
+    }
+
+    foreach (const QUuid &invitationId, removedInvitationIds)
+        emit invitationRemoved(invitationId);
+    foreach (const QByteArray &tokenValue, removedTokenValues)
+        emit tokenInvalidated(tokenValue);
     emit userRemoved(username);
+    if (!removedTokenValues.isEmpty() && m_expiryTimer)
+        rearmExpiryTimer();
     return UserErrorNoError;
 }
 
@@ -527,7 +646,7 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     QList<TokenInfo> ret;
 
     QSqlQuery query(m_db);
-    query.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE lower(username) = :username;");
+    query.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE lower(username) = :username;");
     query.bindValue(":username", username.toLower());
     query.exec();
     if (m_db.lastError().type() != QSqlError::NoError) {
@@ -536,7 +655,10 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     }
 
     while (query.next()) {
-        ret << TokenInfo(query.value("id").toUuid(), query.value("username").toString(), query.value("creationdate").toDateTime(), query.value("devicename").toString());
+        if (isTokenLogicallyExpired(query.value("expirydate")))
+            continue;
+        ret << TokenInfo(query.value("id").toUuid(), query.value("username").toString(), query.value("creationdate").toDateTime(), query.value("devicename").toString(),
+                          parseStoredUtcDateTime(query.value("expirydate")), parseStoredUtcDateTime(query.value("lastseen")));
     }
     return ret;
 }
@@ -615,12 +737,12 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     }
 
     if (!validateToken(token)) {
-        qCWarning(dcUserManager()) << "Token did not pass validation:" << token;
+        qCWarning(dcUserManager()) << "Token did not pass validation";
         return TokenInfo();
     }
 
     QSqlQuery getTokenQuery(m_db);
-    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = :token;");
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE token = :token;");
     getTokenQuery.bindValue(":token", QString::fromUtf8(token));
     if (!getTokenQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
@@ -635,13 +757,17 @@ TokenInfo UserManager::tokenInfo(const QByteArray &token) const
     if (!getTokenQuery.first())
         return TokenInfo();
 
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate")))
+        return TokenInfo();
+
+    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
+                      parseStoredUtcDateTime(getTokenQuery.value("expirydate")), parseStoredUtcDateTime(getTokenQuery.value("lastseen")));
 }
 
 TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
 {
     QSqlQuery getTokenQuery(m_db);
-    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = :id;");
+    getTokenQuery.prepare("SELECT id, username, creationdate, deviceName, expirydate, lastseen FROM tokens WHERE id = :id;");
     getTokenQuery.bindValue(":id", tokenId.toString());
     if (!getTokenQuery.exec()) {
         qCWarning(dcUserManager()) << "Unable to execute SQL query" << getTokenQuery.lastQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
@@ -656,12 +782,26 @@ TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
     if (!getTokenQuery.first()) {
         return TokenInfo();
     }
-    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString());
+
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate")))
+        return TokenInfo();
+
+    return TokenInfo(getTokenQuery.value("id").toUuid(), getTokenQuery.value("username").toString(), getTokenQuery.value("creationdate").toDateTime(), getTokenQuery.value("devicename").toString(),
+                      parseStoredUtcDateTime(getTokenQuery.value("expirydate")), parseStoredUtcDateTime(getTokenQuery.value("lastseen")));
 }
 
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
+    QSqlQuery selectTokenQuery(m_db);
+    selectTokenQuery.prepare("SELECT token FROM tokens WHERE id = :id;");
+    selectTokenQuery.bindValue(":id", tokenId.toString());
+    if (!selectTokenQuery.exec() || !selectTokenQuery.first()) {
+        qCWarning(dcUserManager) << "Tried to remove token, but the token could not be found in the DB.";
+        return UserErrorTokenNotFound;
+    }
+    QByteArray tokenValue = selectTokenQuery.value("token").toString().toUtf8();
+
     QSqlQuery removeTokenQuery(m_db);
     removeTokenQuery.prepare("DELETE FROM tokens WHERE id = :id;");
     removeTokenQuery.bindValue(":id", tokenId.toString());
@@ -682,7 +822,34 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
     }
 
     qCDebug(dcUserManager) << "Token" << tokenId << "removed from DB";
+    emit tokenInvalidated(tokenValue);
+    if (m_expiryTimer)
+        rearmExpiryTimer();
     return UserErrorNoError;
+}
+
+/*! Marks the token with the given \a tokenId as last seen at \a timestamp, a single prepared
+    UPDATE by token id. The clear token value is never received or logged here. The result is
+    diagnostic only: callers must keep an already validated connection authenticated even if
+    this returns false. */
+bool UserManager::markTokenSeen(const QUuid &tokenId, const QDateTime &timestamp)
+{
+    QSqlQuery query(m_db);
+    query.prepare("UPDATE tokens SET lastseen = :lastseen WHERE id = :id;");
+    query.bindValue(":lastseen", formatUtcDateTimeForStorage(timestamp));
+    query.bindValue(":id", tokenId.toString());
+
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to mark token seen for token id" << tokenId << query.lastError().databaseText() << query.lastError().driverText();
+        return false;
+    }
+
+    if (query.numRowsAffected() != 1) {
+        qCWarning(dcUserManager()) << "Marking token seen affected" << query.numRowsAffected() << "rows for token id" << tokenId;
+        return false;
+    }
+
+    return true;
 }
 
 UserManager::UserError UserManager::addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled)
@@ -773,11 +940,254 @@ UserManager::UserError UserManager::removeUserInventoryItem(const QUuid &invento
     return UserErrorNoError;
 }
 
+/*! Creates a one-time invitation for \a username, valid for \a validitySeconds (the
+    invitation's own absolute expiry, 1..2592000). When \a hasTokenValidity is true, the
+    regular token minted on redemption additionally expires \a tokenValiditySeconds after
+    a successful redemption (also 1..2592000); otherwise the redeemed token never expires.
+    On success, the clear one-time token is returned via \a oneTimeToken (this is the only
+    place it ever leaves the server - only its hash is stored) and \a info is populated. */
+UserManager::UserError UserManager::createInvitation(const QString &username, uint validitySeconds,
+                                                       bool hasTokenValidity, uint tokenValiditySeconds,
+                                                       QByteArray &oneTimeToken, InvitationInfo &info)
+{
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
+    if (validitySeconds < 1 || validitySeconds > 2592000)
+        return UserErrorInvalidInvitationDuration;
+    if (hasTokenValidity && (tokenValiditySeconds < 1 || tokenValiditySeconds > 2592000))
+        return UserErrorInvalidInvitationDuration;
+
+    QSqlQuery userExistsQuery(m_db);
+    userExistsQuery.prepare("SELECT username FROM users WHERE lower(username) = :username;");
+    userExistsQuery.bindValue(":username", username.toLower());
+    if (!userExistsQuery.exec() || !userExistsQuery.first()) {
+        qCWarning(dcUserManager()) << "Cannot create invitation for unknown user" << username;
+        return UserErrorInvalidUserId;
+    }
+
+    QByteArray clearToken = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+    QByteArray tokenHash = QCryptographicHash::hash(clearToken, QCryptographicHash::Sha256).toBase64();
+    QUuid invitationId = QUuid::createUuid();
+    QDateTime creationTime = NymeaCore::instance()->timeManager()->currentDateTime().toUTC();
+    QDateTime expiryTime = creationTime.addSecs(validitySeconds);
+
+    QSqlQuery insertQuery(m_db);
+    insertQuery.prepare("INSERT INTO invitations (id, username, tokenhash, creationdate, expirydate, tokenvalidityduration) "
+                         "VALUES (:id, :username, :tokenhash, :creationdate, :expirydate, :tokenvalidityduration);");
+    insertQuery.bindValue(":id", invitationId.toString());
+    insertQuery.bindValue(":username", username.toLower());
+    insertQuery.bindValue(":tokenhash", QString::fromUtf8(tokenHash));
+    insertQuery.bindValue(":creationdate", formatUtcDateTimeForStorage(creationTime));
+    insertQuery.bindValue(":expirydate", formatUtcDateTimeForStorage(expiryTime));
+    insertQuery.bindValue(":tokenvalidityduration", hasTokenValidity ? QVariant(tokenValiditySeconds) : QVariant());
+    if (!insertQuery.exec() || insertQuery.lastError().isValid()) {
+        qCWarning(dcUserManager()) << "Unable to create invitation" << insertQuery.lastError().databaseText() << insertQuery.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    info = InvitationInfo(invitationId, username.toLower(), creationTime, expiryTime,
+                           hasTokenValidity ? QVariant(tokenValiditySeconds) : QVariant());
+    oneTimeToken = clearToken;
+    emit invitationAdded(info);
+    return UserErrorNoError;
+}
+
+/*! Returns all invitations in \a result, optionally filtered by \a username (all when
+    empty). Expired invitations are purged before listing, so the result never contains
+    one. */
+UserManager::UserError UserManager::invitations(QList<InvitationInfo> &result, const QString &username)
+{
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
+    purgeExpiredInvitations();
+
+    QSqlQuery query(m_db);
+    if (username.isEmpty()) {
+        query.prepare("SELECT id, username, creationdate, expirydate, tokenvalidityduration FROM invitations;");
+    } else {
+        query.prepare("SELECT id, username, creationdate, expirydate, tokenvalidityduration FROM invitations WHERE lower(username) = :username;");
+        query.bindValue(":username", username.toLower());
+    }
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to query invitations" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    while (query.next()) {
+        // Defense in depth: purgeExpiredInvitations() above may have failed to delete a
+        // given row (swallowed per-row, logged, retried next time) - never surface an
+        // already-expired invitation regardless, mirroring the independent expiry guard
+        // tokenInfo()/verifyToken() already apply via isTokenLogicallyExpired().
+        if (isTokenLogicallyExpired(query.value("expirydate")))
+            continue;
+
+        QVariant tokenValidityDuration = query.value("tokenvalidityduration").isNull()
+                ? QVariant() : QVariant(query.value("tokenvalidityduration").toUInt());
+        result << InvitationInfo(QUuid(query.value("id").toString()), query.value("username").toString(),
+                                  parseStoredUtcDateTime(query.value("creationdate")),
+                                  parseStoredUtcDateTime(query.value("expirydate")),
+                                  tokenValidityDuration);
+    }
+    return UserErrorNoError;
+}
+
+/*! Removes the pending invitation with the given \a invitationId. */
+UserManager::UserError UserManager::removeInvitation(const QUuid &invitationId)
+{
+    if (!m_invitationsAvailable)
+        return UserErrorInvitationsDisabled;
+
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM invitations WHERE id = :id;");
+    query.bindValue(":id", invitationId.toString());
+    if (!query.exec()) {
+        qCWarning(dcUserManager()) << "Unable to remove invitation" << query.lastError().databaseText() << query.lastError().driverText();
+        return UserErrorBackendError;
+    }
+    if (query.numRowsAffected() != 1) {
+        qCWarning(dcUserManager()) << "Tried to remove invitation, but it could not be found in the DB.";
+        return UserErrorInvitationNotFound;
+    }
+
+    emit invitationRemoved(invitationId);
+    return UserErrorNoError;
+}
+
+void UserManager::purgeExpiredInvitations()
+{
+    QSqlQuery selectQuery(m_db);
+    if (!selectQuery.exec("SELECT id, expirydate FROM invitations;")) {
+        qCWarning(dcUserManager()) << "Unable to query for expired invitations" << selectQuery.lastError().databaseText() << selectQuery.lastError().driverText();
+        return;
+    }
+
+    QList<QUuid> expiredIds;
+    while (selectQuery.next()) {
+        // isTokenLogicallyExpired() is a plain "now >= this UTC timestamp" check; it is
+        // not actually token-specific and applies equally to invitations.expirydate.
+        if (isTokenLogicallyExpired(selectQuery.value("expirydate")))
+            expiredIds << QUuid(selectQuery.value("id").toString());
+    }
+
+    foreach (const QUuid &invitationId, expiredIds) {
+        QSqlQuery deleteQuery(m_db);
+        deleteQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+        deleteQuery.bindValue(":id", invitationId.toString());
+        if (deleteQuery.exec() && deleteQuery.numRowsAffected() == 1) {
+            emit invitationRemoved(invitationId);
+        } else {
+            qCWarning(dcUserManager()) << "Failed to purge expired invitation" << invitationId << "- will retry on the next check.";
+        }
+    }
+}
+
+/*! Redeems the one-time invitation identified by \a oneTimeToken for the given
+    \a deviceName, returning the resulting regular client token on success. Returns an
+    empty QByteArray for every failure (malformed input, unknown/already-used/expired
+    token, or a database error) without distinguishing between them, so this never
+    provides a state oracle. Lookup, expiry check, invitation deletion, and client-token
+    insertion happen in one SQLite transaction: any failure rolls back the whole
+    operation, leaving the invitation redeemable and letting no client token escape. */
+QByteArray UserManager::redeemInvitation(const QByteArray &oneTimeToken, const QString &deviceName)
+{
+    // Disabled collapses into the same empty-result shape as every other failure: it
+    // must never reveal whether a supplied token once existed.
+    if (!m_invitationsAvailable)
+        return QByteArray();
+
+    // Before any hash or query: reject malformed input up front.
+    if (!isCanonicalInvitationToken(oneTimeToken))
+        return QByteArray();
+    if (!isValidInvitationDeviceName(deviceName))
+        return QByteArray();
+
+    QByteArray tokenHash = QCryptographicHash::hash(oneTimeToken, QCryptographicHash::Sha256).toBase64();
+
+    if (!m_db.transaction()) {
+        dumpDBError("Error starting transaction for invitation redemption.");
+        return QByteArray();
+    }
+
+    QSqlQuery selectQuery(m_db);
+    selectQuery.prepare("SELECT id, username, expirydate, tokenvalidityduration FROM invitations WHERE tokenhash = :tokenhash;");
+    selectQuery.bindValue(":tokenhash", QString::fromUtf8(tokenHash));
+    if (!selectQuery.exec() || !selectQuery.first()) {
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    QUuid invitationId = QUuid(selectQuery.value("id").toString());
+    QString username = selectQuery.value("username").toString();
+    QVariant expiryDateValue = selectQuery.value("expirydate");
+    QVariant tokenValidityDurationValue = selectQuery.value("tokenvalidityduration");
+
+    if (isTokenLogicallyExpired(expiryDateValue)) {
+        // Expired: still delete it and commit that deletion within this same
+        // transaction so it doesn't linger looking redeemable, but redemption fails.
+        QSqlQuery deleteExpiredQuery(m_db);
+        deleteExpiredQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+        deleteExpiredQuery.bindValue(":id", invitationId.toString());
+        if (!deleteExpiredQuery.exec() || deleteExpiredQuery.numRowsAffected() != 1 || !m_db.commit()) {
+            m_db.rollback();
+            return QByteArray();
+        }
+        emit invitationRemoved(invitationId);
+        return QByteArray();
+    }
+
+    QSqlQuery deleteInvitationQuery(m_db);
+    deleteInvitationQuery.prepare("DELETE FROM invitations WHERE id = :id;");
+    deleteInvitationQuery.bindValue(":id", invitationId.toString());
+    if (!deleteInvitationQuery.exec() || deleteInvitationQuery.numRowsAffected() != 1) {
+        // Gone already (a concurrent/earlier redemption or purge won the race).
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    QByteArray clientToken = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+    QDateTime localNow = NymeaCore::instance()->timeManager()->currentDateTime();
+    QVariant clientTokenExpiry;
+    if (tokenValidityDurationValue.isValid() && !tokenValidityDurationValue.isNull()) {
+        // Measured from this successful redemption, never from invitation creation.
+        QDateTime expiry = localNow.toUTC().addSecs(tokenValidityDurationValue.toUInt());
+        clientTokenExpiry = formatUtcDateTimeForStorage(expiry);
+    }
+
+    QSqlQuery insertTokenQuery(m_db);
+    insertTokenQuery.prepare("INSERT INTO tokens (id, username, token, creationdate, devicename, expirydate, lastseen) "
+                             "VALUES (:id, :username, :token, :creationdate, :devicename, :expirydate, NULL);");
+    insertTokenQuery.bindValue(":id", QUuid::createUuid().toString());
+    insertTokenQuery.bindValue(":username", username);
+    insertTokenQuery.bindValue(":token", QString::fromUtf8(clientToken));
+    // Same timezone-less local-time convention already used by authenticate()'s
+    // tokens.creationdate write; only expirydate/lastseen use the UTC-safe convention.
+    insertTokenQuery.bindValue(":creationdate", localNow.toString("yyyy-MM-dd hh:mm:ss"));
+    insertTokenQuery.bindValue(":devicename", deviceName);
+    insertTokenQuery.bindValue(":expirydate", clientTokenExpiry);
+    if (!insertTokenQuery.exec() || insertTokenQuery.lastError().isValid()) {
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    if (!m_db.commit()) {
+        dumpDBError("Error committing invitation redemption transaction.");
+        m_db.rollback();
+        return QByteArray();
+    }
+
+    emit invitationRemoved(invitationId);
+    if (clientTokenExpiry.isValid() && m_expiryTimer)
+        rearmExpiryTimer();
+    return clientToken;
+}
+
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {
     if (!validateToken(token)) {
-        qCWarning(dcUserManager) << "Token failed character validation" << token;
+        qCWarning(dcUserManager) << "Token failed character validation";
         return false;
     }
 
@@ -796,7 +1206,12 @@ bool UserManager::verifyToken(const QByteArray &token)
     }
 
     if (!getTokenQuery.first()) {
-        qCDebug(dcUserManager) << "Authorization failed for token" << token;
+        qCDebug(dcUserManager) << "Authorization failed for token";
+        return false;
+    }
+
+    if (isTokenLogicallyExpired(getTokenQuery.value("expirydate"))) {
+        qCDebug(dcUserManager) << "Token has expired";
         return false;
     }
 
@@ -861,8 +1276,13 @@ bool UserManager::initDB()
         return false;
     }
 
+    // Recorded on every attempt (fresh install and migration retries alike) so the
+    // constructor can tell a fresh/corrupt file (nothing to lose, safe to rotate) apart
+    // from an existing database that already had real accounts (must not be rotated away).
+    m_hadUsersTableBeforeInit = m_db.tables().contains("users");
+
     int currentVersion = -1;
-    int newVersion = 3;
+    int newVersion = 5;
 
     if (m_db.tables().contains("metadata")) {
         QSqlQuery query(m_db);
@@ -997,21 +1417,78 @@ bool UserManager::initDB()
         }
     }
 
-    if (!m_db.tables().contains("tokens")) {
+    bool tokensTableExisted = m_db.tables().contains("tokens");
+    if (!tokensTableExisted) {
         qCDebug(dcUserManager()) << "No \"tokens\" table found. Creating the table...";
         QSqlQuery query(m_db);
-        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));") || m_db.lastError().isValid()) {
+        if (!query.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40), expirydate DATETIME, lastseen DATETIME);") || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table tokens)");
             m_db.close();
             return false;
         }
     }
 
-    if (!m_db.tables().contains("metadata")) {
+    bool invitationsTableExisted = m_db.tables().contains("invitations");
+    bool metadataTableExisted = m_db.tables().contains("metadata");
+
+    // The tokens-column migration, the invitations table creation, and the schema-version
+    // bump below all migrate one pre-existing database and must commit as a single unit.
+    // Otherwise a crash between them leaves currentVersion stale on disk, so a retry
+    // re-issues an ALTER TABLE ADD COLUMN that already applied - which fails and
+    // permanently wedges startup (00-token-lifecycle.md/01-nymea-core.md: migration must
+    // be transactional and leave the schema version unchanged on failure). A brand new
+    // database (tokensTableExisted == false, nothing pre-existed to protect) doesn't need
+    // this: on failure it's still safe to rotate away per the constructor's
+    // m_hadUsersTableBeforeInit check.
+    bool needsMigrationTransaction = tokensTableExisted && (currentVersion < 4 || !invitationsTableExisted || currentVersion < newVersion);
+    if (needsMigrationTransaction) {
+        if (!m_db.transaction()) {
+            dumpDBError("Error starting transaction for migrating user database.");
+            m_db.close();
+            return false;
+        }
+    }
+
+    if (tokensTableExisted && currentVersion < 4) {
+        // NULL = never expires / not yet observed. Existing tokens are left with both
+        // unset rather than backfilled from creationdate.
+        qCDebug(dcUserManager()) << "Migrating tokens table to database version 4";
+        QSqlQuery query(m_db);
+        if (!query.exec("ALTER TABLE tokens ADD COLUMN expirydate DATETIME;") || m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (table tokens, expirydate).");
+            m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        query = QSqlQuery(m_db);
+        if (!query.exec("ALTER TABLE tokens ADD COLUMN lastseen DATETIME;") || m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (table tokens, lastseen).");
+            m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        qCDebug(dcUserManager()) << "Migrated successfully tokens table to database version 4";
+    }
+
+    if (!invitationsTableExisted) {
+        qCDebug(dcUserManager()) << "No \"invitations\" table found. Creating the table...";
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE invitations (id VARCHAR(40) UNIQUE, username VARCHAR(40), tokenhash VARCHAR(100) UNIQUE, creationdate DATETIME, expirydate DATETIME NOT NULL, tokenvalidityduration INTEGER);") || m_db.lastError().isValid()) {
+            dumpDBError("Error initializing user database (table invitations)");
+            if (needsMigrationTransaction)
+                m_db.rollback();
+            m_db.close();
+            return false;
+        }
+    }
+
+    if (!metadataTableExisted) {
         qCDebug(dcUserManager()) << "No \"metadata\" table found. Creating the table...";
         QSqlQuery query(m_db);
         if (!query.exec("CREATE TABLE metadata (key VARCHAR(10), data VARCHAR(40));") || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (table metadata)!");
+            if (needsMigrationTransaction)
+                m_db.rollback();
             m_db.close();
             return false;
         }
@@ -1021,21 +1498,31 @@ bool UserManager::initDB()
         query.bindValue(":version", newVersion);
         if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (setting version metadata)!");
+            if (needsMigrationTransaction)
+                m_db.rollback();
             m_db.close();
             return false;
         }
-    } else {
-        // All migrations have been done
-        if (currentVersion < newVersion) {
-            QSqlQuery query(m_db);
-            query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
-            query.bindValue(":version", newVersion);
-            if (!query.exec() || m_db.lastError().isValid()) {
-                dumpDBError("Error updating database version");
-                m_db.close();
-                return false;
-            }
-            qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
+    } else if (currentVersion < newVersion) {
+        QSqlQuery query(m_db);
+        query.prepare("UPDATE metadata SET data = :version WHERE key = 'version'");
+        query.bindValue(":version", newVersion);
+        if (!query.exec() || m_db.lastError().isValid()) {
+            dumpDBError("Error updating database version");
+            if (needsMigrationTransaction)
+                m_db.rollback();
+            m_db.close();
+            return false;
+        }
+        qCInfo(dcUserManager()) << "Finished database migration to version" << newVersion;
+    }
+
+    if (needsMigrationTransaction) {
+        if (!m_db.commit()) {
+            dumpDBError("Error committing user database migration. Rollback.");
+            m_db.rollback();
+            m_db.close();
+            return false;
         }
     }
 
@@ -1088,6 +1575,39 @@ bool UserManager::validateToken(const QByteArray &token) const
 {
     static QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.match(token).hasMatch();
+}
+
+bool UserManager::isCanonicalInvitationToken(const QByteArray &token) const
+{
+    if (token.length() != 44)
+        return false;
+    if (token.count('=') != 1 || !token.endsWith('='))
+        return false;
+
+    QByteArray decoded = QByteArray::fromBase64(token, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    if (decoded.length() != 32)
+        return false;
+
+    // Reject non-canonical encodings a lenient decoder might still accept (e.g. non-zero
+    // padding bits) by requiring an exact re-encode round trip.
+    if (decoded.toBase64() != token)
+        return false;
+
+    return true;
+}
+
+bool UserManager::isValidInvitationDeviceName(const QString &deviceName) const
+{
+    QByteArray utf8 = deviceName.toUtf8();
+    if (utf8.isEmpty() || utf8.length() > 40)
+        return false;
+
+    foreach (const QChar &character, deviceName) {
+        if (character.category() == QChar::Other_Control || character.category() == QChar::Other_Format)
+            return false;
+    }
+
+    return true;
 }
 
 bool UserManager::validateScopes(Types::PermissionScopes scopes) const
@@ -1211,6 +1731,109 @@ UserInventoryItem UserManager::inventoryItemFromQuery(const QSqlQuery &query) co
     item.setEnabled(query.value("enabled").toBool());
     item.setPayload(deserializeInventoryPayload(query.value("payload").toByteArray()));
     return item;
+}
+
+/*! Parses a tokens.expirydate/lastseen column value read back from the database. An
+    invalid/NULL \a value means "never expires"/"not yet observed" and yields an invalid
+    QDateTime. A populated value is always UTC, regardless of the local timezone. */
+QDateTime UserManager::parseStoredUtcDateTime(const QVariant &value) const
+{
+    if (value.isNull())
+        return QDateTime();
+
+    QDateTime dateTime = QDateTime::fromString(value.toString(), Qt::ISODate);
+    dateTime.setTimeSpec(Qt::UTC);
+    return dateTime;
+}
+
+/*! Formats \a value for storage in tokens.expirydate/lastseen, always as UTC ISO 8601.
+    An invalid \a value must not be passed here; store NULL directly instead. */
+QString UserManager::formatUtcDateTimeForStorage(const QDateTime &value) const
+{
+    return value.toUTC().toString(Qt::ISODate);
+}
+
+/*! The one authoritative answer to whether a token identified by its raw \a
+    expiryDateValue column value is still valid right now. An absent/NULL value never
+    expires. Every caller that needs to know if a token is still valid must go through
+    this rather than comparing timestamps itself.
+
+    Goes through TimeManager so this respects TimeManager::setTime() overrides used by
+    tests, matching the clock that creationTime/expiry values were derived from
+    (createInvitation(), redeemInvitation()). Falls back to the real UTC clock only for a
+    standalone UserManager constructed without a fully initialized NymeaCore (as in
+    isolated DB-loading tests), which has no TimeManager to consult. */
+bool UserManager::isTokenLogicallyExpired(const QVariant &expiryDateValue) const
+{
+    QDateTime expiryTime = parseStoredUtcDateTime(expiryDateValue);
+    if (!expiryTime.isValid())
+        return false;
+
+    TimeManager *timeManager = NymeaCore::instance()->timeManager();
+    QDateTime now = timeManager ? timeManager->currentDateTime().toUTC() : QDateTime::currentDateTimeUtc();
+    return now >= expiryTime;
+}
+
+void UserManager::purgeExpiredTokens()
+{
+    QSqlQuery selectQuery(m_db);
+    if (!selectQuery.exec("SELECT id, token, expirydate FROM tokens WHERE expirydate IS NOT NULL;")) {
+        qCWarning(dcUserManager()) << "Unable to query for expired tokens" << selectQuery.lastError().databaseText() << selectQuery.lastError().driverText();
+        return;
+    }
+
+    QList<QPair<QUuid, QByteArray>> expired;
+    while (selectQuery.next()) {
+        if (isTokenLogicallyExpired(selectQuery.value("expirydate")))
+            expired << qMakePair(QUuid(selectQuery.value("id").toString()), selectQuery.value("token").toString().toUtf8());
+    }
+
+    foreach (const auto &pair, expired) {
+        const QUuid &tokenId = pair.first;
+
+        if (!m_notifiedExpiredTokenIds.contains(tokenId)) {
+            // Emitted immediately on first observation, independent of whether the
+            // physical delete below succeeds.
+            m_notifiedExpiredTokenIds.insert(tokenId);
+            emit tokenInvalidated(pair.second);
+        }
+
+        QSqlQuery deleteQuery(m_db);
+        deleteQuery.prepare("DELETE FROM tokens WHERE id = :id;");
+        deleteQuery.bindValue(":id", tokenId.toString());
+        if (deleteQuery.exec() && deleteQuery.numRowsAffected() == 1) {
+            m_notifiedExpiredTokenIds.remove(tokenId);
+        } else {
+            qCWarning(dcUserManager()) << "Failed to purge expired token" << tokenId << "- will retry on the next check.";
+        }
+    }
+}
+
+void UserManager::rearmExpiryTimer()
+{
+    purgeExpiredTokens();
+
+    QSqlQuery query(m_db);
+    if (!query.exec("SELECT MIN(expirydate) AS nextExpiry FROM tokens WHERE expirydate IS NOT NULL;") || !query.first() || query.value("nextExpiry").isNull()) {
+        m_expiryTimer->stop();
+        return;
+    }
+
+    QDateTime nextExpiry = parseStoredUtcDateTime(query.value("nextExpiry"));
+    TimeManager *timeManager = NymeaCore::instance()->timeManager();
+    QDateTime now = timeManager ? timeManager->currentDateTime().toUTC() : QDateTime::currentDateTimeUtc();
+    qint64 msecsUntilExpiry = now.msecsTo(nextExpiry);
+
+    // Never pass a potentially overflowing interval to QTimer (its int parameter maxes
+    // out around 24.8 days): re-check at least this often regardless of how far away the
+    // actual deadline is, recalculating against current UTC time on every wake-up.
+    constexpr qint64 maxIntervalMs = 24LL * 60 * 60 * 1000;
+    // purgeExpiredTokens() just ran above: a nextExpiry that's still <= now means its
+    // delete failed there, not that it's merely due right now. Rearming at 0ms in that
+    // case would spin the event loop on a persistent DB failure; back off instead.
+    constexpr qint64 minRetryBackoffMs = 5000;
+    qint64 boundedMsecs = msecsUntilExpiry <= 0 ? minRetryBackoffMs : qBound<qint64>(0, msecsUntilExpiry, maxIntervalMs);
+    m_expiryTimer->start(static_cast<int>(boundedMsecs));
 }
 
 void UserManager::dumpDBError(const QString &message)

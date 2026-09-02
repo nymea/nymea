@@ -261,7 +261,11 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "The core is now up and running.";
         });
 
-        NymeaCore::instance()->init(parser.values(interfacesOption), parser.isSet(noLogDbOption));
+        if (!NymeaCore::instance()->init(parser.values(interfacesOption), parser.isSet(noLogDbOption))) {
+            qCCritical(dcApplication()) << "nymead failed to initialize. Exiting.";
+            closeLogFile();
+            return EXIT_FAILURE;
+        }
 
         const int ret = application.exec();
         closeLogFile();

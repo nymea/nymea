@@ -1,4 +1,4 @@
-10.1
+10.3
 {
     "enums": {
         "BasicType": [
@@ -378,7 +378,10 @@
             "UserErrorInconsistantScopes",
             "UserErrorInventoryItemNotFound",
             "UserErrorDuplicateInventoryItem",
-            "UserErrorInvalidInventoryItem"
+            "UserErrorInvalidInventoryItem",
+            "UserErrorInvitationNotFound",
+            "UserErrorInvalidInvitationDuration",
+            "UserErrorInvitationsDisabled"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",
@@ -1380,6 +1383,20 @@
                 "success": "Bool"
             }
         },
+        "JSONRPC.AuthenticateWithToken": {
+            "description": "Redeem a one-time invitation token obtained out-of-band (e.g. from a QR code or shared link) for a regular client token, the same as Authenticate. Provide a device name as with Authenticate. Only available when protocol >= 10.3 and JSONRPC.Hello.invitationsAvailable is true. Every failure (invitations disabled, malformed input, or an unknown/already-used/expired token) returns only success=false; no reason is distinguishable.",
+            "params": {
+                "deviceName": "String",
+                "token": "String"
+            },
+            "permissionScope": "PermissionScopeNone",
+            "returns": {
+                "o:scopes": "$ref:PermissionScopes",
+                "o:token": "String",
+                "o:username": "String",
+                "success": "Bool"
+            }
+        },
         "JSONRPC.CreateUser": {
             "description": "Create a new user in the API. This is only allowed to be called when the initial setup is required. To create additional users, use Users.CreateUser instead. Call Authenticate after this to obtain a device token for the newly created user.",
             "params": {
@@ -1402,6 +1419,7 @@
             "returns": {
                 "authenticationRequired": "Bool",
                 "initialSetupRequired": "Bool",
+                "invitationsAvailable": "Bool",
                 "language": "String",
                 "locale": "String",
                 "name": "String",
@@ -2134,6 +2152,20 @@
                 "error": "$ref:UserError"
             }
         },
+        "Users.CreateInvitation": {
+            "description": "Create a one-time invitation for an existing user. The one-time token is returned exactly once, here, and only its hash is stored; it is not retrievable again. validityDuration is the invitation's own absolute validity in seconds (default 86400, 1..2592000). When tokenValidityDuration is given (also 1..2592000), the regular token minted on redemption expires that many seconds after a successful redemption; if absent, the redeemed token never expires.",
+            "params": {
+                "o:tokenValidityDuration": "Uint",
+                "o:validityDuration": "Uint",
+                "username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError",
+                "o:invitation": "$ref:InvitationInfo",
+                "o:token": "String"
+            }
+        },
         "Users.CreateUser": {
             "description": "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If the user has not the permission \"PermissionScopeAccessAllThings\", the list of things this user has access to can be defined in the \"allowedThingIds\" property. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.",
             "params": {
@@ -2149,6 +2181,17 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError"
+            }
+        },
+        "Users.GetInvitations": {
+            "description": "Get all pending invitations, optionally filtered by username.",
+            "params": {
+                "o:username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError",
+                "o:invitations": "$ref:InvitationInfoList"
             }
         },
         "Users.GetTokens": {
@@ -2189,6 +2232,16 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "users": "$ref:UserInfoList"
+            }
+        },
+        "Users.RemoveInvitation": {
+            "description": "Remove a pending invitation before it is redeemed.",
+            "params": {
+                "invitationId": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError"
             }
         },
         "Users.RemoveToken": {
@@ -2929,6 +2982,18 @@
                 "size": "Int"
             }
         },
+        "Users.InvitationAdded": {
+            "description": "Emitted when a new invitation is created. Delivered only to clients subscribed to Users with a currently valid Admin token; invitation metadata must not reach non-admin subscribers.",
+            "params": {
+                "invitation": "$ref:InvitationInfo"
+            }
+        },
+        "Users.InvitationRemoved": {
+            "description": "Emitted when an invitation is removed - explicitly, redeemed, or expired. Delivered only to clients subscribed to Users with a currently valid Admin token.",
+            "params": {
+                "invitationId": "Uuid"
+            }
+        },
         "Users.PushButtonAuthFinished": {
             "description": "Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings.",
             "params": {
@@ -3146,6 +3211,16 @@
         },
         "IntegrationPlugins": [
             "$ref:IntegrationPlugin"
+        ],
+        "InvitationInfo": {
+            "r:creationTime": "Uint",
+            "r:expiryTime": "Uint",
+            "r:id": "Uuid",
+            "r:o:tokenValidityDuration": "Variant",
+            "r:username": "String"
+        },
+        "InvitationInfoList": [
+            "$ref:InvitationInfo"
         ],
         "LogEntries": [
             "$ref:LogEntry"
@@ -3449,6 +3524,8 @@
             "r:creationTime": "Uint",
             "r:deviceName": "String",
             "r:id": "Uuid",
+            "r:o:expiryTime": "Uint",
+            "r:o:lastSeen": "Uint",
             "r:username": "String"
         },
         "TokenInfoList": [

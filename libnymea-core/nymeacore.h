@@ -86,7 +86,10 @@ public:
 
     static void restart(ShutdownReason reason = ShutdownReasonRestart);
 
-    void init(const QStringList &additionalInterfaces = QStringList(),
+    // Returns false if a prerequisite (currently: UserManager) failed to initialize.
+    // On false, no ServerManager is constructed and no JSON-RPC listener is started;
+    // the existing users database, if any, is left untouched for diagnosis.
+    bool init(const QStringList &additionalInterfaces = QStringList(),
               bool disableLogEngine = false);
     void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
     void scheduleFactoryReset();

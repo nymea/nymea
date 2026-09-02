@@ -81,6 +81,11 @@ void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
     emit dataAvailable(clientId, data);
 }
 
+bool MockTcpServer::isClientConnected(const QUuid &clientId) const
+{
+    return m_connectedClients.contains(clientId);
+}
+
 bool MockTcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
     Q_UNUSED(address)

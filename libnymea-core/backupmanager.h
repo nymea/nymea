@@ -33,6 +33,8 @@
 #include <QVariant>
 
 class QFileSystemWatcher;
+class QByteArray;
+class QNetworkRequest;
 
 class BackupFile
 {
@@ -89,6 +91,8 @@ public:
     void setSourceDirectory(const QString &sourceDirectory);
     void setDestinationDirectory(const QString &destinationDirectory);
     void setMaxBackups(int maxBackups);
+    void setInfluxBackupEnabled(bool influxBackupEnabled);
+    void setInfluxDatabaseConfiguration(const QString &host, const QString &databaseName, const QString &username, const QString &password);
 
     BackupFiles backupFiles(const QString &destinationDir, const QString &archivePrefix = "nymea-configuration") const;
     bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration", QString *archivePath = nullptr);
@@ -99,18 +103,41 @@ signals:
     void backupFilesChanged();
 
 private:
+    enum InfluxDatabaseState {
+        InfluxDatabaseStateExists,
+        InfluxDatabaseStateMissing,
+        InfluxDatabaseStateError
+    };
+
     void reevaluateAutomaticBackup();
     void triggerAutomaticBackup();
     qint64 automaticBackupIntervalMs() const;
     void updateBackupDestinationDirectoryWatcher();
     void emitBackupFilesChangedIfNeeded();
     void onBackupDestinationDirectoryChanged(const QString &path);
+    QString normalizedInfluxHost() const;
+    QString influxBackupHostArgument() const;
+    QString quotedInfluxDatabaseName() const;
+    void readInfluxDatabaseConfiguration(const QString &settingsDirectoryPath);
+    QNetworkRequest createInfluxQueryRequest(const QString &query) const;
+    bool executeInfluxQuery(const QNetworkRequest &request, QByteArray *data) const;
+    InfluxDatabaseState checkInfluxDatabaseState() const;
+    bool waitForInfluxDatabaseRemoved() const;
+    bool runInfluxdCommand(const QStringList &args, const QString &description) const;
+    bool createInfluxBackup(const QString &destinationPath) const;
+    bool dropInfluxDatabase() const;
+    bool restoreInfluxBackup(const QString &backupPath) const;
 
     bool m_automaticBackupEnabled = false;
     int m_automaticBackupInterval = 24;
     QString m_sourceDirectory;
     QString m_destinationDirectory;
     int m_maxBackups = 5;
+    bool m_influxBackupEnabled = false;
+    QString m_influxHost = "127.0.0.1";
+    QString m_influxDatabaseName = "nymea";
+    QString m_influxUsername;
+    QString m_influxPassword;
     QTimer *m_automaticBackupTimer = nullptr;
     QFileSystemWatcher *m_backupDestinationDirectoryWatcher = nullptr;
     BackupFiles m_backupFiles;

@@ -28,18 +28,43 @@
 
 #include <QDateTime>
 #include <QDir>
+#include <QEventLoop>
+#include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QSettings>
+#include <QScopedPointer>
+#include <QTemporaryDir>
+#include <QThread>
+#include <QTimer>
+#include <QUrl>
+#include <QUrlQuery>
 #include <QUuid>
 #include <algorithm>
 
 #include <limits>
+#include <sys/stat.h>
+#include <unistd.h>
 
 NYMEA_LOGGING_CATEGORY(dcBackup, "Backup")
 
 namespace {
+
+const char influxBackupMetadataDirectory[] = ".nymea-backup";
+const char influxBackupDirectory[] = ".nymea-backup/influxdb";
+const int influxQueryTimeoutMs = 10000;
+const int influxDatabaseRemovalRetries = 10;
+const int influxDatabaseRemovalRetryIntervalMs = 250;
 
 QDateTime parseBackupTimestamp(const QString &timestampString)
 {
@@ -83,6 +108,63 @@ bool validateBackupArchive(const QString &archivePath)
 {
     const int exitCode = QProcess::execute("tar", QStringList() << "-tzf" << archivePath);
     return exitCode == 0;
+}
+
+bool copyDirectoryContents(const QString &sourcePath, const QString &destinationPath)
+{
+    QDir sourceDirectory(sourcePath);
+    if (!sourceDirectory.exists()) {
+        qCWarning(dcBackup()) << "Source directory does not exist:" << sourcePath;
+        return false;
+    }
+
+    if (!QDir().mkpath(destinationPath)) {
+        qCWarning(dcBackup()) << "Failed to create staging directory:" << destinationPath;
+        return false;
+    }
+
+    const QFileInfoList entries = sourceDirectory.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    foreach (const QFileInfo &entry, entries) {
+        const QString targetPath = QDir(destinationPath).filePath(entry.fileName());
+        if (entry.isSymLink()) {
+            QFile::remove(targetPath);
+
+            const QByteArray sourcePathData = QFile::encodeName(entry.absoluteFilePath());
+            struct stat linkStat;
+            const int linkStatResult = lstat(sourcePathData.constData(), &linkStat);
+            const int linkTargetBufferSize = linkStatResult == 0 && linkStat.st_size > 0 ? static_cast<int>(linkStat.st_size) + 1 : 4096;
+            QByteArray linkTarget;
+            linkTarget.resize(linkTargetBufferSize);
+            const ssize_t linkTargetLength = readlink(sourcePathData.constData(), linkTarget.data(), static_cast<size_t>(linkTarget.size()));
+            if (linkTargetLength < 0) {
+                qCWarning(dcBackup()) << "Failed to read symbolic link target:" << entry.absoluteFilePath();
+                return false;
+            }
+            if (linkTargetLength >= linkTarget.size()) {
+                qCWarning(dcBackup()) << "Symbolic link target is too long to copy:" << entry.absoluteFilePath();
+                return false;
+            }
+
+            linkTarget.truncate(static_cast<int>(linkTargetLength));
+            const QByteArray targetPathData = QFile::encodeName(targetPath);
+            if (symlink(linkTarget.constData(), targetPathData.constData()) != 0) {
+                qCWarning(dcBackup()) << "Failed to create symbolic link in backup staging directory:" << targetPath;
+                return false;
+            }
+        } else if (entry.isDir()) {
+            if (!copyDirectoryContents(entry.absoluteFilePath(), targetPath))
+                return false;
+        } else {
+            QFile::remove(targetPath);
+            if (!QFile::copy(entry.absoluteFilePath(), targetPath)) {
+                qCWarning(dcBackup()) << "Failed to copy backup source file:" << entry.absoluteFilePath() << targetPath;
+                return false;
+            }
+            QFile::setPermissions(targetPath, entry.permissions());
+        }
+    }
+
+    return true;
 }
 
 } // namespace
@@ -212,6 +294,248 @@ void BackupManager::setMaxBackups(int maxBackups)
     reevaluateAutomaticBackup();
 }
 
+void BackupManager::setInfluxBackupEnabled(bool influxBackupEnabled)
+{
+    m_influxBackupEnabled = influxBackupEnabled;
+}
+
+void BackupManager::setInfluxDatabaseConfiguration(const QString &host, const QString &databaseName, const QString &username, const QString &password)
+{
+    m_influxHost = host.trimmed().isEmpty() ? QString("127.0.0.1") : host;
+    m_influxDatabaseName = databaseName.trimmed().isEmpty() ? QString("nymea") : databaseName;
+    m_influxUsername = username;
+    m_influxPassword = password;
+}
+
+QString BackupManager::normalizedInfluxHost() const
+{
+    if (m_influxHost.trimmed().isEmpty())
+        return "127.0.0.1";
+
+    QUrl url = QUrl::fromUserInput(m_influxHost);
+    if (url.isValid() && !url.host().isEmpty())
+        return url.host();
+
+    return m_influxHost;
+}
+
+QString BackupManager::influxBackupHostArgument() const
+{
+    const QString host = normalizedInfluxHost();
+    if (host.contains(':'))
+        return host;
+
+    return host + ":8088";
+}
+
+QString BackupManager::quotedInfluxDatabaseName() const
+{
+    QString databaseName = m_influxDatabaseName;
+    databaseName.replace("\\", "\\\\");
+    databaseName.replace("\"", "\\\"");
+    return "\"" + databaseName + "\"";
+}
+
+void BackupManager::readInfluxDatabaseConfiguration(const QString &settingsDirectoryPath)
+{
+    QSettings settings(QDir(settingsDirectoryPath).filePath("nymead.conf"), QSettings::IniFormat);
+    settings.beginGroup("Logs");
+    m_influxHost = settings.value("logDBHost", m_influxHost).toString();
+    m_influxDatabaseName = settings.value("logDBName", m_influxDatabaseName).toString();
+    m_influxUsername = settings.value("logDBUser", m_influxUsername).toString();
+    m_influxPassword = settings.value("logDBPassword", m_influxPassword).toString();
+    settings.endGroup();
+
+    if (m_influxHost.trimmed().isEmpty())
+        m_influxHost = "127.0.0.1";
+
+    if (m_influxDatabaseName.trimmed().isEmpty())
+        m_influxDatabaseName = "nymea";
+}
+
+QNetworkRequest BackupManager::createInfluxQueryRequest(const QString &query) const
+{
+    QUrl url;
+    url.setScheme("http");
+    url.setHost(normalizedInfluxHost());
+    url.setPort(8086);
+    url.setPath("/query");
+
+    QUrlQuery urlQuery;
+    urlQuery.addQueryItem("q", query);
+    url.setQuery(urlQuery);
+
+    QNetworkRequest request(url);
+    if (!m_influxUsername.isEmpty() || !m_influxPassword.isEmpty()) {
+        const QByteArray auth = QByteArray(m_influxUsername.toLatin1() + ':' + m_influxPassword.toLatin1()).toBase64(QByteArray::Base64Encoding | QByteArray::KeepTrailingEquals);
+        request.setRawHeader("Authorization", QString("Basic %1").arg(QString(auth)).toUtf8());
+    }
+
+    return request;
+}
+
+bool BackupManager::executeInfluxQuery(const QNetworkRequest &request, QByteArray *data) const
+{
+    QNetworkAccessManager networkAccessManager;
+    QNetworkReply *reply = networkAccessManager.get(request);
+
+    QEventLoop eventLoop;
+    bool timedOut = false;
+    QTimer timeoutTimer;
+    timeoutTimer.setSingleShot(true);
+    QObject::connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    QObject::connect(&timeoutTimer, &QTimer::timeout, [&eventLoop, reply, &timedOut]() {
+        timedOut = true;
+        reply->abort();
+        eventLoop.quit();
+    });
+    timeoutTimer.start(influxQueryTimeoutMs);
+    eventLoop.exec();
+    timeoutTimer.stop();
+
+    const QByteArray responseData = reply->readAll();
+    const QNetworkReply::NetworkError error = reply->error();
+    const int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    reply->deleteLater();
+
+    if (data)
+        *data = responseData;
+
+    if (timedOut) {
+        qCWarning(dcBackup()) << "InfluxDB query timed out after" << influxQueryTimeoutMs << "ms";
+        return false;
+    }
+
+    if (error != QNetworkReply::NoError || statusCode >= 400) {
+        qCWarning(dcBackup()) << "InfluxDB query failed" << error << statusCode << responseData;
+        return false;
+    }
+
+    return true;
+}
+
+BackupManager::InfluxDatabaseState BackupManager::checkInfluxDatabaseState() const
+{
+    QByteArray data;
+    if (!executeInfluxQuery(createInfluxQueryRequest("SHOW DATABASES"), &data))
+        return InfluxDatabaseStateError;
+
+    QJsonParseError parseError;
+    const QJsonDocument document = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !document.isObject()) {
+        qCWarning(dcBackup()) << "Unable to parse InfluxDB database list:" << parseError.errorString() << data;
+        return InfluxDatabaseStateError;
+    }
+
+    const QJsonArray results = document.object().value("results").toArray();
+    foreach (const QJsonValue &resultValue, results) {
+        const QJsonObject result = resultValue.toObject();
+        if (result.contains("error")) {
+            qCWarning(dcBackup()) << "InfluxDB database list query failed:" << result.value("error").toString();
+            return InfluxDatabaseStateError;
+        }
+
+        const QJsonArray series = result.value("series").toArray();
+        foreach (const QJsonValue &seriesValue, series) {
+            const QJsonArray values = seriesValue.toObject().value("values").toArray();
+            foreach (const QJsonValue &value, values) {
+                const QJsonArray databaseValue = value.toArray();
+                if (!databaseValue.isEmpty() && databaseValue.at(0).toString() == m_influxDatabaseName)
+                    return InfluxDatabaseStateExists;
+            }
+        }
+    }
+
+    return InfluxDatabaseStateMissing;
+}
+
+bool BackupManager::waitForInfluxDatabaseRemoved() const
+{
+    for (int i = 0; i < influxDatabaseRemovalRetries; ++i) {
+        const InfluxDatabaseState databaseState = checkInfluxDatabaseState();
+        if (databaseState == InfluxDatabaseStateMissing)
+            return true;
+
+        if (databaseState == InfluxDatabaseStateError)
+            return false;
+
+        QThread::msleep(influxDatabaseRemovalRetryIntervalMs);
+    }
+
+    qCWarning(dcBackup()) << "InfluxDB database still exists after drop:" << m_influxDatabaseName;
+    return false;
+}
+
+bool BackupManager::runInfluxdCommand(const QStringList &args, const QString &description) const
+{
+    QProcess process;
+    process.start("influxd", args);
+    if (!process.waitForStarted()) {
+        qCWarning(dcBackup()) << "Failed to start" << description << "command: influxd" << args.join(' ') << process.errorString();
+        return false;
+    }
+
+    if (!process.waitForFinished(-1)) {
+        qCWarning(dcBackup()) << description << "did not finish normally. Command: influxd" << args.join(' ') << process.errorString();
+        return false;
+    }
+
+    const QByteArray standardOutput = process.readAllStandardOutput();
+    const QByteArray standardError = process.readAllStandardError();
+    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
+        qCWarning(dcBackup()) << description << "failed with exit code" << process.exitCode() << "command: influxd" << args.join(' ');
+        if (!standardOutput.isEmpty())
+            qCWarning(dcBackup()) << description << "stdout:" << standardOutput;
+        if (!standardError.isEmpty())
+            qCWarning(dcBackup()) << description << "stderr:" << standardError;
+        return false;
+    }
+
+    if (!standardOutput.isEmpty())
+        qCDebug(dcBackup()) << description << "stdout:" << standardOutput;
+    if (!standardError.isEmpty())
+        qCDebug(dcBackup()) << description << "stderr:" << standardError;
+
+    return true;
+}
+
+bool BackupManager::createInfluxBackup(const QString &destinationPath) const
+{
+    if (!QDir().mkpath(destinationPath)) {
+        qCWarning(dcBackup()) << "Failed to create InfluxDB backup directory:" << destinationPath;
+        return false;
+    }
+
+    QStringList args;
+    args << "backup" << "-portable" << "-host" << influxBackupHostArgument()
+         << "-db" << m_influxDatabaseName << destinationPath;
+
+    qCInfo(dcBackup()) << "Creating InfluxDB backup for database" << m_influxDatabaseName << "in" << destinationPath;
+    return runInfluxdCommand(args, "Creating InfluxDB backup");
+}
+
+bool BackupManager::dropInfluxDatabase() const
+{
+    return executeInfluxQuery(createInfluxQueryRequest(QString("DROP DATABASE %1").arg(quotedInfluxDatabaseName())), nullptr);
+}
+
+bool BackupManager::restoreInfluxBackup(const QString &backupPath) const
+{
+    qCInfo(dcBackup()) << "Restoring InfluxDB backup for database" << m_influxDatabaseName << "from" << backupPath;
+
+    if (!dropInfluxDatabase())
+        return false;
+    if (!waitForInfluxDatabaseRemoved())
+        return false;
+
+    QStringList args;
+    args << "restore" << "-portable" << "-host" << influxBackupHostArgument()
+         << "-db" << m_influxDatabaseName
+         << backupPath;
+
+    return runInfluxdCommand(args, "Restoring InfluxDB backup");
+}
+
 BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QString &archivePrefix) const
 {
     BackupFiles backupFiles;
@@ -261,10 +585,36 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
     const QString archiveBaseName = QString("%1-%2-%3-%4.tar.gz").arg(archivePrefix, QString::fromLatin1(NYMEA_VERSION_STRING), timestamp, uniqueSuffix);
     const QString createdArchivePath = QDir(destinationDir).filePath(archiveBaseName);
 
+    QString archiveSourcePath = QDir(sourceDir).absolutePath();
+    QScopedPointer<QTemporaryDir> stagedBackupDirectory;
+    if (m_influxBackupEnabled) {
+        stagedBackupDirectory.reset(new QTemporaryDir(QDir::tempPath() + QDir::separator() + "nymea-backup-XXXXXX"));
+        if (!stagedBackupDirectory->isValid()) {
+            qCWarning(dcBackup()) << "Failed to create temporary backup staging directory.";
+            return false;
+        }
+
+        archiveSourcePath = stagedBackupDirectory->path();
+        if (!copyDirectoryContents(sourceDir, archiveSourcePath))
+            return false;
+
+        const InfluxDatabaseState databaseState = checkInfluxDatabaseState();
+        if (databaseState == InfluxDatabaseStateError) {
+            qCWarning(dcBackup()) << "Failed to create complete backup because InfluxDB database state could not be checked.";
+            return false;
+        }
+
+        if (databaseState == InfluxDatabaseStateMissing) {
+            qCInfo(dcBackup()) << "Skipping InfluxDB backup because database does not exist:" << m_influxDatabaseName;
+        } else if (!createInfluxBackup(QDir(archiveSourcePath).filePath(influxBackupDirectory))) {
+            qCWarning(dcBackup()) << "Failed to create complete backup because InfluxDB backup failed.";
+            return false;
+        }
+    }
+
     qCInfo(dcBackup()) << "Writing backup file" << createdArchivePath;
-    QString absSrc = QDir(sourceDir).absolutePath();
     QStringList args;
-    args << "-czf" << createdArchivePath << "-C" << absSrc << ".";
+    args << "-czf" << createdArchivePath << "-C" << archiveSourcePath << ".";
 
     int exitCode = QProcess::execute("tar", args);
     if (exitCode != 0) {
@@ -357,6 +707,30 @@ bool BackupManager::restoreBackup(const QString &fileName, const QString &destin
         qCWarning(dcBackup()) << "tar failed with exit code" << exitCode << "during restore. Command: tar" << args.join(' ');
         QDir(stagedDirectoryPath).removeRecursively();
         return false;
+    }
+
+    const QString stagedInfluxBackupPath = QDir(stagedTargetPath).filePath(influxBackupDirectory);
+    if (QFileInfo::exists(stagedInfluxBackupPath)) {
+        if (!QFileInfo(stagedInfluxBackupPath).isDir()) {
+            qCWarning(dcBackup()) << "Invalid InfluxDB backup path in archive:" << stagedInfluxBackupPath;
+            QDir(stagedDirectoryPath).removeRecursively();
+            return false;
+        }
+
+        readInfluxDatabaseConfiguration(stagedTargetPath);
+        if (!restoreInfluxBackup(stagedInfluxBackupPath)) {
+            qCWarning(dcBackup()) << "Failed to restore InfluxDB backup from archive:" << stagedInfluxBackupPath;
+            qCWarning(dcBackup()) << "Continuing restore without InfluxDB history.";
+            dropInfluxDatabase();
+            waitForInfluxDatabaseRemoved();
+        }
+
+        const QString stagedMetadataPath = QDir(stagedTargetPath).filePath(influxBackupMetadataDirectory);
+        if (!QDir(stagedMetadataPath).removeRecursively()) {
+            qCWarning(dcBackup()) << "Failed to remove backup metadata from staged restore:" << stagedMetadataPath;
+            QDir(stagedDirectoryPath).removeRecursively();
+            return false;
+        }
     }
 
     QFileInfo tgtInfo(destinationPath);

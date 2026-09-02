@@ -36,11 +36,12 @@
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, LogEngine *logEngine, QObject *parent) :
+ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, UserManager *userManager, LogEngine *logEngine, QObject *parent) :
     QObject{parent},
     m_thingManager{thingManager},
     m_jsonRpcServer{jsonRpcServer},
     m_serverManager{serverManager},
+    m_userManager{userManager},
     m_logEngine{logEngine}
 
 {
@@ -125,7 +126,7 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     qCDebug(dcExperiences()) << "Loaded experience plugin:" << loader.fileName();
     m_plugins.append(plugin);
     plugin->setParent(this);
-    plugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine);
+    plugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine, m_userManager);
 
     if (plugin->webServerResource()) {
         m_serverManager->registerWebServerResource(plugin->webServerResource());
@@ -137,7 +138,7 @@ void ExperienceManager::loadExperiencePlugin(ExperiencePlugin *experiencePlugin)
     qCDebug(dcExperiences()) << "Adding experience plugin:" << experiencePlugin;
     m_plugins.append(experiencePlugin);
     experiencePlugin->setParent(this);
-    experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine);
+    experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer, m_logEngine, m_userManager);
 
     if (experiencePlugin->webServerResource()) {
         m_serverManager->registerWebServerResource(experiencePlugin->webServerResource());

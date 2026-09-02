@@ -1083,11 +1083,14 @@ JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const J
     action.setParams(actionParams);
     if (!context.token().isEmpty()) {
         TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(context.token());
-        QString actorName = tokenInfo.username();
-        if (actorName.isEmpty()) {
-            actorName = tokenInfo.deviceName();
+        const QString username = tokenInfo.username();
+        if (!username.isEmpty()) {
+            const QString displayName = NymeaCore::instance()->userManager()->userInfo(username).displayName();
+            action.setActorUsername(username);
+            action.setActorDisplayName(!displayName.isEmpty() ? displayName : username);
+        } else {
+            action.setActorDisplayName(tokenInfo.deviceName());
         }
-        action.setActorName(actorName);
     }
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");

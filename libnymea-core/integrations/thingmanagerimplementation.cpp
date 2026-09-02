@@ -1456,8 +1456,15 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
                 {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
                 {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}
             };
-            if (!action.actorName().isEmpty()) {
-                values.insert("actorName", action.actorName());
+            if (!action.actorUsername().isEmpty()) {
+                values.insert("actorUsername", action.actorUsername());
+            }
+            if (!action.actorDisplayName().isEmpty()) {
+                values.insert("actorDisplayName", action.actorDisplayName());
+            }
+            const QString actorName = !action.actorUsername().isEmpty() ? action.actorUsername() : action.actorName();
+            if (!actorName.isEmpty()) {
+                values.insert("actorName", actorName);
             }
             if (!action.sourceName().isEmpty()) {
                 values.insert("sourceName", action.sourceName());

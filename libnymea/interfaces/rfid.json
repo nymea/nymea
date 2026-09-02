@@ -1,0 +1,50 @@
+{
+    "description": "Devices that read RFID/NFC tags. A reader emits tagDetected with the raw code. The RFID experience is the external authority and updates authorizedUsername/authorizedDisplayName/authorizedTagHash to reflect the current accepted identity. authorizedTagHash contains a hash, never the raw code. After deciding, the experience invokes tagAccepted or tagRejected to drive reader feedback (e.g. LED/beep). Devices may optionally provide a writable rfidEnrollmentActive state. Setting it to true arms the next scan for enrollment, which must not authorize a session; tagAccepted or tagRejected ends enrollment mode.",
+    "states": [
+        {
+            "name": "authorizedUsername",
+            "type": "QString",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "authorizedDisplayName",
+            "type": "QString",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "authorizedTagHash",
+            "type": "QString",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "rfidEnrollmentActive",
+            "type": "bool",
+            "writable": true,
+            "optional": true
+        }
+    ],
+    "events": [
+        {
+            "name": "tagDetected",
+            "params": [
+                {
+                    "name": "code",
+                    "type": "QString"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "tagAccepted",
+            "optional": true
+        },
+        {
+            "name": "tagRejected",
+            "optional": true
+        }
+    ]
+}

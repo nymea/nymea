@@ -1,3 +1,14 @@
+nymea (1.17.0) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * WIP: NetworkDeviceDiscovery: Improve network discovery speed for
+    larger ne…
+  * Add influxdb to backup
+  * Update usermanager and add RFID interface
+  * Introduce user invitation
+
+ -- jenkins <developer@nymea.io>  Wed, 02 Sep 2026 20:27:44 +0200
+
 nymea (1.16.0) resolute; urgency=medium
 
   [ Simon Stürz ]

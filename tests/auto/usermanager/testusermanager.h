@@ -91,6 +91,53 @@ private slots:
 
     void getTokens();
 
+    void tokenInfoExpiryAndLastSeenDefaultToInvalid();
+
+    void lastSeenMarkedOnceOnAuthenticateAndNotAgainOnRepeatedHello();
+
+    void activeDisconnectOnRemoveToken();
+    void activeDisconnectOnRemoveUser();
+
+    void getTokensExposesLastSeenAsEpochSecondsAndOmitsUnsetExpiryTime();
+
+    void createInvitationHappyPath();
+    void createInvitationForUnknownUserFails();
+    void createInvitationDurationValidation();
+
+    void getInvitationsListsAndFilters();
+    void removeInvitationRemovesRow();
+    void removeInvitationNotFoundFails();
+    void invitationsPurgesExpiredEntries();
+    void invitationsFilterExcludesExpiredRowWhenPurgeDeleteFails();
+
+    void redeemInvitationHappyPath();
+    void redeemInvitationSecondAttemptFails();
+    void redeemExpiredInvitationFailsAndRemovesRow();
+    void redeemInvitationRejectsMalformedTokenAndDeviceName();
+    void redeemedTokenExpiryMeasuredFromRedemptionNotCreation();
+
+    void tokenExpiryChecksRespectSimulatedTimeOverride();
+    void tokenFailurePathsNeverLogRawToken();
+
+    void removeUserCascadesInvitations();
+
+    void disabledInvitationsRejectAllManagementMethods();
+    void disablingInvitationsPurgesPendingRowsWithoutNotification();
+    void reenablingAfterDisabledStartupStartsEmptyButKeepsRegularTokens();
+    void environmentVariableFormsAllDisableInvitations();
+
+    void createInvitationOverJsonRpc();
+    void createInvitationOverJsonRpcDefaultsDuration();
+    void getInvitationsOverJsonRpc();
+    void removeInvitationOverJsonRpc();
+    void invitationMethodsRequireAdminScope();
+    void invitationNotificationsOnlyReachAdminSubscribers();
+
+    void helloExposesInvitationsAvailable();
+    void authenticateWithTokenHappyPath();
+    void authenticateWithTokenFailureShape();
+    void endToEndInvitationRedemptionThenActiveDisconnectOnRevoke();
+
     void removeToken();
 
     void unauthenticatedCallAfterTokenRemove();

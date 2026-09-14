@@ -26,11 +26,14 @@
 #define USERMANAGER_H
 
 #include "tokeninfo.h"
+#include "invitationinfo.h"
 #include "userinfo.h"
 #include "userinventoryitem.h"
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QTimer>
+#include <QSet>
 
 class QSqlQuery;
 
@@ -53,11 +56,31 @@ public:
         UserErrorInconsistantScopes,
         UserErrorInventoryItemNotFound,
         UserErrorDuplicateInventoryItem,
-        UserErrorInvalidInventoryItem
+        UserErrorInvalidInventoryItem,
+        UserErrorInvitationNotFound,
+        UserErrorInvalidInvitationDuration,
+        UserErrorInvitationsDisabled
     };
     Q_ENUM(UserError)
 
     explicit UserManager(const QString &dbName, QObject *parent = nullptr);
+
+    // True if the database could not be opened/migrated and existing user data was
+    // therefore left untouched instead of being rotated away. A UserManager in this state
+    // must not be used to serve any request.
+    bool initializationFailed() const;
+
+    // Called exactly once by NymeaCore::init() right after construction, resolved as
+    // !qEnvironmentVariableIsSet("NYMEA_DISABLE_INVITATIONS"). Not a constructor
+    // parameter: inserting one ahead of the existing (dbName, parent) signature would
+    // silently reinterpret every existing new UserManager(dbName, this) call's parent
+    // pointer as this bool instead (any non-null pointer converts to true), dropping
+    // parenting everywhere without a compiler error. Passing false immediately and
+    // transactionally purges every pending invitation with no notification; a purge
+    // failure sets initializationFailed() so startup aborts without ever starting a
+    // JSON-RPC listener, exactly like a failed DB migration.
+    void setInvitationsAvailable(bool available);
+    bool invitationsAvailable() const;
 
     bool initRequired() const;
     UserInfoList users() const;
@@ -83,10 +106,29 @@ public:
     UserInventoryItem findEnabledUserInventoryItem(const QString &type, const QString &payloadKey, const QVariant &payloadValue) const;
 
     UserError removeToken(const QUuid &tokenId);
+    // Diagnostic only: callers keep an already validated connection authenticated even if
+    // this returns false. Never pass the clear token value here, only its id.
+    bool markTokenSeen(const QUuid &tokenId, const QDateTime &timestamp);
     UserError addUserInventoryItem(const QString &username, const QString &type, const QString &displayName, const QVariantMap &payload, bool enabled = true);
     UserError updateUserInventoryItem(const QUuid &inventoryItemId, const QString &displayName, const QVariantMap &payload, bool enabled);
     UserError removeUserInventoryItem(const QUuid &inventoryItemId);
 
+    // validitySeconds and, when hasTokenValidity, tokenValiditySeconds must each be in
+    // 1..2592000 (30 days) or UserErrorInvalidInvitationDuration is returned. oneTimeToken
+    // and info are only populated on UserErrorNoError; the clear token is never stored,
+    // only its hash.
+    UserError createInvitation(const QString &username, uint validitySeconds,
+                               bool hasTokenValidity, uint tokenValiditySeconds,
+                               QByteArray &oneTimeToken, InvitationInfo &info);
+    // Lazily purges expired invitations before returning; empty username lists all.
+    UserError invitations(QList<InvitationInfo> &result, const QString &username = QString());
+    UserError removeInvitation(const QUuid &invitationId);
+    // Redeems a one-time invitation token, returning the new regular client token on
+    // success or an empty QByteArray on any failure (missing, malformed, already-used,
+    // expired, or a database error) - deliberately no distinguishable failure reasons,
+    // so this never provides a state oracle. Look-up, expiry check, invitation deletion
+    // and client-token insertion all happen in one SQLite transaction.
+    QByteArray redeemInvitation(const QByteArray &oneTimeToken, const QString &deviceName);
 
     bool verifyToken(const QByteArray &token);
 
@@ -106,18 +148,51 @@ signals:
 
     void userThingRestrictionsChanged(const nymeaserver::UserInfo &userInfo, const ThingId &thingId, bool accessGranted);
 
+    // Emitted for a token exactly once per revocation/expiry, only after the removal has
+    // committed. Live connections authenticated with this token must be disconnected;
+    // without this, a revoked client's notification stream would otherwise keep flowing
+    // until it disconnects on its own.
+    void tokenInvalidated(const QByteArray &token);
+
+    void invitationAdded(const nymeaserver::InvitationInfo &invitation);
+    void invitationRemoved(const QUuid &invitationId);
+
 private:
     bool initDB();
     void rotate(const QString &dbName);
     bool validateUsername(const QString &username) const;
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
+    // Stricter than validateToken()'s broad charset regex: requires the exact canonical
+    // padded standard-Base64 shape core itself mints (44 ASCII bytes, one trailing '=',
+    // decoding to exactly 32 bytes with an exact re-encode round trip).
+    bool isCanonicalInvitationToken(const QByteArray &token) const;
+    bool isValidInvitationDeviceName(const QString &deviceName) const;
     bool validateScopes(Types::PermissionScopes scopes) const;
     bool validateInventoryItem(const QString &type, const QVariantMap &payload) const;
     QByteArray serializeInventoryPayload(const QVariantMap &payload) const;
     QVariantMap deserializeInventoryPayload(const QByteArray &payload) const;
     bool enabledInventoryItemExists(const QString &type, const QString &payloadKey, const QVariant &payloadValue, const QUuid &ignoredInventoryItemId = QUuid()) const;
     UserInventoryItem inventoryItemFromQuery(const QSqlQuery &query) const;
+
+    // Authoritative UTC handling for tokens.expirydate/lastseen, kept separate from the
+    // existing timezone-less "yyyy-MM-dd hh:mm:ss" convention used by creationdate.
+    QDateTime parseStoredUtcDateTime(const QVariant &value) const;
+    QString formatUtcDateTimeForStorage(const QDateTime &value) const;
+    // The one authoritative answer to "is this token still valid right now": absent
+    // expirydate never expires; every other caller must go through this rather than
+    // comparing timestamps itself.
+    bool isTokenLogicallyExpired(const QVariant &expiryDateValue) const;
+
+    // Identifies every now-expired token, emits tokenInvalidated() at most once per
+    // token id (deduplicated across repeated purge attempts), and retries physical
+    // deletion for rows that failed to delete on a previous pass.
+    void purgeExpiredTokens();
+
+    // Deletes every now-expired invitation and emits invitationRemoved() once per row,
+    // only after its delete succeeds (no dedup needed: unlike tokens, an invitation has
+    // no live session to protect, so a retry next time is sufficient on delete failure).
+    void purgeExpiredInvitations();
 
     void dumpDBError(const QString &message);
 
@@ -126,8 +201,22 @@ private:
 private slots:
     void onPushButtonPressed();
 
+    // Purges now-expired tokens, then (re-)arms m_expiryTimer for the nearest remaining
+    // tokens.expirydate. Called after startup, after removeToken()/removeUser(), on the
+    // timer's own fire, and on TimeManager::dateTimeChanged (wall-clock corrections).
+    void rearmExpiryTimer();
+
 private:
     QSqlDatabase m_db;
+    bool m_hadUsersTableBeforeInit = false;
+    bool m_initializationFailed = false;
+    // Defaults to available: setInvitationsAvailable() is only called by NymeaCore::init(),
+    // so a standalone UserManager (as in isolated tests) is never gated.
+    bool m_invitationsAvailable = true;
+    QTimer *m_expiryTimer = nullptr;
+    // Token ids already reported via tokenInvalidated() while their physical deletion is
+    // still being retried, so a persistently failing delete never re-emits the signal.
+    QSet<QUuid> m_notifiedExpiredTokenIds;
     PushButtonDBusService *m_pushButtonDBusService = nullptr;
     int m_pushButtonTransactionIdCounter = 0;
     QPair<int, QString> m_pushButtonTransaction;

@@ -83,7 +83,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
 
     // Start the server
     qCDebug(dcTests()) << "Setting up nymea core instance";
-    NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
+    QVERIFY(NymeaCore::instance()->init(QStringList(), m_disableLogEngine));
 
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), &NymeaCore::initialized);
@@ -432,7 +432,7 @@ void NymeaTestBase::restartServer()
     qCDebug(dcTests()) << "Tearing down server instance";
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonRestart);
     qCDebug(dcTests()) << "Restarting server instance";
-    NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
+    QVERIFY(NymeaCore::instance()->init(QStringList(), m_disableLogEngine));
     QSignalSpy coreSpy(NymeaCore::instance(), &NymeaCore::initialized);
     coreSpy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();

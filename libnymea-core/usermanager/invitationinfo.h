@@ -22,8 +22,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TOKENINFO_H
-#define TOKENINFO_H
+#ifndef INVITATIONINFO_H
+#define INVITATIONINFO_H
 
 #include <QUuid>
 #include <QDateTime>
@@ -32,43 +32,41 @@
 
 namespace nymeaserver {
 
-class TokenInfo
+class InvitationInfo
 {
     Q_GADGET
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString username READ username)
     Q_PROPERTY(QDateTime creationTime READ creationTime)
-    Q_PROPERTY(QString deviceName READ deviceName)
-    // Invalid QDateTime means "never expires" / "not yet observed" respectively.
-    // USER true + no WRITE clause -> JsonHandler reflects these as "r:o:" (read-only,
-    // optional): an invalid QDateTime is omitted from JSON entirely rather than
-    // serialized as null/0.
-    Q_PROPERTY(QDateTime expiryTime READ expiryTime USER true)
-    Q_PROPERTY(QDateTime lastSeen READ lastSeen USER true)
+    // Invitation expiry is always set, unlike TokenInfo.expiryTime.
+    Q_PROPERTY(QDateTime expiryTime READ expiryTime)
+    // Invalid QVariant means the redeemed token never expires. Following the established
+    // State::minValue/maxValue idiom: a plain optional uint would always serialize (the
+    // generic JsonHandler "isUser() + empty" check only omits QString/QUuid/QDateTime
+    // specially; anything else only omits when the QVariant itself is invalid).
+    Q_PROPERTY(QVariant tokenValidityDuration READ tokenValidityDuration USER true)
 
 public:
-    TokenInfo();
-    TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName,
-              const QDateTime &expiryTime = QDateTime(), const QDateTime &lastSeen = QDateTime());
+    InvitationInfo();
+    InvitationInfo(const QUuid &id, const QString &username, const QDateTime &creationTime,
+                   const QDateTime &expiryTime, const QVariant &tokenValidityDuration = QVariant());
 
     QUuid id() const;
     QString username() const;
     QDateTime creationTime() const;
-    QString deviceName() const;
     QDateTime expiryTime() const;
-    QDateTime lastSeen() const;
+    QVariant tokenValidityDuration() const;
 
 private:
     QUuid m_id;
     QString m_username;
     QDateTime m_creationTime;
-    QString m_deviceName;
     QDateTime m_expiryTime;
-    QDateTime m_lastSeen;
+    QVariant m_tokenValidityDuration;
 };
 
 
-class TokenInfoList: public QList<TokenInfo>
+class InvitationInfoList: public QList<InvitationInfo>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -78,6 +76,6 @@ public:
 };
 }
 
-Q_DECLARE_METATYPE(nymeaserver::TokenInfo)
-Q_DECLARE_METATYPE(nymeaserver::TokenInfoList)
-#endif // TOKENINFO_H
+Q_DECLARE_METATYPE(nymeaserver::InvitationInfo)
+Q_DECLARE_METATYPE(nymeaserver::InvitationInfoList)
+#endif // INVITATIONINFO_H

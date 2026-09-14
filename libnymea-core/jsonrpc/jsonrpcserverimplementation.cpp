@@ -120,6 +120,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("initialSetupRequired", enumValueName(Bool));
     returns.insert("authenticationRequired", enumValueName(Bool));
     returns.insert("pushButtonAuthAvailable", enumValueName(Bool));
+    returns.insert("invitationsAvailable", enumValueName(Bool));
     returns.insert("o:experiences", QVariantList() << objectRef("Experience"));
     returns.insert("o:cacheHashes", QVariantList() << objectRef("CacheHash"));
     returns.insert("o:authenticated", enumValueName(Bool));
@@ -183,6 +184,20 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     registerMethod("Authenticate", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
+    description = "Redeem a one-time invitation token obtained out-of-band (e.g. from a QR code or shared link) "
+                  "for a regular client token, the same as Authenticate. Provide a device name as with Authenticate. "
+                  "Only available when protocol >= 10.3 and JSONRPC.Hello.invitationsAvailable is true. Every "
+                  "failure (invitations disabled, malformed input, or an unknown/already-used/expired token) "
+                  "returns only success=false; no reason is distinguishable.";
+    params.insert("token", enumValueName(String));
+    params.insert("deviceName", enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    returns.insert("o:token", enumValueName(String));
+    returns.insert("o:username", enumValueName(String));
+    returns.insert("o:scopes", flagRef<Types::PermissionScopes>());
+    registerMethod("AuthenticateWithToken", description, params, returns, Types::PermissionScopeNone);
+
+    params.clear(); returns.clear();
     description = "Authenticate a client to the api via Push Button method. "
                   "Provide a device name which allows the user to identify the client and revoke the "
                   "token in case the device is lost or stolen. If push button hardware is available, "
@@ -217,6 +232,13 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     registerNotification("PushButtonAuthFinished", description, params);
 
     connect(NymeaCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServerImplementation::onPushButtonAuthFinished);
+    // Queued: RemoveToken's own handler is synchronous and returns its reply through the
+    // same call stack that emits tokenInvalidated. A direct connection would disconnect
+    // the client before its own "success" reply is ever written. Queuing defers the
+    // disconnect to the next event loop iteration, after the current reply is sent.
+    connect(NymeaCore::instance()->userManager(), &UserManager::tokenInvalidated, this, &JsonRPCServerImplementation::onTokenInvalidated, Qt::QueuedConnection);
+    connect(NymeaCore::instance()->userManager(), &UserManager::invitationAdded, this, &JsonRPCServerImplementation::onInvitationAdded);
+    connect(NymeaCore::instance()->userManager(), &UserManager::invitationRemoved, this, &JsonRPCServerImplementation::onInvitationRemoved);
 
 
 
@@ -260,6 +282,9 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
     handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
+    // Startup-resolved policy, sampled once by NymeaCore::init(); a client requires
+    // protocol >= 10.3 and this to be explicitly true before ever attempting redemption.
+    handshake.insert("invitationsAvailable", NymeaCore::instance()->userManager()->invitationsAvailable());
     if (!m_experiences.isEmpty()) {
         QVariantList experiences;
         foreach (JsonHandler* handler, m_experiences.keys()) {
@@ -285,6 +310,7 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     }
 
     m_clientTokens[context.clientId()] = context.token();
+    markTokenSeenIfNewlyBound(context.clientId(), context.token());
 
     bool badToken = false;
     if (!context.token().isEmpty()) {
@@ -403,6 +429,46 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, 
     }
 
     m_clientTokens[context.clientId()] = token;
+    markTokenSeenIfNewlyBound(context.clientId(), token);
+
+    return createReply(ret);
+}
+
+JsonReply *JsonRPCServerImplementation::AuthenticateWithToken(const QVariantMap &params, const JsonContext &context)
+{
+    QByteArray oneTimeToken = params.value("token").toByteArray();
+    QString deviceName = params.value("deviceName").toString();
+
+    // redeemInvitation() collapses every failure (disabled, malformed, unknown, expired,
+    // already-used, or a DB error) into an empty QByteArray - never reveal which.
+    QByteArray token = NymeaCore::instance()->userManager()->redeemInvitation(oneTimeToken, deviceName);
+    QVariantMap ret;
+    ret.insert("success", !token.isEmpty());
+    if (!token.isEmpty()) {
+        ret.insert("token", token);
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        ret.insert("username", userInfo.username());
+        ret.insert("scopes", Types::scopesToStringList(userInfo.scopes()));
+    }
+
+    // Same lockdown behavior as repeated bad Hello tokens / failed Authenticate: a failed
+    // redemption while already locked down drops the connection.
+    if (m_connectionLockdownTimer.isActive() && token.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Dropping client because of repeated bad invitation token redemption.";
+        TransportInterface *interface = reinterpret_cast<TransportInterface*>(property("transportInterface").toLongLong());
+        interface->terminateClientConnection(context.clientId());
+    }
+
+    if (token.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+        m_connectionLockdownTimer.start();
+    }
+
+    // Bind before returning, exactly like Authenticate: otherwise the next authenticated
+    // request on this connection is treated as an illegal token change.
+    m_clientTokens[context.clientId()] = token;
+    markTokenSeenIfNewlyBound(context.clientId(), token);
 
     return createReply(ret);
 }
@@ -482,7 +548,8 @@ void JsonRPCServerImplementation::sendResponse(TransportInterface *interface, co
     }
 
     QByteArray data = QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -497,7 +564,8 @@ void JsonRPCServerImplementation::sendErrorResponse(TransportInterface *interfac
     errorResponse.insert("error", error);
 
     QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -509,7 +577,8 @@ void JsonRPCServerImplementation::sendUnauthorizedResponse(TransportInterface *i
     errorResponse.insert("error", error);
 
     QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Sending data:" << redactSensitiveFields(data);
     interface->sendData(clientId, data);
 }
 
@@ -532,7 +601,8 @@ void JsonRPCServerImplementation::setup()
 
 void JsonRPCServerImplementation::processData(const QUuid &clientId, const QByteArray &data)
 {
-    qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << redactSensitiveFields(data);
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
@@ -563,7 +633,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc()) << "Failed to parse JSON data" << data << ":" << error.errorString();
+        qCWarning(dcJsonRpc()) << "Failed to parse JSON data" << qUtf8Printable(redactSensitiveFields(data)) << ":" << error.errorString();
         sendErrorResponse(interface, clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
         return;
     }
@@ -573,7 +643,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     bool success;
     int commandId = message.value("id").toInt(&success);
     if (!success) {
-        qCWarning(dcJsonRpc()) << "Error parsing command. Missing \"id\":" << message;
+        qCWarning(dcJsonRpc()) << "Error parsing command. Missing \"id\":" << qUtf8Printable(redactSensitiveFields(QJsonDocument::fromVariant(message).toJson(QJsonDocument::Compact)));
         sendErrorResponse(interface, clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
@@ -594,7 +664,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         token = message.value("token").toByteArray();
     } else if (message.value("token").toByteArray() != token) {
         qCWarning(dcJsonRpc()) << "Client changed token without redoing the handshake.";
-        qCDebug(dcJsonRpc()) << "Old token:" << token << "new token:" << message.value("token").toByteArray();
+        // Deliberately does not log either token value, clear or otherwise.
         sendUnauthorizedResponse(interface, clientId, commandId, "Changing the user (token) requires a new handshake. Call JSONRPC.Hello.");
         interface->terminateClientConnection(clientId);
         qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
@@ -605,7 +675,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     // check if authentication is required for this transport
     if (interface->configuration().authenticationEnabled) {
         QStringList authExemptMethodsNoUser = {"JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
-        QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
+        QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.AuthenticateWithToken", "JSONRPC.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!authExemptMethodsNoUser.contains(methodString) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
@@ -661,7 +731,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     if (!validationResult.success()) {
         qCWarning(dcJsonRpc()) << "JSON RPC parameter verification failed for method" << targetNamespace + '.' + method;
         qCWarning(dcJsonRpc()) << validationResult.errorString() << "in" << validationResult.where();
-        qCWarning(dcJsonRpc()) << "Call params:" << qUtf8Printable(QJsonDocument::fromVariant(params).toJson());
+        qCWarning(dcJsonRpc()) << "Call params:" << qUtf8Printable(redactSensitiveFields(QJsonDocument::fromVariant(QVariantMap{{"params", params}}).toJson(QJsonDocument::Compact)));
         sendErrorResponse(interface, clientId, commandId, "Invalid params: " + validationResult.errorString() + " in " + validationResult.where());
         return;
     }
@@ -760,7 +830,8 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
         QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
 
         qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
-        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+        if (dcJsonRpcTraffic().isDebugEnabled())
+            qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
 
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
@@ -794,7 +865,8 @@ void JsonRPCServerImplementation::sendClientNotification(const QUuid &clientId, 
     }
 
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+    if (dcJsonRpcTraffic().isDebugEnabled())
+        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
     qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
     m_clientTransports.value(clientId)->sendData(clientId, data);
 }
@@ -847,7 +919,8 @@ void JsonRPCServerImplementation::sendClientNotification(const QVariantMap &para
         QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
 
         qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
-        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+        if (dcJsonRpcTraffic().isDebugEnabled())
+            qCDebug(dcJsonRpcTraffic()) << "Notification content:" << redactSensitiveFields(data);
 
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
@@ -925,6 +998,7 @@ void JsonRPCServerImplementation::onPushButtonAuthFinished(int transactionId, bo
     if (success) {
         params.insert("token", token);
         m_clientTokens[clientId] = token;
+        markTokenSeenIfNewlyBound(clientId, token);
     }
 
     emit PushButtonAuthFinished(clientId, params);
@@ -1111,6 +1185,7 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     m_clientBuffers.remove(clientId);
     m_clientLocales.remove(clientId);
     m_clientTokens.remove(clientId);
+    m_seenTokenIdsByClient.remove(clientId);
 
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
@@ -1119,6 +1194,125 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     if (m_newConnectionWaitTimers.contains(clientId)) {
         delete m_newConnectionWaitTimers.take(clientId);
     }
+}
+
+void JsonRPCServerImplementation::markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token)
+{
+    if (token.isEmpty())
+        return;
+
+    // Resolved through the same authoritative lookup used everywhere else: an
+    // invalid/unknown/expired token is never marked.
+    TokenInfo info = NymeaCore::instance()->userManager()->tokenInfo(token);
+    if (info.id().isNull())
+        return;
+
+    QSet<QUuid> &seenForClient = m_seenTokenIdsByClient[clientId];
+    if (seenForClient.contains(info.id()))
+        return;
+
+    QDateTime now = NymeaCore::instance()->timeManager()->currentDateTime().toUTC();
+    if (!NymeaCore::instance()->userManager()->markTokenSeen(info.id(), now)) {
+        qCWarning(dcJsonRpc()) << "Failed to update last-seen timestamp for token id" << info.id();
+    }
+    seenForClient.insert(info.id());
+}
+
+QByteArray JsonRPCServerImplementation::redactSensitiveFields(const QByteArray &data) const
+{
+    // Every field name that ever carries a bearer token or a plaintext password/secret,
+    // top-level or nested in "params": "token" (regular client tokens and one-time
+    // invitation tokens alike), "password" (CreateUser/Authenticate), "newPassword"
+    // (ChangePassword/ChangeUserPassword). Keep this list in sync with any new
+    // secret-bearing JSON-RPC param.
+    static const QStringList sensitiveFieldNames = {QStringLiteral("token"), QStringLiteral("password"), QStringLiteral("newPassword")};
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError || !doc.isObject()) {
+        // Can't structurally redact something that doesn't parse as a JSON object - never
+        // log it verbatim, a bearer token/password may still be present as a substring.
+        return QString("<unparseable data, %1 bytes>").arg(data.length()).toUtf8();
+    }
+
+    QVariantMap message = doc.object().toVariantMap();
+    for (const QString &fieldName : sensitiveFieldNames) {
+        if (message.contains(fieldName))
+            message.insert(fieldName, QStringLiteral("<redacted>"));
+    }
+
+    QVariantMap params = message.value("params").toMap();
+    bool paramsChanged = false;
+    for (const QString &fieldName : sensitiveFieldNames) {
+        if (params.contains(fieldName)) {
+            params.insert(fieldName, QStringLiteral("<redacted>"));
+            paramsChanged = true;
+        }
+    }
+    if (paramsChanged)
+        message.insert("params", params);
+
+    return QJsonDocument::fromVariant(message).toJson(QJsonDocument::Compact);
+}
+
+void JsonRPCServerImplementation::onTokenInvalidated(const QByteArray &token)
+{
+    // Snapshot first: terminateClientConnection() below triggers clientDisconnected(),
+    // which mutates m_clientTokens/m_clientTransports; iterating a live view would be unsafe.
+    const QList<QUuid> affectedClients = m_clientTokens.keys(token);
+    foreach (const QUuid &clientId, affectedClients) {
+        TransportInterface *interface = m_clientTransports.value(clientId, nullptr);
+        if (!interface)
+            continue;
+        qCWarning(dcJsonRpc()) << "Disconnecting client" << clientId << "because its token was revoked or expired.";
+        interface->terminateClientConnection(clientId);
+    }
+}
+
+QList<QUuid> JsonRPCServerImplementation::adminEligibleClientIds() const
+{
+    QList<QUuid> eligible;
+    for (auto it = m_clientTokens.constBegin(); it != m_clientTokens.constEnd(); ++it) {
+        const QUuid &clientId = it.key();
+
+        if (!m_clientNotifications.value(clientId).contains("Users"))
+            continue;
+
+        const QByteArray &token = it.value();
+        if (token.isEmpty())
+            continue;
+
+        // Resolved through the same authoritative validity path used for authenticated
+        // requests: an expired/revoked/unknown token yields a null id here already.
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+        if (tokenInfo.id().isNull())
+            continue;
+
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        if (userInfo.scopes().testFlag(Types::PermissionScopeAdmin))
+            eligible << clientId;
+    }
+    return eligible;
+}
+
+void JsonRPCServerImplementation::onInvitationAdded(const InvitationInfo &invitation)
+{
+    UsersHandler *usersHandler = qobject_cast<UsersHandler *>(m_handlers.value("Users"));
+    if (!usersHandler)
+        return;
+
+    foreach (const QUuid &clientId, adminEligibleClientIds())
+        usersHandler->notifyInvitationAdded(clientId, invitation);
+}
+
+void JsonRPCServerImplementation::onInvitationRemoved(const QUuid &invitationId)
+{
+    UsersHandler *usersHandler = qobject_cast<UsersHandler *>(m_handlers.value("Users"));
+    if (!usersHandler)
+        return;
+
+    foreach (const QUuid &clientId, adminEligibleClientIds())
+        usersHandler->notifyInvitationRemoved(clientId, invitationId);
 }
 
 }

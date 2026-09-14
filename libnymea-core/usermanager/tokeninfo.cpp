@@ -45,12 +45,16 @@ TokenInfo::TokenInfo()
 
 }
 
-/*! Constructs a new token info with the given \a id, \a username, \a creationTime and \a deviceName. */
-TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
+/*! Constructs a new token info with the given \a id, \a username, \a creationTime, \a deviceName,
+    optional \a expiryTime (invalid = never expires) and optional \a lastSeen (invalid = not yet observed). */
+TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName,
+                      const QDateTime &expiryTime, const QDateTime &lastSeen):
     m_id(id),
     m_username(username),
     m_creationTime(creationTime),
-    m_deviceName(deviceName)
+    m_deviceName(deviceName),
+    m_expiryTime(expiryTime),
+    m_lastSeen(lastSeen)
 {
 
 }
@@ -77,6 +81,19 @@ QDateTime TokenInfo::creationTime() const
 QString TokenInfo::deviceName() const
 {
     return m_deviceName;
+}
+
+/*! Returns the expiry time of this TokenInfo, or an invalid QDateTime if the token never expires. */
+QDateTime TokenInfo::expiryTime() const
+{
+    return m_expiryTime;
+}
+
+/*! Returns the UTC time this token was last accepted on a connection, or an invalid QDateTime
+    if it has not yet been observed. */
+QDateTime TokenInfo::lastSeen() const
+{
+    return m_lastSeen;
 }
 
 QVariant TokenInfoList::get(int index) const

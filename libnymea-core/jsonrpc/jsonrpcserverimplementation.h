@@ -28,11 +28,13 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
 #include "usermanager/userinfo.h"
+#include "usermanager/invitationinfo.h"
 #include "transportinterface.h"
 
 #include <QObject>
 #include <QVariantMap>
 #include <QString>
+#include <QSet>
 #include <QSslConfiguration>
 
 class Thing;
@@ -54,6 +56,7 @@ public:
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *AuthenticateWithToken(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 
@@ -75,6 +78,21 @@ private:
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
 
+    // Centralizes persistent-token last-seen marking for Hello, Authenticate and
+    // push-button completion. A no-op for an empty/invalid/expired token. Marks a given
+    // token id at most once per client connection, even across A->B->A token switches.
+    void markTokenSeenIfNewlyBound(const QUuid &clientId, const QByteArray &token);
+
+    // Masks "token"/"password"/"newPassword" values, both top-level and nested in
+    // "params" - see the field list at the top of the .cpp implementation, which must be
+    // kept in sync with any new secret-bearing JSON-RPC param. Data that doesn't parse as
+    // a JSON object is replaced with a safe length-only placeholder rather than returned
+    // verbatim, since it can't be structurally redacted but may still contain a secret
+    // substring. Traffic-logging callers should still guard with the relevant category's
+    // isDebugEnabled() first so the parse/reserialize cost is only paid when the log line
+    // would actually be emitted.
+    QByteArray redactSensitiveFields(const QByteArray &data) const;
+
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
 private slots:
@@ -94,6 +112,26 @@ private slots:
 
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
+    // Disconnects every live connection authenticated with a token that was just
+    // revoked or has logically expired. sendNotification() performs no token re-check,
+    // so without this a revoked client's notification stream keeps flowing until it
+    // disconnects on its own.
+    void onTokenInvalidated(const QByteArray &token);
+
+    // UsersHandler owns packing/emitting InvitationAdded/InvitationRemoved (so the
+    // notification keeps the "Users." namespace), but has no client-token/transport
+    // state of its own; these resolve the Admin-eligible recipients and drive one call
+    // to UsersHandler per eligible client.
+    void onInvitationAdded(const nymeaserver::InvitationInfo &invitation);
+    void onInvitationRemoved(const QUuid &invitationId);
+
+private:
+    // Clients currently subscribed to the Users namespace whose bound token resolves,
+    // through the same authoritative validity path used for authenticated requests, to a
+    // user with PermissionScopeAdmin. Unauthenticated, non-admin, expired/revoked, and
+    // authentication-disabled tokenless clients are never included even if subscribed.
+    QList<QUuid> adminEligibleClientIds() const;
+
 private:
     QVariantMap m_api;
     QHash<JsonHandler *, QString> m_experiences;
@@ -105,6 +143,9 @@ private:
     QHash<QUuid, QStringList> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
     QHash<QUuid, QByteArray> m_clientTokens;
+    // Token ids already marked as seen on each client connection, so repeated Hello
+    // and ordinary requests never issue a second UPDATE for the same (client, token).
+    QHash<QUuid, QSet<QUuid>> m_seenTokenIdsByClient;
     QHash<int, QUuid> m_pushButtonTransactions;
     QHash<QUuid, QTimer *> m_newConnectionWaitTimers;
 

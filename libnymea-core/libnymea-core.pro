@@ -134,6 +134,7 @@ HEADERS += nymeacore.h \
     usermanager/userinfo.h \
     usermanager/usermanager.h \
     usermanager/tokeninfo.h \
+    usermanager/invitationinfo.h \
     usermanager/pushbuttondbusservice.h \
     certificategenerator.h \
     hardwaremanagerimplementation.h \
@@ -241,6 +242,7 @@ SOURCES += nymeacore.cpp \
     usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \
     usermanager/tokeninfo.cpp \
+    usermanager/invitationinfo.cpp \
     usermanager/pushbuttondbusservice.cpp \
     certificategenerator.cpp \
     hardwaremanagerimplementation.cpp \

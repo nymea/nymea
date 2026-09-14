@@ -1,3 +1,16 @@
+nymea (1.17.0) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * WIP: NetworkDeviceDiscovery: Improve network discovery speed for
+    larger ne…
+  * Add influxdb to backup
+  * Update usermanager and add RFID interface
+  * Introduce user invitation
+  * Zigbee: Reenable TI backend for Qt6 based builds and keep it
+    optional
+
+ -- jenkins <developer@nymea.io>  Mon, 14 Sep 2026 13:36:34 +0200
+
 nymea (1.16.0) resolute; urgency=medium
 
   [ Simon Stürz ]

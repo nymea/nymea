@@ -274,7 +274,7 @@ void TestConfigurations::testBackupDestinationValidation()
     const QString configuredNestedBackupDirectoryPath = QDir(NymeaSettings::settingsPath()).filePath("backups-invalid");
     QDir(configuredNestedBackupDirectoryPath).removeRecursively();
 
-    QVariantMap params = loadBackupConfiguration();
+    QVariantMap params;
     params.insert("destinationDirectory", configuredNestedBackupDirectoryPath);
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidDestinationDir);

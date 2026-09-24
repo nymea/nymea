@@ -1,3 +1,10 @@
+nymea (1.16.1) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Thu, 24 Sep 2026 17:26:39 +0200
+
 nymea (1.16.0) resolute; urgency=medium
 
   [ Simon Stürz ]

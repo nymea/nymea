@@ -265,7 +265,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent)
     params.clear();
     returns.clear();
     description = "Set the backup configuration. The destination directory is the location where "
-                  "the archives will be saved, the maxCount is the number of backups which will be "
+                  "the archives will be saved and must be outside the configuration directory. "
+                  "The maxCount is the number of backups which will be "
                   "kept. If maxCount is 0, all backups will be kept. The autoBackupEnabled property controls "
                   "periodic configuration backups and autoBackupInterval defines the interval in hours.";
     params.insert("destinationDirectory", enumValueName(String));
@@ -793,6 +794,11 @@ JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &param
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
     }
 
+    if (!BackupManager::isBackupDestinationValid(configuration->path(), destinationDirectory)) {
+        qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination directory must be outside the configuration directory." << destinationDirectory;
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
+    }
+
     QDir destinationDir(destinationDirectory);
     if (!destinationDir.exists()) {
         // Try to make the directory
@@ -800,6 +806,12 @@ JsonReply *ConfigurationHandler::SetBackupConfiguration(const QVariantMap &param
             qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination " "directory does not exist and could not be created." << destinationDir;
             return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
         }
+    }
+
+    // Check again after creating the directory so canonical paths also catch symlinked parents.
+    if (!BackupManager::isBackupDestinationValid(configuration->path(), destinationDirectory)) {
+        qCWarning(dcJsonRpc()) << "Failed to set backup configuration. The destination directory must be outside the configuration directory." << destinationDir;
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidDestinationDir));
     }
 
     if (configuration->autoBackupEnabled() && !autoBackupEnabled) {

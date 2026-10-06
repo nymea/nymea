@@ -58,6 +58,7 @@ private slots:
     void getConfigurations();
     void testBackupFiles();
     void testCreateBackupUsesUniqueFileNames();
+    void testBackupDestinationValidation();
     void testBackupRetentionKeepsCreatedArchive();
     void testBackupConfigurationAutoBackupSettings();
     void testAutomaticBackup();
@@ -106,6 +107,7 @@ void TestConfigurations::initTestCase()
     }
 
     NymeaTestBase::initTestCase("*.debug=false\nApplication.debug=true\nTests.debug=true\nServerManager.debug=true");
+    NymeaCore::instance()->backupManager()->setInfluxBackupEnabled(false);
 
     ServerConfiguration config;
     foreach (const ServerConfiguration &existingConfig, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
@@ -257,6 +259,31 @@ void TestConfigurations::testCreateBackupUsesUniqueFileNames()
     QCOMPARE(backupFiles.count(), 2);
 }
 
+void TestConfigurations::testBackupDestinationValidation()
+{
+    QTemporaryDir sourceDirectory;
+    QVERIFY2(sourceDirectory.isValid(), "Could not create temporary source directory.");
+
+    const QString nestedBackupDirectoryPath = sourceDirectory.filePath("backups");
+    QVERIFY2(QDir().mkpath(nestedBackupDirectoryPath), "Could not create nested backup directory.");
+
+    BackupManager *backupManager = NymeaCore::instance()->backupManager();
+    QVERIFY(!BackupManager::isBackupDestinationValid(sourceDirectory.path(), sourceDirectory.path()));
+    QVERIFY(!BackupManager::isBackupDestinationValid(sourceDirectory.path(), nestedBackupDirectoryPath));
+    QVERIFY(!backupManager->createBackup(sourceDirectory.path(), nestedBackupDirectoryPath));
+
+    const QString configuredNestedBackupDirectoryPath = QDir(NymeaSettings::settingsPath()).filePath("backups-invalid");
+    QDir(configuredNestedBackupDirectoryPath).removeRecursively();
+
+    QVariantMap params;
+    params.insert("destinationDirectory", configuredNestedBackupDirectoryPath);
+    QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidDestinationDir);
+    QVERIFY(!QDir(configuredNestedBackupDirectoryPath).exists());
+
+    QDir(configuredNestedBackupDirectoryPath).removeRecursively();
+}
+
 void TestConfigurations::testConfigurationMigrationFromDefaultPath()
 {
     class EnvironmentGuard
@@ -309,6 +336,9 @@ void TestConfigurations::testConfigurationMigrationFromDefaultPath()
     qunsetenv("NYMEA_DEFAULT_CONFIG_PATH");
     QCOMPARE(NymeaSettings::defaultSettingsPath(), QString("/usr/share/nymea/defaults"));
     QCoreApplication::instance()->setOrganizationName("nymea-test");
+    qunsetenv("NYMEA_CONFIG_PATH");
+    QCOMPARE(NymeaSettings::storagePath(), NymeaSettings::settingsPath());
+    QCOMPARE(NymeaSettings::scriptsPath(), NymeaSettings::settingsPath() + "/scripts/");
 
     QTemporaryDir runtimeDirectory;
     QVERIFY2(runtimeDirectory.isValid(), "Could not create temporary runtime directory.");
@@ -318,6 +348,9 @@ void TestConfigurations::testConfigurationMigrationFromDefaultPath()
 
     qputenv("NYMEA_CONFIG_PATH", runtimeDirectory.path().toUtf8());
     qputenv("NYMEA_DEFAULT_CONFIG_PATH", defaultDirectory.path().toUtf8());
+    QCOMPARE(NymeaSettings::settingsPath(), runtimeDirectory.path());
+    QCOMPARE(NymeaSettings::storagePath(), runtimeDirectory.path());
+    QCOMPARE(NymeaSettings::scriptsPath(), runtimeDirectory.path() + "/scripts/");
 
     const QString runtimeConfigurationFile = runtimeDirectory.filePath("nymead.conf");
     const QString defaultConfigurationFile = defaultDirectory.filePath("nymead.conf");
@@ -657,6 +690,15 @@ void TestConfigurations::testRestoreBackupFile()
     QVariant response = injectAndWait("Configuration.SetBackupConfiguration", params);
     verifyConfigurationError(response);
 
+    const QString persistentDataDirectoryPath = QDir(NymeaSettings::storagePath()).filePath("test-persistent-data");
+    QDir(persistentDataDirectoryPath).removeRecursively();
+    QVERIFY2(QDir().mkpath(persistentDataDirectoryPath), "Could not create persistent data directory.");
+    const QString persistentDataFilePath = QDir(persistentDataDirectoryPath).filePath("data.txt");
+    QFile persistentDataFile(persistentDataFilePath);
+    QVERIFY2(persistentDataFile.open(QIODevice::WriteOnly | QIODevice::Text), "Could not create persistent data file.");
+    persistentDataFile.write("original persistent data\n");
+    persistentDataFile.close();
+
     const QString restoredServerName = QString("Restored server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
     params.clear();
     params.insert("serverName", restoredServerName);
@@ -670,6 +712,10 @@ void TestConfigurations::testRestoreBackupFile()
     QCOMPARE(backupFiles.count(), 1);
     const QString fileName = backupFiles.first().toMap().value("fileName").toString();
     QVERIFY2(!fileName.isEmpty(), "Created backup file name should not be empty.");
+
+    QVERIFY2(persistentDataFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate), "Could not modify persistent data file.");
+    persistentDataFile.write("changed persistent data\n");
+    persistentDataFile.close();
 
     const QString changedServerName = QString("Changed server %1").arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
     params.clear();
@@ -687,6 +733,10 @@ void TestConfigurations::testRestoreBackupFile()
     waitForServerRestart();
 
     QTRY_COMPARE_WITH_TIMEOUT(loadBasicConfiguration().value("serverName").toString(), restoredServerName, 5000);
+    QVERIFY2(persistentDataFile.open(QIODevice::ReadOnly | QIODevice::Text), "Could not read restored persistent data file.");
+    QCOMPARE(persistentDataFile.readAll(), QByteArray("original persistent data\n"));
+    persistentDataFile.close();
+    QVERIFY2(QDir(persistentDataDirectoryPath).removeRecursively(), "Could not remove restored persistent data directory.");
 }
 
 void TestConfigurations::testUploadAndRestoreBackup()

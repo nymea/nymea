@@ -60,11 +60,17 @@ LogEngine *ExperiencePlugin::logEngine()
     return m_logEngine;
 }
 
-void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine)
+nymeaserver::UserManager *ExperiencePlugin::userManager()
+{
+    return m_userManager;
+}
+
+void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer, LogEngine *logEngine, nymeaserver::UserManager *userManager)
 {
     m_thingManager = deviceManager;
     m_jsonRpcServer = jsonRPCServer;
     m_logEngine = logEngine;
+    m_userManager = userManager;
 
     init();
 }

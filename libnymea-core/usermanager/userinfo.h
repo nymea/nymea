@@ -45,6 +45,8 @@ public:
     UserInfo();
     UserInfo(const QString &username);
 
+    bool isValid() const;
+
     QString username() const;
     void setUsername(const QString &username);
 

@@ -821,7 +821,7 @@
             }
         },
         "Configuration.SetBackupConfiguration": {
-            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved, the maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept. The autoBackupEnabled property controls periodic configuration backups and autoBackupInterval defines the interval in hours.",
+            "description": "Set the backup configuration. The destination directory is the location where the archives will be saved and must be outside the configuration directory. The maxCount is the number of backups which will be kept. If maxCount is 0, all backups will be kept. The autoBackupEnabled property controls periodic configuration backups and autoBackupInterval defines the interval in hours.",
             "params": {
                 "autoBackupEnabled": "Bool",
                 "autoBackupInterval": "Int",

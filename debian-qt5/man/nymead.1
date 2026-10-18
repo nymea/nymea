@@ -95,7 +95,7 @@ authentication as they are intended to be used for automated testing only.
 Disable the influx DB log engine.
 .TP
 \fB\-c\fR, \fB\-\-configuration\fR, \fB<path>\fR
-Use the given path for storing configurations. This option overrides the
+Use the given path for storing configurations and persistent data. This option overrides the
 \fBNYMEA_CONFIG_PATH\fR environment variable.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
@@ -135,7 +135,7 @@ The plugins directory: \fI/usr/lib/<arch-triplet>/nymea/plugins/\fR
 .TP
 \fBNYMEA_CONFIG_PATH\fR
 Overrides the runtime configuration directory. This is the directory where
-nymead reads and writes its live configuration files. The
+nymead reads and writes its live configuration files and persistent data. The
 \fB\-\-configuration\fR option overrides this variable.
 .TP
 \fBNYMEA_DEFAULT_CONFIG_PATH\fR

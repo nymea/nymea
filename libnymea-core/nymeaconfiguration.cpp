@@ -95,7 +95,6 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
     }
 
     // Webserver
-    createDefaults = !m_settings->childGroups().contains("WebServer");
     if (m_settings->childGroups().contains("WebServer")) {
         m_settings->beginGroup("WebServer");
         if (m_settings->value("disabled").toBool()) {
@@ -105,38 +104,11 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
                 WebServerConfiguration config = readWebServerConfig(key);
                 m_webServerConfigs[config.id] = config;
             }
-        } else {
-            createDefaults = true;
         }
         m_settings->endGroup();
     }
-    if (createDefaults) {
-        qCWarning(dcConfiguration) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
-        WebServerConfiguration insecureConfig;
-        insecureConfig.id = "insecure";
-        insecureConfig.address = QHostAddress("0.0.0.0").toString();
-        insecureConfig.port = 80;
-        insecureConfig.sslEnabled = false;
-        insecureConfig.authenticationEnabled = false;
-        insecureConfig.publicFolder = defaultWebserverPublicFolderPath();
-        insecureConfig.restServerEnabled = false;
-        m_webServerConfigs[insecureConfig.id] = insecureConfig;
-        storeWebServerConfig(insecureConfig);
-
-        WebServerConfiguration secureConfig;
-        secureConfig.id = "secure";
-        secureConfig.address = QHostAddress("0.0.0.0").toString();
-        secureConfig.port = 443;
-        secureConfig.sslEnabled = true;
-        secureConfig.authenticationEnabled = false;
-        secureConfig.publicFolder = defaultWebserverPublicFolderPath();
-        secureConfig.restServerEnabled = false;
-        m_webServerConfigs[secureConfig.id] = secureConfig;
-        storeWebServerConfig(secureConfig);
-    }
 
     // WebSocket Server
-    createDefaults = !m_settings->childGroups().contains("WebSocketServer");
     if (m_settings->childGroups().contains("WebSocketServer")) {
         m_settings->beginGroup("WebSocketServer");
         if (m_settings->value("disabled").toBool()) {
@@ -146,25 +118,11 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
                 ServerConfiguration config = readServerConfig(key);
                 m_webSocketServerConfigs[config.id] = config;
             }
-        } else {
-            createDefaults = true;
         }
         m_settings->endGroup();
     }
-    if (createDefaults) {
-        qCWarning(dcConfiguration) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
-        ServerConfiguration config;
-        config.id = "default";
-        config.address = QHostAddress("0.0.0.0").toString();
-        config.port = 4444;
-        config.sslEnabled = true;
-        config.authenticationEnabled = true;
-        m_webSocketServerConfigs[config.id] = config;
-        storeServerConfig("WebSocketServer", config);
-    }
 
     // MQTT Server
-    createDefaults = !m_settings->childGroups().contains("MqttServer");
     if (m_settings->childGroups().contains("MqttServer")) {
         m_settings->beginGroup("MqttServer");
         if (m_settings->value("disabled").toBool()) {
@@ -174,21 +132,8 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
                 ServerConfiguration config = readServerConfig(key);
                 m_mqttServerConfigs[config.id] = config;
             }
-        } else {
-            createDefaults = true;
         }
         m_settings->endGroup();
-    }
-    if (createDefaults) {
-        qCWarning(dcConfiguration) << "No MQTT server configuration found. Generating default of 0.0.0.0:1883";
-        ServerConfiguration config;
-        config.id = "default";
-        config.address = QHostAddress("0.0.0.0").toString();
-        config.port = 1883;
-        config.sslEnabled = false;
-        config.authenticationEnabled = true;
-        m_mqttServerConfigs[config.id] = config;
-        storeServerConfig("MqttServer", config);
     }
 
     foreach (const QString &clientId, m_mqttPoliciesSettings->childGroups()) {
@@ -484,6 +429,22 @@ bool NymeaConfiguration::removeMqttPolicy(const QString &clientId)
     return true;
 }
 
+bool NymeaConfiguration::upnpEnabled() const
+{
+    m_settings->beginGroup("UPnP");
+    const bool enabled = m_settings->value("enabled", false).toBool();
+    m_settings->endGroup();
+    return enabled;
+}
+
+bool NymeaConfiguration::brennenstuhlEnabled() const
+{
+    m_settings->beginGroup("Radio433");
+    const bool enabled = m_settings->value("brennenstuhlEnabled", false).toBool();
+    m_settings->endGroup();
+    return enabled;
+}
+
 bool NymeaConfiguration::bluetoothServerEnabled() const
 {
     m_settings->beginGroup("BluetoothServer");
@@ -694,11 +655,6 @@ void NymeaConfiguration::setServerUuid(const QUuid &uuid)
     m_settings->endGroup();
 }
 
-QString NymeaConfiguration::defaultWebserverPublicFolderPath() const
-{
-    return "/usr/share/nymea-webinterface/public/";
-}
-
 void NymeaConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)
 {
     m_settings->beginGroup(group);
@@ -732,18 +688,6 @@ void NymeaConfiguration::deleteServerConfig(const QString &group, const QString 
     if (m_settings->childGroups().isEmpty()) {
         m_settings->setValue("disabled", true);
     }
-    m_settings->endGroup();
-}
-
-void NymeaConfiguration::storeWebServerConfig(const WebServerConfiguration &config)
-{
-    storeServerConfig("WebServer", config);
-
-    m_settings->beginGroup("WebServer");
-    m_settings->beginGroup(config.id);
-    m_settings->setValue("publicFolder", config.publicFolder);
-    m_settings->setValue("restServerEnabled", config.restServerEnabled);
-    m_settings->endGroup();
     m_settings->endGroup();
 }
 

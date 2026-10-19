@@ -60,6 +60,13 @@ void WebServerResource::setEnabled(bool enabled)
     emit enabledChanged(m_enabled);
 }
 
+bool WebServerResource::handleWebSocketUpgrade(QTcpSocket *socket, const HttpRequest &request)
+{
+    Q_UNUSED(socket)
+    Q_UNUSED(request)
+    return false;
+}
+
 HttpReply *WebServerResource::createFileReply(const QString fileName)
 {
     qCDebug(dcWebServer()) << "Create file reply for" << fileName;

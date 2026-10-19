@@ -64,7 +64,8 @@ function toggleWebsocketConnection() {
 
 
 function connectWebsocket() {
-    var urlString = "ws://" + window.location.hostname + ":2626";
+    var protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    var urlString = protocol + window.location.host + "/debug/ws";
     console.log("Connecting to: " + urlString);
     
     try {

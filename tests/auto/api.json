@@ -1,4 +1,4 @@
-10.0
+10.1
 {
     "enums": {
         "BasicType": [
@@ -3485,6 +3485,9 @@
             "id": "String",
             "port": "Uint",
             "publicFolder": "String",
+            "r:o:proxyPathPrefix": "String",
+            "r:o:proxyPort": "Uint",
+            "r:o:proxySslEnabled": "Bool",
             "sslEnabled": "Bool"
         },
         "WiredNetworkDevice": {

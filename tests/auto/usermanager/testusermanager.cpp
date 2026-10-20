@@ -33,6 +33,9 @@
 
 #include "../plugins/mock/extern-plugininfo.h"
 
+#include <QFileInfo>
+#include <QTemporaryDir>
+
 using namespace nymeaserver;
 
 TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
@@ -43,6 +46,23 @@ TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
 void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
+
+    // Exercise first startup before the core creates its own "users" connection.
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString databasePath = directory.path() + "/fresh/nested/user-db.sqlite";
+    {
+        UserManager userManager(databasePath);
+        QVERIFY(QFileInfo::exists(databasePath));
+        QVERIFY(userManager.initRequired());
+    }
+    QSqlDatabase::removeDatabase("users");
+    {
+        UserManager userManager(databasePath);
+        QVERIFY(userManager.initRequired());
+    }
+    QSqlDatabase::removeDatabase("users");
+
     NymeaTestBase::initTestCase("*.debug=false\n"
                                 "Application.debug=true\n"
                                 "Tests.debug=true\n"

@@ -57,6 +57,15 @@ private slots:
 void TestMqttBroker::initTestCase()
 {
     NymeaTestBase::initTestCase("*.debug=false\nnymea.mqtt*.debug=true\nMqtt.debug=true\nJsonRpc.debug=true");
+
+    QVERIFY(NymeaCore::instance()->configuration()->mqttServerConfigurations().isEmpty());
+    ServerConfiguration config;
+    config.id = "test-default";
+    config.address = "127.0.0.1";
+    config.port = 1883;
+    config.sslEnabled = false;
+    config.authenticationEnabled = true;
+    NymeaCore::instance()->configuration()->setMqttServerConfiguration(config);
 }
 
 void TestMqttBroker::testServerConfigurationAPI()
@@ -69,8 +78,8 @@ void TestMqttBroker::testServerConfigurationAPI()
     QVariant response = injectAndWait("Configuration.GetMqttServerConfigurations");
     QVariantMap responseParams = response.toMap().value("params").toMap();
     qCDebug(dcMqtt) << "RESP:" << response;
-    QVERIFY2(responseParams.value("mqttServerConfigurations").toList().count() == 1, "There should be one default MQTT server instance");
-    QVERIFY2(responseParams.value("mqttServerConfigurations").toList().first().toMap().value("port").toInt() == 1883, "Default MQTT port should be 1883");
+    QVERIFY2(responseParams.value("mqttServerConfigurations").toList().count() == 1, "There should be one explicitly configured MQTT server instance");
+    QVERIFY2(responseParams.value("mqttServerConfigurations").toList().first().toMap().value("port").toInt() == 1883, "Test MQTT port should be 1883");
 
     // Add a server
     QVariantMap params;

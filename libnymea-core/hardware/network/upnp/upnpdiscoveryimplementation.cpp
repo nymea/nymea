@@ -44,6 +44,7 @@
 
 #include "upnpdiscoveryimplementation.h"
 #include "upnpdiscoveryreplyimplementation.h"
+#include "servermanager.h"
 
 #include <QMetaObject>
 #include <QNetworkInterface>
@@ -97,7 +98,7 @@ QByteArray buildNotifyMessage(const QByteArray &location, const QByteArray &uuid
 }
 
 /*! Construct the hardware resource UpnpDiscoveryImplementation with the given \a parent. */
-UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, QObject *parent) :
+UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, ServerManager *serverManager, QObject *parent) :
     UpnpDiscovery(parent),
     m_networkAccessManager(networkAccessManager),
     m_configuration(configuration)
@@ -107,13 +108,23 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
     m_notificationTimer->setSingleShot(false);
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscoveryImplementation::notificationTimeout);
 
-    // FIXME Qt6: maybe we can use udev in order to detect network configuration changes, centralized,
-    // also available for integration plugins since there are some examples
+    m_webServerConfigurations = serverManager->runningWebServerConfigurations();
+    connect(serverManager, &ServerManager::webServersChanged, this, [this, serverManager]() {
+        const QList<WebServerConfiguration> configurations = serverManager->runningWebServerConfigurations();
+        if (configurations == m_webServerConfigurations) {
+            updateEnabled();
+            return;
+        }
 
-    // QNetworkConfigurationManager *configManager = new QNetworkConfigurationManager(this);
-    // connect(configManager, &QNetworkConfigurationManager::configurationAdded, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
-    // connect(configManager, &QNetworkConfigurationManager::configurationRemoved, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
-    // connect(configManager, &QNetworkConfigurationManager::configurationChanged, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+        // Withdraw the old endpoints before advertising the new listening endpoints.
+        if (m_enabled)
+            sendByeByeMessage();
+        m_webServerConfigurations = configurations;
+        const bool wasEnabled = m_enabled;
+        updateEnabled();
+        if (wasEnabled && m_enabled)
+            sendAliveMessage();
+    });
 
     m_available = true;
 
@@ -123,11 +134,7 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
 /*! Destruct this \l{UpnpDiscoveryImplementation} object. */
 UpnpDiscoveryImplementation::~UpnpDiscoveryImplementation()
 {
-    sendByeByeMessage();
-    if (m_socket) {
-        m_socket->waitForBytesWritten(1000);
-        m_socket->close();
-    }
+    disable();
 }
 
 UpnpDiscoveryReply *UpnpDiscoveryImplementation::discoverDevices(const QString &searchTarget, const QString &userAgent, const int &timeout)
@@ -164,6 +171,9 @@ void UpnpDiscoveryImplementation::requestDeviceInformation(const QNetworkRequest
     qCDebug(dcUpnp()) << "Requesting device information for" << networkRequest.url();
     QNetworkReply *replay = m_networkAccessManager->get(networkRequest);
     connect(replay, &QNetworkReply::finished, this, &UpnpDiscoveryImplementation::replyFinished);
+    connect(replay, &QObject::destroyed, this, [this, replay]() {
+        m_informationRequestList.remove(replay);
+    });
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
@@ -176,29 +186,51 @@ QByteArray UpnpDiscoveryImplementation::serverUuid() const
     return m_configuration->serverUuid().toString(QUuid::WithoutBraces).toUtf8();
 }
 
-bool UpnpDiscoveryImplementation::preferredWebServerConfiguration(WebServerConfiguration &config) const
+QList<QNetworkAddressEntry> UpnpDiscoveryImplementation::webServerAddresses(const WebServerConfiguration &config) const
 {
-    if (!m_configuration) {
-        return false;
-    }
+    QList<QNetworkAddressEntry> addresses;
+    const QHostAddress serverAddress(config.address);
+    if (config.port == 0 || serverAddress.isNull() || serverAddress.isLoopback() ||
+            (serverAddress.protocol() != QAbstractSocket::IPv4Protocol && serverAddress.protocol() != QAbstractSocket::AnyIPProtocol))
+        return addresses;
 
-    bool haveConfig = false;
-    foreach (const WebServerConfiguration &candidate, m_configuration->webServerConfigurations()) {
-        if (candidate.port == 0) {
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        if (!interface.flags().testFlag(QNetworkInterface::IsUp) || !interface.flags().testFlag(QNetworkInterface::IsRunning) ||
+                interface.flags().testFlag(QNetworkInterface::IsLoopBack))
             continue;
-        }
 
-        // We prefer unencrypted WebServers in this case. Most UPnP clients will bail out on our certificate...
-        // However, if there is none without encryption, still use one with, so that at least our own clients find it.
-        if (!haveConfig || (!candidate.sslEnabled && config.sslEnabled)) {
-            config = candidate;
-            haveConfig = true;
-            if (!config.sslEnabled) {
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol || entry.ip().isLoopback())
+                continue;
+            if (serverAddress == QHostAddress::Any || serverAddress == QHostAddress::AnyIPv4 || serverAddress == entry.ip())
+                addresses.append(entry);
+        }
+    }
+    return addresses;
+}
+
+bool UpnpDiscoveryImplementation::preferredWebServerConfiguration(WebServerConfiguration &config, const QHostAddress &localAddress) const
+{
+    bool haveConfig = false;
+    foreach (const WebServerConfiguration &candidate, m_webServerConfigurations) {
+        bool reachable = false;
+        foreach (const QNetworkAddressEntry &entry, webServerAddresses(candidate)) {
+            if (localAddress.isNull() || entry.ip() == localAddress) {
+                reachable = true;
                 break;
             }
         }
-    }
+        if (!reachable)
+            continue;
 
+        // Prefer HTTP, but retain HTTPS support for clients accepting our certificate.
+        if (!haveConfig || (!candidate.sslEnabled && config.sslEnabled)) {
+            config = candidate;
+            haveConfig = true;
+            if (!config.sslEnabled)
+                break;
+        }
+    }
     return haveConfig;
 }
 
@@ -212,31 +244,23 @@ QString UpnpDiscoveryImplementation::locationStringForHostAddress(const QHostAdd
 
 void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int port)
 {
-    QByteArray uuid = serverUuid();
-    WebServerConfiguration webServerConfig;
-    bool haveWebServerConfig = preferredWebServerConfiguration(webServerConfig);
-
-    if (!haveWebServerConfig) {
-        qCDebug(dcUpnp()) << "No matching WebServer configuration found. Discarding UPnP request! UPnP requires a plaintext webserver.";
+    if (!m_enabled || !m_socket)
         return;
-    }
-    if (webServerConfig.sslEnabled) {
-        qCDebug(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
-    }
 
-    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-            // check IPv4
-            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                // check subnet
-                if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
-                    const QByteArray location = locationStringForHostAddress(entry.ip(), webServerConfig).toUtf8();
+    const QByteArray uuid = serverUuid();
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol || entry.prefixLength() < 0 ||
+                    !host.isInSubnet(entry.ip(), entry.prefixLength()))
+                continue;
 
-                    qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);
-                    m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "upnp:rootdevice"), host, port);
-                    m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1"), host, port);
-                }
-            }
+            WebServerConfiguration config;
+            if (!preferredWebServerConfiguration(config, entry.ip()))
+                continue;
+
+            const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
+            m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "upnp:rootdevice"), host, port);
+            m_socket->writeDatagram(buildSearchResponseMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1"), host, port);
         }
     }
 }
@@ -262,19 +286,35 @@ bool UpnpDiscoveryImplementation::enabled() const
 
 void UpnpDiscoveryImplementation::setEnabled(bool enabled)
 {
-    if (m_enabled == enabled)
-        return;
-
-    qCDebug(dcUpnp()) << "Enabling UPnP server";
-    m_enabled = enabled;
-    emit enabledChanged(m_enabled);
-
+    m_requestedEnabled = enabled;
     if (enabled) {
-        enable();
+        // Also recheck reachability when LAN interfaces appear or disappear.
+        m_notificationTimer->start();
+    } else {
+        m_notificationTimer->stop();
+    }
+    updateEnabled();
+}
+
+void UpnpDiscoveryImplementation::updateEnabled()
+{
+    WebServerConfiguration config;
+    const bool haveWebServer = preferredWebServerConfiguration(config);
+    if (m_requestedEnabled && !haveWebServer) {
+        if (!m_warnedMissingWebServer) {
+            qCWarning(dcUpnp()) << "UPnP is enabled, but no LAN-reachable IPv4 web server is listening. UPnP will remain stopped until a web server is available.";
+            m_warnedMissingWebServer = true;
+        }
+    } else {
+        m_warnedMissingWebServer = false;
+    }
+
+    if (m_requestedEnabled && haveWebServer) {
+        if (!m_enabled)
+            enable();
     } else {
         disable();
     }
-
 }
 
 void UpnpDiscoveryImplementation::error(QAbstractSocket::SocketError error)
@@ -451,53 +491,37 @@ void UpnpDiscoveryImplementation::replyFinished()
 
 void UpnpDiscoveryImplementation::notificationTimeout()
 {
-    sendAliveMessage();
+    const bool wasEnabled = m_enabled;
+    updateEnabled();
+    if (wasEnabled && m_enabled)
+        sendAliveMessage();
 }
 
 void UpnpDiscoveryImplementation::sendByeByeMessage()
 {
-    if (!m_configuration) {
-        return;
-    }
-
-    QByteArray uuid = serverUuid();
-
-    foreach (const WebServerConfiguration &config, m_configuration->webServerConfigurations()) {
-        QHostAddress serverInterface = QHostAddress(config.address);
-
-        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-            foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-                    const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
-
-                    sendToMulticast(buildNotifyMessage(location, uuid, "upnp:rootdevice", "ssdp:byebye"));
-                    sendToMulticast(buildNotifyMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1", "ssdp:byebye"));
-                }
-            }
-        }
-    }
+    sendNotifications("ssdp:byebye");
 }
 
 void UpnpDiscoveryImplementation::sendAliveMessage()
 {
-    if (!m_configuration) {
+    sendNotifications("ssdp:alive");
+}
+
+void UpnpDiscoveryImplementation::sendNotifications(const QByteArray &notificationType)
+{
+    if (!m_socket)
         return;
-    }
 
-    QByteArray uuid = serverUuid();
+    const QByteArray uuid = serverUuid();
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            WebServerConfiguration config;
+            if (!preferredWebServerConfiguration(config, entry.ip()))
+                continue;
 
-    foreach (const WebServerConfiguration &config, m_configuration->webServerConfigurations()) {
-        QHostAddress serverInterface = QHostAddress(config.address);
-
-        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-            foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
-                    const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
-
-                    sendToMulticast(buildNotifyMessage(location, uuid, "upnp:rootdevice", "ssdp:alive"));
-                    sendToMulticast(buildNotifyMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1", "ssdp:alive"));
-                }
-            }
+            const QByteArray location = locationStringForHostAddress(entry.ip(), config).toUtf8();
+            sendToMulticast(buildNotifyMessage(location, uuid, "upnp:rootdevice", notificationType));
+            sendToMulticast(buildNotifyMessage(location, uuid, "urn:schemas-upnp-org:device:Basic:1", notificationType));
         }
     }
 }
@@ -520,15 +544,6 @@ void UpnpDiscoveryImplementation::discoverTimeout()
     m_discoverRequests.removeOne(discoveryRequest);
     delete discoveryRequest;
 }
-
-// void UpnpDiscoveryImplementation::networkConfigurationChanged(const QNetworkConfiguration &config)
-// {
-//     Q_UNUSED(config)
-//     if (m_enabled) {
-//         disable();
-//         enable();
-//     }
-// }
 
 bool UpnpDiscoveryImplementation::enable()
 {
@@ -574,12 +589,9 @@ bool UpnpDiscoveryImplementation::enable()
 #endif
     connect(m_socket, &QUdpSocket::readyRead, this, &UpnpDiscoveryImplementation::readData);
 
-    m_notificationTimer->start();
-
+    m_enabled = true;
+    emit enabledChanged(true);
     sendAliveMessage();
-    sendAliveMessage();
-
-    setEnabled(true);
 
     qCDebug(dcUpnp()) << "-->" << name() << "enabled successfully.";
 
@@ -588,18 +600,38 @@ bool UpnpDiscoveryImplementation::enable()
 
 bool UpnpDiscoveryImplementation::disable()
 {
-    if (!m_socket) {
-        return false;
+    const bool wasEnabled = m_enabled;
+    m_enabled = false;
+    if (m_socket) {
+        sendByeByeMessage();
+        m_socket->close();
+        delete m_socket;
+        m_socket = nullptr;
     }
-    sendByeByeMessage();
-    m_socket->waitForBytesWritten();
-    m_socket->close();
-    delete m_socket;
-    m_socket = nullptr;
 
-    m_notificationTimer->stop();
+    // Stop in-flight discovery work as well as the listener.
+    const QList<QNetworkReply *> informationReplies = m_informationRequestList.keys();
+    m_informationRequestList.clear();
+    foreach (QNetworkReply *reply, informationReplies) {
+        reply->disconnect(this);
+        reply->abort();
+        reply->deleteLater();
+    }
+    const QList<UpnpDiscoveryRequest *> requests = m_discoverRequests;
+    m_discoverRequests.clear();
+    foreach (UpnpDiscoveryRequest *request, requests) {
+        QPointer<UpnpDiscoveryReplyImplementation> reply = request->reply();
+        delete request;
+        if (reply) {
+            reply->setError(UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyErrorNotEnabled);
+            if (reply)
+                reply->setFinished();
+        }
+    }
 
-    setEnabled(false);
+    if (wasEnabled) {
+        emit enabledChanged(false);
+    }
     return true;
 }
 

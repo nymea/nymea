@@ -203,6 +203,10 @@ public:
     void updateMqttPolicy(const MqttPolicy &policy);
     bool removeMqttPolicy(const QString &clientId);
 
+    // Optional UDP resources (configured at startup)
+    bool upnpEnabled() const;
+    bool brennenstuhlEnabled() const;
+
     // Bluetooth
     bool bluetoothServerEnabled() const;
     void setBluetoothServerEnabled(bool enabled);
@@ -227,12 +231,9 @@ private:
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString &path);
 
-    QString defaultWebserverPublicFolderPath() const;
-
     void storeServerConfig(const QString &group, const ServerConfiguration &config);
     ServerConfiguration readServerConfig(const QString &id);
     void deleteServerConfig(const QString &group, const QString &id);
-    void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);
     void storeTunnelProxyServerConfig(const TunnelProxyServerConfiguration &config);
     TunnelProxyServerConfiguration readTunnelProxyServerConfig(const QString &id);

@@ -29,6 +29,8 @@
 #include "platform/platformzeroconfcontroller.h"
 
 #include "hardwaremanagerimplementation.h"
+#include "nymeaconfiguration.h"
+#include "servermanager.h"
 #include "hardware/plugintimermanagerimplementation.h"
 #include "hardware/network/upnp/upnpdiscoveryimplementation.h"
 #include "hardware/network/networkaccessmanagerimpl.h"
@@ -45,7 +47,7 @@
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, NymeaConfiguration *configuration, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, NymeaConfiguration *configuration, ServerManager *serverManager, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
     HardwareManager(parent),
     m_platform(platform)
 {
@@ -63,7 +65,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     m_networkManager = new NetworkAccessManagerImpl(m_networkAccessManager, this);
 
     // UPnP discovery
-    m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, configuration, this);
+    m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, configuration, serverManager, this);
 
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
@@ -78,15 +80,14 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     m_networkDeviceDiscovery = new NetworkDeviceDiscoveryImpl(this);
 
-    // Enable all the resources
+    // Enable resources, honoring opt-in settings for UDP discovery.
     setResourceEnabled(m_pluginTimerManager, true);
-    setResourceEnabled(m_radio433, true);
+    setResourceEnabled(m_radio433, configuration->brennenstuhlEnabled());
 
     if (m_networkManager->available())
         setResourceEnabled(m_networkManager, true);
 
-    if (m_upnpDiscovery->available())
-        setResourceEnabled(m_upnpDiscovery, true);
+    setResourceEnabled(m_upnpDiscovery, configuration->upnpEnabled());
 
     if (m_platform->zeroConfController()->available())
         setResourceEnabled(m_platform->zeroConfController(), true);
@@ -94,7 +95,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
 
-    m_mqttProvider = new MqttProviderImplementation(mqttBroker, this);
+    m_mqttProvider = new MqttProviderImplementation(serverManager->mqttBroker(), this);
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 }
 

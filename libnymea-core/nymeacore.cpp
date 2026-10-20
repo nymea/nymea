@@ -178,7 +178,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     m_modbusRtuManager = new ModbusRtuManager(m_serialPortMonitor, this);
 
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_configuration, m_serverManager->mqttBroker(), m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_configuration, m_serverManager, m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Log Engine";
     m_logEngine = new LogEngineInfluxDB(m_configuration->logDBHost(), m_configuration->logDBName(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);

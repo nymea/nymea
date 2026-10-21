@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
         configurations \
         debughandler \
+        factoryreset \
         integrations \
         ioconnections \
         jsonrpc \

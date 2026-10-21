@@ -158,12 +158,22 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
         m_settings->endGroup();
     }
 
-    // Write defaults for log settings
+    // Read before entering the group: the getters manage their own groups.
+    const QString dbName = logDBName();
+    const QString dbHost = logDBHost();
+    const QString dbUser = logDBUser();
+    const QString dbPassword = logDBPassword();
+
+    // Keep only overrides of the log defaults.
     m_settings->beginGroup("Logs");
-    m_settings->setValue("logDBName", logDBName());
-    m_settings->setValue("logDBHost", logDBHost());
-    m_settings->setValue("logDBUser", logDBUser());
-    m_settings->setValue("logDBPassword", logDBPassword());
+    if (dbName == "nymea")
+        m_settings->remove("logDBName");
+    if (dbHost == "127.0.0.1")
+        m_settings->remove("logDBHost");
+    if (dbUser.isEmpty())
+        m_settings->remove("logDBUser");
+    if (dbPassword.isEmpty())
+        m_settings->remove("logDBPassword");
     m_settings->endGroup();
 }
 
@@ -458,7 +468,10 @@ void NymeaConfiguration::setBluetoothServerEnabled(bool enabled)
     qCDebug(dcConfiguration()) << "Bluetooth server" << (enabled ? "enabled" : "disabled");
 
     m_settings->beginGroup("BluetoothServer");
-    m_settings->setValue("enabled", enabled);
+    if (enabled)
+        m_settings->setValue("enabled", enabled);
+    else
+        m_settings->remove("enabled");
     m_settings->endGroup();
 
     emit bluetoothServerEnabledChanged();
@@ -524,8 +537,14 @@ QString NymeaConfiguration::sslCertificateKey() const
 void NymeaConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
 {
     m_settings->beginGroup("SSL");
-    m_settings->setValue("certificate", sslCertificate);
-    m_settings->setValue("certificate-key", sslCertificateKey);
+    if (sslCertificate.isEmpty())
+        m_settings->remove("certificate");
+    else
+        m_settings->setValue("certificate", sslCertificate);
+    if (sslCertificateKey.isEmpty())
+        m_settings->remove("certificate-key");
+    else
+        m_settings->setValue("certificate-key", sslCertificateKey);
     m_settings->endGroup();
 }
 

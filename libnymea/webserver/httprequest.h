@@ -47,6 +47,7 @@ public:
 
     QByteArray rawHeader() const;
     QHash<QByteArray, QByteArray> rawHeaderList() const;
+    QByteArray rawHeaderValue(const QByteArray &key) const;
 
     RequestMethod method() const;
     QString methodString() const;
@@ -60,6 +61,7 @@ public:
     bool isValid() const;
     bool isComplete() const;
     bool hasPayload() const;
+    bool isWebSocketUpgrade() const;
 
     void appendData(const QByteArray &data);
 

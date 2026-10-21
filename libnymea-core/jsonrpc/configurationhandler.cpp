@@ -665,6 +665,11 @@ JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
     WebServerConfiguration config = unpack<WebServerConfiguration>(params.value("configuration").toMap());
+    // Deployment metadata is configured on disk, never through the API.
+    const WebServerConfiguration stored = NymeaCore::instance()->configuration()->webServerConfigurations().value(config.id);
+    config.proxyPort = stored.proxyPort;
+    config.proxySslEnabled = stored.proxySslEnabled;
+    config.proxyPathPrefix = stored.proxyPathPrefix;
 
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));

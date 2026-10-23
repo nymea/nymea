@@ -440,6 +440,14 @@ bool NymeaConfiguration::removeMqttPolicy(const QString &clientId)
     return true;
 }
 
+QString NymeaConfiguration::factoryResetScript() const
+{
+    m_settings->beginGroup("FactoryReset");
+    const QString script = m_settings->value("script").toString();
+    m_settings->endGroup();
+    return script;
+}
+
 bool NymeaConfiguration::upnpEnabled() const
 {
     m_settings->beginGroup("UPnP");

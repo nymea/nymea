@@ -1895,7 +1895,7 @@
             }
         },
         "System.FactoryReset": {
-            "description": "Reset nymea to factory defaults. Clients should warn the user before calling this method because all current configuration data will be lost, the server will restart immediately afterwards and it will come back up using the factory defaults if any are available.",
+            "description": "Initiate a factory reset. Clients should warn the user because all current configuration data will be lost. Success indicates initiation, not completion. A configured external reset may restart the service or reboot the device, and may terminate nymea before the response reaches the client. Response delivery does not guarantee reset completion.",
             "params": {
             },
             "permissionScope": "PermissionScopeAdmin",

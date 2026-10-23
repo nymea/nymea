@@ -32,10 +32,9 @@
     \note The WebSocketServer is only available for builds with Qt version greater than Qt 5.3.0!
 
     The websocket server provides a server for websocket clients based on
-    \l{http://tools.ietf.org/html/rfc6455}{Protocol Version 13}. The default
-    port for the websocket server is 4444, which is according to this
-    \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
-    officially free.
+    \l{http://tools.ietf.org/html/rfc6455}{Protocol Version 13}. WebSocket listeners
+    must be configured explicitly; none are created by default. The following
+    examples assume a listener configured on port 4444.
 
     The URL for the insecure websocket:
     \code ws://localhost:4444\endcode

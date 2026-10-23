@@ -26,6 +26,8 @@
 #include "nymeasettings.h"
 #include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
+#include "hardware/network/upnp/upnpdiscoveryimplementation.h"
+#include "hardware/radio433/radio433.h"
 
 #include <QDateTime>
 #include <QFile>
@@ -33,6 +35,8 @@
 #include <QHostAddress>
 #include <QRegularExpression>
 #include <QScopedPointer>
+#include <QSettings>
+#include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QTime>
@@ -56,6 +60,10 @@ protected slots:
 
 private slots:
     void getConfigurations();
+    void testListenerDefaults_data();
+    void testListenerDefaults();
+    void testOptionalDiscoveryDefaults();
+    void testUpnpWebServerLifecycle();
     void testBackupFiles();
     void testCreateBackupUsesUniqueFileNames();
     void testBackupDestinationValidation();
@@ -117,6 +125,7 @@ void TestConfigurations::initTestCase()
         }
     }
 
+    config.id = "test-websocket";
     config.address = "127.0.0.1";
     config.port = 4444;
     config.sslEnabled = true;
@@ -136,6 +145,257 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("tcpServerConfigurations"));
     QVERIFY(configurations.contains("webServerConfigurations"));
     QVERIFY(configurations.contains("webSocketServerConfigurations"));
+}
+
+void TestConfigurations::testListenerDefaults_data()
+{
+    QTest::addColumn<QString>("mode");
+    QTest::newRow("missing") << QString("missing");
+    QTest::newRow("empty") << QString("empty");
+    QTest::newRow("configured") << QString("configured");
+    QTest::newRow("disabled") << QString("disabled");
+}
+
+void TestConfigurations::testListenerDefaults()
+{
+    QFETCH(QString, mode);
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+
+    class EnvironmentGuard
+    {
+    public:
+        explicit EnvironmentGuard(const char *name) :
+            m_name(name), m_hadValue(qEnvironmentVariableIsSet(name)), m_value(qgetenv(name)) {}
+        ~EnvironmentGuard()
+        {
+            if (m_hadValue)
+                qputenv(m_name, m_value);
+            else
+                qunsetenv(m_name);
+        }
+    private:
+        const char *m_name;
+        bool m_hadValue;
+        QByteArray m_value;
+    };
+    EnvironmentGuard configGuard("NYMEA_CONFIG_PATH");
+    EnvironmentGuard defaultsGuard("NYMEA_DEFAULT_CONFIG_PATH");
+    qputenv("NYMEA_CONFIG_PATH", directory.path().toUtf8());
+    qputenv("NYMEA_DEFAULT_CONFIG_PATH", directory.filePath("defaults").toUtf8());
+
+    const QStringList groups = {"TcpServer", "WebServer", "WebSocketServer", "MqttServer"};
+    const bool haveEntries = mode == "configured" || mode == "disabled";
+    QSettings settings(directory.filePath("nymead.conf"), QSettings::IniFormat);
+    foreach (const QString &group, groups) {
+        if (mode == "missing")
+            continue;
+        settings.beginGroup(group);
+        settings.setValue("disabled", mode == "disabled");
+        if (haveEntries) {
+            settings.beginGroup("saved");
+            settings.setValue("address", "127.0.0.1");
+            settings.setValue("port", 12345);
+            settings.setValue("sslEnabled", true);
+            settings.setValue("authenticationEnabled", true);
+            settings.endGroup();
+        }
+        settings.endGroup();
+    }
+    if (haveEntries) {
+        settings.setValue("UPnP/enabled", mode == "configured");
+        settings.setValue("Radio433/brennenstuhlEnabled", mode == "configured");
+    }
+    settings.sync();
+
+    // Loading twice also verifies that optional defaults do not reappear on restart.
+    for (int load = 0; load < 2; ++load) {
+        NymeaConfiguration configuration;
+        const int optionalCount = mode == "configured" ? 1 : 0;
+        QCOMPARE(configuration.webServerConfigurations().count(), optionalCount);
+        QCOMPARE(configuration.webSocketServerConfigurations().count(), optionalCount);
+        QCOMPARE(configuration.mqttServerConfigurations().count(), optionalCount);
+        QCOMPARE(configuration.tcpServerConfigurations().count(), mode == "disabled" ? 0 : 1);
+        QCOMPARE(configuration.upnpEnabled(), mode == "configured");
+        QCOMPARE(configuration.brennenstuhlEnabled(), mode == "configured");
+        if (mode != "disabled") {
+            const ServerConfiguration tcp = configuration.tcpServerConfigurations().values().first();
+            QCOMPARE(tcp.port, mode == "configured" ? uint(12345) : uint(2222));
+            QVERIFY(tcp.sslEnabled);
+            QVERIFY(tcp.authenticationEnabled);
+        }
+        configuration.sync();
+    }
+    settings.sync();
+    foreach (const QString &group, groups) {
+        settings.beginGroup(group);
+        if (haveEntries) {
+            QVERIFY(settings.childGroups().contains("saved"));
+            QCOMPARE(settings.value("saved/port").toUInt(), uint(12345));
+        } else if (group != "TcpServer") {
+            QVERIFY(settings.childGroups().isEmpty());
+        }
+        if (mode == "disabled")
+            QVERIFY(settings.value("disabled").toBool());
+        settings.endGroup();
+    }
+}
+
+void TestConfigurations::testOptionalDiscoveryDefaults()
+{
+    HardwareManagerImplementation *hardware = NymeaCore::instance()->findChild<HardwareManagerImplementation *>();
+    QVERIFY(hardware);
+    QVERIFY(!hardware->upnpDiscovery()->enabled());
+    QVERIFY(hardware->upnpDiscovery()->findChildren<QUdpSocket *>().isEmpty());
+    QVERIFY(!hardware->radio433()->enabled());
+    foreach (QUdpSocket *socket, hardware->radio433()->findChildren<QUdpSocket *>())
+        QVERIFY(socket->state() != QAbstractSocket::BoundState);
+}
+
+void TestConfigurations::testUpnpWebServerLifecycle()
+{
+    NymeaConfiguration *configuration = NymeaCore::instance()->configuration();
+    ServerManager *servers = NymeaCore::instance()->serverManager();
+    QVERIFY(configuration->webServerConfigurations().isEmpty());
+
+    class WebServerCleanup
+    {
+    public:
+        explicit WebServerCleanup(NymeaConfiguration *configuration) : m_configuration(configuration) {}
+        ~WebServerCleanup()
+        {
+            const QStringList ids = {"upnp-test", "upnp-secure", "upnp-failed"};
+            foreach (const QString &id, ids) {
+                if (m_configuration->webServerConfigurations().contains(id))
+                    m_configuration->removeWebServerConfiguration(id);
+            }
+        }
+    private:
+        NymeaConfiguration *m_configuration;
+    } cleanup(configuration);
+
+    class TestableUpnpDiscovery : public UpnpDiscoveryImplementation
+    {
+    public:
+        using UpnpDiscoveryImplementation::UpnpDiscoveryImplementation;
+        using UpnpDiscoveryImplementation::setEnabled;
+
+        // Inspect announcements without broadcasting test discoveries to real devices.
+        void sendToMulticast(const QByteArray &data) override { messages.append(data); }
+        QList<QByteArray> messages;
+    };
+    QNetworkAccessManager network;
+    TestableUpnpDiscovery discovery(&network, configuration, servers);
+    QVERIFY(!discovery.enabled());
+    discovery.setEnabled(true);
+    QVERIFY(!discovery.enabled());
+    QVERIFY(discovery.findChildren<QUdpSocket *>().isEmpty());
+
+    // A listening loopback server does not satisfy the LAN dependency.
+    WebServerConfiguration web;
+    web.id = "upnp-test";
+    web.address = "127.0.0.1";
+    web.port = 0;
+    web.sslEnabled = false;
+    configuration->setWebServerConfiguration(web);
+    QCOMPARE(servers->runningWebServerConfigurations().count(), 1);
+    QVERIFY(servers->runningWebServerConfigurations().first().port != 0);
+    QVERIFY(!discovery.enabled());
+
+    bool haveLan = false;
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        if (!interface.flags().testFlag(QNetworkInterface::IsUp) || !interface.flags().testFlag(QNetworkInterface::IsRunning) ||
+                interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+            continue;
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && !entry.ip().isLoopback())
+                haveLan = true;
+        }
+    }
+    if (!haveLan)
+        QSKIP("The remaining lifecycle checks require an IPv4 LAN interface.");
+    QUdpSocket probe;
+    if (!probe.bind(QHostAddress::AnyIPv4, 1900, QUdpSocket::DontShareAddress) ||
+            !probe.joinMulticastGroup(QHostAddress("239.255.255.250")))
+        QSKIP("The remaining lifecycle checks require an available SSDP multicast socket on UDP 1900.");
+    web.address = "0.0.0.0";
+    configuration->setWebServerConfiguration(web);
+    // The probe still owns UDP 1900: a failed bind must not report UPnP enabled.
+    QVERIFY(!discovery.enabled());
+    QVERIFY(discovery.findChildren<QUdpSocket *>().isEmpty());
+    probe.close();
+    configuration->setWebServerConfiguration(web);
+    QVERIFY(discovery.enabled());
+    QCOMPARE(discovery.findChild<QUdpSocket *>()->localPort(), quint16(1900));
+    const uint httpPort = servers->runningWebServerConfigurations().first().port;
+
+    WebServerConfiguration secure = web;
+    secure.id = "upnp-secure";
+    secure.sslEnabled = true;
+    discovery.messages.clear();
+    configuration->setWebServerConfiguration(secure);
+    QCOMPARE(servers->runningWebServerConfigurations().count(), 2);
+    QVERIFY(!discovery.messages.isEmpty());
+    bool haveAlive = false;
+    foreach (const QByteArray &message, discovery.messages) {
+        if (!message.contains("NTS: ssdp:alive"))
+            continue;
+        haveAlive = true;
+        QVERIFY(message.contains("LOCATION: http://"));
+        QVERIFY(message.contains(":" + QByteArray::number(httpPort) + "/server.xml"));
+        QVERIFY(!message.contains("127.0.0.1"));
+    }
+    QVERIFY(haveAlive);
+
+    // Failed listeners must not count as available, including when another one works.
+    QTcpServer occupied;
+    QVERIFY(occupied.listen(QHostAddress::AnyIPv4, 0));
+    WebServerConfiguration failed = web;
+    failed.id = "upnp-failed";
+    failed.port = occupied.serverPort();
+    configuration->setWebServerConfiguration(failed);
+    QCOMPARE(servers->runningWebServerConfigurations().count(), 2);
+    QVERIFY(discovery.enabled());
+
+    QScopedPointer<UpnpDiscoveryReply> reply(discovery.discoverDevices("ssdp:all", QString(), 60000));
+    QVERIFY(!reply->isFinished());
+    discovery.messages.clear();
+    configuration->removeWebServerConfiguration(web.id);
+    QVERIFY(discovery.enabled());
+    QVERIFY(!reply->isFinished());
+    haveAlive = false;
+    foreach (const QByteArray &message, discovery.messages) {
+        if (!message.contains("NTS: ssdp:alive"))
+            continue;
+        haveAlive = true;
+        QVERIFY(message.contains("LOCATION: https://"));
+        QVERIFY(!message.contains(":" + QByteArray::number(failed.port) + "/server.xml"));
+    }
+    QVERIFY(haveAlive);
+    configuration->removeWebServerConfiguration(secure.id);
+    QVERIFY(servers->runningWebServerConfigurations().isEmpty());
+    QVERIFY(!discovery.enabled());
+    QVERIFY(discovery.findChildren<QUdpSocket *>().isEmpty());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), UpnpDiscoveryReply::UpnpDiscoveryReplyErrorNotEnabled);
+
+    // HTTPS-only deployments are supported, and recovery needs no UPnP setting change.
+    web.sslEnabled = true;
+    configuration->setWebServerConfiguration(web);
+    QVERIFY(discovery.enabled());
+    web.address = "127.0.0.1";
+    configuration->setWebServerConfiguration(web);
+    QVERIFY(!discovery.enabled());
+    web.address = "0.0.0.0";
+    configuration->setWebServerConfiguration(web);
+    QVERIFY(discovery.enabled());
+
+    discovery.setEnabled(false);
+    QVERIFY(!discovery.enabled());
+    QVERIFY(discovery.findChildren<QUdpSocket *>().isEmpty());
+    web.sslEnabled = false;
+    configuration->setWebServerConfiguration(web);
+    QVERIFY(!discovery.enabled());
 }
 
 void TestConfigurations::testBackupFiles()

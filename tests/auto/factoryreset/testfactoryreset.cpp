@@ -50,6 +50,9 @@ private slots:
         QPointer<NymeaCore> oldCore = NymeaCore::instance();
         QVERIFY(oldCore->requestFactoryReset());
         QVERIFY(oldCore); // Teardown remains queued.
+        // Factory reset deletes the dummy user and its token. Hello supports an
+        // anonymous handshake; retaining the old token triggers client lockdown.
+        m_apiToken.clear();
         waitForServerRestart();
         QVERIFY(oldCore.isNull());
         QTRY_VERIFY(!QFile::exists(marker));

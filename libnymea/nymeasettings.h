@@ -66,6 +66,8 @@ public:
     static QString defaultSettingsPath();
     static QString translationsPath();
     static QString scriptsPath();
+    // Kept as a separate API for consumers distinguishing settings from other persistent data.
+    // Both are stored below the configured settings directory.
     static QString storagePath();
     static QString cachePath();
 

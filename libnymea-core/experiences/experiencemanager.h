@@ -35,12 +35,13 @@ class ThingManager;
 namespace nymeaserver {
 
 class ServerManager;
+class UserManager;
 
 class ExperienceManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, LogEngine *logEngine = nullptr, QObject *parent = nullptr);
+    explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, ServerManager *serverManager, UserManager *userManager, LogEngine *logEngine = nullptr, QObject *parent = nullptr);
 
     QList<ExperiencePlugin *> plugins() const;
 
@@ -54,6 +55,7 @@ private:
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
     ServerManager *m_serverManager = nullptr;
+    UserManager *m_userManager = nullptr;
     LogEngine *m_logEngine = nullptr;
 
     QList<ExperiencePlugin *> m_plugins;

@@ -84,6 +84,13 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 {
     qCDebug(dcDebugServer()) << "Debug request for" << requestPath;
 
+    // Relative redirects retain any prefix stripped by a reverse proxy.
+    if (requestPath == "/debug") {
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::PermanentRedirect);
+        reply->setHeader(HttpReply::LocationHeader, "debug/");
+        return reply;
+    }
+
     // Check if debug page request
     if (requestPath == "/debug" || requestPath == "/debug/") {
         qCDebug(dcDebugServer()) << "Create debug interface page";
@@ -103,7 +110,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << syslogFileName << "file does not exist.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(syslogFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(syslogFileName)));
             return reply;
         }
 
@@ -111,7 +118,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read syslog file for debug download" << syslogFileName;
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(syslogFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(syslogFileName)));
             return reply;
         }
 
@@ -134,7 +141,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -142,7 +149,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -163,7 +170,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -171,7 +178,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -192,7 +199,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -200,7 +207,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -222,7 +229,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -230,7 +237,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -251,7 +258,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -259,7 +266,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -281,7 +288,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
             return reply;
         }
 
@@ -289,7 +296,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
             return reply;
         }
 
@@ -310,7 +317,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
             return reply;
         }
 
@@ -318,7 +325,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+            reply->setPayload(createErrorXmlDocument(requestPath, HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
             return reply;
         }
 
@@ -564,7 +571,11 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
     // If nothing matches, redirect to /debug page
     qCWarning(dcDebugServer()) << "Resource for debug interface not found. Redirecting to /debug";
     HttpReply *reply = HttpReply::createErrorReply(HttpReply::PermanentRedirect);
-    reply->setHeader(HttpReply::LocationHeader, "/debug");
+    const int depth = requestPath.mid(QString("/debug/").size()).count('/');
+    QString location;
+    for (int i = 0; i < depth; ++i)
+        location += "../";
+    reply->setHeader(HttpReply::LocationHeader, (location + "./").toUtf8());
     return reply;
 }
 
@@ -800,11 +811,11 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "stylesheet");
-    writer.writeAttribute("href", "/debug/styles.css");
+    writer.writeAttribute("href", "styles.css");
 
     writer.writeStartElement("script");
     writer.writeAttribute("type", "application/javascript");
-    writer.writeAttribute("src", "/debug/script.js");
+    writer.writeAttribute("src", "script.js");
     writer.writeCharacters("");
     writer.writeEndElement(); // script
 
@@ -813,72 +824,72 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
     writer.writeAttribute("sizes", "16x16");
-    writer.writeAttribute("href", "/debug/favicons/favicon-16x16.png");
+    writer.writeAttribute("href", "favicons/favicon-16x16.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
     writer.writeAttribute("sizes", "32x32");
-    writer.writeAttribute("href", "/debug/favicons/favicon-32x32.png");
+    writer.writeAttribute("href", "favicons/favicon-32x32.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
     writer.writeAttribute("sizes", "96x96");
-    writer.writeAttribute("href", "/debug/favicons/favicon-96x96.png");
+    writer.writeAttribute("href", "favicons/favicon-96x96.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
     writer.writeAttribute("sizes", "128x128");
-    writer.writeAttribute("href", "/debug/favicons/favicon-128.png");
+    writer.writeAttribute("href", "favicons/favicon-128.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
     writer.writeAttribute("sizes", "196x196");
-    writer.writeAttribute("href", "/debug/favicons/favicon-196x196.png");
+    writer.writeAttribute("href", "favicons/favicon-196x196.png");
 
     // Apple favicons
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "57x57");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-57x57.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-57x57.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "60x60");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-60x60.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-60x60.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "72x72");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-72x72.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-72x72.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "76x76");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-76x76.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-76x76.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "114x114");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-114x114.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-114x114.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "120x120");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-144x144.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-144x144.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "144x144");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-144x144.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-144x144.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "152x152");
-    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-152x152.png");
+    writer.writeAttribute("href", "favicons/apple-touch-icon-152x152.png");
 
     // Microsoft favicons
     writer.writeEmptyElement("meta");
@@ -891,23 +902,23 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("name", "msapplication-TileImage");
-    writer.writeAttribute("content", "/debug/favicons/mstile-144x144.png");
+    writer.writeAttribute("content", "favicons/mstile-144x144.png");
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("name", "msapplication-square70x70logo");
-    writer.writeAttribute("content", "/debug/favicons/mstile-70x70.png");
+    writer.writeAttribute("content", "favicons/mstile-70x70.png");
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("name", "msapplication-square150x150logo");
-    writer.writeAttribute("content", "/debug/favicons/mstile-150x150.png");
+    writer.writeAttribute("content", "favicons/mstile-150x150.png");
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("name", "msapplication-wide310x150logo");
-    writer.writeAttribute("content", "/debug/favicons/mstile-310x150.png");
+    writer.writeAttribute("content", "favicons/mstile-310x150.png");
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("name", "msapplication-square310x310logo");
-    writer.writeAttribute("content", "/debug/favicons/mstile-310x310.png");
+    writer.writeAttribute("content", "favicons/mstile-310x310.png");
 
     //: The header title of the debug server interface
     writer.writeTextElement("title", tr("Debug nymea"));
@@ -923,7 +934,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "header");
     writer.writeStartElement("h1");
     writer.writeEmptyElement("img");
-    writer.writeAttribute("src", "/debug/logo.svg");
+    writer.writeAttribute("src", "logo.svg");
     writer.writeAttribute("class", "nymea-main-logo");
 
     //: The main title of the debug server interface
@@ -986,7 +997,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "warning-image-area");
     writer.writeEmptyElement("img");
     writer.writeAttribute("class", "warning-image");
-    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeAttribute("src", "warning.svg");
     writer.writeEndElement(); // div warning image
     // Warning message
     writer.writeStartElement("div");
@@ -1193,7 +1204,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "warning-image-area");
     writer.writeEmptyElement("img");
     writer.writeAttribute("class", "warning-image");
-    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeAttribute("src", "warning.svg");
     writer.writeEndElement(); // div warning image
     // Warning message
     writer.writeStartElement("div");
@@ -1262,7 +1273,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    writer.writeAttribute("onClick", "downloadFile('/debug/syslog', 'syslog.log')");
+    writer.writeAttribute("onClick", "downloadFile('syslog', 'syslog.log')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1275,7 +1286,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    writer.writeAttribute("onClick", "showFile('/debug/syslog')");
+    writer.writeAttribute("onClick", "showFile('syslog')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1315,7 +1326,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName())) {
         writer.writeAttribute("disabled", "disabled");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/nymead', 'nymead.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/nymead', 'nymead.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1331,7 +1342,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName())) {
         writer.writeAttribute("disabled", "disabled");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/nymead')");
+    writer.writeAttribute("onClick", "showFile('settings/nymead')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1365,7 +1376,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName())) {
         writer.writeAttribute("disabled", "disabled");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/things', 'things.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/things', 'things.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1381,7 +1392,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/things')");
+    writer.writeAttribute("onClick", "showFile('settings/things')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1415,7 +1426,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/rules', 'rules.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/rules', 'rules.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1431,7 +1442,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/rules')");
+    writer.writeAttribute("onClick", "showFile('settings/rules')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1465,7 +1476,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/plugins', 'plugins.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/plugins', 'plugins.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1481,7 +1492,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/plugins')");
+    writer.writeAttribute("onClick", "showFile('settings/plugins')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1515,7 +1526,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/tags', 'tags.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/tags', 'tags.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1531,7 +1542,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/tags')");
+    writer.writeAttribute("onClick", "showFile('settings/tags')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1564,7 +1575,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/mqttpolicies', 'mqttpolicies.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/mqttpolicies', 'mqttpolicies.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1580,7 +1591,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/mqttpolicies')");
+    writer.writeAttribute("onClick", "showFile('settings/mqttpolicies')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1614,7 +1625,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/ioconnections', 'ioconnections.conf')");
+    writer.writeAttribute("onClick", "downloadFile('settings/ioconnections', 'ioconnections.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1630,7 +1641,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/ioconnections')");
+    writer.writeAttribute("onClick", "showFile('settings/ioconnections')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1781,7 +1792,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("onClick", "copyLogsContent()");
     writer.writeEmptyElement("img");
     writer.writeAttribute("class", "tool-image");
-    writer.writeAttribute("src", "/debug/edit-copy.svg");
+    writer.writeAttribute("src", "edit-copy.svg");
     writer.writeEndElement(); // button
 
     // Copy log content button
@@ -1792,7 +1803,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("onClick", "clearLogsContent()");
     writer.writeEmptyElement("img");
     writer.writeAttribute("class", "tool-image");
-    writer.writeAttribute("src", "/debug/delete.svg");
+    writer.writeAttribute("src", "delete.svg");
     writer.writeEndElement(); // button
 
     writer.writeEndElement(); // div log-buttons
@@ -1897,8 +1908,13 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     return data;
 }
 
-QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage)
+QByteArray DebugServerHandler::createErrorXmlDocument(const QString &requestPath, HttpReply::HttpStatusCode statusCode, const QString &errorMessage)
 {
+    QString relativeRoot;
+    const int depth = requestPath.mid(QString("/debug/").size()).count('/');
+    for (int i = 0; i < depth; ++i)
+        relativeRoot += "../";
+
     QByteArray data;
     QXmlStreamWriter writer(&data);
     writer.setAutoFormatting(true);
@@ -1916,7 +1932,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "stylesheet");
-    writer.writeAttribute("href", "/debug/styles.css");
+    writer.writeAttribute("href", relativeRoot + "styles.css");
 
     writer.writeTextElement("title", tr("Debug nymea"));
 
@@ -1946,7 +1962,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeAttribute("class", "warning-image-area");
     writer.writeEmptyElement("img");
     writer.writeAttribute("class", "warning-image");
-    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeAttribute("src", relativeRoot + "warning.svg");
     writer.writeEndElement(); // div warning image
     // Warning message
     writer.writeStartElement("div");

@@ -52,6 +52,7 @@
 #include "logginghandler.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
+#include "networkhandler.h"
 #include "tagshandler.h"
 #include "appdatahandler.h"
 #include "systemhandler.h"
@@ -521,6 +522,7 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new LoggingHandler(NymeaCore::instance()->logEngine(), this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(NymeaCore::instance()->networkManager(), this));
+    registerHandler(new NetworkHandler(this));
     registerHandler(new TagsHandler(this));
     registerHandler(new AppDataHandler(this));
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));

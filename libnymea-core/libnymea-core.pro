@@ -120,6 +120,7 @@ HEADERS += nymeacore.h \
     jsonrpc/logginghandler.h \
     jsonrpc/configurationhandler.h \
     jsonrpc/networkmanagerhandler.h \
+    jsonrpc/networkhandler.h \
     jsonrpc/tagshandler.h \
     jsonrpc/appdatahandler.h \
     jsonrpc/transfershandler.h \
@@ -226,6 +227,7 @@ SOURCES += nymeacore.cpp \
     jsonrpc/logginghandler.cpp \
     jsonrpc/configurationhandler.cpp \
     jsonrpc/networkmanagerhandler.cpp \
+    jsonrpc/networkhandler.cpp \
     jsonrpc/tagshandler.cpp \
     jsonrpc/appdatahandler.cpp \
     jsonrpc/transfershandler.cpp \

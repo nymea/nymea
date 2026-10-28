@@ -71,6 +71,15 @@ HttpReply *DebugServerHandler::processRequest(const HttpRequest &request)
     }
 }
 
+bool DebugServerHandler::handleWebSocketUpgrade(QTcpSocket *socket, const HttpRequest &request)
+{
+    if (!m_enabled || !m_websocketServer || request.url().path() != "/debug/ws")
+        return false;
+
+    m_websocketServer->handleConnection(socket);
+    return true;
+}
+
 HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery)
 {
     qCDebug(dcDebugServer()) << "Debug request for" << requestPath;
@@ -635,20 +644,27 @@ HttpReply *DebugServerHandler::processDebugFileRequest(const QString &requestPat
 void DebugServerHandler::onDebugServerEnabledChanged(bool enabled)
 {
     if (enabled) {
-        m_websocketServer = new QWebSocketServer("Debug server", QWebSocketServer::NonSecureMode, this);
-        connect(m_websocketServer, &QWebSocketServer::newConnection, this, &DebugServerHandler::onWebsocketClientConnected);
-        if (!m_websocketServer->listen(QHostAddress::Any, 2626)) {
-            qCWarning(dcDebugServer()) << "The debug server websocket interface could not listen on" << m_websocketServer->serverUrl().toString();
-            m_websocketServer->deleteLater();
-            m_websocketServer = nullptr;
-            return;
+        // Not listening on a dedicated port, the web server hands over upgrade requests for /debug/ws
+        if (!m_websocketServer) {
+            m_websocketServer = new QWebSocketServer("Debug server", QWebSocketServer::NonSecureMode, this);
+            connect(m_websocketServer, &QWebSocketServer::newConnection, this, &DebugServerHandler::onWebsocketClientConnected);
         }
-
-        qCDebug(dcDebugServer()) << "The debug server websocket interface has been started on" << m_websocketServer->serverUrl().toString();
     } else {
         if (m_websocketServer) {
-            m_websocketServer->close();
-            qCDebug(dcDebugServer()) << "The debug server websocket interface has been closed" << m_websocketServer->serverUrl().toString();
+            // The clients are owned by the websocket server and get deleted with it
+            QList<QWebSocket *> clients = s_websocketClients;
+            if (!clients.isEmpty()) {
+                nymeaUninstallMessageHandler(&logMessageHandler);
+                QMutexLocker locker(&s_loggingMutex);
+                s_websocketClients.clear();
+            }
+
+            foreach (QWebSocket *client, clients) {
+                disconnect(client, nullptr, this, nullptr);
+                client->close(QWebSocketProtocol::CloseCodeGoingAway);
+            }
+
+            qCDebug(dcDebugServer()) << "The debug server websocket interface has been closed";
             m_websocketServer->deleteLater();
             m_websocketServer = nullptr;
         }

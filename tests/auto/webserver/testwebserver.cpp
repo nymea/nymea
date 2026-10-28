@@ -26,9 +26,11 @@
 #include "nymeacore.h"
 
 #include <webserver/httpreply.h>
+#include <loggingcategories.h>
 
 #include <QXmlReader>
 #include <QRegularExpression>
+#include <QWebSocket>
 
 using namespace nymeaserver;
 
@@ -61,6 +63,16 @@ private slots:
 
     void getDebugServer_data();
     void getDebugServer();
+
+    void splitHeaderRequest();
+
+    void debugServerWebSocket_data();
+    void debugServerWebSocket();
+
+    void debugServerWebSocketLogs();
+
+    void rejectedWebSocketUpgrade_data();
+    void rejectedWebSocketUpgrade();
 
 public slots:
     void onSslErrors(const QList<QSslError> &errors) {
@@ -627,6 +639,166 @@ void TestWebserver::getDebugServer()
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
     QCOMPARE(statusCode, expectedStatusCode);
+}
+
+void TestWebserver::splitHeaderRequest()
+{
+    QSslSocket *socket = new QSslSocket(this);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
+    socket->connectToHostEncrypted("127.0.0.1", 3333);
+    QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
+    QVERIFY2(encryptedSpy.wait(), "could not created encrypte webserver connection.");
+
+    QSignalSpy clientSpy(socket, &QSslSocket::readyRead);
+
+    // A GET header arriving in multiple packages must be processed once complete
+    socket->write("GET /server.xml HTTP/1.1\r\nUser-Agent: webser");
+    QVERIFY(socket->waitForBytesWritten(500));
+    QVERIFY2(!clientSpy.wait(200), "webserver responded to an incomplete header");
+
+    socket->write("ver test\r\n\r\n");
+    QVERIFY(clientSpy.wait());
+
+    QByteArray data = socket->readAll();
+    QVERIFY2(data.startsWith("HTTP/1.1 200"), data.constData());
+
+    socket->close();
+    socket->deleteLater();
+}
+
+void TestWebserver::debugServerWebSocket_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("serverEnabled");
+    QTest::addColumn<bool>("connected");
+
+    QTest::newRow("/debug/ws | enabled | connected") << "/debug/ws" << true << true;
+    QTest::newRow("/debug/ws | disabled | rejected") << "/debug/ws" << false << false;
+    QTest::newRow("/debug/foo | enabled | rejected") << "/debug/foo" << true << false;
+    QTest::newRow("/foo | enabled | rejected") << "/foo" << true << false;
+}
+
+void TestWebserver::debugServerWebSocket()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, serverEnabled);
+    QFETCH(bool, connected);
+
+    QVariantMap params;
+    params.insert("enabled", serverEnabled);
+    QVariant response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyError(response, "configurationError", "ConfigurationErrorNoError");
+
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, socket, [socket](const QList<QSslError> &) { socket->ignoreSslErrors(); });
+
+    QSignalSpy connectedSpy(socket, &QWebSocket::connected);
+    QSignalSpy disconnectedSpy(socket, &QWebSocket::disconnected);
+    socket->open(QUrl("wss://localhost:3333" + path));
+
+    if (connected) {
+        QVERIFY(connectedSpy.wait());
+    } else {
+        QVERIFY(disconnectedSpy.wait());
+        QCOMPARE(connectedSpy.count(), 0);
+    }
+
+    socket->close();
+    socket->deleteLater();
+}
+
+void TestWebserver::debugServerWebSocketLogs()
+{
+    QVariantMap params;
+    params.insert("enabled", true);
+    QVariant response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyError(response, "configurationError", "ConfigurationErrorNoError");
+
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, socket, [socket](const QList<QSslError> &) { socket->ignoreSslErrors(); });
+
+    QSignalSpy connectedSpy(socket, &QWebSocket::connected);
+    socket->open(QUrl("wss://localhost:3333/debug/ws"));
+    QVERIFY(connectedSpy.wait());
+
+    // The nymea handler chain is installed by nymead, not by the test runner
+    QtMessageHandler testMessageHandler = qInstallMessageHandler(nullptr);
+    initLogging(QString(), false);
+
+    QSignalSpy messageSpy(socket, &QWebSocket::textMessageReceived);
+    QString token = QUuid::createUuid().toString();
+    qCWarning(dcTests()) << "Debug websocket test message" << token;
+    qInstallMessageHandler(testMessageHandler);
+
+    auto received = [&messageSpy, &token]() {
+        for (int i = 0; i < messageSpy.count(); i++) {
+            if (messageSpy.at(i).first().toString().contains(token))
+                return true;
+        }
+        return false;
+    };
+    QTRY_VERIFY_WITH_TIMEOUT(received(), 2000);
+
+    // Disabling the debug server closes the live log clients
+    QSignalSpy disconnectedSpy(socket, &QWebSocket::disconnected);
+    params.insert("enabled", false);
+    response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyError(response, "configurationError", "ConfigurationErrorNoError");
+    if (disconnectedSpy.isEmpty())
+        QVERIFY(disconnectedSpy.wait());
+
+    socket->deleteLater();
+}
+
+void TestWebserver::rejectedWebSocketUpgrade_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("serverEnabled");
+
+    QTest::newRow("/debug/ws | disabled") << "/debug/ws" << false;
+    QTest::newRow("/debug/foo | enabled") << "/debug/foo" << true;
+    QTest::newRow("/foo | enabled") << "/foo" << true;
+}
+
+void TestWebserver::rejectedWebSocketUpgrade()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, serverEnabled);
+
+    QVariantMap params;
+    params.insert("enabled", serverEnabled);
+    QVariant response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyError(response, "configurationError", "ConfigurationErrorNoError");
+
+    QSslSocket *socket = new QSslSocket(this);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
+    socket->connectToHostEncrypted("127.0.0.1", 3333);
+    QSignalSpy encryptedSpy(socket, &QSslSocket::encrypted);
+    QVERIFY2(encryptedSpy.wait(), "could not created encrypte webserver connection.");
+
+    QSignalSpy disconnectedSpy(socket, &QSslSocket::disconnected);
+
+    QByteArray request;
+    request.append("GET " + path.toUtf8() + " HTTP/1.1\r\n");
+    request.append("Host: 127.0.0.1:3333\r\n");
+    request.append("User-Agent: webserver test\r\n");
+    request.append("Upgrade: websocket\r\n");
+    request.append("Connection: Upgrade\r\n");
+    request.append("Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n");
+    request.append("Sec-WebSocket-Version: 13\r\n");
+    request.append("\r\n");
+    socket->write(request);
+
+    // The server must respond and close the connection, independent of the client behavior
+    if (disconnectedSpy.isEmpty())
+        QVERIFY2(disconnectedSpy.wait(), "webserver did not close the rejected upgrade connection");
+
+    QByteArray data = socket->readAll();
+    QVERIFY2(data.startsWith("HTTP/1.1 404"), data.constData());
+
+    socket->deleteLater();
 }
 
 #include "testwebserver.moc"

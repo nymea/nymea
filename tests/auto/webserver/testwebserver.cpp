@@ -456,8 +456,10 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("GET /debug/thisresourcedoesnotexist | server enabled | 308-200") << "get" << "/debug/thisresourcedoesnotexist" << true << 308;
 
     // debug enabled
-    QTest::newRow("GET /debug | server enabled | 200") << "get" << "/debug" << true << 200;
-    QTest::newRow("OPTIONS /debug | server enabled | 200") << "options" << "/debug" << true << 200;
+    QTest::newRow("GET /debug | server enabled | 308") << "get" << "/debug" << true << 308;
+    QTest::newRow("GET /debug/ | server enabled | 200") << "get" << "/debug/" << true << 200;
+    QTest::newRow("GET nested missing debug asset | 308") << "get" << "/debug/missing/asset" << true << 308;
+    QTest::newRow("OPTIONS /debug | server enabled | 308") << "options" << "/debug" << true << 308;
     QTest::newRow("PUT /debug | server enabled | 405") << "put" << "/debug" << true << 405;
     QTest::newRow("POST /debug | server enabled | 405") << "post" << "/debug" << true << 405;
     QTest::newRow("DELETE /debug | server enabled | 405") << "delete" << "/debug" << true << 405;
@@ -639,6 +641,19 @@ void TestWebserver::getDebugServer()
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
     QCOMPARE(statusCode, expectedStatusCode);
+    if (serverEnabled && expectedStatusCode == 308) {
+        const QUrl location = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+        QVERIFY(location.isRelative());
+        const QUrl publicUrl("https://example.test/nymea" + query);
+        QCOMPARE(publicUrl.resolved(location), QUrl("https://example.test/nymea/debug/"));
+    }
+    if (serverEnabled && query == "/debug/" && expectedStatusCode == 200) {
+        const QByteArray html = reply->readAll();
+        QVERIFY(html.contains("href=\"styles.css\""));
+        QVERIFY(html.contains("src=\"script.js\""));
+        QVERIFY(!html.contains("\"/debug/"));
+    }
+
 }
 
 void TestWebserver::splitHeaderRequest()

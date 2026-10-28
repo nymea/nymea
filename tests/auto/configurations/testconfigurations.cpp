@@ -60,6 +60,9 @@ protected slots:
 
 private slots:
     void getConfigurations();
+    void testProxySettings_data();
+    void testProxySettings();
+    void testProxySettingsApi();
     void testListenerDefaults_data();
     void testListenerDefaults();
     void testOptionalDiscoveryDefaults();
@@ -145,6 +148,136 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("tcpServerConfigurations"));
     QVERIFY(configurations.contains("webServerConfigurations"));
     QVERIFY(configurations.contains("webSocketServerConfigurations"));
+}
+
+void TestConfigurations::testProxySettings_data()
+{
+    QTest::addColumn<QString>("port");
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<uint>("expectedPort");
+    QTest::addColumn<QString>("expectedPrefix");
+    QTest::newRow("defaults") << QString() << QString() << uint(0) << QString();
+    QTest::newRow("https") << QString("443") << QString("/nymea/") << uint(443) << QString("/nymea");
+    QTest::newRow("root") << QString("8443") << QString("/") << uint(8443) << QString();
+    QTest::newRow("disabled") << QString("0") << QString("/nymea") << uint(0) << QString();
+    QTest::newRow("invalid-port") << QString("65536") << QString() << uint(0) << QString();
+    QTest::newRow("negative-port") << QString("-1") << QString() << uint(0) << QString();
+    QTest::newRow("text-port") << QString("invalid") << QString() << uint(0) << QString();
+    QTest::newRow("authority") << QString("443") << QString("//host") << uint(0) << QString();
+    QTest::newRow("relative") << QString("443") << QString("nymea") << uint(0) << QString();
+    QTest::newRow("query") << QString("443") << QString("/nymea?x") << uint(0) << QString();
+    QTest::newRow("fragment") << QString("443") << QString("/nymea#x") << uint(0) << QString();
+    QTest::newRow("traversal") << QString("443") << QString("/a/../b") << uint(0) << QString();
+    QTest::newRow("encoded-traversal") << QString("443") << QString("/a/%2e%2e/b") << uint(0) << QString();
+}
+
+void TestConfigurations::testProxySettings()
+{
+    QFETCH(QString, port);
+    QFETCH(QString, prefix);
+    QFETCH(uint, expectedPort);
+    QFETCH(QString, expectedPrefix);
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+
+    class EnvironmentGuard
+    {
+    public:
+        explicit EnvironmentGuard(const char *name) :
+            m_name(name), m_hadValue(qEnvironmentVariableIsSet(name)), m_value(qgetenv(name)) {}
+        ~EnvironmentGuard()
+        {
+            if (m_hadValue)
+                qputenv(m_name, m_value);
+            else
+                qunsetenv(m_name);
+        }
+    private:
+        const char *m_name;
+        bool m_hadValue;
+        QByteArray m_value;
+    };
+    EnvironmentGuard configGuard("NYMEA_CONFIG_PATH");
+    EnvironmentGuard defaultsGuard("NYMEA_DEFAULT_CONFIG_PATH");
+    qputenv("NYMEA_CONFIG_PATH", directory.path().toUtf8());
+    qputenv("NYMEA_DEFAULT_CONFIG_PATH", directory.filePath("defaults").toUtf8());
+
+    QSettings settings(directory.filePath("nymead.conf"), QSettings::IniFormat);
+    settings.setValue("WebServer/local/address", "127.0.0.1");
+    settings.setValue("WebServer/local/port", 8080);
+    if (!port.isNull())
+        settings.setValue("WebServer/local/proxyPort", port);
+    settings.setValue("WebServer/local/proxySslEnabled", true);
+    settings.setValue("WebServer/local/proxyPathPrefix", prefix);
+    settings.sync();
+
+    for (int load = 0; load < 2; ++load) {
+        NymeaConfiguration configuration;
+        WebServerConfiguration config = configuration.webServerConfigurations().value("local");
+        QCOMPARE(config.proxyPort, expectedPort);
+        QCOMPARE(config.proxySslEnabled, expectedPort != 0);
+        QCOMPARE(config.proxyPathPrefix, expectedPrefix);
+        config.publicFolder = "/tmp/proxy-test";
+        configuration.setWebServerConfiguration(config);
+        configuration.sync();
+    }
+    settings.sync();
+    QCOMPARE(settings.value("WebServer/local/proxyPathPrefix").toString(), prefix);
+}
+
+void TestConfigurations::testProxySettingsApi()
+{
+    NymeaConfiguration *configuration = NymeaCore::instance()->configuration();
+    const QString id = "proxy-api-test";
+    struct Cleanup {
+        NymeaConfiguration *configuration;
+        QString id;
+        ~Cleanup() { configuration->removeWebServerConfiguration(id); }
+    } cleanup{configuration, id};
+    WebServerConfiguration config;
+    config.id = id;
+    config.address = "127.0.0.1";
+    config.port = 0; // Let the operating system select a free port for this test.
+    config.sslEnabled = false;
+    config.proxyPort = 443;
+    config.proxySslEnabled = true;
+    config.proxyPathPrefix = "/nymea";
+    configuration->setWebServerConfiguration(config);
+
+    const QVariantMap response = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QVariantMap advertised;
+    foreach (const QVariant &entry, response.value("webServerConfigurations").toList()) {
+        if (entry.toMap().value("id").toString() == id)
+            advertised = entry.toMap();
+    }
+    QCOMPARE(advertised.value("proxyPort").toUInt(), uint(443));
+    QCOMPARE(advertised.value("proxySslEnabled").toBool(), true);
+    QCOMPARE(advertised.value("proxyPathPrefix").toString(), QString("/nymea"));
+
+    uint port = 0;
+    foreach (const WebServerConfiguration &running, NymeaCore::instance()->serverManager()->runningWebServerConfigurations()) {
+        if (running.id == id)
+            port = running.port;
+    }
+    QVERIFY(port != 0);
+    advertised.insert("port", port);
+    advertised.insert("proxyPort", 1234);
+    advertised.insert("proxySslEnabled", false);
+    advertised.insert("proxyPathPrefix", "/ignored");
+    QVariantMap params;
+    params.insert("configuration", advertised);
+    verifyConfigurationError(injectAndWait("Configuration.SetWebServerConfiguration", params));
+    QCOMPARE(configuration->webServerConfigurations().value(id).proxyPort, uint(443));
+    QCOMPARE(configuration->webServerConfigurations().value(id).proxyPathPrefix, QString("/nymea"));
+
+    // An older client omits all proxy properties.
+    advertised.remove("proxyPort");
+    advertised.remove("proxySslEnabled");
+    advertised.remove("proxyPathPrefix");
+    params.insert("configuration", advertised);
+    verifyConfigurationError(injectAndWait("Configuration.SetWebServerConfiguration", params));
+    QVERIFY(configuration->webServerConfigurations().value(id).proxySslEnabled);
+    QCOMPARE(configuration->webServerConfigurations().value(id).proxyPort, uint(443));
 }
 
 void TestConfigurations::testListenerDefaults_data()

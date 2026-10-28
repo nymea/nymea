@@ -1,3 +1,21 @@
+nymea (1.17.0) resolute; urgency=medium
+
+  [ Simon Stürz ]
+  * WIP: NetworkDeviceDiscovery: Improve network discovery speed for
+    larger ne…
+  * Add influxdb to backup
+  * Update usermanager and add RFID interface
+  * Zigbee: Reenable TI backend for Qt6 based builds and keep it
+    optional
+  * Configuration: Fuse data storage with settings storage
+  * Server: Update default server port usage
+  * Server: Add internal webserver websocket forwarding support
+  * WebServer: Add optional webserver proxy configuration
+  * FactoryReset: Introduce external factory reset mechanism
+  * Network: Add networkd backend support
+
+ -- jenkins <developer@nymea.io>  Wed, 28 Oct 2026 14:47:58 +0100
+
 nymea (1.16.2) resolute; urgency=medium
 
 

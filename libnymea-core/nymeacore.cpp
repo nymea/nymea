@@ -211,7 +211,13 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
 
     qCDebug(dcCore) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
-    m_networkManager->start();
+    NymeaSettings networkSettings(NymeaSettings::SettingsRoleGlobal);
+    networkSettings.beginGroup("Network");
+    const QString networkBackend = networkSettings.value("Backend", "auto").toString().toLower();
+    networkSettings.endGroup();
+    if (networkBackend != "networkd") {
+        m_networkManager->start();
+    }
 
     qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);

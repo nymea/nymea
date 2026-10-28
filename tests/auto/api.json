@@ -1,4 +1,4 @@
-10.0
+10.1
 {
     "enums": {
         "BasicType": [
@@ -375,7 +375,10 @@
             "UserErrorBadPassword",
             "UserErrorTokenNotFound",
             "UserErrorPermissionDenied",
-            "UserErrorInconsistantScopes"
+            "UserErrorInconsistantScopes",
+            "UserErrorInventoryItemNotFound",
+            "UserErrorDuplicateInventoryItem",
+            "UserErrorInvalidInventoryItem"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",

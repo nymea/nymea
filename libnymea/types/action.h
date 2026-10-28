@@ -67,6 +67,12 @@ public:
     QString actorName() const;
     void setActorName(const QString &actorName);
 
+    QString actorUsername() const;
+    void setActorUsername(const QString &actorUsername);
+
+    QString actorDisplayName() const;
+    void setActorDisplayName(const QString &actorDisplayName);
+
     QString sourceName() const;
     void setSourceName(const QString &sourceName);
 
@@ -76,7 +82,8 @@ private:
     ThingId m_thingId;
     ParamList m_params;
     TriggeredBy m_triggeredBy = TriggeredByUser;
-    QString m_actorName;
+    QString m_actorUsername;
+    QString m_actorDisplayName;
     QString m_sourceName;
 };
 

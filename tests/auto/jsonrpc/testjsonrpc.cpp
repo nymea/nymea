@@ -694,7 +694,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "NetworkManager" << "Integrations" << "System" << "Rules" << "Logging" << "Tags"
+        expectedNamespaces << "Network" << "NetworkManager" << "Integrations" << "System" << "Rules" << "Logging" << "Tags"
                            << "AppData" << "JSONRPC" << "Configuration" << "Scripts" << "Users" << "Zigbee"
                            << "ZWave" << "ModbusRtu" << "Debug" << "Transfers";
     }

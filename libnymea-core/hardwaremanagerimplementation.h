@@ -35,7 +35,7 @@ namespace nymeaserver {
 
 class Platform;
 class NymeaConfiguration;
-class MqttBroker;
+class ServerManager;
 class ZigbeeManager;
 class ZigbeeHardwareResourceImplementation;
 class ZWaveManager;
@@ -49,7 +49,7 @@ class HardwareManagerImplementation : public HardwareManager
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, NymeaConfiguration *configuration, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(Platform *platform, NymeaConfiguration *configuration, ServerManager *serverManager, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;

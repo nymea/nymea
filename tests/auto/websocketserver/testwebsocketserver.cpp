@@ -74,6 +74,7 @@ void TestWebSocketServer::initTestCase()
     }
 
     qDebug() << "Creating new websocketserver instance on 127.0.0.1:4444";
+    config.id = "test-websocket";
     config.address = "127.0.0.1";
     config.port = 4444;
     config.sslEnabled = true;

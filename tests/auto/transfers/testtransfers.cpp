@@ -42,6 +42,7 @@ void TestTransfers::initTestCase()
     NymeaTestBase::initTestCase();
 
     ServerConfiguration config;
+    config.id = "test-websocket";
     config.address = "127.0.0.1";
     config.port = 4444;
     config.sslEnabled = true;

@@ -90,6 +90,7 @@ public:
     void setDestinationDirectory(const QString &destinationDirectory);
     void setMaxBackups(int maxBackups);
 
+    static bool isBackupDestinationValid(const QString &sourceDirectory, const QString &destinationDirectory);
     BackupFiles backupFiles(const QString &destinationDir, const QString &archivePrefix = "nymea-configuration") const;
     bool createBackup(const QString &sourceDir, const QString &destinationDir, int maxBackups = 5, const QString &archivePrefix = "nymea-configuration", QString *archivePath = nullptr);
     bool restoreBackup(const QString &fileName, const QString &destinationDir, bool safetyBackup = false);

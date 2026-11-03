@@ -212,6 +212,28 @@ void BackupManager::setMaxBackups(int maxBackups)
     reevaluateAutomaticBackup();
 }
 
+bool BackupManager::isBackupDestinationValid(const QString &sourceDirectory, const QString &destinationDirectory)
+{
+    QFileInfo sourceInfo(sourceDirectory);
+    QFileInfo destinationInfo(destinationDirectory);
+
+    QString sourcePath = sourceInfo.canonicalFilePath();
+    if (sourcePath.isEmpty())
+        sourcePath = sourceInfo.absoluteFilePath();
+
+    QString destinationPath = destinationInfo.canonicalFilePath();
+    if (destinationPath.isEmpty())
+        destinationPath = destinationInfo.absoluteFilePath();
+
+    sourcePath = QDir::cleanPath(sourcePath);
+    destinationPath = QDir::cleanPath(destinationPath);
+    QString sourcePrefix = sourcePath;
+    if (!sourcePrefix.endsWith(QDir::separator()))
+        sourcePrefix.append(QDir::separator());
+
+    return destinationPath != sourcePath && !destinationPath.startsWith(sourcePrefix);
+}
+
 BackupFiles BackupManager::backupFiles(const QString &destinationDir, const QString &archivePrefix) const
 {
     BackupFiles backupFiles;
@@ -248,12 +270,23 @@ bool BackupManager::createBackup(const QString &sourceDir, const QString &destin
         return false;
     }
 
+    if (!isBackupDestinationValid(sourceDir, destinationDir)) {
+        qCWarning(dcBackup()) << "Backup destination must be outside the source directory:" << sourceDir << destinationDir;
+        return false;
+    }
+
     QDir dst(destinationDir);
     if (!dst.exists()) {
         if (!QDir().mkpath(destinationDir)) {
             qCWarning(dcBackup()) << "Failed to create destination directory:" << destinationDir;
             return false;
         }
+    }
+
+    // Check again after creating the directory so canonical paths also catch symlinked parents.
+    if (!isBackupDestinationValid(sourceDir, destinationDir)) {
+        qCWarning(dcBackup()) << "Backup destination must be outside the source directory:" << sourceDir << destinationDir;
+        return false;
     }
 
     const QString timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");

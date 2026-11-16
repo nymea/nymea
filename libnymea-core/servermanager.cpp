@@ -65,6 +65,7 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
+#include <QStringList>
 
 namespace nymeaserver {
 
@@ -569,6 +570,16 @@ bool ServerManager::registerZeroConfService(const ServerConfiguration &configura
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration.sslEnabled ? "true" : "false");
+    if (serviceType == "_jsonrpc._tcp" || serviceType == "_ws._tcp") {
+        const QVariantMap productInfo = m_nymeaConfiguration->productInfo();
+        const QStringList advertisedKeys = {"vendor", "model", "producttype"};
+        foreach (const QString &key, advertisedKeys) {
+            const QString value = productInfo.value(key).toString();
+            if (!value.isEmpty()) {
+                txt.insert(key, value);
+            }
+        }
+    }
     QString name = "nymea-" + serverType + "-" + configuration.id;
     if (!m_platform->zeroConfController()->servicePublisher()->registerService(name,
                                                                                QHostAddress(configuration.address),

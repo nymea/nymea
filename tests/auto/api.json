@@ -1410,6 +1410,7 @@
                     "$ref:Experience"
                 ],
                 "o:permissionScopes": "$ref:PermissionScopes",
+                "o:productInfo": "$ref:ProductInfo",
                 "o:username": "String",
                 "protocol version": "String",
                 "pushButtonAuthAvailable": "Bool",
@@ -3225,6 +3226,13 @@
         "ParamTypes": [
             "$ref:ParamType"
         ],
+        "ProductInfo": {
+            "hardwareRevision": "String",
+            "model": "String",
+            "producttype": "String",
+            "vendor": "String",
+            "vendorurl": "String"
+        },
         "RepeatingOption": {
             "mode": "$ref:RepeatingMode",
             "o:monthDays": [

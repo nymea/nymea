@@ -28,6 +28,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QStringList>
 #include <QTimeZone>
 
 NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
@@ -39,6 +40,44 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
     , m_settings{new NymeaSettings(NymeaSettings::SettingsRoleGlobal, this)}
     , m_mqttPoliciesSettings{new NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies, this)}
 {
+    // Product identity belongs to the operating system and is fixed for this process.
+    QFile productInfoFile("/usr/share/nymea/product-info");
+    if (productInfoFile.exists()) {
+        if (!productInfoFile.open(QFile::ReadOnly)) {
+            qCWarning(dcConfiguration()) << "Could not read product info:" << productInfoFile.errorString();
+        } else {
+            const QStringList keys = {"vendor", "vendorurl", "model", "hardwareRevision", "producttype"};
+            const QStringList lines = QString::fromUtf8(productInfoFile.readAll()).split('\n');
+            foreach (const QString &line, lines) {
+                const QString trimmedLine = line.trimmed();
+                if (trimmedLine.isEmpty() || trimmedLine.startsWith('#') || trimmedLine.startsWith(';')) {
+                    continue;
+                }
+                const int separator = trimmedLine.indexOf('=');
+                if (separator < 0) {
+                    continue;
+                }
+                const QString key = trimmedLine.left(separator).trimmed();
+                if (keys.contains(key)) {
+                    m_productInfo.insert(key, trimmedLine.mid(separator + 1).trimmed());
+                }
+            }
+            bool hasValue = false;
+            foreach (const QString &key, keys) {
+                hasValue |= !m_productInfo.value(key).toString().isEmpty();
+            }
+            if (hasValue) {
+                foreach (const QString &key, keys) {
+                    if (!m_productInfo.contains(key)) {
+                        m_productInfo.insert(key, QString());
+                    }
+                }
+            } else {
+                m_productInfo.clear();
+            }
+        }
+    }
+
     // Init server uuid if we don't have one.
     QUuid id = serverUuid();
     if (id.isNull()) {
@@ -220,6 +259,11 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent)
     m_settings->setValue("logDBUser", logDBUser());
     m_settings->setValue("logDBPassword", logDBPassword());
     m_settings->endGroup();
+}
+
+QVariantMap NymeaConfiguration::productInfo() const
+{
+    return m_productInfo;
 }
 
 QString NymeaConfiguration::filePath() const

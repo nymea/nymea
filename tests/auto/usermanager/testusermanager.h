@@ -103,6 +103,8 @@ private slots:
 
     void getUserInfo();
 
+    void userInventory();
+
     void testScopeConsitancy_data();
     void testScopeConsitancy();
 

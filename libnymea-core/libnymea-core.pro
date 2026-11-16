@@ -130,6 +130,7 @@ HEADERS += nymeacore.h \
     transferserverimplementation.h \
     time/timemanager.h \
     usermanager/userautorizer.h \
+    usermanager/userinventoryitem.h \
     usermanager/userinfo.h \
     usermanager/usermanager.h \
     usermanager/tokeninfo.h \
@@ -236,6 +237,7 @@ SOURCES += nymeacore.cpp \
     transferserverimplementation.cpp \
     time/timemanager.cpp \
     usermanager/userautorizer.cpp \
+    usermanager/userinventoryitem.cpp \
     usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \
     usermanager/tokeninfo.cpp \

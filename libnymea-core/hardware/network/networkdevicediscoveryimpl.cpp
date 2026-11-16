@@ -26,9 +26,6 @@
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 
-
-#include <math.h>
-
 #include <network/ping.h>
 #include <network/arpsocket.h>
 #include <network/networkutils.h>
@@ -389,8 +386,9 @@ void NetworkDeviceDiscoveryImpl::setEnabled(bool enabled)
 
 void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
 {
-    QList<QHostAddress> ownAddresses;
-    QList<TargetNetwork> targetNetworks;
+    m_discoveryTargetNetworks.clear();
+    m_discoveryOwnAddresses.clear();
+    m_discoveryRoundRobinIndex = 0;
 
     qCDebug(dcNetworkDeviceDiscovery()) << "Starting ping for all network devices...";
     foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
@@ -412,7 +410,7 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
 
             // Store the own address of this network interface in any case,
             // since we don't want to ping our self
-            ownAddresses.append(entry.ip());
+            m_discoveryOwnAddresses.insert(entry.ip().toIPv4Address());
 
             TargetNetwork targetNetwork;
             targetNetwork.networkInterface = networkInterface;
@@ -426,15 +424,9 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
             qCDebug(dcNetworkDeviceDiscovery()) << "    Netmask:" << entry.netmask().toString();
             qCDebug(dcNetworkDeviceDiscovery()) << "    Address rang from" << targetNetwork.address.toString() << "-->" << targetNetwork.addressEntry.broadcast().toString();
 
-            // Let's scan only 255.255.255.0 networks for now
-            if (entry.prefixLength() < 24) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "Skipping network interface" << networkInterface.name() << "because there are to many hosts to contact. The network detector was designed for /24 networks.";
-                continue;
-            }
-
             // Filter out duplicated networks (for example connected using wifi and ethernet to the same network) ...
             bool duplicatedNetwork = false;
-            foreach (const TargetNetwork &tn, targetNetworks) {
+            foreach (const TargetNetwork &tn, m_discoveryTargetNetworks) {
                 if (tn.address == targetNetwork.address && tn.addressEntry.netmask() == targetNetwork.addressEntry.netmask()) {
                     qCDebug(dcNetworkDeviceDiscovery()) << "Skipping network interface" << targetNetwork.networkInterface.name() << targetNetwork.address.toString() << "as ping target network because it seems to be the same network as" << tn.networkInterface.name() << tn.address.toString();
                     duplicatedNetwork = true;
@@ -445,30 +437,62 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
             if (duplicatedNetwork)
                 continue;
 
-            targetNetworks.append(targetNetwork);
+            quint32 networkAddress = targetNetwork.address.toIPv4Address();
+            quint32 broadcastAddress = targetNetwork.addressEntry.broadcast().toIPv4Address();
+            if (broadcastAddress <= networkAddress + 1) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "Skipping network interface" << networkInterface.name() << targetNetwork.address.toString() << "because the host address range is invalid.";
+                continue;
+            }
+
+            targetNetwork.nextHostAddress = networkAddress + 1;
+            targetNetwork.lastHostAddress = broadcastAddress - 1;
+            m_discoveryTargetNetworks.append(targetNetwork);
         }
     }
 
-    foreach (const TargetNetwork &targetNetwork, targetNetworks) {
+    if (m_discoveryTargetNetworks.isEmpty()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "No matching IPv4 networks found for ping discovery.";
+        return;
+    }
 
-        // Send ping request to each address within the range
-        quint32 targetHostsCount = pow(2, 32 - targetNetwork.addressEntry.prefixLength()) - 1;
-        for (quint32 i = 1; i < targetHostsCount; i++) {
-            QHostAddress targetAddress(targetNetwork.address.toIPv4Address() + i);
+    scheduleDiscoveryPings();
+}
 
-            // Skip the broadcast
-            if (targetAddress == targetNetwork.addressEntry.broadcast())
+void NetworkDeviceDiscoveryImpl::scheduleDiscoveryPings()
+{
+    while (m_runningPingReplies.count() < m_discoveryMaxInFlightPings && enqueueDiscoveryPing()) {
+    }
+}
+
+bool NetworkDeviceDiscoveryImpl::enqueueDiscoveryPing()
+{
+    if (m_discoveryTargetNetworks.isEmpty())
+        return false;
+
+    int checkedNetworks = 0;
+    while (checkedNetworks < m_discoveryTargetNetworks.count()) {
+        int networkIndex = (m_discoveryRoundRobinIndex + checkedNetworks) % m_discoveryTargetNetworks.count();
+        TargetNetwork &targetNetwork = m_discoveryTargetNetworks[networkIndex];
+
+        while (targetNetwork.nextHostAddress <= targetNetwork.lastHostAddress) {
+            quint32 targetIpv4Address = targetNetwork.nextHostAddress;
+            targetNetwork.nextHostAddress++;
+
+            if (m_discoveryOwnAddresses.contains(targetIpv4Address))
                 continue;
 
-            // Skip our self
-            if (ownAddresses.contains(targetAddress))
-                continue;
+            QHostAddress targetAddress(targetIpv4Address);
 
             // Retry only once to ping a device and lookup the hostname on success
             PingReply *reply = ping(targetAddress, true, 1);
             m_runningPingReplies.append(reply);
-            connect(reply, &PingReply::finished, this, [=](){
+            connect(reply, &PingReply::finished, this, [this, reply, targetAddress](){
                 m_runningPingReplies.removeAll(reply);
+
+                if (m_discoveryTimer->isActive()) {
+                    scheduleDiscoveryPings();
+                }
+
                 if (reply->error() == PingReply::ErrorNoError) {
                     qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << targetAddress.toString() << reply->hostName() << reply->duration() << "ms";
                     if (m_currentDiscoveryReply) {
@@ -486,8 +510,15 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                     finishDiscovery();
                 }
             });
+
+            m_discoveryRoundRobinIndex = (networkIndex + 1) % m_discoveryTargetNetworks.count();
+            return true;
         }
+
+        checkedNetworks++;
     }
+
+    return false;
 }
 
 void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, NetworkDeviceMonitorImpl *monitor)

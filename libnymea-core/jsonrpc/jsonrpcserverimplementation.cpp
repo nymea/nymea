@@ -94,6 +94,14 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     cacheHash.insert("hash", enumValueName(String));
     registerObject("CacheHash", cacheHash);
 
+    QVariantMap productInfo;
+    productInfo.insert("vendor", enumValueName(String));
+    productInfo.insert("vendorurl", enumValueName(String));
+    productInfo.insert("model", enumValueName(String));
+    productInfo.insert("hardwareRevision", enumValueName(String));
+    productInfo.insert("producttype", enumValueName(String));
+    registerObject("ProductInfo", productInfo);
+
     // Methods
     QString description; QVariantMap returns; QVariantMap params;
     description = "Initiates a connection. Use this method to perform an initial handshake of the "
@@ -126,6 +134,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("o:authenticated", enumValueName(Bool));
     returns.insert("o:permissionScopes", flagRef<Types::PermissionScopes>());
     returns.insert("o:username", enumValueName(String));
+    returns.insert("o:productInfo", objectRef("ProductInfo"));
     registerMethod("Hello", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
@@ -254,6 +263,10 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
     handshake.insert("version", NYMEA_VERSION_STRING);
     handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    const QVariantMap productInfo = NymeaCore::instance()->configuration()->productInfo();
+    if (!productInfo.isEmpty()) {
+        handshake.insert("productInfo", productInfo);
+    }
     // "language" is deprecated
     handshake.insert("language", m_clientLocales.value(clientId).name());
     handshake.insert("locale", m_clientLocales.value(clientId).name());

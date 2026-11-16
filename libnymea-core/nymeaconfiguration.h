@@ -30,6 +30,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QUuid>
+#include <QVariantMap>
 
 #include "nymeasettings.h"
 
@@ -146,6 +147,7 @@ public:
 
     QString filePath() const;
     QString path() const;
+    QVariantMap productInfo() const;
 
     // Global settings
     QUuid serverUuid() const;
@@ -235,6 +237,7 @@ public:
 private:
     NymeaSettings *m_settings = nullptr;
     NymeaSettings *m_mqttPoliciesSettings = nullptr;
+    QVariantMap m_productInfo;
 
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;

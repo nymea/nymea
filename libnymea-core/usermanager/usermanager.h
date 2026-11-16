@@ -107,6 +107,7 @@ signals:
     void userThingRestrictionsChanged(const nymeaserver::UserInfo &userInfo, const ThingId &thingId, bool accessGranted);
 
 private:
+    bool openDB();
     bool initDB();
     void rotate(const QString &dbName);
     bool validateUsername(const QString &username) const;

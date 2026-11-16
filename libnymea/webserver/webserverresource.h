@@ -34,6 +34,8 @@
 #include <QObject>
 #include <QUrlQuery>
 
+class QTcpSocket;
+
 #include "httpreply.h"
 #include "httprequest.h"
 
@@ -50,6 +52,9 @@ public:
     void setEnabled(bool enabled);
 
     virtual HttpReply *processRequest(const HttpRequest &request) = 0;
+
+    // Return true to take ownership of the socket; the upgrade handshake is still unread in its buffer
+    virtual bool handleWebSocketUpgrade(QTcpSocket *socket, const HttpRequest &request);
 
     static HttpReply *createFileReply(const QString fileName);
 

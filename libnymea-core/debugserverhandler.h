@@ -44,6 +44,7 @@ public:
     explicit DebugServerHandler(QObject *parent = nullptr);
 
     HttpReply *processRequest(const HttpRequest &request) override;
+    bool handleWebSocketUpgrade(QTcpSocket *socket, const HttpRequest &request) override;
 
 private:
     static QList<QWebSocket*> s_websocketClients;

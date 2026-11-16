@@ -326,6 +326,10 @@ void WebServer::readClient()
         return;
     }
 
+    // WebSocket upgrades must stay unread, the resource reads the handshake itself
+    if (!m_incompleteRequests.contains(socket) && processWebSocketUpgrade(clientId, socket))
+        return;
+
     // Read HTTP request
     QByteArray data = socket->readAll();
 
@@ -470,11 +474,57 @@ void WebServer::readClient()
     reply->deleteLater();
 }
 
-void WebServer::onDisconnected()
-{    
-    QSslSocket* socket = static_cast<QSslSocket *>(sender());
+bool WebServer::processWebSocketUpgrade(const QUuid &clientId, QSslSocket *socket)
+{
+    // Only a GET request can be a WebSocket upgrade, everything else takes the regular path
+    QByteArray data = socket->peek(socket->bytesAvailable());
+    if (!data.startsWith("GET "))
+        return false;
 
-    // Remove connection from server client
+    if (!data.contains("\r\n\r\n")) {
+        if (data.size() <= 65536) {
+            // Wait for the rest of the header before deciding
+            return true;
+        }
+
+        qCWarning(dcWebServer()) << "HTTP header from" << socket->peerAddress().toString() << "exceeds the size limit. Closing connection.";
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::BadRequest);
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
+        socket->readAll();
+        socket->close();
+        return true;
+    }
+
+    HttpRequest request(data);
+    if (!request.isValid() || !request.isWebSocketUpgrade())
+        return false;
+
+    qCDebug(dcWebServer()) << "WebSocket upgrade request from" << socket->peerAddress().toString() << "for" << request.url().path();
+    detachClient(clientId, socket);
+
+    foreach (WebServerResource *resource, m_resources) {
+        if (resource->enabled() && request.url().path().startsWith(resource->basePath()) && resource->handleWebSocketUpgrade(socket, request))
+            return true;
+    }
+
+    // Not every client closes the connection after a failed handshake, so close it here
+    qCDebug(dcWebServer()) << "No resource accepted the WebSocket upgrade for" << request.url().path() << "Respond with 404 Not Found and close the connection.";
+    HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
+    reply->packReply();
+    socket->readAll();
+    socket->write(reply->data());
+    reply->deleteLater();
+    connect(socket, &QSslSocket::disconnected, socket, &QSslSocket::deleteLater);
+    socket->disconnectFromHost();
+    return true;
+}
+
+void WebServer::detachClient(const QUuid &clientId, QSslSocket *socket)
+{
+    disconnect(socket, nullptr, this, nullptr);
+
     foreach (WebServerClient *client, m_webServerClients) {
         if (client->address() == socket->peerAddress()) {
             client->removeConnection(socket);
@@ -486,14 +536,18 @@ void WebServer::onDisconnected()
         }
     }
 
-    qCDebug(dcWebServer()).noquote() << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
-
-    // clean up
-    QUuid clientId = m_clientList.key(socket);
     m_clientList.remove(clientId);
     m_incompleteRequests.remove(socket);
     emit clientDisconnected(clientId);
+}
 
+void WebServer::onDisconnected()
+{    
+    QSslSocket* socket = static_cast<QSslSocket *>(sender());
+
+    qCDebug(dcWebServer()).noquote() << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+
+    detachClient(m_clientList.key(socket), socket);
     socket->deleteLater();
 }
 

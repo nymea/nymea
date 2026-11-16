@@ -103,6 +103,8 @@ private:
     bool m_enabled = false;
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
+    bool processWebSocketUpgrade(const QUuid &clientId, QSslSocket *socket);
+    void detachClient(const QUuid &clientId, QSslSocket *socket);
     QString fileName(const QString &query);
 
     QByteArray createServerXmlDocument(QHostAddress address);

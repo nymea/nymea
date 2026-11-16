@@ -96,6 +96,16 @@ QHash<QByteArray, QByteArray> HttpRequest::rawHeaderList() const
     return m_rawHeaderList;
 }
 
+/*! Returns the value of the header with the given \a key. The key comparison is case-insensitive. */
+QByteArray HttpRequest::rawHeaderValue(const QByteArray &key) const
+{
+    for (auto it = m_rawHeaderList.constBegin(); it != m_rawHeaderList.constEnd(); ++it) {
+        if (it.key().compare(key, Qt::CaseInsensitive) == 0)
+            return it.value();
+    }
+    return QByteArray();
+}
+
 /*! Returns the \l{RequestMethod} of this request.
 
   \sa RequestMethod
@@ -151,6 +161,14 @@ bool HttpRequest::isComplete() const
 bool HttpRequest::hasPayload() const
 {
     return !m_payload.isEmpty();
+}
+
+/*! Returns true if this is a GET request asking for a WebSocket protocol upgrade. */
+bool HttpRequest::isWebSocketUpgrade() const
+{
+    return m_method == Get
+           && rawHeaderValue("Upgrade").toLower().contains("websocket")
+           && rawHeaderValue("Connection").toLower().contains("upgrade");
 }
 
 /*! Appends the given \a data to the current raw data of this \l{HttpRequest}.

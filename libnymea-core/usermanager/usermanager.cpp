@@ -76,6 +76,7 @@
 #include <QSqlError>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 
@@ -90,16 +91,14 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
 
     qCDebug(dcUserManager()) << "Opening user database" << m_db.databaseName();
 
-    if (!m_db.isValid()) {
-        qCWarning(dcUserManager()) << "The database is not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
-        rotate(m_db.databaseName());
-    }
-
-    if (!initDB()) {
+    // Opening failures (for example missing permissions) cannot be repaired by
+    // rotating the database. Preserve existing credentials in that case.
+    if (openDB() && !initDB()) {
         qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
+        m_db.close();
         if (QFileInfo::exists(m_db.databaseName())) {
             rotate(m_db.databaseName());
-            if (!initDB()) {
+            if (!openDB() || !initDB()) {
                 qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
             }
         }
@@ -116,6 +115,9 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
  */
 bool UserManager::initRequired() const
 {
+    if (!m_db.isOpen())
+        return false;
+
     QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens;");
     QSqlQuery resultQuery(m_db);
     if (!resultQuery.exec(getTokensQuery)) {
@@ -136,6 +138,9 @@ bool UserManager::initRequired() const
 UserInfoList UserManager::users() const
 {
     UserInfoList users;
+    if (!m_db.isOpen())
+        return users;
+
     QString userQuery("SELECT * FROM users;");
     QSqlQuery resultQuery(m_db);
     if (!resultQuery.exec(userQuery)) {
@@ -157,6 +162,9 @@ UserInfoList UserManager::users() const
 /*! Creates a new user with the given \a username and \a password. Returns the \l UserError to inform about the result. */
 UserManager::UserError UserManager::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes, const QList<ThingId> &allowedThingIds)
 {
+    if (!m_db.isOpen())
+        return UserErrorBackendError;
+
     if (!validateUsername(username)) {
         qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
         return UserErrorInvalidUserId;
@@ -413,6 +421,9 @@ bool UserManager::pushButtonAuthAvailable() const
 */
 QByteArray UserManager::authenticate(const QString &username, const QString &password, const QString &deviceName)
 {
+    if (!m_db.isOpen())
+        return QByteArray();
+
     if (!validateUsername(username)) {
         qCWarning(dcUserManager) << "Authenticate: Username did not pass validation:" << username;
         return QByteArray();
@@ -776,6 +787,9 @@ UserManager::UserError UserManager::removeUserInventoryItem(const QUuid &invento
 /*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {
+    if (!m_db.isOpen())
+        return false;
+
     if (!validateToken(token)) {
         qCWarning(dcUserManager) << "Token failed character validation" << token;
         return false;
@@ -852,15 +866,36 @@ void UserManager::onThingRemoved(const ThingId &thingId)
     }
 }
 
-bool UserManager::initDB()
+bool UserManager::openDB()
 {
-    m_db.close();
-
-    if (!m_db.open()) {
-        dumpDBError("Can't open user database. Init failed.");
+    if (!m_db.isValid()) {
+        qCCritical(dcUserManager()) << "Cannot open user database" << m_db.databaseName()
+                                   << ": SQLite driver is unavailable." << m_db.lastError().text();
         return false;
     }
 
+    // SQLite creates the database file, but not its parent directories.
+    if (!m_db.databaseName().isEmpty() && m_db.databaseName() != ":memory:") {
+        const QString directory = QFileInfo(m_db.databaseName()).absolutePath();
+        if (!QDir().mkpath(directory)) {
+            qCCritical(dcUserManager()) << "Cannot create user database directory" << directory
+                                       << ". Check the configured storage path and directory permissions. User authentication is unavailable.";
+            return false;
+        }
+    }
+
+    if (!m_db.open()) {
+        qCCritical(dcUserManager()) << "Cannot open user database" << m_db.databaseName()
+                                   << ". Check file and directory permissions and available disk space. User authentication is unavailable."
+                                   << m_db.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool UserManager::initDB()
+{
     int currentVersion = -1;
     int newVersion = 3;
 

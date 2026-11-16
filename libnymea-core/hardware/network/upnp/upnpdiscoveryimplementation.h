@@ -32,6 +32,9 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <QNetworkInterface>
+
+#include "nymeaconfiguration.h"
 
 #include "upnpdiscoveryrequest.h"
 
@@ -45,14 +48,14 @@
 namespace nymeaserver {
 
 class NymeaConfiguration;
-class WebServerConfiguration;
+class ServerManager;
 
 class UpnpDiscoveryImplementation : public UpnpDiscovery
 {
     Q_OBJECT
 
 public:
-    explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, QObject *parent = nullptr);
+    explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, NymeaConfiguration *configuration, ServerManager *serverManager, QObject *parent = nullptr);
     ~UpnpDiscoveryImplementation();
 
     UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) override;
@@ -70,18 +73,26 @@ private:
 
     QNetworkAccessManager *m_networkAccessManager = nullptr;
     NymeaConfiguration *m_configuration = nullptr;
+    QList<WebServerConfiguration> m_webServerConfigurations;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
     QHash<QNetworkReply*, UpnpDeviceDescriptor> m_informationRequestList;
 
     bool m_available = false;
     bool m_enabled = false;
+    bool m_requestedEnabled = false;
+    bool m_warnedMissingWebServer = false;
 
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
     void respondToSearchRequest(QHostAddress host, int port);
     QByteArray serverUuid() const;
-    bool preferredWebServerConfiguration(WebServerConfiguration &config) const;
+    QList<QNetworkAddressEntry> webServerAddresses(const WebServerConfiguration &config) const;
+    bool preferredWebServerConfiguration(WebServerConfiguration &config, const QHostAddress &localAddress = QHostAddress()) const;
     QString locationStringForHostAddress(const QHostAddress &hostAddress, const WebServerConfiguration &config) const;
+    void sendNotifications(const QByteArray &notificationType);
+    void updateEnabled();
+    bool enable();
+    bool disable();
 
 protected:
     void setEnabled(bool enabled) override;
@@ -94,12 +105,6 @@ private slots:
     void sendByeByeMessage();
     void sendAliveMessage();
     void discoverTimeout();
-
-    //void networkConfigurationChanged(const QNetworkConfiguration &config);
-
-public slots:
-    bool enable();
-    bool disable();
 
 };
 

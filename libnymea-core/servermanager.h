@@ -66,12 +66,17 @@ public:
     MockTcpServer *mockTcpServer() const;
     MqttBroker *mqttBroker() const;
 
+    QList<WebServerConfiguration> runningWebServerConfigurations() const;
+
     // Resources for the webservers
     bool registerWebServerResource(WebServerResource *resource);
     void unregisterWebServerResource(WebServerResource *resource);
 
 public slots:
     void setServerName(const QString &serverName);
+
+signals:
+    void webServersChanged();
 
 private slots:
     void tcpServerConfigurationChanged(const QString &id);

@@ -437,6 +437,24 @@ void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
     server->deleteLater();
 }
 
+QList<WebServerConfiguration> ServerManager::runningWebServerConfigurations() const
+{
+    QList<WebServerConfiguration> configurations;
+    QStringList ids = m_webServers.keys();
+    ids.sort();
+    foreach (const QString &id, ids) {
+        WebServer *server = m_webServers.value(id);
+        if (!server->isListening())
+            continue;
+
+        WebServerConfiguration config = server->configuration();
+        config.address = server->serverAddress().toString();
+        config.port = server->serverPort();
+        configurations.append(config);
+    }
+    return configurations;
+}
+
 void ServerManager::webServerConfigurationChanged(const QString &id)
 {
     WebServerConfiguration config = NymeaCore::instance()->configuration()->webServerConfigurations().value(id);
@@ -472,6 +490,7 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
     if (server->startServer()) {
         registerZeroConfService(config, "http", "_http._tcp");
     }
+    emit webServersChanged();
 }
 
 void ServerManager::webServerConfigurationRemoved(const QString &id)
@@ -489,6 +508,7 @@ void ServerManager::webServerConfigurationRemoved(const QString &id)
     unregisterZeroConfService(id, "http");
     server->stopServer();
     server->deleteLater();
+    emit webServersChanged();
 }
 
 void ServerManager::mqttServerConfigurationChanged(const QString &id)

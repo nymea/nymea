@@ -32,9 +32,8 @@
     The \l{WebServer} class provides a HTTP/1.1 web server. The web server
     provides access to the nymea-webinterface and the path can be specified
     in the \tt /var/lib/nymea/nymead.conf file and to the nymea REST API.
-    The default port for the web server is 3333, which is according to this
-    \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
-    officially free.
+    Web server listeners must be configured explicitly; none are created by default.
+    The following examples assume a listener configured on port 3333.
 
     The URL for the insecure nymea-webinterface access:
     \code http://localhost:3333\endcode

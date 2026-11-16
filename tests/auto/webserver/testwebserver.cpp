@@ -84,6 +84,7 @@ void TestWebserver::initTestCase()
 
     qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
     WebServerConfiguration config;
+    config.id = "test-web";
     config.address = "127.0.0.1";
     config.port = 3333;
     config.sslEnabled = true;

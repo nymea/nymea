@@ -173,6 +173,9 @@ public:
     bool debugServerEnabled() const;
     void setDebugServerEnabled(bool enabled);
 
+    // Optional platform factory reset executable (no remote setter).
+    QString factoryResetScript() const;
+
     // Backup settings
     QString backupDestinationDirectory() const;
     void setBackupDestinationDirectory(const QString &destinationDirectory);

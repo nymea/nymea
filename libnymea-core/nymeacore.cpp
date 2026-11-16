@@ -56,7 +56,10 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QMetaObject>
+#include <QProcess>
+#include <QTimer>
 
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
@@ -70,6 +73,7 @@ NymeaCore *NymeaCore::s_instance = nullptr;
 NymeaCore::ShutdownReason NymeaCore::s_shutdownReason = NymeaCore::ShutdownReasonTerm;
 QStringList NymeaCore::s_additionalInterfaces;
 bool NymeaCore::s_disableLogEngine = false;
+bool NymeaCore::s_externalFactoryResetStarted = false;
 NymeaCore::PendingRestartAction NymeaCore::s_pendingRestartAction = NymeaCore::PendingRestartActionNone;
 QString NymeaCore::s_pendingRestoreBackupPath;
 
@@ -313,10 +317,42 @@ void NymeaCore::destroy(ShutdownReason reason)
     performPendingRestartAction();
 }
 
-void NymeaCore::scheduleFactoryReset()
+bool NymeaCore::requestFactoryReset()
 {
-    s_pendingRestartAction = PendingRestartActionFactoryReset;
-    s_pendingRestoreBackupPath.clear();
+    if (s_externalFactoryResetStarted) {
+        qCWarning(dcCore()) << "External factory reset already initiated; refusing another request.";
+        return false;
+    }
+
+    const QString script = m_configuration->factoryResetScript();
+    if (script.isEmpty()) {
+        s_pendingRestartAction = PendingRestartActionFactoryReset;
+        s_pendingRestoreBackupPath.clear();
+        QTimer::singleShot(0, qApp, []() {
+            NymeaCore::restart(NymeaCore::ShutdownReasonRestartFactoryDefaults);
+        });
+        return true;
+    }
+
+    const QFileInfo scriptInfo(script);
+    if (!scriptInfo.isAbsolute() || !scriptInfo.isFile() || !scriptInfo.isExecutable()) {
+        qCWarning(dcCore()) << "Invalid factory reset script (requires an absolute path to an executable file):" << script;
+        return false;
+    }
+
+    QProcess process;
+    process.setProgram(script);
+    process.setArguments(QStringList());
+    process.setWorkingDirectory("/");
+    if (!process.startDetached()) {
+        qCWarning(dcCore()) << "Failed to launch factory reset script:" << script << process.errorString();
+        return false;
+    }
+
+    // Process-wide: even an internal core restart must not allow a second worker.
+    s_externalFactoryResetStarted = true;
+    qCInfo(dcCore()) << "External factory reset initiated:" << script;
+    return true;
 }
 
 void NymeaCore::scheduleBackupRestore(const QString &backupFilePath)

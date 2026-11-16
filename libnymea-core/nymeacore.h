@@ -89,7 +89,7 @@ public:
     void init(const QStringList &additionalInterfaces = QStringList(),
               bool disableLogEngine = false);
     void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
-    void scheduleFactoryReset();
+    bool requestFactoryReset();
     void scheduleBackupRestore(const QString &backupFilePath);
 
     RuleEngine::RuleError removeRule(const RuleId &id);
@@ -133,6 +133,7 @@ private:
     static ShutdownReason s_shutdownReason;
     static QStringList s_additionalInterfaces;
     static bool s_disableLogEngine;
+    static bool s_externalFactoryResetStarted;
     static PendingRestartAction s_pendingRestartAction;
     static QString s_pendingRestoreBackupPath;
     bool m_initialized = false;

@@ -63,7 +63,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     registerMethod("Restart", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Reset nymea to factory defaults. Clients should warn the user before calling this method because all current configuration data will be lost, the server will restart immediately afterwards and it will come back up using the factory defaults if any are available.";
+    description = "Initiate a factory reset. Clients should warn the user because all current configuration data will be lost. Success indicates initiation, not completion. A configured external reset may restart the service or reboot the device, and may terminate nymea before the response reaches the client. Response delivery does not guarantee reset completion.";
     returns.insert("success", enumValueName(Bool));
     registerMethod("FactoryReset", description, params, returns);
 
@@ -326,13 +326,10 @@ JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
 JsonReply *SystemHandler::FactoryReset(const QVariantMap &params) const
 {
     Q_UNUSED(params)
-    NymeaCore::instance()->scheduleFactoryReset();
-    QTimer::singleShot(0, qApp, []() {
-        NymeaCore::restart(NymeaCore::ShutdownReasonRestartFactoryDefaults);
-    });
+    const bool success = NymeaCore::instance()->requestFactoryReset();
 
     QVariantMap returns;
-    returns.insert("success", true);
+    returns.insert("success", success);
     return createReply(returns);
 }
 

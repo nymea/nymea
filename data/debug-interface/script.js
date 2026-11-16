@@ -64,8 +64,8 @@ function toggleWebsocketConnection() {
 
 
 function connectWebsocket() {
-    var protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    var urlString = protocol + window.location.host + "/debug/ws";
+    var urlString = new URL("ws", window.location.href);
+    urlString.protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     console.log("Connecting to: " + urlString);
     
     try {
@@ -133,7 +133,7 @@ function copyLogsContent() {
 function loadLoggingCategorySettings() {
     // Request report file generation
     var request = new XMLHttpRequest();
-    request.open("GET", "/debug/logging-categories", true);
+    request.open("GET", "logging-categories", true);
     request.send(null);
     
     request.onreadystatechange = function() {
@@ -166,7 +166,7 @@ function loadLoggingCategorySettings() {
 function toggleLoggingCategory(categoryName, obj) {
     console.log("Select changed:", categoryName, obj.value)
     
-    var fileRequestUrl = "/debug/logging-categories?" + categoryName + "=" + obj.value;
+    var fileRequestUrl = "logging-categories?" + categoryName + "=" + obj.value;
     
         // Request report file generation
     var request = new XMLHttpRequest();
@@ -218,7 +218,7 @@ var generateReportTimer = null;
 function pollReportResult() {
     // Request report file generation
     var reportGenerateRequest = new XMLHttpRequest();
-    reportGenerateRequest.open("GET", "/debug/report", true);
+    reportGenerateRequest.open("GET", "report", true);
     reportGenerateRequest.send(null);
     
     reportGenerateRequest.onreadystatechange = function() {
@@ -263,7 +263,7 @@ function pollReportResult() {
             textArea.value += "MD5 checksum: " + md5Sum + "\n";
             
             // Now download the generated report
-            var fileRequestUrl = "/debug/report?filename=" + fileName;
+            var fileRequestUrl = "report?filename=" + fileName;
             console.log("Download report file " + fileRequestUrl);
             var element = document.createElement('a');
             element.setAttribute('href', fileRequestUrl);
@@ -280,7 +280,7 @@ function pollReportResult() {
 }
 
 function generateReport() {
-    console.log("Requesting to generate report file " + "/debug/report");
+    console.log("Requesting to generate report file " + "report");
     
     var textArea = document.getElementById("generateReportTextArea");
     var button = document.getElementById("generateReportButton");
@@ -314,7 +314,7 @@ function startPingTest() {
     
     // Request ping output
     var request = new XMLHttpRequest();
-    request.open("GET", "/debug/ping", true);
+    request.open("GET", "ping", true);
     request.send(null);
     
     // Start the timer
@@ -353,7 +353,7 @@ function startDigTest() {
     
     // Request dig output
     var request = new XMLHttpRequest();
-    request.open("GET", "/debug/dig", true);
+    request.open("GET", "dig", true);
     request.send(null);
     
         // Start the timer
@@ -392,7 +392,7 @@ function startTracePathTest() {
     
     // Request dig output
     var request = new XMLHttpRequest();
-    request.open("GET", "/debug/tracepath", true);
+    request.open("GET", "tracepath", true);
     request.send(null);
     
     // Start the timer

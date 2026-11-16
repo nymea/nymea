@@ -29,6 +29,7 @@
 #include <QDir>
 #include <QFile>
 #include <QTimeZone>
+#include <QUrl>
 
 NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
 
@@ -721,6 +722,26 @@ WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id
     config.authenticationEnabled = m_settings->value("authenticationEnabled", true).toBool();
     config.publicFolder = m_settings->value("publicFolder").toString();
     config.restServerEnabled = m_settings->value("restServerEnabled", false).toBool();
+    bool validPort = false;
+    const uint proxyPort = m_settings->value("proxyPort", 0).toUInt(&validPort);
+    QString prefix = m_settings->value("proxyPathPrefix").toString();
+    const QString decodedPrefix = QUrl::fromPercentEncoding(prefix.toUtf8());
+    const QStringList segments = decodedPrefix.split('/');
+    const bool validPrefix = prefix.isEmpty() || (QUrl(prefix, QUrl::StrictMode).isValid()
+            && prefix.startsWith('/') && !decodedPrefix.startsWith("//")
+            && !decodedPrefix.contains('?') && !decodedPrefix.contains('#') && !decodedPrefix.contains('\\')
+            && !segments.contains(".") && !segments.contains("..")
+            && !decodedPrefix.contains(QChar::Null) && !decodedPrefix.contains('\r') && !decodedPrefix.contains('\n'));
+    if (!validPort || proxyPort > 65535 || !validPrefix) {
+        qCWarning(dcConfiguration()) << "Invalid reverse proxy settings for web server" << id << "- ignoring override";
+    } else if (proxyPort != 0) {
+        while (prefix.endsWith('/'))
+            prefix.chop(1);
+        config.proxyPort = proxyPort;
+        config.proxySslEnabled = m_settings->value("proxySslEnabled", false).toBool();
+        config.proxyPathPrefix = prefix;
+    }
+
     m_settings->endGroup();
     return config;
 }

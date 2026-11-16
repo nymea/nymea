@@ -73,7 +73,7 @@ private:
     HttpReply *processDebugFileRequest(const QString &requestPath);
 
     QByteArray createDebugXmlDocument();
-    QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
+    QByteArray createErrorXmlDocument(const QString &requestPath, HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
 
 private slots:
     void onDebugServerEnabledChanged(bool enabled);

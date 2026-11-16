@@ -67,14 +67,26 @@ class WebServerConfiguration : public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(QString publicFolder MEMBER publicFolder)
+    Q_PROPERTY(uint proxyPort READ proxyPortValue USER true)
+    Q_PROPERTY(bool proxySslEnabled READ proxySslEnabledValue USER true)
+    Q_PROPERTY(QString proxyPathPrefix READ proxyPathPrefixValue USER true)
 
 public:
     QString publicFolder;
+    uint proxyPort = 0;
+    bool proxySslEnabled = false;
+    QString proxyPathPrefix;
     bool restServerEnabled = false;
+
+    uint proxyPortValue() const { return proxyPort; }
+    bool proxySslEnabledValue() const { return proxySslEnabled; }
+    QString proxyPathPrefixValue() const { return proxyPathPrefix; }
 
     bool operator==(const WebServerConfiguration &other) const
     {
-        return ServerConfiguration::operator==(other) && publicFolder == other.publicFolder && restServerEnabled == other.restServerEnabled;
+        return ServerConfiguration::operator==(other) && publicFolder == other.publicFolder && restServerEnabled == other.restServerEnabled
+                && proxyPort == other.proxyPort && proxySslEnabled == other.proxySslEnabled
+                && proxyPathPrefix == other.proxyPathPrefix;
     }
 };
 

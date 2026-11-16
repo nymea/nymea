@@ -260,21 +260,11 @@ QString NymeaSettings::scriptsPath()
     return NymeaSettings::storagePath() + "/scripts/";
 }
 
-/*! Returns the default system sorage path i.e. \tt{/var/lib/nymea}. */
+/*! Returns the path for persistent nymea data. Persistent data is stored alongside the settings so
+ *  \c NYMEA_CONFIG_PATH and the configuration command line option select one self-contained directory. */
 QString NymeaSettings::storagePath()
 {
-    QString organisationName = QCoreApplication::instance()->organizationName();
-
-    QString path;
-    if (organisationName == "nymea-test") {
-        path = "/tmp/" + organisationName;
-    } else if (NymeaSettings::isRoot()) {
-        path = "/var/lib/" + organisationName;
-    } else {
-        path = QDir::homePath() + "/.local/share/" + organisationName;
-    }
-
-    return QDir(path).absolutePath();
+    return settingsPath();
 }
 
 QString NymeaSettings::cachePath()

@@ -1567,6 +1567,26 @@
                 "modbusError": "$ref:ModbusRtuError"
             }
         },
+        "Network.GetBackendInfo": {
+            "description": "Get the selected networking backend and its availability.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "backendInfo": "$ref:NetworkBackendInfo"
+            }
+        },
+        "Network.GetInterfaces": {
+            "description": "Get all visible network interfaces and their addresses.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "interfaces": [
+                    "$ref:NetworkInterface"
+                ]
+            }
+        },
         "NetworkManager.ConnectWifiNetwork": {
             "description": "Connect to the wifi network with the given ssid and password.",
             "params": {
@@ -2738,6 +2758,20 @@
                 "serialPort": "$ref:SerialPort"
             }
         },
+        "Network.BackendInfoChanged": {
+            "description": "The selected networking backend or its availability changed.",
+            "params": {
+                "backendInfo": "$ref:NetworkBackendInfo"
+            }
+        },
+        "Network.InterfacesChanged": {
+            "description": "The network interface snapshot changed.",
+            "params": {
+                "interfaces": [
+                    "$ref:NetworkInterface"
+                ]
+            }
+        },
         "NetworkManager.NetworkStatusChanged": {
             "description": "Emitted whenever a status of a NetworkManager changes.",
             "params": {
@@ -3177,6 +3211,30 @@
             "clientId": "String",
             "password": "String",
             "username": "String"
+        },
+        "NetworkAddress": {
+            "address": "String",
+            "prefixLength": "Int"
+        },
+        "NetworkBackendInfo": {
+            "available": "Bool",
+            "backend": "String",
+            "features": "StringList"
+        },
+        "NetworkInterface": {
+            "administrativeState": "String",
+            "index": "Int",
+            "ipv4Addresses": [
+                "$ref:NetworkAddress"
+            ],
+            "ipv6Addresses": [
+                "$ref:NetworkAddress"
+            ],
+            "kind": "String",
+            "macAddress": "String",
+            "managementStatus": "String",
+            "name": "String",
+            "operationalState": "String"
         },
         "Package": {
             "r:canRemove": "Bool",

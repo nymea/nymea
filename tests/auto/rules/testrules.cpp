@@ -2366,12 +2366,11 @@ void TestRules::testStateBasedAction()
 
     LogFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries({logSourceName});
     QSignalSpy fetchSpy(job, &LogFetchJob::finished);
-    fetchSpy.wait();
-    QVERIFY(!fetchSpy.isEmpty());
-    LogEntries entries = job->entries();
+    QVERIFY(fetchSpy.wait());
+    LogEntries entries = fetchSpy.takeFirst().at(0).value<LogEntries>();
 
     qCDebug(dcTests()) << "Got log entries:" << entries.count();
-    foreach (const LogEntry &entry, job->entries()) {
+    foreach (const LogEntry &entry, entries) {
         qCDebug(dcTests()) << entry.source() << entry.timestamp() << entry.values();
     }
 
@@ -2405,10 +2404,9 @@ void TestRules::testStateBasedAction()
     job = NymeaCore::instance()->logEngine()->fetchLogEntries({logSourceName});
     {
     QSignalSpy fetchSpy(job, &LogFetchJob::finished);
-    fetchSpy.wait();
-    QVERIFY(!fetchSpy.isEmpty());
+    QVERIFY(fetchSpy.wait());
+    entries = fetchSpy.takeFirst().at(0).value<LogEntries>();
     }
-    entries = job->entries();
     QCOMPARE(entries.count(), 1);
     QCOMPARE(entries.first().values().value("triggeredBy").toString(), enumValueName(Action::TriggeredByRule));
     QCOMPARE(entries.first().values().value("status").toString(), enumValueName(Thing::ThingErrorNoError));

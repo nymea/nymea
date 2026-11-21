@@ -41,8 +41,8 @@ LogEntries LogFetchJob::entries() const
 void LogFetchJob::finish(const LogEntries &entries)
 {
     m_entries = entries;
-    emit finished(entries);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection, Q_ARG(LogEntries, entries));
+    QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
 }
 
 LogEngine::LogEngine(QObject *parent)

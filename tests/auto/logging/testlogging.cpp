@@ -45,6 +45,7 @@ private slots:
     void init();
 
     void initLogs();
+    void fetchJobFinishesOnceAndIsDeleted();
 
     void systemLogs();
 
@@ -75,6 +76,20 @@ void TestLogging::initTestCase()
 void TestLogging::init()
 {
     waitForDBSync();
+}
+
+void TestLogging::fetchJobFinishesOnceAndIsDeleted()
+{
+    LogFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries({"core"});
+    QSignalSpy finishedSpy(job, &LogFetchJob::finished);
+    QSignalSpy destroyedSpy(job, &QObject::destroyed);
+
+    QVERIFY(finishedSpy.wait());
+    if (destroyedSpy.isEmpty()) {
+        QVERIFY(destroyedSpy.wait());
+    }
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(destroyedSpy.count(), 1);
 }
 
 void TestLogging::initLogs()
